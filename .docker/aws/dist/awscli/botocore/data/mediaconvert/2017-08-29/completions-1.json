@@ -1,0 +1,307 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Job": {
+      "operation": "ListJobs",
+      "resourceIdentifier": {
+        "Id": "Jobs[].Id",
+        "Queue": "Jobs[].Queue"
+      }
+    },
+    "Preset": {
+      "operation": "ListPresets",
+      "resourceIdentifier": {
+        "Category": "Presets[].Category",
+        "Settings": "Presets[].Settings"
+      }
+    },
+    "Queue": {
+      "operation": "ListQueues",
+      "resourceIdentifier": {
+        "Arn": "Queues[].Arn",
+        "Description": "Queues[].Description",
+        "Name": "Queues[].Name",
+        "Status": "Queues[].Status"
+      }
+    }
+  },
+  "operations": {
+    "CancelJob": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Job",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "DeleteJobTemplate": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeletePreset": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteQueue": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetJob": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Job",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "GetJobTemplate": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetPreset": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetQueue": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListJobTemplates": {
+      "Category": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Category"
+          }
+        ]
+      }
+    },
+    "ListJobs": {
+      "Queue": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Job",
+            "resourceIdentifier": "Queue"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "ListPresets": {
+      "Category": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Category"
+          }
+        ]
+      }
+    },
+    "ListTagsForResource": {
+      "Arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Arn"
+          }
+        ]
+      }
+    },
+    "TagResource": {
+      "Arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Arn"
+          }
+        ]
+      }
+    },
+    "UntagResource": {
+      "Arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Arn"
+          }
+        ]
+      }
+    },
+    "UpdateJobTemplate": {
+      "Category": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Category"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Queue": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Job",
+            "resourceIdentifier": "Queue"
+          }
+        ]
+      },
+      "Settings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Settings"
+          }
+        ]
+      }
+    },
+    "UpdatePreset": {
+      "Category": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Category"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Settings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Preset",
+            "resourceIdentifier": "Settings"
+          }
+        ]
+      }
+    },
+    "UpdateQueue": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    }
+  }
+}

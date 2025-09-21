@@ -1,0 +1,247 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Domain": {
+      "operation": "ListDomains",
+      "resourceIdentifier": {
+        "DomainName": "Domains[].DomainName",
+        "AutoRenew": "Domains[].AutoRenew"
+      }
+    },
+    "Operation": {
+      "operation": "ListOperations",
+      "resourceIdentifier": {
+        "OperationId": "Operations[].OperationId"
+      }
+    }
+  },
+  "operations": {
+    "CheckDomainAvailability": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "CheckDomainTransferability": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteTagsForDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DisableDomainAutoRenew": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DisableDomainTransferLock": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "EnableDomainAutoRenew": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "EnableDomainTransferLock": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetDomainDetail": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetDomainSuggestions": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetOperationDetail": {
+      "OperationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Operation",
+            "resourceIdentifier": "OperationId"
+          }
+        ]
+      }
+    },
+    "ListTagsForDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "RegisterDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      },
+      "AutoRenew": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "AutoRenew"
+          }
+        ]
+      }
+    },
+    "RenewDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "RetrieveDomainAuthCode": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "TransferDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      },
+      "AutoRenew": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "AutoRenew"
+          }
+        ]
+      }
+    },
+    "UpdateDomainContact": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateDomainContactPrivacy": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateDomainNameservers": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateTagsForDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    }
+  }
+}

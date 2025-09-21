@@ -1,0 +1,137 @@
+{
+  "version": "1.0",
+  "resources": {
+    "EnvironmentMembership": {
+      "operation": "DescribeEnvironmentMemberships",
+      "resourceIdentifier": {
+        "permissions": "memberships[].permissions",
+        "userArn": "memberships[].userArn",
+        "environmentId": "memberships[].environmentId"
+      }
+    }
+  },
+  "operations": {
+    "DeleteEnvironment": {
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      }
+    },
+    "DeleteEnvironmentMembership": {
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      },
+      "userArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "userArn"
+          }
+        ]
+      }
+    },
+    "DescribeEnvironmentMemberships": {
+      "userArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "userArn"
+          }
+        ]
+      },
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      },
+      "permissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "permissions"
+          }
+        ]
+      }
+    },
+    "DescribeEnvironmentStatus": {
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      }
+    },
+    "DescribeEnvironments": {
+      "environmentIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      }
+    },
+    "UpdateEnvironment": {
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      }
+    },
+    "UpdateEnvironmentMembership": {
+      "environmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "environmentId"
+          }
+        ]
+      },
+      "userArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "userArn"
+          }
+        ]
+      },
+      "permissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EnvironmentMembership",
+            "resourceIdentifier": "permissions"
+          }
+        ]
+      }
+    }
+  }
+}

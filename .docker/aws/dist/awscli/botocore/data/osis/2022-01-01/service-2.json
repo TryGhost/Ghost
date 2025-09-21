@@ -1,0 +1,1728 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-01-01",
+    "endpointPrefix":"osis",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon OpenSearch Ingestion",
+    "serviceId":"OSIS",
+    "signatureVersion":"v4",
+    "uid":"osis-2022-01-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreatePipeline":{
+      "name":"CreatePipeline",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/createPipeline"
+      },
+      "input":{"shape":"CreatePipelineRequest"},
+      "output":{"shape":"CreatePipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html\">Creating Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "CreatePipelineEndpoint":{
+      "name":"CreatePipelineEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/createPipelineEndpoint"
+      },
+      "input":{"shape":"CreatePipelineEndpointRequest"},
+      "output":{"shape":"CreatePipelineEndpointResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a VPC endpoint for an OpenSearch Ingestion pipeline. Pipeline endpoints allow you to ingest data from your VPC into pipelines that you have access to.</p>"
+    },
+    "DeletePipeline":{
+      "name":"DeletePipeline",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2022-01-01/osis/deletePipeline/{PipelineName}"
+      },
+      "input":{"shape":"DeletePipelineRequest"},
+      "output":{"shape":"DeletePipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/delete-pipeline.html\">Deleting Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "DeletePipelineEndpoint":{
+      "name":"DeletePipelineEndpoint",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2022-01-01/osis/deletePipelineEndpoint/{EndpointId}"
+      },
+      "input":{"shape":"DeletePipelineEndpointRequest"},
+      "output":{"shape":"DeletePipelineEndpointResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a VPC endpoint for an OpenSearch Ingestion pipeline.</p>",
+      "idempotent":true
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2022-01-01/osis/resourcePolicy/{ResourceArn}"
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "output":{"shape":"DeleteResourcePolicyResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a resource-based policy from an OpenSearch Ingestion resource.</p>",
+      "idempotent":true
+    },
+    "GetPipeline":{
+      "name":"GetPipeline",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/getPipeline/{PipelineName}"
+      },
+      "input":{"shape":"GetPipelineRequest"},
+      "output":{"shape":"GetPipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about an OpenSearch Ingestion pipeline.</p>"
+    },
+    "GetPipelineBlueprint":{
+      "name":"GetPipelineBlueprint",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/getPipelineBlueprint/{BlueprintName}"
+      },
+      "input":{"shape":"GetPipelineBlueprintRequest"},
+      "output":{"shape":"GetPipelineBlueprintResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about a specific blueprint for OpenSearch Ingestion. Blueprints are templates for the configuration needed for a <code>CreatePipeline</code> request. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html#pipeline-blueprint\">Using blueprints to create a pipeline</a>.</p>"
+    },
+    "GetPipelineChangeProgress":{
+      "name":"GetPipelineChangeProgress",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/getPipelineChangeProgress/{PipelineName}"
+      },
+      "input":{"shape":"GetPipelineChangeProgressRequest"},
+      "output":{"shape":"GetPipelineChangeProgressResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns progress information for the current change happening on an OpenSearch Ingestion pipeline. Currently, this operation only returns information when a pipeline is being created.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html#get-pipeline-progress\">Tracking the status of pipeline creation</a>.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/resourcePolicy/{ResourceArn}"
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the resource-based policy attached to an OpenSearch Ingestion resource.</p>"
+    },
+    "ListPipelineBlueprints":{
+      "name":"ListPipelineBlueprints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/listPipelineBlueprints"
+      },
+      "input":{"shape":"ListPipelineBlueprintsRequest"},
+      "output":{"shape":"ListPipelineBlueprintsResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidPaginationTokenException"}
+      ],
+      "documentation":"<p>Retrieves a list of all available blueprints for Data Prepper. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html#pipeline-blueprint\">Using blueprints to create a pipeline</a>.</p>"
+    },
+    "ListPipelineEndpointConnections":{
+      "name":"ListPipelineEndpointConnections",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/listPipelineEndpointConnections"
+      },
+      "input":{"shape":"ListPipelineEndpointConnectionsRequest"},
+      "output":{"shape":"ListPipelineEndpointConnectionsResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the pipeline endpoints connected to pipelines in your account.</p>"
+    },
+    "ListPipelineEndpoints":{
+      "name":"ListPipelineEndpoints",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/listPipelineEndpoints"
+      },
+      "input":{"shape":"ListPipelineEndpointsRequest"},
+      "output":{"shape":"ListPipelineEndpointsResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all pipeline endpoints in your account.</p>"
+    },
+    "ListPipelines":{
+      "name":"ListPipelines",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/listPipelines"
+      },
+      "input":{"shape":"ListPipelinesRequest"},
+      "output":{"shape":"ListPipelinesResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidPaginationTokenException"}
+      ],
+      "documentation":"<p>Lists all OpenSearch Ingestion pipelines in the current Amazon Web Services account and Region. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/list-pipeline.html\">Viewing Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2022-01-01/osis/listTagsForResource/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all resource tags associated with an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-pipeline.html\">Tagging Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2022-01-01/osis/resourcePolicy/{ResourceArn}"
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Attaches a resource-based policy to an OpenSearch Ingestion resource. Resource-based policies grant permissions to principals to perform actions on the resource.</p>",
+      "idempotent":true
+    },
+    "RevokePipelineEndpointConnections":{
+      "name":"RevokePipelineEndpointConnections",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/revokePipelineEndpointConnections"
+      },
+      "input":{"shape":"RevokePipelineEndpointConnectionsRequest"},
+      "output":{"shape":"RevokePipelineEndpointConnectionsResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Revokes pipeline endpoints from specified endpoint IDs.</p>",
+      "idempotent":true
+    },
+    "StartPipeline":{
+      "name":"StartPipeline",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2022-01-01/osis/startPipeline/{PipelineName}"
+      },
+      "input":{"shape":"StartPipelineRequest"},
+      "output":{"shape":"StartPipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Starts an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/pipeline--stop-start.html#pipeline--start\">Starting an OpenSearch Ingestion pipeline</a>.</p>"
+    },
+    "StopPipeline":{
+      "name":"StopPipeline",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2022-01-01/osis/stopPipeline/{PipelineName}"
+      },
+      "input":{"shape":"StopPipelineRequest"},
+      "output":{"shape":"StopPipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Stops an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/pipeline--stop-start.html#pipeline--stop\">Stopping an OpenSearch Ingestion pipeline</a>.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/tagResource/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Tags an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-pipeline.html\">Tagging Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/untagResource/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Removes one or more tags from an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-pipeline.html\">Tagging Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "UpdatePipeline":{
+      "name":"UpdatePipeline",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/2022-01-01/osis/updatePipeline/{PipelineName}"
+      },
+      "input":{"shape":"UpdatePipelineRequest"},
+      "output":{"shape":"UpdatePipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Ingestion pipeline. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/update-pipeline.html\">Updating Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    },
+    "ValidatePipeline":{
+      "name":"ValidatePipeline",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2022-01-01/osis/validatePipeline"
+      },
+      "input":{"shape":"ValidatePipelineRequest"},
+      "output":{"shape":"ValidatePipelineResponse"},
+      "errors":[
+        {"shape":"DisabledOperationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Checks whether an OpenSearch Ingestion pipeline configuration is valid prior to creation. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html\">Creating Amazon OpenSearch Ingestion pipelines</a>.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>You don't have permissions to access the resource.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\\\d{12}$"
+    },
+    "BlueprintFormat":{
+      "type":"string",
+      "pattern":"(YAML|JSON)"
+    },
+    "Boolean":{"type":"boolean"},
+    "BufferOptions":{
+      "type":"structure",
+      "required":["PersistentBufferEnabled"],
+      "members":{
+        "PersistentBufferEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether persistent buffering should be enabled.</p>"
+        }
+      },
+      "documentation":"<p>Options that specify the configuration of a persistent buffer. To configure how OpenSearch Ingestion encrypts this data, set the <code>EncryptionAtRestOptions</code>. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/osis-features-overview.html#persistent-buffering\">Persistent buffering</a>.</p>"
+    },
+    "ChangeProgressStage":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the stage.</p>"
+        },
+        "Status":{
+          "shape":"ChangeProgressStageStatuses",
+          "documentation":"<p>The current status of the stage that the change is in.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the stage.</p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The most recent updated timestamp of the stage.</p>"
+        }
+      },
+      "documentation":"<p>Progress details for a specific stage of a pipeline configuration change.</p>"
+    },
+    "ChangeProgressStageList":{
+      "type":"list",
+      "member":{"shape":"ChangeProgressStage"}
+    },
+    "ChangeProgressStageStatuses":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "ChangeProgressStatus":{
+      "type":"structure",
+      "members":{
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the configuration change is made on the pipeline.</p>"
+        },
+        "Status":{
+          "shape":"ChangeProgressStatuses",
+          "documentation":"<p>The overall status of the pipeline configuration change.</p>"
+        },
+        "TotalNumberOfStages":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of stages required for the pipeline configuration change.</p>"
+        },
+        "ChangeProgressStages":{
+          "shape":"ChangeProgressStageList",
+          "documentation":"<p>Information about the stages that the pipeline is going through to perform the configuration change.</p>"
+        }
+      },
+      "documentation":"<p>The progress details of a pipeline configuration change.</p>"
+    },
+    "ChangeProgressStatusList":{
+      "type":"list",
+      "member":{"shape":"ChangeProgressStatus"}
+    },
+    "ChangeProgressStatuses":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "CidrBlock":{
+      "type":"string",
+      "pattern":"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(3[0-2]|[12]?[0-9])$"
+    },
+    "CloudWatchLogDestination":{
+      "type":"structure",
+      "required":["LogGroup"],
+      "members":{
+        "LogGroup":{
+          "shape":"LogGroup",
+          "documentation":"<p>The name of the CloudWatch Logs group to send pipeline logs to. You can specify an existing log group or create a new one. For example, <code>/aws/vendedlogs/OpenSearchService/pipelines</code>.</p>"
+        }
+      },
+      "documentation":"<p>The destination for OpenSearch Ingestion logs sent to Amazon CloudWatch.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The client attempted to remove a resource that is currently in use.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "CreatePipelineEndpointRequest":{
+      "type":"structure",
+      "required":[
+        "PipelineArn",
+        "VpcOptions"
+      ],
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline to create the endpoint for.</p>"
+        },
+        "VpcOptions":{
+          "shape":"PipelineEndpointVpcOptions",
+          "documentation":"<p>Container for the VPC configuration for the pipeline endpoint, including subnet IDs and security group IDs.</p>"
+        }
+      }
+    },
+    "CreatePipelineEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline associated with the endpoint.</p>"
+        },
+        "EndpointId":{
+          "shape":"PipelineEndpointId",
+          "documentation":"<p>The unique identifier of the pipeline endpoint.</p>"
+        },
+        "Status":{
+          "shape":"PipelineEndpointStatus",
+          "documentation":"<p>The current status of the pipeline endpoint.</p>"
+        },
+        "VpcId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the VPC where the pipeline endpoint was created.</p>"
+        }
+      }
+    },
+    "CreatePipelineRequest":{
+      "type":"structure",
+      "required":[
+        "PipelineName",
+        "MinUnits",
+        "MaxUnits",
+        "PipelineConfigurationBody"
+      ],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the OpenSearch Ingestion pipeline to create. Pipeline names are unique across the pipelines owned by an account within an Amazon Web Services Region.</p>"
+        },
+        "MinUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The minimum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "MaxUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The maximum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "PipelineConfigurationBody":{
+          "shape":"PipelineConfigurationBody",
+          "documentation":"<p>The pipeline configuration in YAML format. The command accepts the pipeline configuration as a string or within a .yaml file. If you provide the configuration as a string, each new line must be escaped with <code>\\n</code>.</p>"
+        },
+        "LogPublishingOptions":{
+          "shape":"LogPublishingOptions",
+          "documentation":"<p>Key-value pairs to configure log publishing.</p>"
+        },
+        "VpcOptions":{
+          "shape":"VpcOptions",
+          "documentation":"<p>Container for the values required to configure VPC access for the pipeline. If you don't specify these values, OpenSearch Ingestion creates the pipeline with a public endpoint.</p>"
+        },
+        "BufferOptions":{
+          "shape":"BufferOptions",
+          "documentation":"<p>Key-value pairs to configure persistent buffering for the pipeline.</p>"
+        },
+        "EncryptionAtRestOptions":{
+          "shape":"EncryptionAtRestOptions",
+          "documentation":"<p>Key-value pairs to configure encryption for data that is written to a persistent buffer.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>List of tags to add to the pipeline upon creation.</p>"
+        },
+        "PipelineRoleArn":{
+          "shape":"PipelineRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that grants the pipeline permission to access Amazon Web Services resources.</p>"
+        }
+      }
+    },
+    "CreatePipelineResponse":{
+      "type":"structure",
+      "members":{
+        "Pipeline":{
+          "shape":"Pipeline",
+          "documentation":"<p>Container for information about the created pipeline.</p>"
+        }
+      }
+    },
+    "DeletePipelineEndpointRequest":{
+      "type":"structure",
+      "required":["EndpointId"],
+      "members":{
+        "EndpointId":{
+          "shape":"PipelineEndpointId",
+          "documentation":"<p>The unique identifier of the pipeline endpoint to delete.</p>",
+          "location":"uri",
+          "locationName":"EndpointId"
+        }
+      }
+    },
+    "DeletePipelineEndpointResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeletePipelineRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline to delete.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        }
+      }
+    },
+    "DeletePipelineResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource from which to delete the policy.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "DeleteResourcePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisabledOperationException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Exception is thrown when an operation has been disabled.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "EncryptionAtRestOptions":{
+      "type":"structure",
+      "required":["KmsKeyArn"],
+      "members":{
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ARN of the KMS key used to encrypt buffer data. By default, data is encrypted using an Amazon Web Services owned key.</p>"
+        }
+      },
+      "documentation":"<p>Options to control how OpenSearch encrypts buffer data.</p>"
+    },
+    "GetPipelineBlueprintRequest":{
+      "type":"structure",
+      "required":["BlueprintName"],
+      "members":{
+        "BlueprintName":{
+          "shape":"String",
+          "documentation":"<p>The name of the blueprint to retrieve.</p>",
+          "location":"uri",
+          "locationName":"BlueprintName"
+        },
+        "Format":{
+          "shape":"BlueprintFormat",
+          "documentation":"<p>The format format of the blueprint to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"format"
+        }
+      }
+    },
+    "GetPipelineBlueprintResponse":{
+      "type":"structure",
+      "members":{
+        "Blueprint":{
+          "shape":"PipelineBlueprint",
+          "documentation":"<p>The requested blueprint in YAML format.</p>"
+        },
+        "Format":{
+          "shape":"String",
+          "documentation":"<p>The format of the blueprint.</p>"
+        }
+      }
+    },
+    "GetPipelineChangeProgressRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        }
+      }
+    },
+    "GetPipelineChangeProgressResponse":{
+      "type":"structure",
+      "members":{
+        "ChangeProgressStatuses":{
+          "shape":"ChangeProgressStatusList",
+          "documentation":"<p>The current status of the change happening on the pipeline.</p>"
+        }
+      }
+    },
+    "GetPipelineRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        }
+      }
+    },
+    "GetPipelineResponse":{
+      "type":"structure",
+      "members":{
+        "Pipeline":{
+          "shape":"Pipeline",
+          "documentation":"<p>Detailed information about the requested pipeline.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which to retrieve the policy.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "Policy":{
+          "shape":"ResourcePolicy",
+          "documentation":"<p>The resource-based policy document in JSON format.</p>"
+        }
+      }
+    },
+    "IngestEndpointUrlsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Integer":{"type":"integer"},
+    "InternalException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The request failed because of an unknown error, exception, or failure (the failure is internal to the service).</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true
+    },
+    "InvalidPaginationTokenException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>An invalid pagination token provided in the request.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":7
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>You attempted to create more than the allowed number of tags.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "ListPipelineBlueprintsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "ListPipelineBlueprintsResponse":{
+      "type":"structure",
+      "members":{
+        "Blueprints":{
+          "shape":"PipelineBlueprintsSummaryList",
+          "documentation":"<p>A list of available blueprints for Data Prepper.</p>"
+        }
+      }
+    },
+    "ListPipelineEndpointConnectionsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of pipeline endpoint connections to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If your initial <code>ListPipelineEndpointConnections</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListPipelineEndpointConnections</code> operations, which returns results in the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListPipelineEndpointConnectionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "PipelineEndpointConnections":{
+          "shape":"PipelineEndpointConnectionsSummaryList",
+          "documentation":"<p>A list of pipeline endpoint connections.</p>"
+        }
+      }
+    },
+    "ListPipelineEndpointsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of pipeline endpoints to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If your initial <code>ListPipelineEndpoints</code> operation returns a <code>NextToken</code>, you can include the returned <code>NextToken</code> in subsequent <code>ListPipelineEndpoints</code> operations, which returns results in the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListPipelineEndpointsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "PipelineEndpoints":{
+          "shape":"PipelineEndpointsSummaryList",
+          "documentation":"<p>A list of pipeline endpoints.</p>"
+        }
+      }
+    },
+    "ListPipelinesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If your initial <code>ListPipelines</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListPipelines</code> operations, which returns results in the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListPipelinesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "Pipelines":{
+          "shape":"PipelineSummaryList",
+          "documentation":"<p>A list of all existing Data Prepper pipelines.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline to retrieve tags for.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags associated with the given pipeline.</p>"
+        }
+      }
+    },
+    "LogGroup":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":"\\/aws\\/vendedlogs\\/[\\.\\-_/#A-Za-z0-9]+"
+    },
+    "LogPublishingOptions":{
+      "type":"structure",
+      "members":{
+        "IsLoggingEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether logs should be published.</p>"
+        },
+        "CloudWatchLogDestination":{
+          "shape":"CloudWatchLogDestination",
+          "documentation":"<p>The destination for OpenSearch Ingestion logs sent to Amazon CloudWatch Logs. This parameter is required if <code>IsLoggingEnabled</code> is set to <code>true</code>.</p>"
+        }
+      },
+      "documentation":"<p>Container for the values required to configure logging for the pipeline. If you don't specify these values, OpenSearch Ingestion will not publish logs from your application to CloudWatch Logs.</p>"
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":3000,
+      "min":0,
+      "pattern":"^([\\s\\S]*)$"
+    },
+    "Pipeline":{
+      "type":"structure",
+      "members":{
+        "PipelineName":{
+          "shape":"String",
+          "documentation":"<p>The name of the pipeline.</p>"
+        },
+        "PipelineArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline.</p>"
+        },
+        "MinUnits":{
+          "shape":"Integer",
+          "documentation":"<p>The minimum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "MaxUnits":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "Status":{
+          "shape":"PipelineStatus",
+          "documentation":"<p>The current status of the pipeline.</p>"
+        },
+        "StatusReason":{
+          "shape":"PipelineStatusReason",
+          "documentation":"<p>The reason for the current status of the pipeline.</p>"
+        },
+        "PipelineConfigurationBody":{
+          "shape":"String",
+          "documentation":"<p>The Data Prepper pipeline configuration in YAML format.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the pipeline was created.</p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the pipeline was last updated.</p>"
+        },
+        "IngestEndpointUrls":{
+          "shape":"IngestEndpointUrlsList",
+          "documentation":"<p>The ingestion endpoints for the pipeline, which you can send data to.</p>"
+        },
+        "LogPublishingOptions":{
+          "shape":"LogPublishingOptions",
+          "documentation":"<p>Key-value pairs that represent log publishing settings.</p>"
+        },
+        "VpcEndpoints":{
+          "shape":"VpcEndpointsList",
+          "documentation":"<p>The VPC interface endpoints that have access to the pipeline.</p>"
+        },
+        "BufferOptions":{"shape":"BufferOptions"},
+        "EncryptionAtRestOptions":{"shape":"EncryptionAtRestOptions"},
+        "VpcEndpointService":{
+          "shape":"String",
+          "documentation":"<p>The VPC endpoint service name for the pipeline.</p>"
+        },
+        "ServiceVpcEndpoints":{
+          "shape":"ServiceVpcEndpointsList",
+          "documentation":"<p>A list of VPC endpoints that OpenSearch Ingestion has created to other Amazon Web Services services.</p>"
+        },
+        "Destinations":{
+          "shape":"PipelineDestinationList",
+          "documentation":"<p>Destinations to which the pipeline writes data.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags associated with the given pipeline.</p>"
+        },
+        "PipelineRoleArn":{
+          "shape":"PipelineRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that the pipeline uses to access AWS resources.</p>"
+        }
+      },
+      "documentation":"<p>Information about an existing OpenSearch Ingestion pipeline.</p>"
+    },
+    "PipelineArn":{
+      "type":"string",
+      "max":76,
+      "min":46,
+      "pattern":"^arn:(aws|aws\\-cn|aws\\-us\\-gov|aws\\-iso|aws\\-iso\\-b):osis:.+:pipeline\\/.+$"
+    },
+    "PipelineBlueprint":{
+      "type":"structure",
+      "members":{
+        "BlueprintName":{
+          "shape":"String",
+          "documentation":"<p>The name of the blueprint.</p>"
+        },
+        "PipelineConfigurationBody":{
+          "shape":"String",
+          "documentation":"<p>The YAML configuration of the blueprint.</p>"
+        },
+        "DisplayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of the blueprint.</p>"
+        },
+        "DisplayDescription":{
+          "shape":"String",
+          "documentation":"<p>A description of the blueprint.</p>"
+        },
+        "Service":{
+          "shape":"String",
+          "documentation":"<p>The name of the service that the blueprint is associated with.</p>"
+        },
+        "UseCase":{
+          "shape":"String",
+          "documentation":"<p>The use case that the blueprint relates to.</p>"
+        }
+      },
+      "documentation":"<p>Container for information about an OpenSearch Ingestion blueprint.</p>"
+    },
+    "PipelineBlueprintSummary":{
+      "type":"structure",
+      "members":{
+        "BlueprintName":{
+          "shape":"String",
+          "documentation":"<p>The name of the blueprint.</p>"
+        },
+        "DisplayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of the blueprint.</p>"
+        },
+        "DisplayDescription":{
+          "shape":"String",
+          "documentation":"<p>A description of the blueprint.</p>"
+        },
+        "Service":{
+          "shape":"String",
+          "documentation":"<p>The name of the service that the blueprint is associated with.</p>"
+        },
+        "UseCase":{
+          "shape":"String",
+          "documentation":"<p>The use case that the blueprint relates to.</p>"
+        }
+      },
+      "documentation":"<p>A summary of an OpenSearch Ingestion blueprint.</p>"
+    },
+    "PipelineBlueprintsSummaryList":{
+      "type":"list",
+      "member":{"shape":"PipelineBlueprintSummary"}
+    },
+    "PipelineConfigurationBody":{
+      "type":"string",
+      "max":24000,
+      "min":1
+    },
+    "PipelineDestination":{
+      "type":"structure",
+      "members":{
+        "ServiceName":{
+          "shape":"String",
+          "documentation":"<p>The name of the service receiving data from the pipeline.</p>"
+        },
+        "Endpoint":{
+          "shape":"String",
+          "documentation":"<p>The endpoint receiving data from the pipeline.</p>"
+        }
+      },
+      "documentation":"<p>An object representing the destination of a pipeline.</p>"
+    },
+    "PipelineDestinationList":{
+      "type":"list",
+      "member":{"shape":"PipelineDestination"}
+    },
+    "PipelineEndpoint":{
+      "type":"structure",
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline associated with this endpoint.</p>"
+        },
+        "EndpointId":{
+          "shape":"PipelineEndpointId",
+          "documentation":"<p>The unique identifier for the pipeline endpoint.</p>"
+        },
+        "Status":{
+          "shape":"PipelineEndpointStatus",
+          "documentation":"<p>The current status of the pipeline endpoint.</p>"
+        },
+        "VpcId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the VPC where the pipeline endpoint is created.</p>"
+        },
+        "VpcOptions":{
+          "shape":"PipelineEndpointVpcOptions",
+          "documentation":"<p>Configuration options for the VPC endpoint, including subnet and security group settings.</p>"
+        },
+        "IngestEndpointUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL used to ingest data to the pipeline through the VPC endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Represents a VPC endpoint for an OpenSearch Ingestion pipeline, enabling private connectivity between your VPC and the pipeline.</p>"
+    },
+    "PipelineEndpointConnection":{
+      "type":"structure",
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline in the endpoint connection.</p>"
+        },
+        "EndpointId":{
+          "shape":"PipelineEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint in the connection.</p>"
+        },
+        "Status":{
+          "shape":"PipelineEndpointStatus",
+          "documentation":"<p>The current status of the pipeline endpoint connection.</p>"
+        },
+        "VpcEndpointOwner":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The Amazon Web Services account ID that owns the VPC endpoint used in this connection.</p>"
+        }
+      },
+      "documentation":"<p>Represents a connection to a pipeline endpoint, containing details about the endpoint association.</p>"
+    },
+    "PipelineEndpointConnectionsSummaryList":{
+      "type":"list",
+      "member":{"shape":"PipelineEndpointConnection"}
+    },
+    "PipelineEndpointId":{
+      "type":"string",
+      "max":512,
+      "min":3,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9-_]+$"
+    },
+    "PipelineEndpointIdsList":{
+      "type":"list",
+      "member":{"shape":"PipelineEndpointId"}
+    },
+    "PipelineEndpointStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "CREATE_FAILED",
+        "DELETING",
+        "REVOKING",
+        "REVOKED"
+      ]
+    },
+    "PipelineEndpointVpcOptions":{
+      "type":"structure",
+      "members":{
+        "SubnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>A list of subnet IDs where the pipeline endpoint network interfaces are created.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>A list of security group IDs that control network access to the pipeline endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Configuration settings for the VPC endpoint, specifying network access controls.</p>"
+    },
+    "PipelineEndpointsSummaryList":{
+      "type":"list",
+      "member":{"shape":"PipelineEndpoint"}
+    },
+    "PipelineName":{
+      "type":"string",
+      "max":28,
+      "min":3,
+      "pattern":"[a-z][a-z0-9\\-]+"
+    },
+    "PipelineRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:(aws|aws\\-cn|aws\\-us\\-gov|aws\\-iso|aws\\-iso\\-b|aws\\-iso\\-e|aws\\-iso\\-f):iam::[0-9]+:role\\/.*$"
+    },
+    "PipelineStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATE_FAILED",
+        "UPDATE_FAILED",
+        "STARTING",
+        "START_FAILED",
+        "STOPPING",
+        "STOPPED"
+      ]
+    },
+    "PipelineStatusReason":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of why a pipeline has a certain status.</p>"
+        }
+      },
+      "documentation":"<p>Information about a pipeline's current status.</p>"
+    },
+    "PipelineSummary":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"PipelineStatus",
+          "documentation":"<p>The current status of the pipeline.</p>"
+        },
+        "StatusReason":{"shape":"PipelineStatusReason"},
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline.</p>"
+        },
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline.</p>"
+        },
+        "MinUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The minimum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "MaxUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The maximum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the pipeline was created.</p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the pipeline was last updated.</p>"
+        },
+        "Destinations":{
+          "shape":"PipelineDestinationList",
+          "documentation":"<p>A list of destinations to which the pipeline writes data.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags associated with the given pipeline.</p>"
+        }
+      },
+      "documentation":"<p>Summary information for an OpenSearch Ingestion pipeline.</p>"
+    },
+    "PipelineSummaryList":{
+      "type":"list",
+      "member":{"shape":"PipelineSummary"}
+    },
+    "PipelineUnits":{
+      "type":"integer",
+      "min":1
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Policy"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to attach the policy to.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Policy":{
+          "shape":"ResourcePolicy",
+          "documentation":"<p>The resource-based policy document in JSON format.</p>"
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "Policy":{
+          "shape":"ResourcePolicy",
+          "documentation":"<p>The resource-based policy document that was attached to the resource.</p>"
+        }
+      }
+    },
+    "ResourceAlreadyExistsException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>You attempted to create a resource that already exists.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>You attempted to access or delete a resource that does not exist.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ResourcePolicy":{
+      "type":"string",
+      "max":204800,
+      "min":2
+    },
+    "RevokePipelineEndpointConnectionsRequest":{
+      "type":"structure",
+      "required":[
+        "PipelineArn",
+        "EndpointIds"
+      ],
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline from which to revoke endpoint connections.</p>"
+        },
+        "EndpointIds":{
+          "shape":"PipelineEndpointIdsList",
+          "documentation":"<p>A list of endpoint IDs for which to revoke access to the pipeline.</p>"
+        }
+      }
+    },
+    "RevokePipelineEndpointConnectionsResponse":{
+      "type":"structure",
+      "members":{
+        "PipelineArn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline from which endpoint connections were revoked.</p>"
+        }
+      }
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "max":20,
+      "min":11,
+      "pattern":"sg-\\w{8}(\\w{9})?"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":12,
+      "min":1
+    },
+    "ServiceVpcEndpoint":{
+      "type":"structure",
+      "members":{
+        "ServiceName":{
+          "shape":"VpcEndpointServiceName",
+          "documentation":"<p>The name of the service for which a VPC endpoint was created.</p>"
+        },
+        "VpcEndpointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the VPC endpoint that was created.</p>"
+        }
+      },
+      "documentation":"<p>A container for information about VPC endpoints that were created to other services</p>"
+    },
+    "ServiceVpcEndpointsList":{
+      "type":"list",
+      "member":{"shape":"ServiceVpcEndpoint"}
+    },
+    "StartPipelineRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline to start.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        }
+      }
+    },
+    "StartPipelineResponse":{
+      "type":"structure",
+      "members":{
+        "Pipeline":{"shape":"Pipeline"}
+      }
+    },
+    "StopPipelineRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline to stop.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        }
+      }
+    },
+    "StopPipelineResponse":{
+      "type":"structure",
+      "members":{
+        "Pipeline":{"shape":"Pipeline"}
+      }
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SubnetId":{
+      "type":"string",
+      "max":24,
+      "min":15,
+      "pattern":"subnet-\\w{8}(\\w{9})?"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "max":12,
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The tag key. Tag keys must be unique for the pipeline to which they are attached.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value assigned to the corresponding tag key. Tag values can be null and don't have to be unique in a tag set. For example, you can have a key value pair in a tag set of <code>project : Trinity</code> and <code>cost-center : Trinity</code> </p>"
+        }
+      },
+      "documentation":"<p>A tag (key-value pair) for an OpenSearch Ingestion pipeline.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":".*"
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Tags"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline to tag.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of key-value tags to add to the pipeline.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*"
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "TagKeys"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"PipelineArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the pipeline to remove tags from.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        },
+        "TagKeys":{
+          "shape":"StringList",
+          "documentation":"<p>The tag keys to remove.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdatePipelineRequest":{
+      "type":"structure",
+      "required":["PipelineName"],
+      "members":{
+        "PipelineName":{
+          "shape":"PipelineName",
+          "documentation":"<p>The name of the pipeline to update.</p>",
+          "location":"uri",
+          "locationName":"PipelineName"
+        },
+        "MinUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The minimum pipeline capacity, in Ingestion Compute Units (ICUs).</p>"
+        },
+        "MaxUnits":{
+          "shape":"PipelineUnits",
+          "documentation":"<p>The maximum pipeline capacity, in Ingestion Compute Units (ICUs)</p>"
+        },
+        "PipelineConfigurationBody":{
+          "shape":"PipelineConfigurationBody",
+          "documentation":"<p>The pipeline configuration in YAML format. The command accepts the pipeline configuration as a string or within a .yaml file. If you provide the configuration as a string, each new line must be escaped with <code>\\n</code>.</p>"
+        },
+        "LogPublishingOptions":{
+          "shape":"LogPublishingOptions",
+          "documentation":"<p>Key-value pairs to configure log publishing.</p>"
+        },
+        "BufferOptions":{
+          "shape":"BufferOptions",
+          "documentation":"<p>Key-value pairs to configure persistent buffering for the pipeline.</p>"
+        },
+        "EncryptionAtRestOptions":{
+          "shape":"EncryptionAtRestOptions",
+          "documentation":"<p>Key-value pairs to configure encryption for data that is written to a persistent buffer.</p>"
+        },
+        "PipelineRoleArn":{
+          "shape":"PipelineRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that grants the pipeline permission to access Amazon Web Services resources.</p>"
+        }
+      }
+    },
+    "UpdatePipelineResponse":{
+      "type":"structure",
+      "members":{
+        "Pipeline":{
+          "shape":"Pipeline",
+          "documentation":"<p>Container for information about the updated pipeline.</p>"
+        }
+      }
+    },
+    "ValidatePipelineRequest":{
+      "type":"structure",
+      "required":["PipelineConfigurationBody"],
+      "members":{
+        "PipelineConfigurationBody":{
+          "shape":"PipelineConfigurationBody",
+          "documentation":"<p>The pipeline configuration in YAML format. The command accepts the pipeline configuration as a string or within a .yaml file. If you provide the configuration as a string, each new line must be escaped with <code>\\n</code>.</p>"
+        }
+      }
+    },
+    "ValidatePipelineResponse":{
+      "type":"structure",
+      "members":{
+        "isValid":{
+          "shape":"Boolean",
+          "documentation":"<p>A boolean indicating whether or not the pipeline configuration is valid.</p>"
+        },
+        "Errors":{
+          "shape":"ValidationMessageList",
+          "documentation":"<p>A list of errors if the configuration is invalid.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>An exception for missing or invalid input fields.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ValidationMessage":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>The validation message.</p>"
+        }
+      },
+      "documentation":"<p>A validation message associated with a <code>ValidatePipeline</code> request in OpenSearch Ingestion.</p>"
+    },
+    "ValidationMessageList":{
+      "type":"list",
+      "member":{"shape":"ValidationMessage"}
+    },
+    "VpcAttachmentOptions":{
+      "type":"structure",
+      "required":["AttachToVpc"],
+      "members":{
+        "AttachToVpc":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether a VPC is attached to the pipeline.</p>"
+        },
+        "CidrBlock":{
+          "shape":"CidrBlock",
+          "documentation":"<p>The CIDR block to be reserved for OpenSearch Ingestion to create elastic network interfaces (ENIs).</p>"
+        }
+      },
+      "documentation":"<p>Options for attaching a VPC to pipeline.</p>"
+    },
+    "VpcEndpoint":{
+      "type":"structure",
+      "members":{
+        "VpcEndpointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "VpcId":{
+          "shape":"String",
+          "documentation":"<p>The ID for your VPC. Amazon Web Services PrivateLink generates this value when you create a VPC.</p>"
+        },
+        "VpcOptions":{
+          "shape":"VpcOptions",
+          "documentation":"<p>Information about the VPC, including associated subnets and security groups.</p>"
+        }
+      },
+      "documentation":"<p>An OpenSearch Ingestion-managed VPC endpoint that will access one or more pipelines.</p>"
+    },
+    "VpcEndpointManagement":{
+      "type":"string",
+      "enum":[
+        "CUSTOMER",
+        "SERVICE"
+      ]
+    },
+    "VpcEndpointServiceName":{
+      "type":"string",
+      "enum":["OPENSEARCH_SERVERLESS"]
+    },
+    "VpcEndpointsList":{
+      "type":"list",
+      "member":{"shape":"VpcEndpoint"}
+    },
+    "VpcOptions":{
+      "type":"structure",
+      "required":["SubnetIds"],
+      "members":{
+        "SubnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>A list of subnet IDs associated with the VPC endpoint.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>A list of security groups associated with the VPC endpoint.</p>"
+        },
+        "VpcAttachmentOptions":{
+          "shape":"VpcAttachmentOptions",
+          "documentation":"<p>Options for attaching a VPC to a pipeline.</p>"
+        },
+        "VpcEndpointManagement":{
+          "shape":"VpcEndpointManagement",
+          "documentation":"<p>Defines whether you or Amazon OpenSearch Ingestion service create and manage the VPC endpoint configured for the pipeline.</p>"
+        }
+      },
+      "documentation":"<p>Options that specify the subnets and security groups for an OpenSearch Ingestion VPC endpoint.</p>"
+    }
+  },
+  "documentation":"<p>Use the Amazon OpenSearch Ingestion API to create and manage ingestion pipelines. OpenSearch Ingestion is a fully managed data collector that delivers real-time log and trace data to OpenSearch Service domains. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/ingestion.html\">Getting data into your cluster using OpenSearch Ingestion</a>.</p>"
+}

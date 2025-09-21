@@ -1,0 +1,200 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-08-08",
+    "endpointPrefix":"inspector-scan",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceAbbreviation":"inspector-scan",
+    "serviceFullName":"Inspector Scan",
+    "serviceId":"Inspector Scan",
+    "signatureVersion":"v4",
+    "signingName":"inspector-scan",
+    "uid":"inspector-scan-2023-08-08"
+  },
+  "operations":{
+    "ScanSbom":{
+      "name":"ScanSbom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/scan/sbom",
+        "responseCode":200
+      },
+      "input":{"shape":"ScanSbomRequest"},
+      "output":{"shape":"ScanSbomResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Scans a provided CycloneDX 1.5 SBOM and reports on any vulnerabilities discovered in that SBOM. You can generate compatible SBOMs for your resources using the <a href=\"\">Amazon Inspector SBOM generator</a>.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"InternalServerExceptionReason",
+          "documentation":"<p>The reason for the validation failure.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure. </p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "InternalServerExceptionReason":{
+      "type":"string",
+      "enum":[
+        "FAILED_TO_GENERATE_SBOM",
+        "OTHER"
+      ]
+    },
+    "OutputFormat":{
+      "type":"string",
+      "enum":[
+        "CYCLONE_DX_1_5",
+        "INSPECTOR"
+      ]
+    },
+    "Sbom":{
+      "type":"structure",
+      "members":{
+      },
+      "document":true
+    },
+    "ScanSbomRequest":{
+      "type":"structure",
+      "required":["sbom"],
+      "members":{
+        "sbom":{
+          "shape":"Sbom",
+          "documentation":"<p>The JSON file for the SBOM you want to scan. The SBOM must be in CycloneDX 1.5 format.</p>"
+        },
+        "outputFormat":{
+          "shape":"OutputFormat",
+          "documentation":"<p>The output format for the vulnerability report.</p>"
+        }
+      }
+    },
+    "ScanSbomResponse":{
+      "type":"structure",
+      "members":{
+        "sbom":{
+          "shape":"Sbom",
+          "documentation":"<p>The vulnerability report for the scanned SBOM.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling. </p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the validation failure.</p>"
+        },
+        "fields":{
+          "shape":"ValidationExceptionFields",
+          "documentation":"<p>The fields that failed validation.</p>"
+        }
+      },
+      "documentation":"<p>The request has failed validation due to missing required fields or having invalid inputs.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the validation exception. </p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The validation exception message. </p>"
+        }
+      },
+      "documentation":"<p>The request has failed validation due to missing required fields or having invalid inputs. </p>"
+    },
+    "ValidationExceptionFields":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "CANNOT_PARSE",
+        "FIELD_VALIDATION_FAILED",
+        "UNSUPPORTED_SBOM_TYPE",
+        "OTHER"
+      ]
+    }
+  },
+  "documentation":"<p>Amazon Inspector Scan is a vulnerability discovery service that scans a provided Software Bill of Materials (SBOM) for security vulnerabilities.</p>"
+}

@@ -1,0 +1,196 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Channel": {
+      "operation": "ListChannels",
+      "resourceIdentifier": {
+        "InputAttachments": "Channels[].InputAttachments",
+        "InputSpecification": "Channels[].InputSpecification",
+        "LogLevel": "Channels[].LogLevel",
+        "RoleArn": "Channels[].RoleArn"
+      }
+    },
+    "InputSecurityGroup": {
+      "operation": "ListInputSecurityGroups",
+      "resourceIdentifier": {
+        "WhitelistRules": "InputSecurityGroups[].WhitelistRules"
+      }
+    },
+    "Input": {
+      "operation": "ListInputs",
+      "resourceIdentifier": {
+        "Destinations": "Inputs[].Destinations",
+        "Sources": "Inputs[].Sources"
+      }
+    },
+    "Reservation": {
+      "operation": "ListReservations",
+      "resourceIdentifier": {
+        "Count": "Reservations[].Count",
+        "Name": "Reservations[].Name",
+        "OfferingId": "Reservations[].OfferingId",
+        "ReservationId": "Reservations[].ReservationId"
+      }
+    }
+  },
+  "operations": {
+    "DeleteReservation": {
+      "ReservationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "ReservationId"
+          }
+        ]
+      }
+    },
+    "DescribeOffering": {
+      "OfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "OfferingId"
+          }
+        ]
+      }
+    },
+    "DescribeReservation": {
+      "ReservationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "ReservationId"
+          }
+        ]
+      }
+    },
+    "PurchaseOffering": {
+      "Count": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "Count"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "OfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "OfferingId"
+          }
+        ]
+      }
+    },
+    "UpdateChannel": {
+      "Destinations": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Input",
+            "resourceIdentifier": "Destinations"
+          }
+        ]
+      },
+      "InputAttachments": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "InputAttachments"
+          }
+        ]
+      },
+      "InputSpecification": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "InputSpecification"
+          }
+        ]
+      },
+      "LogLevel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "LogLevel"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "RoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "RoleArn"
+          }
+        ]
+      }
+    },
+    "UpdateInput": {
+      "Destinations": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Input",
+            "resourceIdentifier": "Destinations"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Reservation",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Sources": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Input",
+            "resourceIdentifier": "Sources"
+          }
+        ]
+      }
+    },
+    "UpdateInputSecurityGroup": {
+      "WhitelistRules": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InputSecurityGroup",
+            "resourceIdentifier": "WhitelistRules"
+          }
+        ]
+      }
+    }
+  }
+}

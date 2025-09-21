@@ -1,0 +1,603 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Directory": {
+      "operation": "DescribeDirectories",
+      "resourceIdentifier": {
+        "ShortName": "DirectoryDescriptions[].ShortName",
+        "Size": "DirectoryDescriptions[].Size",
+        "Description": "DirectoryDescriptions[].Description",
+        "DnsIpAddrs": "DirectoryDescriptions[].DnsIpAddrs",
+        "ShareMethod": "DirectoryDescriptions[].ShareMethod",
+        "ShareNotes": "DirectoryDescriptions[].ShareNotes",
+        "ConnectSettings": "DirectoryDescriptions[].ConnectSettings",
+        "RadiusSettings": "DirectoryDescriptions[].RadiusSettings"
+      }
+    },
+    "EventTopic": {
+      "operation": "DescribeEventTopics",
+      "resourceIdentifier": {
+        "TopicName": "EventTopics[].TopicName"
+      }
+    },
+    "Snapshot": {
+      "operation": "DescribeSnapshots",
+      "resourceIdentifier": {
+        "SnapshotId": "Snapshots[].SnapshotId",
+        "Name": "Snapshots[].Name"
+      }
+    },
+    "Trust": {
+      "operation": "DescribeTrusts",
+      "resourceIdentifier": {
+        "TrustId": "Trusts[].TrustId",
+        "RemoteDomainName": "Trusts[].RemoteDomainName",
+        "SelectiveAuth": "Trusts[].SelectiveAuth"
+      }
+    },
+    "LogSubscription": {
+      "operation": "ListLogSubscriptions",
+      "resourceIdentifier": {
+        "DirectoryId": "LogSubscriptions[].DirectoryId"
+      }
+    }
+  },
+  "operations": {
+    "AddIpRoutes": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "CancelSchemaExtension": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ConnectDirectory": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "ShortName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "ShortName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Size": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Size"
+          }
+        ]
+      },
+      "ConnectSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "ConnectSettings"
+          }
+        ]
+      }
+    },
+    "DeleteConditionalForwarder": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "RemoteDomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "RemoteDomainName"
+          }
+        ]
+      }
+    },
+    "DeleteDirectory": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DeleteLogSubscription": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DeleteSnapshot": {
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "DeleteTrust": {
+      "TrustId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "TrustId"
+          }
+        ]
+      }
+    },
+    "DeregisterEventTopic": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "TopicName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventTopic",
+            "resourceIdentifier": "TopicName"
+          }
+        ]
+      }
+    },
+    "DescribeConditionalForwarders": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "RemoteDomainNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "RemoteDomainName"
+          }
+        ]
+      }
+    },
+    "DescribeDirectories": {
+      "DirectoryIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DescribeDomainControllers": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DescribeEventTopics": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "TopicNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventTopic",
+            "resourceIdentifier": "TopicName"
+          }
+        ]
+      }
+    },
+    "DescribeSnapshots": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "SnapshotIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "DescribeTrusts": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "TrustIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "TrustId"
+          }
+        ]
+      }
+    },
+    "DisableRadius": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DisableSso": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "EnableRadius": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "RadiusSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "RadiusSettings"
+          }
+        ]
+      }
+    },
+    "EnableSso": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "GetSnapshotLimits": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ListIpRoutes": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ListLogSubscriptions": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ListSchemaExtensions": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "RegisterEventTopic": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "TopicName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventTopic",
+            "resourceIdentifier": "TopicName"
+          }
+        ]
+      }
+    },
+    "RemoveIpRoutes": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ResetUserPassword": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "RestoreFromSnapshot": {
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "ShareDirectory": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "ShareNotes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "ShareNotes"
+          }
+        ]
+      },
+      "ShareMethod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "ShareMethod"
+          }
+        ]
+      }
+    },
+    "StartSchemaExtension": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "UnshareDirectory": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "UpdateConditionalForwarder": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "RemoteDomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "RemoteDomainName"
+          }
+        ]
+      },
+      "DnsIpAddrs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DnsIpAddrs"
+          }
+        ]
+      }
+    },
+    "UpdateNumberOfDomainControllers": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "UpdateRadius": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LogSubscription",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "RadiusSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "RadiusSettings"
+          }
+        ]
+      }
+    },
+    "UpdateTrust": {
+      "TrustId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "TrustId"
+          }
+        ]
+      },
+      "SelectiveAuth": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "SelectiveAuth"
+          }
+        ]
+      }
+    },
+    "VerifyTrust": {
+      "TrustId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Trust",
+            "resourceIdentifier": "TrustId"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "version": "1.0",
+  "resources": {
+    "ScalingPlan": {
+      "operation": "DescribeScalingPlans",
+      "resourceIdentifier": {
+        "ScalingPlanName": "ScalingPlans[].ScalingPlanName",
+        "ScalingPlanVersion": "ScalingPlans[].ScalingPlanVersion",
+        "ApplicationSource": "ScalingPlans[].ApplicationSource",
+        "ScalingInstructions": "ScalingPlans[].ScalingInstructions"
+      }
+    }
+  },
+  "operations": {
+    "DeleteScalingPlan": {
+      "ScalingPlanName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanName"
+          }
+        ]
+      },
+      "ScalingPlanVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanVersion"
+          }
+        ]
+      }
+    },
+    "DescribeScalingPlanResources": {
+      "ScalingPlanName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanName"
+          }
+        ]
+      },
+      "ScalingPlanVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanVersion"
+          }
+        ]
+      }
+    },
+    "DescribeScalingPlans": {
+      "ScalingPlanNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanName"
+          }
+        ]
+      },
+      "ScalingPlanVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanVersion"
+          }
+        ]
+      },
+      "ApplicationSources": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ApplicationSource"
+          }
+        ]
+      }
+    },
+    "UpdateScalingPlan": {
+      "ApplicationSource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ApplicationSource"
+          }
+        ]
+      },
+      "ScalingPlanName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanName"
+          }
+        ]
+      },
+      "ScalingInstructions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingInstructions"
+          }
+        ]
+      },
+      "ScalingPlanVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScalingPlan",
+            "resourceIdentifier": "ScalingPlanVersion"
+          }
+        ]
+      }
+    }
+  }
+}

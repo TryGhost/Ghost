@@ -1,0 +1,3085 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-01-01",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"scn",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Supply Chain",
+    "serviceId":"SupplyChain",
+    "signatureVersion":"v4",
+    "signingName":"scn",
+    "uid":"supplychain-2024-01-01"
+  },
+  "operations":{
+    "CreateBillOfMaterialsImportJob":{
+      "name":"CreateBillOfMaterialsImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/api/configuration/instances/{instanceId}/bill-of-materials-import-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateBillOfMaterialsImportJobRequest"},
+      "output":{"shape":"CreateBillOfMaterialsImportJobResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>CreateBillOfMaterialsImportJob creates an import job for the Product Bill Of Materials (BOM) entity. For information on the product_bom entity, see the AWS Supply Chain User Guide.</p> <p>The CSV file must be located in an Amazon S3 location accessible to AWS Supply Chain. It is recommended to use the same Amazon S3 bucket created during your AWS Supply Chain instance creation.</p>",
+      "idempotent":true
+    },
+    "CreateDataIntegrationFlow":{
+      "name":"CreateDataIntegrationFlow",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/api/data-integration/instance/{instanceId}/data-integration-flows/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDataIntegrationFlowRequest"},
+      "output":{"shape":"CreateDataIntegrationFlowResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically create a data pipeline to ingest data from source systems such as Amazon S3 buckets, to a predefined Amazon Web Services Supply Chain dataset (product, inbound_order) or a temporary dataset along with the data transformation query provided with the API.</p>",
+      "idempotent":true
+    },
+    "CreateDataLakeDataset":{
+      "name":"CreateDataLakeDataset",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{namespace}/datasets/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDataLakeDatasetRequest"},
+      "output":{"shape":"CreateDataLakeDatasetResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically create an Amazon Web Services Supply Chain data lake dataset. Developers can create the datasets using their pre-defined or custom schema for a given instance ID, namespace, and dataset name.</p>",
+      "idempotent":true
+    },
+    "CreateDataLakeNamespace":{
+      "name":"CreateDataLakeNamespace",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDataLakeNamespaceRequest"},
+      "output":{"shape":"CreateDataLakeNamespaceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically create an Amazon Web Services Supply Chain data lake namespace. Developers can create the namespaces for a given instance ID.</p>",
+      "idempotent":true
+    },
+    "CreateInstance":{
+      "name":"CreateInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/api/instance",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateInstanceRequest"},
+      "output":{"shape":"CreateInstanceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically create an Amazon Web Services Supply Chain instance by applying KMS keys and relevant information associated with the API without using the Amazon Web Services console.</p> <p>This is an asynchronous operation. Upon receiving a CreateInstance request, Amazon Web Services Supply Chain immediately returns the instance resource, instance ID, and the initializing state while simultaneously creating all required Amazon Web Services resources for an instance creation. You can use GetInstance to check the status of the instance. If the instance results in an unhealthy state, you need to check the error message, delete the current instance, and recreate a new one based on the mitigation from the error message.</p>",
+      "idempotent":true
+    },
+    "DeleteDataIntegrationFlow":{
+      "name":"DeleteDataIntegrationFlow",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/api/data-integration/instance/{instanceId}/data-integration-flows/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDataIntegrationFlowRequest"},
+      "output":{"shape":"DeleteDataIntegrationFlowResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enable you to programmatically delete an existing data pipeline for the provided Amazon Web Services Supply Chain instance and DataIntegrationFlow name.</p>",
+      "idempotent":true
+    },
+    "DeleteDataLakeDataset":{
+      "name":"DeleteDataLakeDataset",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{namespace}/datasets/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDataLakeDatasetRequest"},
+      "output":{"shape":"DeleteDataLakeDatasetResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically delete an Amazon Web Services Supply Chain data lake dataset. Developers can delete the existing datasets for a given instance ID, namespace, and instance name.</p>",
+      "idempotent":true
+    },
+    "DeleteDataLakeNamespace":{
+      "name":"DeleteDataLakeNamespace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDataLakeNamespaceRequest"},
+      "output":{"shape":"DeleteDataLakeNamespaceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically delete an Amazon Web Services Supply Chain data lake namespace and its underling datasets. Developers can delete the existing namespaces for a given instance ID and namespace name.</p>",
+      "idempotent":true
+    },
+    "DeleteInstance":{
+      "name":"DeleteInstance",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/api/instance/{instanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteInstanceRequest"},
+      "output":{"shape":"DeleteInstanceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically delete an Amazon Web Services Supply Chain instance by deleting the KMS keys and relevant information associated with the API without using the Amazon Web Services console.</p> <p>This is an asynchronous operation. Upon receiving a DeleteInstance request, Amazon Web Services Supply Chain immediately returns a response with the instance resource, delete state while cleaning up all Amazon Web Services resources created during the instance creation process. You can use the GetInstance action to check the instance status.</p>",
+      "idempotent":true
+    },
+    "GetBillOfMaterialsImportJob":{
+      "name":"GetBillOfMaterialsImportJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/configuration/instances/{instanceId}/bill-of-materials-import-jobs/{jobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetBillOfMaterialsImportJobRequest"},
+      "output":{"shape":"GetBillOfMaterialsImportJobResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Get status and details of a BillOfMaterialsImportJob.</p>"
+    },
+    "GetDataIntegrationEvent":{
+      "name":"GetDataIntegrationEvent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api-data/data-integration/instance/{instanceId}/data-integration-events/{eventId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataIntegrationEventRequest"},
+      "output":{"shape":"GetDataIntegrationEventResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view an Amazon Web Services Supply Chain Data Integration Event. Developers can view the eventType, eventGroupId, eventTimestamp, datasetTarget, datasetLoadExecution.</p>"
+    },
+    "GetDataIntegrationFlow":{
+      "name":"GetDataIntegrationFlow",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/data-integration/instance/{instanceId}/data-integration-flows/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataIntegrationFlowRequest"},
+      "output":{"shape":"GetDataIntegrationFlowResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view a specific data pipeline for the provided Amazon Web Services Supply Chain instance and DataIntegrationFlow name.</p>"
+    },
+    "GetDataIntegrationFlowExecution":{
+      "name":"GetDataIntegrationFlowExecution",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api-data/data-integration/instance/{instanceId}/data-integration-flows/{flowName}/executions/{executionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataIntegrationFlowExecutionRequest"},
+      "output":{"shape":"GetDataIntegrationFlowExecutionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Get the flow execution.</p>"
+    },
+    "GetDataLakeDataset":{
+      "name":"GetDataLakeDataset",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{namespace}/datasets/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataLakeDatasetRequest"},
+      "output":{"shape":"GetDataLakeDatasetResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view an Amazon Web Services Supply Chain data lake dataset. Developers can view the data lake dataset information such as namespace, schema, and so on for a given instance ID, namespace, and dataset name.</p>"
+    },
+    "GetDataLakeNamespace":{
+      "name":"GetDataLakeNamespace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataLakeNamespaceRequest"},
+      "output":{"shape":"GetDataLakeNamespaceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view an Amazon Web Services Supply Chain data lake namespace. Developers can view the data lake namespace information such as description for a given instance ID and namespace name.</p>"
+    },
+    "GetInstance":{
+      "name":"GetInstance",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/instance/{instanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetInstanceRequest"},
+      "output":{"shape":"GetInstanceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically retrieve the information related to an Amazon Web Services Supply Chain instance ID.</p>"
+    },
+    "ListDataIntegrationEvents":{
+      "name":"ListDataIntegrationEvents",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api-data/data-integration/instance/{instanceId}/data-integration-events",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataIntegrationEventsRequest"},
+      "output":{"shape":"ListDataIntegrationEventsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically list all data integration events for the provided Amazon Web Services Supply Chain instance.</p>"
+    },
+    "ListDataIntegrationFlowExecutions":{
+      "name":"ListDataIntegrationFlowExecutions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api-data/data-integration/instance/{instanceId}/data-integration-flows/{flowName}/executions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataIntegrationFlowExecutionsRequest"},
+      "output":{"shape":"ListDataIntegrationFlowExecutionsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>List flow executions.</p>"
+    },
+    "ListDataIntegrationFlows":{
+      "name":"ListDataIntegrationFlows",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/data-integration/instance/{instanceId}/data-integration-flows",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataIntegrationFlowsRequest"},
+      "output":{"shape":"ListDataIntegrationFlowsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically list all data pipelines for the provided Amazon Web Services Supply Chain instance.</p>"
+    },
+    "ListDataLakeDatasets":{
+      "name":"ListDataLakeDatasets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{namespace}/datasets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataLakeDatasetsRequest"},
+      "output":{"shape":"ListDataLakeDatasetsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view the list of Amazon Web Services Supply Chain data lake datasets. Developers can view the datasets and the corresponding information such as namespace, schema, and so on for a given instance ID and namespace.</p>"
+    },
+    "ListDataLakeNamespaces":{
+      "name":"ListDataLakeNamespaces",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataLakeNamespacesRequest"},
+      "output":{"shape":"ListDataLakeNamespacesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically view the list of Amazon Web Services Supply Chain data lake namespaces. Developers can view the namespaces and the corresponding information such as description for a given instance ID. Note that this API only return custom namespaces, instance pre-defined namespaces are not included.</p>"
+    },
+    "ListInstances":{
+      "name":"ListInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/instance",
+        "responseCode":200
+      },
+      "input":{"shape":"ListInstancesRequest"},
+      "output":{"shape":"ListInstancesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>List all Amazon Web Services Supply Chain instances for a specific account. Enables you to programmatically list all Amazon Web Services Supply Chain instances based on their account ID, instance name, and state of the instance (active or delete).</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/api/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>List all the tags for an Amazon Web ServicesSupply Chain resource. You can list all the tags added to a resource. By listing the tags, developers can view the tag level information on a resource and perform actions such as, deleting a resource associated with a particular tag.</p>"
+    },
+    "SendDataIntegrationEvent":{
+      "name":"SendDataIntegrationEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/api-data/data-integration/instance/{instanceId}/data-integration-events",
+        "responseCode":200
+      },
+      "input":{"shape":"SendDataIntegrationEventRequest"},
+      "output":{"shape":"SendDataIntegrationEventResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Send the data payload for the event with real-time data for analysis or monitoring. The real-time data events are stored in an Amazon Web Services service before being processed and stored in data lake.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/api/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>You can create tags during or after creating a resource such as instance, data flow, or dataset in AWS Supply chain. During the data ingestion process, you can add tags such as dev, test, or prod to data flows created during the data ingestion process in the AWS Supply Chain datasets. You can use these tags to identify a group of resources or a single resource used by the developer.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/api/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>You can delete tags for an Amazon Web Services Supply chain resource such as instance, data flow, or dataset in AWS Supply Chain. During the data ingestion process, you can delete tags such as dev, test, or prod to data flows created during the data ingestion process in the AWS Supply Chain datasets. </p>",
+      "idempotent":true
+    },
+    "UpdateDataIntegrationFlow":{
+      "name":"UpdateDataIntegrationFlow",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/api/data-integration/instance/{instanceId}/data-integration-flows/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDataIntegrationFlowRequest"},
+      "output":{"shape":"UpdateDataIntegrationFlowResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically update an existing data pipeline to ingest data from the source systems such as, Amazon S3 buckets, to a predefined Amazon Web Services Supply Chain dataset (product, inbound_order) or a temporary dataset along with the data transformation query provided with the API.</p>"
+    },
+    "UpdateDataLakeDataset":{
+      "name":"UpdateDataLakeDataset",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{namespace}/datasets/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDataLakeDatasetRequest"},
+      "output":{"shape":"UpdateDataLakeDatasetResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically update an Amazon Web Services Supply Chain data lake dataset. Developers can update the description of a data lake dataset for a given instance ID, namespace, and dataset name.</p>"
+    },
+    "UpdateDataLakeNamespace":{
+      "name":"UpdateDataLakeNamespace",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/api/datalake/instance/{instanceId}/namespaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDataLakeNamespaceRequest"},
+      "output":{"shape":"UpdateDataLakeNamespaceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically update an Amazon Web Services Supply Chain data lake namespace. Developers can update the description of a data lake namespace for a given instance ID and namespace name.</p>"
+    },
+    "UpdateInstance":{
+      "name":"UpdateInstance",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/api/instance/{instanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateInstanceRequest"},
+      "output":{"shape":"UpdateInstanceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Enables you to programmatically update an Amazon Web Services Supply Chain instance description by providing all the relevant information such as account ID, instance ID and so on without using the AWS console.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have the required privileges to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AscResourceArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws:scn(?::([a-z0-9-]+):([0-9]+):instance)?/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})[-_./A-Za-z0-9]*"
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "pattern":"[0-9]{12}"
+    },
+    "BillOfMaterialsImportJob":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "jobId",
+        "status",
+        "s3uri"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The BillOfMaterialsImportJob instanceId.</p>"
+        },
+        "jobId":{
+          "shape":"UUID",
+          "documentation":"<p>The BillOfMaterialsImportJob jobId.</p>"
+        },
+        "status":{
+          "shape":"ConfigurationJobStatus",
+          "documentation":"<p>The BillOfMaterialsImportJob ConfigurationJobStatus.</p>"
+        },
+        "s3uri":{
+          "shape":"ConfigurationS3Uri",
+          "documentation":"<p>The S3 URI from which the CSV is read.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>When the BillOfMaterialsImportJob has reached a terminal state, there will be a message.</p>"
+        }
+      },
+      "documentation":"<p>The BillOfMaterialsImportJob details.</p>"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>",
+      "max":126,
+      "min":33
+    },
+    "ConfigurationJobStatus":{
+      "type":"string",
+      "documentation":"<p>The status of the job.</p>",
+      "enum":[
+        "NEW",
+        "FAILED",
+        "IN_PROGRESS",
+        "QUEUED",
+        "SUCCESS"
+      ]
+    },
+    "ConfigurationS3Uri":{
+      "type":"string",
+      "min":10,
+      "pattern":"[sS]3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/.+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateBillOfMaterialsImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "s3uri"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "s3uri":{
+          "shape":"ConfigurationS3Uri",
+          "documentation":"<p>The S3 URI of the CSV file to be imported. The bucket must grant permissions for AWS Supply Chain to read the file.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>An idempotency token ensures the API request is only completed no more than once. This way, retrying the request will not trigger the operation multiple times. A client token is a unique, case-sensitive string of 33 to 128 ASCII characters. To make an idempotent API request, specify a client token in the request. You should not reuse the same client token for other requests. If you retry a successful request with the same client token, the request will succeed with no further actions being taken, and you will receive the same API response as the original successful request.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>The request parameters for CreateBillOfMaterialsImportJob.</p>"
+    },
+    "CreateBillOfMaterialsImportJobResponse":{
+      "type":"structure",
+      "required":["jobId"],
+      "members":{
+        "jobId":{
+          "shape":"UUID",
+          "documentation":"<p>The new BillOfMaterialsImportJob identifier.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of CreateBillOfMaterialsImportJob.</p>"
+    },
+    "CreateDataIntegrationFlowRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name",
+        "sources",
+        "transformation",
+        "target"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>Name of the DataIntegrationFlow.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "sources":{
+          "shape":"DataIntegrationFlowSourceList",
+          "documentation":"<p>The source configurations for DataIntegrationFlow.</p>"
+        },
+        "transformation":{
+          "shape":"DataIntegrationFlowTransformation",
+          "documentation":"<p>The transformation configurations for DataIntegrationFlow.</p>"
+        },
+        "target":{
+          "shape":"DataIntegrationFlowTarget",
+          "documentation":"<p>The target configurations for DataIntegrationFlow.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the DataIntegrationFlow to be created</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for CreateDataIntegrationFlow.</p>"
+    },
+    "CreateDataIntegrationFlowResponse":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The name of the DataIntegrationFlow created.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for CreateDataIntegrationFlow.</p>"
+    },
+    "CreateDataLakeDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"namespace"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of the dataset. For <b>asc</b> name space, the name must be one of the supported data entities under <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "schema":{
+          "shape":"DataLakeDatasetSchema",
+          "documentation":"<p>The custom schema of the data lake dataset and required for dataset in <b>default</b> and custom namespaces.</p>"
+        },
+        "description":{
+          "shape":"DataLakeDatasetDescription",
+          "documentation":"<p>The description of the dataset.</p>"
+        },
+        "partitionSpec":{
+          "shape":"DataLakeDatasetPartitionSpec",
+          "documentation":"<p>The partition specification of the dataset. Partitioning can effectively improve the dataset query performance by reducing the amount of data scanned during query execution. But partitioning or not will affect how data get ingested by data ingestion methods, such as SendDataIntegrationEvent's dataset UPSERT will upsert records within partition (instead of within whole dataset). For more details, refer to those data ingestion documentations.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the dataset.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for CreateDataLakeDataset.</p>"
+    },
+    "CreateDataLakeDatasetResponse":{
+      "type":"structure",
+      "required":["dataset"],
+      "members":{
+        "dataset":{
+          "shape":"DataLakeDataset",
+          "documentation":"<p>The detail of created dataset.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of CreateDataLakeDataset.</p>"
+    },
+    "CreateDataLakeNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of the namespace. Noted you cannot create namespace with name starting with <b>asc</b>, <b>default</b>, <b>scn</b>, <b>aws</b>, <b>amazon</b>, <b>amzn</b> </p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"DataLakeNamespaceDescription",
+          "documentation":"<p>The description of the namespace.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the namespace.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for CreateDataLakeNamespace.</p>"
+    },
+    "CreateDataLakeNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"DataLakeNamespace",
+          "documentation":"<p>The detail of created namespace.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of CreateDataLakeNamespace.</p>"
+    },
+    "CreateInstanceRequest":{
+      "type":"structure",
+      "members":{
+        "instanceName":{
+          "shape":"InstanceName",
+          "documentation":"<p>The AWS Supply Chain instance name.</p>"
+        },
+        "instanceDescription":{
+          "shape":"InstanceDescription",
+          "documentation":"<p>The AWS Supply Chain instance description.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the Key Management Service (KMS) key you provide for encryption. This is required if you do not want to use the Amazon Web Services owned KMS key. If you don't provide anything here, AWS Supply Chain uses the Amazon Web Services owned KMS key.</p>"
+        },
+        "webAppDnsDomain":{
+          "shape":"InstanceWebAppDnsDomain",
+          "documentation":"<p>The DNS subdomain of the web app. This would be \"example\" in the URL \"example.scn.global.on.aws\". You can set this to a custom value, as long as the domain isn't already being used by someone else. The name may only include alphanumeric characters and hyphens.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The Amazon Web Services tags of an instance to be created.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>The client token for idempotency.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>The request parameters for CreateInstance.</p>"
+    },
+    "CreateInstanceResponse":{
+      "type":"structure",
+      "required":["instance"],
+      "members":{
+        "instance":{
+          "shape":"Instance",
+          "documentation":"<p>The AWS Supply Chain instance resource data details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for CreateInstance.</p>"
+    },
+    "DataIntegrationDatasetArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws:scn:([a-z0-9-]+):([0-9]+):instance/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/namespaces/[^/]+/datasets/[^/]+"
+    },
+    "DataIntegrationEvent":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "eventId",
+        "eventType",
+        "eventGroupId",
+        "eventTimestamp"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>"
+        },
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique event identifier.</p>"
+        },
+        "eventType":{
+          "shape":"DataIntegrationEventType",
+          "documentation":"<p>The data event type.</p>"
+        },
+        "eventGroupId":{
+          "shape":"DataIntegrationEventGroupId",
+          "documentation":"<p>Event identifier (for example, orderId for InboundOrder) used for data sharding or partitioning.</p>"
+        },
+        "eventTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The event timestamp (in epoch seconds).</p>"
+        },
+        "datasetTargetDetails":{
+          "shape":"DataIntegrationEventDatasetTargetDetails",
+          "documentation":"<p>The target dataset details for a DATASET event type.</p>"
+        }
+      },
+      "documentation":"<p>The data integration event details.</p>"
+    },
+    "DataIntegrationEventData":{
+      "type":"string",
+      "max":1048576,
+      "min":1,
+      "sensitive":true
+    },
+    "DataIntegrationEventDatasetLoadExecutionDetails":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"DataIntegrationEventDatasetLoadStatus",
+          "documentation":"<p>The event load execution status to target dataset.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The failure message (if any) of failed event load execution to dataset.</p>"
+        }
+      },
+      "documentation":"<p>The target dataset load execution details.</p>"
+    },
+    "DataIntegrationEventDatasetLoadStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "IN_PROGRESS",
+        "FAILED"
+      ]
+    },
+    "DataIntegrationEventDatasetOperationType":{
+      "type":"string",
+      "enum":[
+        "APPEND",
+        "UPSERT",
+        "DELETE"
+      ]
+    },
+    "DataIntegrationEventDatasetTargetConfiguration":{
+      "type":"structure",
+      "required":[
+        "datasetIdentifier",
+        "operationType"
+      ],
+      "members":{
+        "datasetIdentifier":{
+          "shape":"DataIntegrationDatasetArn",
+          "documentation":"<p>The datalake dataset ARN identifier.</p>"
+        },
+        "operationType":{
+          "shape":"DataIntegrationEventDatasetOperationType",
+          "documentation":"<p>The target dataset load operation type.</p>"
+        }
+      },
+      "documentation":"<p>The target dataset configuration for a DATASET event type.</p>"
+    },
+    "DataIntegrationEventDatasetTargetDetails":{
+      "type":"structure",
+      "required":[
+        "datasetIdentifier",
+        "operationType",
+        "datasetLoadExecution"
+      ],
+      "members":{
+        "datasetIdentifier":{
+          "shape":"DataIntegrationDatasetArn",
+          "documentation":"<p>The datalake dataset ARN identifier.</p>"
+        },
+        "operationType":{
+          "shape":"DataIntegrationEventDatasetOperationType",
+          "documentation":"<p>The target dataset load operation type. The available options are:</p> <ul> <li> <p> <b>APPEND</b> - Add new records to the dataset. Noted that this operation type will just try to append records as-is without any primary key or partition constraints.</p> </li> <li> <p> <b>UPSERT</b> - Modify existing records in the dataset with primary key configured, events for datasets without primary keys are not allowed. If event data contains primary keys that match records in the dataset within same partition, then those existing records (in that partition) will be updated. If primary keys do not match, new records will be added. Note that if dataset contain records with duplicate primary key values in the same partition, those duplicate records will be deduped into one updated record.</p> </li> <li> <p> <b>DELETE</b> - Remove existing records in the dataset with primary key configured, events for datasets without primary keys are not allowed. If event data contains primary keys that match records in the dataset within same partition, then those existing records (in that partition) will be deleted. If primary keys do not match, no actions will be done. Note that if dataset contain records with duplicate primary key values in the same partition, all those duplicates will be removed.</p> </li> </ul>"
+        },
+        "datasetLoadExecution":{
+          "shape":"DataIntegrationEventDatasetLoadExecutionDetails",
+          "documentation":"<p>The target dataset load execution.</p>"
+        }
+      },
+      "documentation":"<p>The target dataset details for a DATASET event type.</p>"
+    },
+    "DataIntegrationEventGroupId":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DataIntegrationEventList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationEvent"}
+    },
+    "DataIntegrationEventMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "DataIntegrationEventNextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "DataIntegrationEventType":{
+      "type":"string",
+      "enum":[
+        "scn.data.forecast",
+        "scn.data.inventorylevel",
+        "scn.data.inboundorder",
+        "scn.data.inboundorderline",
+        "scn.data.inboundorderlineschedule",
+        "scn.data.outboundorderline",
+        "scn.data.outboundshipment",
+        "scn.data.processheader",
+        "scn.data.processoperation",
+        "scn.data.processproduct",
+        "scn.data.reservation",
+        "scn.data.shipment",
+        "scn.data.shipmentstop",
+        "scn.data.shipmentstoporder",
+        "scn.data.supplyplan",
+        "scn.data.dataset"
+      ]
+    },
+    "DataIntegrationFlow":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name",
+        "sources",
+        "transformation",
+        "target",
+        "createdTime",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The DataIntegrationFlow instance ID.</p>"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The DataIntegrationFlow name.</p>"
+        },
+        "sources":{
+          "shape":"DataIntegrationFlowSourceList",
+          "documentation":"<p>The DataIntegrationFlow source configurations.</p>"
+        },
+        "transformation":{
+          "shape":"DataIntegrationFlowTransformation",
+          "documentation":"<p>The DataIntegrationFlow transformation configurations.</p>"
+        },
+        "target":{
+          "shape":"DataIntegrationFlowTarget",
+          "documentation":"<p>The DataIntegrationFlow target configuration.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The DataIntegrationFlow creation timestamp.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The DataIntegrationFlow last modified timestamp.</p>"
+        }
+      },
+      "documentation":"<p>The DataIntegrationFlow details.</p>"
+    },
+    "DataIntegrationFlowDatasetOptions":{
+      "type":"structure",
+      "members":{
+        "loadType":{
+          "shape":"DataIntegrationFlowLoadType",
+          "documentation":"<p>The target dataset's data load type. This only affects how source S3 files are selected in the S3-to-dataset flow.</p> <ul> <li> <p> <b>REPLACE</b> - Target dataset will get replaced with the new file added under the source s3 prefix.</p> </li> <li> <p> <b>INCREMENTAL</b> - Target dataset will get updated with the up-to-date content under S3 prefix incorporating any file additions or removals there.</p> </li> </ul>"
+        },
+        "dedupeRecords":{
+          "shape":"Boolean",
+          "documentation":"<p>The option to perform deduplication on data records sharing same primary key values. If disabled, transformed data with duplicate primary key values will ingest into dataset, for datasets within <b>asc</b> namespace, such duplicates will cause ingestion fail. If enabled without dedupeStrategy, deduplication is done by retaining a random data record among those sharing the same primary key values. If enabled with dedupeStragtegy, the deduplication is done following the strategy.</p> <p>Note that target dataset may have partition configured, when dedupe is enabled, it only dedupe against primary keys and retain only one record out of those duplicates regardless of its partition status.</p>"
+        },
+        "dedupeStrategy":{
+          "shape":"DataIntegrationFlowDedupeStrategy",
+          "documentation":"<p>The deduplication strategy to dedupe the data records sharing same primary key values of the target dataset. This strategy only applies to target dataset with primary keys and with dedupeRecords option enabled. If transformed data still got duplicates after the dedupeStrategy evaluation, a random data record is chosen to be retained.</p>"
+        }
+      },
+      "documentation":"<p>The dataset options used in dataset source and target configurations.</p>"
+    },
+    "DataIntegrationFlowDatasetSource":{
+      "type":"structure",
+      "required":["datasetIdentifier"],
+      "members":{
+        "datasetIdentifier":{
+          "shape":"DataIntegrationDatasetArn",
+          "documentation":"<p>The ARN of the dataset source.</p>"
+        }
+      },
+      "documentation":"<p>The details of a flow execution with dataset source.</p>"
+    },
+    "DataIntegrationFlowDatasetSourceConfiguration":{
+      "type":"structure",
+      "required":["datasetIdentifier"],
+      "members":{
+        "datasetIdentifier":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The ARN of the dataset.</p>"
+        },
+        "options":{
+          "shape":"DataIntegrationFlowDatasetOptions",
+          "documentation":"<p>The dataset DataIntegrationFlow source options.</p>"
+        }
+      },
+      "documentation":"<p>The dataset DataIntegrationFlow source configuration parameters.</p>"
+    },
+    "DataIntegrationFlowDatasetTargetConfiguration":{
+      "type":"structure",
+      "required":["datasetIdentifier"],
+      "members":{
+        "datasetIdentifier":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The dataset ARN.</p>"
+        },
+        "options":{
+          "shape":"DataIntegrationFlowDatasetOptions",
+          "documentation":"<p>The dataset DataIntegrationFlow target options.</p>"
+        }
+      },
+      "documentation":"<p>The dataset DataIntegrationFlow target configuration parameters.</p>"
+    },
+    "DataIntegrationFlowDedupeStrategy":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"DataIntegrationFlowDedupeStrategyType",
+          "documentation":"<p>The type of the deduplication strategy.</p> <ul> <li> <p> <b>FIELD_PRIORITY</b> - Field priority configuration for the deduplication strategy specifies an ordered list of fields used to tie-break the data records sharing the same primary key values. Fields earlier in the list have higher priority for evaluation. For each field, the sort order determines whether to retain data record with larger or smaller field value.</p> </li> </ul>"
+        },
+        "fieldPriority":{
+          "shape":"DataIntegrationFlowFieldPriorityDedupeStrategyConfiguration",
+          "documentation":"<p>The field priority deduplication strategy.</p>"
+        }
+      },
+      "documentation":"<p>The deduplication strategy details.</p>"
+    },
+    "DataIntegrationFlowDedupeStrategyType":{
+      "type":"string",
+      "enum":["FIELD_PRIORITY"]
+    },
+    "DataIntegrationFlowExecution":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "flowName",
+        "executionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The flow execution's instanceId.</p>"
+        },
+        "flowName":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The flow execution's flowName.</p>"
+        },
+        "executionId":{
+          "shape":"UUID",
+          "documentation":"<p>The flow executionId.</p>"
+        },
+        "status":{
+          "shape":"DataIntegrationFlowExecutionStatus",
+          "documentation":"<p>The status of flow execution.</p>"
+        },
+        "sourceInfo":{
+          "shape":"DataIntegrationFlowExecutionSourceInfo",
+          "documentation":"<p>The source information for a flow execution.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The failure message (if any) of failed flow execution.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The flow execution start timestamp.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The flow execution end timestamp.</p>"
+        },
+        "outputMetadata":{
+          "shape":"DataIntegrationFlowExecutionOutputMetadata",
+          "documentation":"<p>The flow execution output metadata.</p>"
+        }
+      },
+      "documentation":"<p>The flow execution details.</p>"
+    },
+    "DataIntegrationFlowExecutionDiagnosticReportsRootS3URI":{
+      "type":"string",
+      "pattern":"s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/.{1,1024}"
+    },
+    "DataIntegrationFlowExecutionList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationFlowExecution"}
+    },
+    "DataIntegrationFlowExecutionMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "DataIntegrationFlowExecutionNextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "DataIntegrationFlowExecutionOutputMetadata":{
+      "type":"structure",
+      "members":{
+        "diagnosticReportsRootS3URI":{
+          "shape":"DataIntegrationFlowExecutionDiagnosticReportsRootS3URI",
+          "documentation":"<p>The S3 URI under which all diagnostic files (such as deduped records if any) are stored.</p>"
+        }
+      },
+      "documentation":"<p>The output metadata of the flow execution.</p>"
+    },
+    "DataIntegrationFlowExecutionSourceInfo":{
+      "type":"structure",
+      "required":["sourceType"],
+      "members":{
+        "sourceType":{
+          "shape":"DataIntegrationFlowSourceType",
+          "documentation":"<p>The data integration flow execution source type.</p>"
+        },
+        "s3Source":{
+          "shape":"DataIntegrationFlowS3Source",
+          "documentation":"<p>The source details of a flow execution with S3 source.</p>"
+        },
+        "datasetSource":{
+          "shape":"DataIntegrationFlowDatasetSource",
+          "documentation":"<p>The source details of a flow execution with dataset source.</p>"
+        }
+      },
+      "documentation":"<p>The source information of a flow execution.</p>"
+    },
+    "DataIntegrationFlowExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "IN_PROGRESS",
+        "FAILED"
+      ]
+    },
+    "DataIntegrationFlowFieldPriorityDedupeField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "sortOrder"
+      ],
+      "members":{
+        "name":{
+          "shape":"DataIntegrationFlowFieldPriorityDedupeFieldName",
+          "documentation":"<p>The name of the deduplication field. Must exist in the dataset and not be a primary key.</p>"
+        },
+        "sortOrder":{
+          "shape":"DataIntegrationFlowFieldPriorityDedupeSortOrder",
+          "documentation":"<p>The sort order for the deduplication field.</p>"
+        }
+      },
+      "documentation":"<p>The field used in the field priority deduplication strategy.</p>"
+    },
+    "DataIntegrationFlowFieldPriorityDedupeFieldList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationFlowFieldPriorityDedupeField"},
+      "max":10,
+      "min":1
+    },
+    "DataIntegrationFlowFieldPriorityDedupeFieldName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-z0-9_]+"
+    },
+    "DataIntegrationFlowFieldPriorityDedupeSortOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "DataIntegrationFlowFieldPriorityDedupeStrategyConfiguration":{
+      "type":"structure",
+      "required":["fields"],
+      "members":{
+        "fields":{
+          "shape":"DataIntegrationFlowFieldPriorityDedupeFieldList",
+          "documentation":"<p>The list of field names and their sort order for deduplication, arranged in descending priority from highest to lowest.</p>"
+        }
+      },
+      "documentation":"<p>The field priority deduplication strategy details.</p>"
+    },
+    "DataIntegrationFlowFileType":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "PARQUET",
+        "JSON"
+      ]
+    },
+    "DataIntegrationFlowList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationFlow"}
+    },
+    "DataIntegrationFlowLoadType":{
+      "type":"string",
+      "enum":[
+        "INCREMENTAL",
+        "REPLACE"
+      ]
+    },
+    "DataIntegrationFlowMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":0
+    },
+    "DataIntegrationFlowName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[A-Za-z0-9-]+"
+    },
+    "DataIntegrationFlowNextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "DataIntegrationFlowS3Options":{
+      "type":"structure",
+      "members":{
+        "fileType":{
+          "shape":"DataIntegrationFlowFileType",
+          "documentation":"<p>The Amazon S3 file type in S3 options.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 options used in S3 source and target configurations.</p>"
+    },
+    "DataIntegrationFlowS3Prefix":{
+      "type":"string",
+      "max":700,
+      "min":0,
+      "pattern":"[/A-Za-z0-9._-]+"
+    },
+    "DataIntegrationFlowS3Source":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "key"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The S3 bucket name of the S3 source.</p>"
+        },
+        "key":{
+          "shape":"DataIntegrationS3ObjectKey",
+          "documentation":"<p>The S3 object key of the S3 source.</p>"
+        }
+      },
+      "documentation":"<p>The details of a flow execution with S3 source.</p>"
+    },
+    "DataIntegrationFlowS3SourceConfiguration":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "prefix"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The bucketName of the S3 source objects.</p>"
+        },
+        "prefix":{
+          "shape":"DataIntegrationFlowS3Prefix",
+          "documentation":"<p>The prefix of the S3 source objects. To trigger data ingestion, S3 files need to be put under <code>s3://<i>bucketName</i>/<i>prefix</i>/</code>.</p>"
+        },
+        "options":{
+          "shape":"DataIntegrationFlowS3Options",
+          "documentation":"<p>The other options of the S3 DataIntegrationFlow source.</p>"
+        }
+      },
+      "documentation":"<p>The S3 DataIntegrationFlow source configuration parameters.</p>"
+    },
+    "DataIntegrationFlowS3TargetConfiguration":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "prefix"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The bucketName of the S3 target objects.</p>"
+        },
+        "prefix":{
+          "shape":"DataIntegrationFlowS3Prefix",
+          "documentation":"<p>The prefix of the S3 target objects.</p>"
+        },
+        "options":{
+          "shape":"DataIntegrationFlowS3Options",
+          "documentation":"<p>The S3 DataIntegrationFlow target options.</p>"
+        }
+      },
+      "documentation":"<p>The S3 DataIntegrationFlow target configuration parameters.</p>"
+    },
+    "DataIntegrationFlowSQLQuery":{
+      "type":"string",
+      "max":65535,
+      "min":1,
+      "sensitive":true
+    },
+    "DataIntegrationFlowSQLTransformationConfiguration":{
+      "type":"structure",
+      "required":["query"],
+      "members":{
+        "query":{
+          "shape":"DataIntegrationFlowSQLQuery",
+          "documentation":"<p>The transformation SQL query body based on SparkSQL.</p>"
+        }
+      },
+      "documentation":"<p>The SQL DataIntegrationFlow transformation configuration parameters.</p>"
+    },
+    "DataIntegrationFlowSource":{
+      "type":"structure",
+      "required":[
+        "sourceType",
+        "sourceName"
+      ],
+      "members":{
+        "sourceType":{
+          "shape":"DataIntegrationFlowSourceType",
+          "documentation":"<p>The DataIntegrationFlow source type.</p>"
+        },
+        "sourceName":{
+          "shape":"DataIntegrationFlowSourceName",
+          "documentation":"<p>The DataIntegrationFlow source name that can be used as table alias in SQL transformation query.</p>"
+        },
+        "s3Source":{
+          "shape":"DataIntegrationFlowS3SourceConfiguration",
+          "documentation":"<p>The S3 DataIntegrationFlow source.</p>"
+        },
+        "datasetSource":{
+          "shape":"DataIntegrationFlowDatasetSourceConfiguration",
+          "documentation":"<p>The dataset DataIntegrationFlow source.</p>"
+        }
+      },
+      "documentation":"<p>The DataIntegrationFlow source parameters.</p>"
+    },
+    "DataIntegrationFlowSourceList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationFlowSource"},
+      "max":40,
+      "min":1
+    },
+    "DataIntegrationFlowSourceName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[A-Za-z0-9_]+"
+    },
+    "DataIntegrationFlowSourceType":{
+      "type":"string",
+      "enum":[
+        "S3",
+        "DATASET"
+      ]
+    },
+    "DataIntegrationFlowTarget":{
+      "type":"structure",
+      "required":["targetType"],
+      "members":{
+        "targetType":{
+          "shape":"DataIntegrationFlowTargetType",
+          "documentation":"<p>The DataIntegrationFlow target type.</p>"
+        },
+        "s3Target":{
+          "shape":"DataIntegrationFlowS3TargetConfiguration",
+          "documentation":"<p>The S3 DataIntegrationFlow target.</p>"
+        },
+        "datasetTarget":{
+          "shape":"DataIntegrationFlowDatasetTargetConfiguration",
+          "documentation":"<p>The dataset DataIntegrationFlow target. Note that for AWS Supply Chain dataset under <b>asc</b> namespace, it has a connection_id internal field that is not allowed to be provided by client directly, they will be auto populated.</p>"
+        }
+      },
+      "documentation":"<p>The DataIntegrationFlow target parameters.</p>"
+    },
+    "DataIntegrationFlowTargetType":{
+      "type":"string",
+      "enum":[
+        "S3",
+        "DATASET"
+      ]
+    },
+    "DataIntegrationFlowTransformation":{
+      "type":"structure",
+      "required":["transformationType"],
+      "members":{
+        "transformationType":{
+          "shape":"DataIntegrationFlowTransformationType",
+          "documentation":"<p>The DataIntegrationFlow transformation type.</p>"
+        },
+        "sqlTransformation":{
+          "shape":"DataIntegrationFlowSQLTransformationConfiguration",
+          "documentation":"<p>The SQL DataIntegrationFlow transformation configuration.</p>"
+        }
+      },
+      "documentation":"<p>The DataIntegrationFlow transformation parameters.</p>"
+    },
+    "DataIntegrationFlowTransformationType":{
+      "type":"string",
+      "enum":[
+        "SQL",
+        "NONE"
+      ]
+    },
+    "DataIntegrationS3ObjectKey":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[/A-Za-z0-9._:*()'!=?&+;@-]+"
+    },
+    "DataLakeDataset":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name",
+        "arn",
+        "schema",
+        "createdTime",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of the dataset. For <b>asc</b> namespace, the name must be one of the supported data entities under <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p>"
+        },
+        "arn":{
+          "shape":"AscResourceArn",
+          "documentation":"<p>The arn of the dataset.</p>"
+        },
+        "schema":{
+          "shape":"DataLakeDatasetSchema",
+          "documentation":"<p>The schema of the dataset.</p>"
+        },
+        "description":{
+          "shape":"DataLakeDatasetDescription",
+          "documentation":"<p>The description of the dataset.</p>"
+        },
+        "partitionSpec":{"shape":"DataLakeDatasetPartitionSpec"},
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the dataset.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last modified time of the dataset.</p>"
+        }
+      },
+      "documentation":"<p>The data lake dataset details.</p>"
+    },
+    "DataLakeDatasetDescription":{
+      "type":"string",
+      "max":500,
+      "min":1
+    },
+    "DataLakeDatasetList":{
+      "type":"list",
+      "member":{"shape":"DataLakeDataset"},
+      "max":20,
+      "min":0
+    },
+    "DataLakeDatasetMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":0
+    },
+    "DataLakeDatasetName":{
+      "type":"string",
+      "max":75,
+      "min":1,
+      "pattern":"[a-z0-9_]+"
+    },
+    "DataLakeDatasetNextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "DataLakeDatasetPartitionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "transform"
+      ],
+      "members":{
+        "name":{
+          "shape":"DataLakeDatasetSchemaFieldName",
+          "documentation":"<p>The name of the partition field.</p>"
+        },
+        "transform":{
+          "shape":"DataLakeDatasetPartitionFieldTransform",
+          "documentation":"<p>The transformation of the partition field. A transformation specifies how to partition on a given field. For example, with timestamp you can specify that you'd like to partition fields by day, e.g. data record with value 2025-01-03T00:00:00Z in partition field is in 2025-01-03 partition. Also noted that data record without any value in optional partition field is in NULL partition.</p>"
+        }
+      },
+      "documentation":"<p>The detail of the partition field.</p>"
+    },
+    "DataLakeDatasetPartitionFieldList":{
+      "type":"list",
+      "member":{"shape":"DataLakeDatasetPartitionField"},
+      "max":10,
+      "min":1
+    },
+    "DataLakeDatasetPartitionFieldTransform":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"DataLakeDatasetPartitionTransformType",
+          "documentation":"<p>The type of partitioning transformation for this field. The available options are:</p> <ul> <li> <p> <b>IDENTITY</b> - Partitions data on a given field by its exact values.</p> </li> <li> <p> <b>YEAR</b> - Partitions data on a timestamp field using year granularity.</p> </li> <li> <p> <b>MONTH</b> - Partitions data on a timestamp field using month granularity.</p> </li> <li> <p> <b>DAY</b> - Partitions data on a timestamp field using day granularity.</p> </li> <li> <p> <b>HOUR</b> - Partitions data on a timestamp field using hour granularity.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The detail of the partition field transformation.</p>"
+    },
+    "DataLakeDatasetPartitionSpec":{
+      "type":"structure",
+      "required":["fields"],
+      "members":{
+        "fields":{
+          "shape":"DataLakeDatasetPartitionFieldList",
+          "documentation":"<p>The fields on which to partition a dataset. The partitions will be applied hierarchically based on the order of this list.</p>"
+        }
+      },
+      "documentation":"<p>The partition specification for a dataset.</p>"
+    },
+    "DataLakeDatasetPartitionTransformType":{
+      "type":"string",
+      "enum":[
+        "YEAR",
+        "MONTH",
+        "DAY",
+        "HOUR",
+        "IDENTITY"
+      ]
+    },
+    "DataLakeDatasetPrimaryKeyField":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"DataLakeDatasetSchemaFieldName",
+          "documentation":"<p>The name of the primary key field.</p>"
+        }
+      },
+      "documentation":"<p>The detail of the primary key field.</p>"
+    },
+    "DataLakeDatasetPrimaryKeyFieldList":{
+      "type":"list",
+      "member":{"shape":"DataLakeDatasetPrimaryKeyField"},
+      "max":20,
+      "min":1
+    },
+    "DataLakeDatasetSchema":{
+      "type":"structure",
+      "required":[
+        "name",
+        "fields"
+      ],
+      "members":{
+        "name":{
+          "shape":"DataLakeDatasetSchemaName",
+          "documentation":"<p>The name of the dataset schema.</p>"
+        },
+        "fields":{
+          "shape":"DataLakeDatasetSchemaFieldList",
+          "documentation":"<p>The list of field details of the dataset schema.</p>"
+        },
+        "primaryKeys":{
+          "shape":"DataLakeDatasetPrimaryKeyFieldList",
+          "documentation":"<p>The list of primary key fields for the dataset. Primary keys defined can help data ingestion methods to ensure data uniqueness: CreateDataIntegrationFlow's dedupe strategy will leverage primary keys to perform records deduplication before write to dataset; SendDataIntegrationEvent's UPSERT and DELETE can only work with dataset with primary keys. For more details, refer to those data ingestion documentations.</p> <p>Note that defining primary keys does not necessarily mean the dataset cannot have duplicate records, duplicate records can still be ingested if CreateDataIntegrationFlow's dedupe disabled or through SendDataIntegrationEvent's APPEND operation.</p>"
+        }
+      },
+      "documentation":"<p>The schema details of the dataset. Note that for AWS Supply Chain dataset under <b>asc</b> namespace, it may have internal fields like connection_id that will be auto populated by data ingestion methods.</p>"
+    },
+    "DataLakeDatasetSchemaField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type",
+        "isRequired"
+      ],
+      "members":{
+        "name":{
+          "shape":"DataLakeDatasetSchemaFieldName",
+          "documentation":"<p>The dataset field name.</p>"
+        },
+        "type":{
+          "shape":"DataLakeDatasetSchemaFieldType",
+          "documentation":"<p>The dataset field type.</p>"
+        },
+        "isRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicate if the field is required or not.</p>"
+        }
+      },
+      "documentation":"<p>The dataset field details.</p>"
+    },
+    "DataLakeDatasetSchemaFieldList":{
+      "type":"list",
+      "member":{"shape":"DataLakeDatasetSchemaField"},
+      "max":500,
+      "min":1
+    },
+    "DataLakeDatasetSchemaFieldName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-z0-9_]+"
+    },
+    "DataLakeDatasetSchemaFieldType":{
+      "type":"string",
+      "enum":[
+        "INT",
+        "DOUBLE",
+        "STRING",
+        "TIMESTAMP",
+        "LONG"
+      ]
+    },
+    "DataLakeDatasetSchemaName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[A-Za-z0-9]+"
+    },
+    "DataLakeNamespace":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name",
+        "arn",
+        "createdTime",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of the namespace.</p>"
+        },
+        "arn":{
+          "shape":"AscResourceArn",
+          "documentation":"<p>The arn of the namespace.</p>"
+        },
+        "description":{
+          "shape":"DataLakeNamespaceDescription",
+          "documentation":"<p>The description of the namespace.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the namespace.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last modified time of the namespace.</p>"
+        }
+      },
+      "documentation":"<p>The data lake namespace details.</p>"
+    },
+    "DataLakeNamespaceDescription":{
+      "type":"string",
+      "max":500,
+      "min":1
+    },
+    "DataLakeNamespaceList":{
+      "type":"list",
+      "member":{"shape":"DataLakeNamespace"},
+      "max":20,
+      "min":1
+    },
+    "DataLakeNamespaceMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "DataLakeNamespaceName":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"[a-z0-9_]+"
+    },
+    "DataLakeNamespaceNextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "DatasetIdentifier":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"[-_/A-Za-z0-9:]+"
+    },
+    "DeleteDataIntegrationFlowRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The name of the DataIntegrationFlow to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters for DeleteDataIntegrationFlow.</p>"
+    },
+    "DeleteDataIntegrationFlowResponse":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The name of the DataIntegrationFlow deleted.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for DeleteDataIntegrationFlow.</p>"
+    },
+    "DeleteDataLakeDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"namespace"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of the dataset. For <b>asc</b> namespace, the name must be one of the supported data entities under <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters of DeleteDataLakeDataset.</p>"
+    },
+    "DeleteDataLakeDatasetResponse":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of deleted dataset.</p>"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of deleted dataset.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of DeleteDataLakeDataset.</p>"
+    },
+    "DeleteDataLakeNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of the namespace. Noted you cannot delete pre-defined namespace like <b>asc</b>, <b>default</b> which are only deleted through instance deletion.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters of DeleteDataLakeNamespace.</p>"
+    },
+    "DeleteDataLakeNamespaceResponse":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of deleted namespace.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of DeleteDataLakeNamespace.</p>"
+    },
+    "DeleteInstanceRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        }
+      },
+      "documentation":"<p>The request parameters for DeleteInstance.</p>"
+    },
+    "DeleteInstanceResponse":{
+      "type":"structure",
+      "required":["instance"],
+      "members":{
+        "instance":{
+          "shape":"Instance",
+          "documentation":"<p>The AWS Supply Chain instance resource data details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for DeleteInstance.</p>"
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "GetBillOfMaterialsImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "jobId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "jobId":{
+          "shape":"UUID",
+          "documentation":"<p>The BillOfMaterialsImportJob identifier.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        }
+      },
+      "documentation":"<p>The request parameters for GetBillOfMaterialsImportJob.</p>"
+    },
+    "GetBillOfMaterialsImportJobResponse":{
+      "type":"structure",
+      "required":["job"],
+      "members":{
+        "job":{
+          "shape":"BillOfMaterialsImportJob",
+          "documentation":"<p>The BillOfMaterialsImportJob.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetBillOfMaterialsImportJob.</p>"
+    },
+    "GetDataIntegrationEventRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "eventId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique event identifier.</p>",
+          "location":"uri",
+          "locationName":"eventId"
+        }
+      },
+      "documentation":"<p>The request parameters for GetDataIntegrationEvent.</p>"
+    },
+    "GetDataIntegrationEventResponse":{
+      "type":"structure",
+      "required":["event"],
+      "members":{
+        "event":{
+          "shape":"DataIntegrationEvent",
+          "documentation":"<p>The details of the DataIntegrationEvent returned.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetDataIntegrationEvent.</p>"
+    },
+    "GetDataIntegrationFlowExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "flowName",
+        "executionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "flowName":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The flow name.</p>",
+          "location":"uri",
+          "locationName":"flowName"
+        },
+        "executionId":{
+          "shape":"UUID",
+          "documentation":"<p>The flow execution identifier.</p>",
+          "location":"uri",
+          "locationName":"executionId"
+        }
+      },
+      "documentation":"<p>The request parameters of GetFlowExecution.</p>"
+    },
+    "GetDataIntegrationFlowExecutionResponse":{
+      "type":"structure",
+      "required":["flowExecution"],
+      "members":{
+        "flowExecution":{
+          "shape":"DataIntegrationFlowExecution",
+          "documentation":"<p>The flow execution details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of GetFlowExecution.</p>"
+    },
+    "GetDataIntegrationFlowRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The name of the DataIntegrationFlow created.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters for GetDataIntegrationFlow.</p>"
+    },
+    "GetDataIntegrationFlowResponse":{
+      "type":"structure",
+      "required":["flow"],
+      "members":{
+        "flow":{
+          "shape":"DataIntegrationFlow",
+          "documentation":"<p>The details of the DataIntegrationFlow returned.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetDataIntegrationFlow.</p>"
+    },
+    "GetDataLakeDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"namespace"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of the dataset. For <b>asc</b> namespace, the name must be one of the supported data entities under <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters for GetDataLakeDataset.</p>"
+    },
+    "GetDataLakeDatasetResponse":{
+      "type":"structure",
+      "required":["dataset"],
+      "members":{
+        "dataset":{
+          "shape":"DataLakeDataset",
+          "documentation":"<p>The fetched dataset details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetDataLakeDataset.</p>"
+    },
+    "GetDataLakeNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of the namespace. Besides the namespaces user created, you can also specify the pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - Pre-defined namespace containing Amazon Web Services Supply Chain supported datasets, see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - Pre-defined namespace containing datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>The request parameters for GetDataLakeNamespace.</p>"
+    },
+    "GetDataLakeNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"DataLakeNamespace",
+          "documentation":"<p>The fetched namespace details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetDataLakeNamespace.</p>"
+    },
+    "GetInstanceRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        }
+      },
+      "documentation":"<p>The request parameters for GetInstance.</p>"
+    },
+    "GetInstanceResponse":{
+      "type":"structure",
+      "required":["instance"],
+      "members":{
+        "instance":{
+          "shape":"Instance",
+          "documentation":"<p>The instance resource data details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for GetInstance.</p>"
+    },
+    "Instance":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "awsAccountId",
+        "state"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>"
+        },
+        "awsAccountId":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The Amazon Web Services account ID that owns the instance.</p>"
+        },
+        "state":{
+          "shape":"InstanceState",
+          "documentation":"<p>The state of the instance.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance error message. If the instance results in an unhealthy state, customers need to check the error message, delete the current instance, and recreate a new one based on the mitigation from the error message.</p>"
+        },
+        "webAppDnsDomain":{
+          "shape":"InstanceWebAppDnsDomain",
+          "documentation":"<p>The WebApp DNS domain name of the instance.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The instance creation timestamp.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The instance last modified timestamp.</p>"
+        },
+        "instanceName":{
+          "shape":"InstanceName",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance name.</p>"
+        },
+        "instanceDescription":{
+          "shape":"InstanceDescription",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance description.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the Key Management Service (KMS) key you optionally provided for encryption. If you did not provide anything here, AWS Supply Chain uses the Amazon Web Services owned KMS key and nothing is returned.</p>"
+        },
+        "versionNumber":{
+          "shape":"Double",
+          "documentation":"<p>The version number of the instance.</p>"
+        }
+      },
+      "documentation":"<p>The details of the instance.</p>"
+    },
+    "InstanceDescription":{
+      "type":"string",
+      "max":501,
+      "min":0,
+      "pattern":"([a-zA-Z0-9., _ʼ'%-]){0,500}"
+    },
+    "InstanceList":{
+      "type":"list",
+      "member":{"shape":"Instance"}
+    },
+    "InstanceMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":0
+    },
+    "InstanceName":{
+      "type":"string",
+      "max":63,
+      "min":0,
+      "pattern":"(?![ _ʼ'%-])[a-zA-Z0-9 _ʼ'%-]{0,62}[a-zA-Z0-9]"
+    },
+    "InstanceNameList":{
+      "type":"list",
+      "member":{"shape":"InstanceName"},
+      "max":10,
+      "min":0
+    },
+    "InstanceNextToken":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "InstanceState":{
+      "type":"string",
+      "enum":[
+        "Initializing",
+        "Active",
+        "CreateFailed",
+        "DeleteFailed",
+        "Deleting",
+        "Deleted"
+      ]
+    },
+    "InstanceStateList":{
+      "type":"list",
+      "member":{"shape":"InstanceState"},
+      "max":6,
+      "min":0
+    },
+    "InstanceWebAppDnsDomain":{
+      "type":"string",
+      "pattern":"(?![-])[a-zA-Z0-9-]{1,62}[a-zA-Z0-9]"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Unexpected error during processing of request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[a-z0-9][-.a-z0-9]{0,62}:kms:([a-z0-9][-.a-z0-9]{0,62})?:([a-z0-9][-.a-z0-9]{0,62})?:key/.{0,1019}"
+    },
+    "ListDataIntegrationEventsRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "eventType":{
+          "shape":"DataIntegrationEventType",
+          "documentation":"<p>List data integration events for the specified eventType.</p>",
+          "location":"querystring",
+          "locationName":"eventType"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationEventNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of the data integration events.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"DataIntegrationEventMaxResults",
+          "documentation":"<p>Specify the maximum number of data integration events to fetch in one paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>The request parameters for ListDataIntegrationEvents.</p>"
+    },
+    "ListDataIntegrationEventsResponse":{
+      "type":"structure",
+      "required":["events"],
+      "members":{
+        "events":{
+          "shape":"DataIntegrationEventList",
+          "documentation":"<p>The list of data integration events.</p>"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationEventNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of the ListDataIntegrationEvents.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for ListDataIntegrationEvents.</p>"
+    },
+    "ListDataIntegrationFlowExecutionsRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "flowName"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "flowName":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The flow name.</p>",
+          "location":"uri",
+          "locationName":"flowName"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationFlowExecutionNextToken",
+          "documentation":"<p>The pagination token to fetch next page of flow executions.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"DataIntegrationFlowExecutionMaxResults",
+          "documentation":"<p>The number to specify the max number of flow executions to fetch in this paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>The request parameters of ListFlowExecutions.</p>"
+    },
+    "ListDataIntegrationFlowExecutionsResponse":{
+      "type":"structure",
+      "required":["flowExecutions"],
+      "members":{
+        "flowExecutions":{
+          "shape":"DataIntegrationFlowExecutionList",
+          "documentation":"<p>The list of flow executions.</p>"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationFlowExecutionNextToken",
+          "documentation":"<p>The pagination token to fetch next page of flow executions.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of ListFlowExecutions.</p>"
+    },
+    "ListDataIntegrationFlowsRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationFlowNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of the DataIntegrationFlows.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"DataIntegrationFlowMaxResults",
+          "documentation":"<p>Specify the maximum number of DataIntegrationFlows to fetch in one paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>The request parameters for ListDataIntegrationFlows.</p>"
+    },
+    "ListDataIntegrationFlowsResponse":{
+      "type":"structure",
+      "required":["flows"],
+      "members":{
+        "flows":{
+          "shape":"DataIntegrationFlowList",
+          "documentation":"<p>The response parameters for ListDataIntegrationFlows.</p>"
+        },
+        "nextToken":{
+          "shape":"DataIntegrationFlowNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of the DataIntegrationFlows.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for ListDataIntegrationFlows.</p>"
+    },
+    "ListDataLakeDatasetsRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"namespace"
+        },
+        "nextToken":{
+          "shape":"DataLakeDatasetNextToken",
+          "documentation":"<p>The pagination token to fetch next page of datasets.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"DataLakeDatasetMaxResults",
+          "documentation":"<p>The max number of datasets to fetch in this paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>The request parameters of ListDataLakeDatasets.</p>"
+    },
+    "ListDataLakeDatasetsResponse":{
+      "type":"structure",
+      "required":["datasets"],
+      "members":{
+        "datasets":{
+          "shape":"DataLakeDatasetList",
+          "documentation":"<p>The list of fetched dataset details.</p>"
+        },
+        "nextToken":{
+          "shape":"DataLakeDatasetNextToken",
+          "documentation":"<p>The pagination token to fetch next page of datasets.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of ListDataLakeDatasets.</p>"
+    },
+    "ListDataLakeNamespacesRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "nextToken":{
+          "shape":"DataLakeNamespaceNextToken",
+          "documentation":"<p>The pagination token to fetch next page of namespaces.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"DataLakeNamespaceMaxResults",
+          "documentation":"<p>The max number of namespaces to fetch in this paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>The request parameters of ListDataLakeNamespaces.</p>"
+    },
+    "ListDataLakeNamespacesResponse":{
+      "type":"structure",
+      "required":["namespaces"],
+      "members":{
+        "namespaces":{
+          "shape":"DataLakeNamespaceList",
+          "documentation":"<p>The list of fetched namespace details. Noted it only contains custom namespaces, pre-defined namespaces are not included.</p>"
+        },
+        "nextToken":{
+          "shape":"DataLakeNamespaceNextToken",
+          "documentation":"<p>The pagination token to fetch next page of namespaces.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of ListDataLakeNamespaces.</p>"
+    },
+    "ListInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"InstanceNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of instances.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"InstanceMaxResults",
+          "documentation":"<p>Specify the maximum number of instances to fetch in this paginated request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "instanceNameFilter":{
+          "shape":"InstanceNameList",
+          "documentation":"<p>The filter to ListInstances based on their names.</p>",
+          "location":"querystring",
+          "locationName":"instanceNameFilter"
+        },
+        "instanceStateFilter":{
+          "shape":"InstanceStateList",
+          "documentation":"<p>The filter to ListInstances based on their state.</p>",
+          "location":"querystring",
+          "locationName":"instanceStateFilter"
+        }
+      },
+      "documentation":"<p>The request parameters for ListInstances.</p>"
+    },
+    "ListInstancesResponse":{
+      "type":"structure",
+      "required":["instances"],
+      "members":{
+        "instances":{
+          "shape":"InstanceList",
+          "documentation":"<p>The list of instances resource data details.</p>"
+        },
+        "nextToken":{
+          "shape":"InstanceNextToken",
+          "documentation":"<p>The pagination token to fetch the next page of instances.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for ListInstances.</p>"
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"AscResourceArn",
+          "documentation":"<p>The Amazon Web Services Supply chain resource ARN that needs tags to be listed.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      },
+      "documentation":"<p>The request parameters of ListTagsForResource.</p>"
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags added to an Amazon Web Services Supply Chain resource.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of ListTagsForResource.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Request references a resource which does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "S3BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-z0-9][a-z0-9.-]*[a-z0-9]"
+    },
+    "SendDataIntegrationEventRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "eventType",
+        "data",
+        "eventGroupId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "eventType":{
+          "shape":"DataIntegrationEventType",
+          "documentation":"<p>The data event type.</p> <ul> <li> <p> <b>scn.data.dataset</b> - Send data directly to any specified dataset.</p> </li> <li> <p> <b>scn.data.supplyplan</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/supply-plan-entity.html\">supply_plan</a> dataset.</p> </li> <li> <p> <b>scn.data.shipmentstoporder</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-shipment-stop-order-entity.html\">shipment_stop_order</a> dataset.</p> </li> <li> <p> <b>scn.data.shipmentstop</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-shipment-stop-entity.html\">shipment_stop</a> dataset.</p> </li> <li> <p> <b>scn.data.shipment</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-shipment-entity.html\">shipment</a> dataset.</p> </li> <li> <p> <b>scn.data.reservation</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/planning-reservation-entity.html\">reservation</a> dataset.</p> </li> <li> <p> <b>scn.data.processproduct</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/operation-process-product-entity.html\">process_product</a> dataset.</p> </li> <li> <p> <b>scn.data.processoperation</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/operation-process-operation-entity.html\">process_operation</a> dataset.</p> </li> <li> <p> <b>scn.data.processheader</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/operation-process-header-entity.html\">process_header</a> dataset.</p> </li> <li> <p> <b>scn.data.forecast</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/forecast-forecast-entity.html\">forecast</a> dataset.</p> </li> <li> <p> <b>scn.data.inventorylevel</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/inventory_mgmnt-inv-level-entity.html\">inv_level</a> dataset.</p> </li> <li> <p> <b>scn.data.inboundorder</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-inbound-order-entity.html\">inbound_order</a> dataset.</p> </li> <li> <p> <b>scn.data.inboundorderline</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-inbound-order-line-entity.html\">inbound_order_line</a> dataset.</p> </li> <li> <p> <b>scn.data.inboundorderlineschedule</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/replenishment-inbound-order-line-schedule-entity.html\">inbound_order_line_schedule</a> dataset.</p> </li> <li> <p> <b>scn.data.outboundorderline</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/outbound-fulfillment-order-line-entity.html\">outbound_order_line</a> dataset.</p> </li> <li> <p> <b>scn.data.outboundshipment</b> - Send data to <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/outbound-fulfillment-shipment-entity.html\">outbound_shipment</a> dataset.</p> </li> </ul>"
+        },
+        "data":{
+          "shape":"DataIntegrationEventData",
+          "documentation":"<p>The data payload of the event, should follow the data schema of the target dataset, or see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">Data entities supported in AWS Supply Chain</a>. To send single data record, use JsonObject format; to send multiple data records, use JsonArray format.</p> <p>Note that for AWS Supply Chain dataset under <b>asc</b> namespace, it has a connection_id internal field that is not allowed to be provided by client directly, they will be auto populated.</p>"
+        },
+        "eventGroupId":{
+          "shape":"DataIntegrationEventGroupId",
+          "documentation":"<p>Event identifier (for example, orderId for InboundOrder) used for data sharding or partitioning. Noted under one eventGroupId of same eventType and instanceId, events are processed sequentially in the order they are received by the server.</p>"
+        },
+        "eventTimestamp":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp (in epoch seconds) associated with the event. If not provided, it will be assigned with current timestamp.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>The idempotent client token. The token is active for 8 hours, and within its lifetime, it ensures the request completes only once upon retry with same client token. If omitted, the AWS SDK generates a unique value so that AWS SDK can safely retry the request upon network errors.</p>",
+          "idempotencyToken":true
+        },
+        "datasetTarget":{
+          "shape":"DataIntegrationEventDatasetTargetConfiguration",
+          "documentation":"<p>The target dataset configuration for <b>scn.data.dataset</b> event type.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for SendDataIntegrationEvent.</p>"
+    },
+    "SendDataIntegrationEventResponse":{
+      "type":"structure",
+      "required":["eventId"],
+      "members":{
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique event identifier.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for SendDataIntegrationEvent.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "SyntheticTimestamp_epoch_seconds":{
+      "type":"timestamp",
+      "timestampFormat":"unixTimestamp"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AscResourceArn",
+          "documentation":"<p>The Amazon Web Services Supply chain resource ARN that needs to be tagged.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the Amazon Web Services Supply chain resource to be created.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters of TagResource.</p>"
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>The response parameters for TagResource.</p>"
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UUID":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AscResourceArn",
+          "documentation":"<p>The Amazon Web Services Supply chain resource ARN that needs to be untagged.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of tag keys to be deleted for an Amazon Web Services Supply Chain resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      },
+      "documentation":"<p>The request parameters of UntagResource.</p>"
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>The response parameters of UntagResource.</p>"
+    },
+    "UpdateDataIntegrationFlowRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataIntegrationFlowName",
+          "documentation":"<p>The name of the DataIntegrationFlow to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "sources":{
+          "shape":"DataIntegrationFlowSourceList",
+          "documentation":"<p>The new source configurations for the DataIntegrationFlow.</p>"
+        },
+        "transformation":{
+          "shape":"DataIntegrationFlowTransformation",
+          "documentation":"<p>The new transformation configurations for the DataIntegrationFlow.</p>"
+        },
+        "target":{
+          "shape":"DataIntegrationFlowTarget",
+          "documentation":"<p>The new target configurations for the DataIntegrationFlow.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for UpdateDataIntegrationFlow.</p>"
+    },
+    "UpdateDataIntegrationFlowResponse":{
+      "type":"structure",
+      "required":["flow"],
+      "members":{
+        "flow":{
+          "shape":"DataIntegrationFlow",
+          "documentation":"<p>The details of the updated DataIntegrationFlow.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for UpdateDataIntegrationFlow.</p>"
+    },
+    "UpdateDataLakeDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "namespace":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The namespace of the dataset, besides the custom defined namespace, every instance comes with below pre-defined namespaces:</p> <ul> <li> <p> <b>asc</b> - For information on the Amazon Web Services Supply Chain supported datasets see <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p> </li> <li> <p> <b>default</b> - For datasets with custom user-defined schemas.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"namespace"
+        },
+        "name":{
+          "shape":"DataLakeDatasetName",
+          "documentation":"<p>The name of the dataset. For <b>asc</b> namespace, the name must be one of the supported data entities under <a href=\"https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html\">https://docs.aws.amazon.com/aws-supply-chain/latest/userguide/data-model-asc.html</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"DataLakeDatasetDescription",
+          "documentation":"<p>The updated description of the data lake dataset.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters of UpdateDataLakeDataset.</p>"
+    },
+    "UpdateDataLakeDatasetResponse":{
+      "type":"structure",
+      "required":["dataset"],
+      "members":{
+        "dataset":{
+          "shape":"DataLakeDataset",
+          "documentation":"<p>The updated dataset details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of UpdateDataLakeDataset.</p>"
+    },
+    "UpdateDataLakeNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "name"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The Amazon Web Services Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "name":{
+          "shape":"DataLakeNamespaceName",
+          "documentation":"<p>The name of the namespace. Noted you cannot update namespace with name starting with <b>asc</b>, <b>default</b>, <b>scn</b>, <b>aws</b>, <b>amazon</b>, <b>amzn</b> </p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"DataLakeNamespaceDescription",
+          "documentation":"<p>The updated description of the data lake namespace.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters of UpdateDataLakeNamespace.</p>"
+    },
+    "UpdateDataLakeNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"DataLakeNamespace",
+          "documentation":"<p>The updated namespace details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters of UpdateDataLakeNamespace.</p>"
+    },
+    "UpdateInstanceRequest":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"UUID",
+          "documentation":"<p>The AWS Supply Chain instance identifier.</p>",
+          "location":"uri",
+          "locationName":"instanceId"
+        },
+        "instanceName":{
+          "shape":"InstanceName",
+          "documentation":"<p>The AWS Supply Chain instance name.</p>"
+        },
+        "instanceDescription":{
+          "shape":"InstanceDescription",
+          "documentation":"<p>The AWS Supply Chain instance description.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters for UpdateInstance.</p>"
+    },
+    "UpdateInstanceResponse":{
+      "type":"structure",
+      "required":["instance"],
+      "members":{
+        "instance":{
+          "shape":"Instance",
+          "documentation":"<p>The instance resource data details.</p>"
+        }
+      },
+      "documentation":"<p>The response parameters for UpdateInstance.</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input does not satisfy the constraints specified by an AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p> AWS Supply Chain is a cloud-based application that works with your enterprise resource planning (ERP) and supply chain management systems. Using AWS Supply Chain, you can connect and extract your inventory, supply, and demand related data from existing ERP or supply chain systems into a single data model. </p> <p>The AWS Supply Chain API supports configuration data import for Supply Planning.</p> <p> All AWS Supply chain API operations are Amazon-authenticated and certificate-signed. They not only require the use of the AWS SDK, but also allow for the exclusive use of AWS Identity and Access Management users and roles to help facilitate access, trust, and permission policies. </p>"
+}

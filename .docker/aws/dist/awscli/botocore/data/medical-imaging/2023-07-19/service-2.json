@@ -1,0 +1,2260 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-07-19",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"medical-imaging",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Health Imaging",
+    "serviceId":"Medical Imaging",
+    "signatureVersion":"v4",
+    "signingName":"medical-imaging",
+    "uid":"medical-imaging-2023-07-19"
+  },
+  "operations":{
+    "CopyImageSet":{
+      "name":"CopyImageSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{sourceImageSetId}/copyImageSet",
+        "responseCode":200
+      },
+      "input":{"shape":"CopyImageSetRequest"},
+      "output":{"shape":"CopyImageSetResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Copy an image set.</p>",
+      "endpoint":{"hostPrefix":"runtime-"}
+    },
+    "CreateDatastore":{
+      "name":"CreateDatastore",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDatastoreRequest"},
+      "output":{"shape":"CreateDatastoreResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Create a data store.</p>",
+      "idempotent":true
+    },
+    "DeleteDatastore":{
+      "name":"DeleteDatastore",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/datastore/{datastoreId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDatastoreRequest"},
+      "output":{"shape":"DeleteDatastoreResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Delete a data store.</p> <note> <p>Before a data store can be deleted, you must first delete all image sets within it.</p> </note>",
+      "idempotent":true
+    },
+    "DeleteImageSet":{
+      "name":"DeleteImageSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/deleteImageSet",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteImageSetRequest"},
+      "output":{"shape":"DeleteImageSetResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Delete an image set.</p>",
+      "endpoint":{"hostPrefix":"runtime-"},
+      "idempotent":true
+    },
+    "GetDICOMImportJob":{
+      "name":"GetDICOMImportJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/getDICOMImportJob/datastore/{datastoreId}/job/{jobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDICOMImportJobRequest"},
+      "output":{"shape":"GetDICOMImportJobResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get the import job properties to learn more about the job or job progress.</p> <note> <p>The <code>jobStatus</code> refers to the execution of the import job. Therefore, an import job can return a <code>jobStatus</code> as <code>COMPLETED</code> even if validation issues are discovered during the import process. If a <code>jobStatus</code> returns as <code>COMPLETED</code>, we still recommend you review the output manifests written to S3, as they provide details on the success or failure of individual P10 object imports.</p> </note>",
+      "readonly":true
+    },
+    "GetDatastore":{
+      "name":"GetDatastore",
+      "http":{
+        "method":"GET",
+        "requestUri":"/datastore/{datastoreId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDatastoreRequest"},
+      "output":{"shape":"GetDatastoreResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get data store properties.</p>",
+      "readonly":true
+    },
+    "GetImageFrame":{
+      "name":"GetImageFrame",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/getImageFrame",
+        "responseCode":200
+      },
+      "input":{"shape":"GetImageFrameRequest"},
+      "output":{"shape":"GetImageFrameResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get an image frame (pixel data) for an image set.</p>",
+      "endpoint":{"hostPrefix":"runtime-"},
+      "readonly":true
+    },
+    "GetImageSet":{
+      "name":"GetImageSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/getImageSet",
+        "responseCode":200
+      },
+      "input":{"shape":"GetImageSetRequest"},
+      "output":{"shape":"GetImageSetResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get image set properties.</p>",
+      "endpoint":{"hostPrefix":"runtime-"},
+      "readonly":true
+    },
+    "GetImageSetMetadata":{
+      "name":"GetImageSetMetadata",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/getImageSetMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"GetImageSetMetadataRequest"},
+      "output":{"shape":"GetImageSetMetadataResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get metadata attributes for an image set.</p>",
+      "endpoint":{"hostPrefix":"runtime-"},
+      "readonly":true
+    },
+    "ListDICOMImportJobs":{
+      "name":"ListDICOMImportJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/listDICOMImportJobs/datastore/{datastoreId}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDICOMImportJobsRequest"},
+      "output":{"shape":"ListDICOMImportJobsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>List import jobs created for a specific data store.</p>",
+      "readonly":true
+    },
+    "ListDatastores":{
+      "name":"ListDatastores",
+      "http":{
+        "method":"GET",
+        "requestUri":"/datastore",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDatastoresRequest"},
+      "output":{"shape":"ListDatastoresResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List data stores.</p>",
+      "readonly":true
+    },
+    "ListImageSetVersions":{
+      "name":"ListImageSetVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/listImageSetVersions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListImageSetVersionsRequest"},
+      "output":{"shape":"ListImageSetVersionsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>List image set versions.</p>",
+      "endpoint":{"hostPrefix":"runtime-"},
+      "readonly":true
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists all tags associated with a medical imaging resource.</p>",
+      "readonly":true
+    },
+    "SearchImageSets":{
+      "name":"SearchImageSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/searchImageSets",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchImageSetsRequest"},
+      "output":{"shape":"SearchImageSetsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Search image sets based on defined input attributes.</p> <note> <p> <code>SearchImageSets</code> accepts a single search query parameter and returns a paginated response of all image sets that have the matching criteria. All date range queries must be input as <code>(lowerBound, upperBound)</code>.</p> <p>By default, <code>SearchImageSets</code> uses the <code>updatedAt</code> field for sorting in descending order from newest to oldest.</p> </note>",
+      "endpoint":{"hostPrefix":"runtime-"}
+    },
+    "StartDICOMImportJob":{
+      "name":"StartDICOMImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/startDICOMImportJob/datastore/{datastoreId}",
+        "responseCode":200
+      },
+      "input":{"shape":"StartDICOMImportJobRequest"},
+      "output":{"shape":"StartDICOMImportJobResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Start importing bulk data into an <code>ACTIVE</code> data store. The import job imports DICOM P10 files found in the S3 prefix specified by the <code>inputS3Uri</code> parameter. The import job stores processing results in the file specified by the <code>outputS3Uri</code> parameter.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds a user-specifed key and value tag to a medical imaging resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from a medical imaging resource.</p>",
+      "idempotent":true
+    },
+    "UpdateImageSetMetadata":{
+      "name":"UpdateImageSetMetadata",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datastore/{datastoreId}/imageSet/{imageSetId}/updateImageSetMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateImageSetMetadataRequest"},
+      "output":{"shape":"UpdateImageSetMetadataResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Update image set metadata attributes.</p>",
+      "endpoint":{"hostPrefix":"runtime-"}
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The user does not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"arn:aws((-us-gov)|(-iso)|(-iso-b)|(-cn))?:medical-imaging:[a-z0-9-]+:[0-9]{12}:datastore/[0-9a-z]{32}(/imageset/[0-9a-z]{32})?"
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"\\d+"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[A-Za-z0-9._-]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CopiableAttributes":{
+      "type":"string",
+      "max":260000,
+      "min":1,
+      "sensitive":true
+    },
+    "CopyDestinationImageSet":{
+      "type":"structure",
+      "required":[
+        "imageSetId",
+        "latestVersionId"
+      ],
+      "members":{
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier for the destination image set.</p>"
+        },
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest version identifier for the destination image set.</p>"
+        }
+      },
+      "documentation":"<p>Copy the destination image set.</p>"
+    },
+    "CopyDestinationImageSetProperties":{
+      "type":"structure",
+      "required":[
+        "imageSetId",
+        "latestVersionId"
+      ],
+      "members":{
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier of the copied image set properties.</p>"
+        },
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest version identifier for the destination image set properties.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state of the destination image set properties.</p>"
+        },
+        "imageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The image set workflow status of the destination image set properties.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the destination image set properties were created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the destination image set properties were last updated.</p>"
+        },
+        "imageSetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) assigned to the destination image set.</p>"
+        }
+      },
+      "documentation":"<p>Copy the image set properties of the destination image set.</p>"
+    },
+    "CopyImageSetInformation":{
+      "type":"structure",
+      "required":["sourceImageSet"],
+      "members":{
+        "sourceImageSet":{
+          "shape":"CopySourceImageSetInformation",
+          "documentation":"<p>The source image set.</p>"
+        },
+        "destinationImageSet":{
+          "shape":"CopyDestinationImageSet",
+          "documentation":"<p>The destination image set.</p>"
+        }
+      },
+      "documentation":"<p>Copy image set information.</p>"
+    },
+    "CopyImageSetRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "sourceImageSetId",
+        "copyImageSetInformation"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "sourceImageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The source image set identifier.</p>",
+          "location":"uri",
+          "locationName":"sourceImageSetId"
+        },
+        "copyImageSetInformation":{
+          "shape":"CopyImageSetInformation",
+          "documentation":"<p>Copy image set information.</p>"
+        },
+        "force":{
+          "shape":"Boolean",
+          "documentation":"<p>Providing this parameter will force completion of the <code>CopyImageSet</code> operation, even if there are inconsistent Patient, Study, and/or Series level metadata elements between the <code>sourceImageSet</code> and <code>destinationImageSet</code>.</p>",
+          "location":"querystring",
+          "locationName":"force"
+        },
+        "promoteToPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>Providing this parameter will configure the <code>CopyImageSet</code> operation to promote the given image set to the primary DICOM hierarchy. If successful, a new primary image set ID will be returned as the destination image set.</p>",
+          "location":"querystring",
+          "locationName":"promoteToPrimary"
+        }
+      },
+      "payload":"copyImageSetInformation"
+    },
+    "CopyImageSetResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "sourceImageSetProperties",
+        "destinationImageSetProperties"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "sourceImageSetProperties":{
+          "shape":"CopySourceImageSetProperties",
+          "documentation":"<p>The properties of the source image set.</p>"
+        },
+        "destinationImageSetProperties":{
+          "shape":"CopyDestinationImageSetProperties",
+          "documentation":"<p>The properties of the destination image set.</p>"
+        }
+      }
+    },
+    "CopySourceImageSetInformation":{
+      "type":"structure",
+      "required":["latestVersionId"],
+      "members":{
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest version identifier for the source image set.</p>"
+        },
+        "DICOMCopies":{
+          "shape":"MetadataCopies",
+          "documentation":"<p>Contains <code>MetadataCopies</code> structure and wraps information related to specific copy use cases. For example, when copying subsets.</p>"
+        }
+      },
+      "documentation":"<p>Copy source image set information.</p>"
+    },
+    "CopySourceImageSetProperties":{
+      "type":"structure",
+      "required":[
+        "imageSetId",
+        "latestVersionId"
+      ],
+      "members":{
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier for the copied source image set.</p>"
+        },
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest version identifier for the copied source image set.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state of the copied source image set.</p>"
+        },
+        "imageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The workflow status of the copied source image set.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the source image set properties were created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the source image set properties were updated.</p>"
+        },
+        "imageSetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) assigned to the source image set.</p>"
+        }
+      },
+      "documentation":"<p>Copy source image set properties.</p>"
+    },
+    "CreateDatastoreRequest":{
+      "type":"structure",
+      "required":["clientToken"],
+      "members":{
+        "datastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>The data store name.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique identifier for API idempotency.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags provided when creating a data store.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) assigned to the Key Management Service (KMS) key for accessing encrypted data.</p>"
+        },
+        "lambdaAuthorizerArn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The ARN of the authorizer's Lambda function.</p>"
+        }
+      }
+    },
+    "CreateDatastoreResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "datastoreStatus"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "datastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        }
+      }
+    },
+    "DICOMAccessionNumber":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMAttribute":{
+      "type":"blob",
+      "max":10000,
+      "min":1,
+      "sensitive":true
+    },
+    "DICOMImportJobProperties":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "jobName",
+        "jobStatus",
+        "datastoreId",
+        "dataAccessRoleArn",
+        "inputS3Uri",
+        "outputS3Uri"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        },
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>The import job name.</p>"
+        },
+        "jobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The filters for listing import jobs based on status.</p>"
+        },
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "dataAccessRoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants permissions to access medical imaging resources.</p>"
+        },
+        "endedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp for when the import job was ended.</p>"
+        },
+        "submittedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp for when the import job was submitted.</p>"
+        },
+        "inputS3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The input prefix path for the S3 bucket that contains the DICOM P10 files to be imported.</p>"
+        },
+        "outputS3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The output prefix of the S3 bucket to upload the results of the DICOM import job.</p>"
+        },
+        "message":{
+          "shape":"Message",
+          "documentation":"<p>The error message thrown if an import job fails.</p>"
+        }
+      },
+      "documentation":"<p>Properties of the import job.</p>"
+    },
+    "DICOMImportJobSummaries":{
+      "type":"list",
+      "member":{"shape":"DICOMImportJobSummary"}
+    },
+    "DICOMImportJobSummary":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "jobName",
+        "jobStatus",
+        "datastoreId"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        },
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>The import job name.</p>"
+        },
+        "jobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The filters for listing import jobs based on status.</p>"
+        },
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "dataAccessRoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants permissions to access medical imaging resources.</p>"
+        },
+        "endedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when an import job ended.</p>"
+        },
+        "submittedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when an import job was submitted.</p>"
+        },
+        "message":{
+          "shape":"Message",
+          "documentation":"<p>The error message thrown if an import job fails.</p>"
+        }
+      },
+      "documentation":"<p>Summary of import job.</p>"
+    },
+    "DICOMNumberOfStudyRelatedInstances":{
+      "type":"integer",
+      "max":1000000,
+      "min":0
+    },
+    "DICOMNumberOfStudyRelatedSeries":{
+      "type":"integer",
+      "max":1000000,
+      "min":0
+    },
+    "DICOMPatientBirthDate":{
+      "type":"string",
+      "max":18,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMPatientId":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMPatientName":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMPatientSex":{
+      "type":"string",
+      "max":16,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMSeriesBodyPart":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMSeriesInstanceUID":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"(?:[0-9][0-9]*|0)(\\.(?:[0-9][0-9]*|0))*",
+      "sensitive":true
+    },
+    "DICOMSeriesModality":{
+      "type":"string",
+      "max":16,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMSeriesNumber":{
+      "type":"integer",
+      "box":true,
+      "max":2147483647,
+      "min":-2147483648,
+      "sensitive":true
+    },
+    "DICOMStudyDate":{
+      "type":"string",
+      "max":18,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMStudyDateAndTime":{
+      "type":"structure",
+      "required":["DICOMStudyDate"],
+      "members":{
+        "DICOMStudyDate":{
+          "shape":"DICOMStudyDate",
+          "documentation":"<p>The DICOM study date provided in <code>yyMMdd</code> format.</p>"
+        },
+        "DICOMStudyTime":{
+          "shape":"DICOMStudyTime",
+          "documentation":"<p>The DICOM study time provided in <code>HHmmss.FFFFFF</code> format.</p>"
+        }
+      },
+      "documentation":"<p>The aggregated structure to store DICOM study date and study time for search capabilities.</p>"
+    },
+    "DICOMStudyDescription":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMStudyId":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMStudyInstanceUID":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"(?:[0-9][0-9]*|0)(\\.(?:[0-9][0-9]*|0))*",
+      "sensitive":true
+    },
+    "DICOMStudyTime":{
+      "type":"string",
+      "max":28,
+      "min":0,
+      "sensitive":true
+    },
+    "DICOMTags":{
+      "type":"structure",
+      "members":{
+        "DICOMPatientId":{
+          "shape":"DICOMPatientId",
+          "documentation":"<p>The unique identifier for a patient in a DICOM Study.</p>"
+        },
+        "DICOMPatientName":{
+          "shape":"DICOMPatientName",
+          "documentation":"<p>The patient name.</p>"
+        },
+        "DICOMPatientBirthDate":{
+          "shape":"DICOMPatientBirthDate",
+          "documentation":"<p>The patient birth date.</p>"
+        },
+        "DICOMPatientSex":{
+          "shape":"DICOMPatientSex",
+          "documentation":"<p>The patient sex.</p>"
+        },
+        "DICOMStudyInstanceUID":{
+          "shape":"DICOMStudyInstanceUID",
+          "documentation":"<p>The DICOM provided identifier for the Study Instance UID.</p>"
+        },
+        "DICOMStudyId":{
+          "shape":"DICOMStudyId",
+          "documentation":"<p>The DICOM provided identifier for the Study ID.</p>"
+        },
+        "DICOMStudyDescription":{
+          "shape":"DICOMStudyDescription",
+          "documentation":"<p>The DICOM provided Study Description.</p>"
+        },
+        "DICOMNumberOfStudyRelatedSeries":{
+          "shape":"DICOMNumberOfStudyRelatedSeries",
+          "documentation":"<p>The total number of series in the DICOM study.</p>"
+        },
+        "DICOMNumberOfStudyRelatedInstances":{
+          "shape":"DICOMNumberOfStudyRelatedInstances",
+          "documentation":"<p>The total number of instances in the DICOM study.</p>"
+        },
+        "DICOMAccessionNumber":{
+          "shape":"DICOMAccessionNumber",
+          "documentation":"<p>The accession number for the DICOM study.</p>"
+        },
+        "DICOMSeriesInstanceUID":{
+          "shape":"DICOMSeriesInstanceUID",
+          "documentation":"<p>The DICOM provided identifier for the Series Instance UID.</p>"
+        },
+        "DICOMSeriesModality":{
+          "shape":"DICOMSeriesModality",
+          "documentation":"<p>The DICOM provided identifier for the series Modality.</p>"
+        },
+        "DICOMSeriesBodyPart":{
+          "shape":"DICOMSeriesBodyPart",
+          "documentation":"<p>The DICOM provided identifier for the series Body Part Examined.</p>"
+        },
+        "DICOMSeriesNumber":{
+          "shape":"DICOMSeriesNumber",
+          "documentation":"<p>The DICOM provided identifier for the Series Number.</p>"
+        },
+        "DICOMStudyDate":{
+          "shape":"DICOMStudyDate",
+          "documentation":"<p>The study date.</p>"
+        },
+        "DICOMStudyTime":{
+          "shape":"DICOMStudyTime",
+          "documentation":"<p>The study time.</p>"
+        }
+      },
+      "documentation":"<p>The DICOM attributes returned as a part of a response. Each image set has these properties as part of a search result.</p>"
+    },
+    "DICOMUpdates":{
+      "type":"structure",
+      "members":{
+        "removableAttributes":{
+          "shape":"DICOMAttribute",
+          "documentation":"<p>The DICOM tags to be removed from <code>ImageSetMetadata</code>.</p>"
+        },
+        "updatableAttributes":{
+          "shape":"DICOMAttribute",
+          "documentation":"<p>The DICOM tags that need to be updated in <code>ImageSetMetadata</code>.</p>"
+        }
+      },
+      "documentation":"<p>The object containing <code>removableAttributes</code> and <code>updatableAttributes</code>.</p>"
+    },
+    "DatastoreId":{
+      "type":"string",
+      "pattern":"[0-9a-z]{32}"
+    },
+    "DatastoreName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[A-Za-z0-9._/#-]+"
+    },
+    "DatastoreProperties":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "datastoreName",
+        "datastoreStatus"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "datastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>The data store name.</p>"
+        },
+        "datastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) assigned to the Key Management Service (KMS) key for accessing encrypted data.</p>"
+        },
+        "lambdaAuthorizerArn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The ARN of the authorizer's Lambda function.</p>"
+        },
+        "datastoreArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the data store.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the data store was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the data store was last updated.</p>"
+        }
+      },
+      "documentation":"<p>The properties associated with the data store.</p>"
+    },
+    "DatastoreStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "CREATE_FAILED",
+        "ACTIVE",
+        "DELETING",
+        "DELETED"
+      ]
+    },
+    "DatastoreSummaries":{
+      "type":"list",
+      "member":{"shape":"DatastoreSummary"}
+    },
+    "DatastoreSummary":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "datastoreName",
+        "datastoreStatus"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "datastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>The data store name.</p>"
+        },
+        "datastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        },
+        "datastoreArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the data store.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the data store was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the data store was last updated.</p>"
+        }
+      },
+      "documentation":"<p>List of summaries of data stores.</p>"
+    },
+    "Date":{"type":"timestamp"},
+    "DeleteDatastoreRequest":{
+      "type":"structure",
+      "required":["datastoreId"],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        }
+      }
+    },
+    "DeleteDatastoreResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "datastoreStatus"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "datastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        }
+      }
+    },
+    "DeleteImageSetRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        }
+      }
+    },
+    "DeleteImageSetResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId",
+        "imageSetState",
+        "imageSetWorkflowStatus"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state.</p>"
+        },
+        "imageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The image set workflow status.</p>"
+        }
+      }
+    },
+    "GetDICOMImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "jobId"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        }
+      }
+    },
+    "GetDICOMImportJobResponse":{
+      "type":"structure",
+      "required":["jobProperties"],
+      "members":{
+        "jobProperties":{
+          "shape":"DICOMImportJobProperties",
+          "documentation":"<p>The properties of the import job.</p>"
+        }
+      }
+    },
+    "GetDatastoreRequest":{
+      "type":"structure",
+      "required":["datastoreId"],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        }
+      }
+    },
+    "GetDatastoreResponse":{
+      "type":"structure",
+      "required":["datastoreProperties"],
+      "members":{
+        "datastoreProperties":{
+          "shape":"DatastoreProperties",
+          "documentation":"<p>The data store properties.</p>"
+        }
+      }
+    },
+    "GetImageFrameRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId",
+        "imageFrameInformation"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        },
+        "imageFrameInformation":{
+          "shape":"ImageFrameInformation",
+          "documentation":"<p>Information about the image frame (pixel data) identifier.</p>"
+        }
+      },
+      "payload":"imageFrameInformation"
+    },
+    "GetImageFrameResponse":{
+      "type":"structure",
+      "required":["imageFrameBlob"],
+      "members":{
+        "imageFrameBlob":{
+          "shape":"PayloadBlob",
+          "documentation":"<p>The blob containing the aggregated image frame information.</p>"
+        },
+        "contentType":{
+          "shape":"String",
+          "documentation":"<p>The format in which the image frame information is returned to the customer. Default is <code>application/octet-stream</code>.</p> <note> <ul> <li> <p>If the stored transfer syntax is <code>1.2.840.10008.1.2.1</code>, the returned <code>contentType</code> is <code>application/octet-stream</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is <code>1.2.840.10008.1.2.4.50</code>, the returned <code>contentType</code> is <code>image/jpeg</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is <code>1.2.840.10008.1.2.4.91</code>, the returned <code>contentType</code> is <code>image/j2c</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is MPEG2, <code>1.2.840.10008.1.2.4.100</code>, <code>1.2.840.10008.1.2.4.100.1</code>, <code>1.2.840.10008.1.2.4.101</code>, or <code>1.2.840.10008.1.2.4.101.1</code>, the returned <code>contentType</code> is <code>video/mpeg</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is MPEG-4 AVC/H.264, UID <code>1.2.840.10008.1.2.4.102</code>, <code>1.2.840.10008.1.2.4.102.1</code>, <code>1.2.840.10008.1.2.4.103</code>, <code>1.2.840.10008.1.2.4.103.1</code>, <code>1.2.840.10008.1.2.4.104</code>, <code>1.2.840.10008.1.2.4.104.1</code>, <code>1.2.840.10008.1.2.4.105</code>, <code>1.2.840.10008.1.2.4.105.1</code>, <code>1.2.840.10008.1.2.4.106</code>, or <code>1.2.840.10008.1.2.4.106.1</code>, the returned <code>contentType</code> is <code>video/mp4</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is HEVC/H.265, UID <code>1.2.840.10008.1.2.4.107</code> or <code>1.2.840.10008.1.2.4.108</code>, the returned <code>contentType</code> is <code>video/H256</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is <code>1.2.840.10008.1.2.4.202</code> or if the stored transfer syntax is <i>missing</i>, the returned <code>contentType</code> is <code>image/jph</code>.</p> </li> </ul> <ul> <li> <p>If the stored transfer syntax is <code>1.2.840.10008.1.2.4.203</code>, the returned contentType is <code>image/jphc</code>.</p> </li> </ul> </note>",
+          "location":"header",
+          "locationName":"Content-Type"
+        }
+      },
+      "payload":"imageFrameBlob"
+    },
+    "GetImageSetMetadataRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        },
+        "versionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The image set version identifier.</p>",
+          "location":"querystring",
+          "locationName":"version"
+        }
+      }
+    },
+    "GetImageSetMetadataResponse":{
+      "type":"structure",
+      "required":["imageSetMetadataBlob"],
+      "members":{
+        "imageSetMetadataBlob":{
+          "shape":"ImageSetMetadataBlob",
+          "documentation":"<p>The blob containing the aggregated metadata information for the image set.</p>"
+        },
+        "contentType":{
+          "shape":"String",
+          "documentation":"<p>The format in which the study metadata is returned to the customer. Default is <code>text/plain</code>.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "contentEncoding":{
+          "shape":"String",
+          "documentation":"<p>The compression format in which image set metadata attributes are returned.</p>",
+          "location":"header",
+          "locationName":"Content-Encoding"
+        }
+      },
+      "payload":"imageSetMetadataBlob"
+    },
+    "GetImageSetRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        },
+        "versionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The image set version identifier.</p>",
+          "location":"querystring",
+          "locationName":"version"
+        }
+      }
+    },
+    "GetImageSetResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId",
+        "versionId",
+        "imageSetState"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>"
+        },
+        "versionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The image set version identifier.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state.</p>"
+        },
+        "imageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The image set workflow status.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when image set properties were created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when image set properties were updated.</p>"
+        },
+        "deletedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the image set properties were deleted.</p>"
+        },
+        "message":{
+          "shape":"Message",
+          "documentation":"<p>The error message thrown if an image set action fails.</p>"
+        },
+        "imageSetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) assigned to the image set.</p>"
+        },
+        "overrides":{
+          "shape":"Overrides",
+          "documentation":"<p>This object contains the details of any overrides used while creating a specific image set version. If an image set was copied or updated using the <code>force</code> flag, this object will contain the <code>forced</code> flag.</p>"
+        },
+        "isPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>The flag to determine whether the image set is primary or not.</p>"
+        }
+      }
+    },
+    "ImageFrameId":{
+      "type":"string",
+      "pattern":"[0-9a-z]{32}"
+    },
+    "ImageFrameInformation":{
+      "type":"structure",
+      "required":["imageFrameId"],
+      "members":{
+        "imageFrameId":{
+          "shape":"ImageFrameId",
+          "documentation":"<p>The image frame (pixel data) identifier.</p>"
+        }
+      },
+      "documentation":"<p>Information about the image frame (pixel data) identifier.</p>"
+    },
+    "ImageSetExternalVersionId":{
+      "type":"string",
+      "pattern":"\\d+"
+    },
+    "ImageSetId":{
+      "type":"string",
+      "pattern":"[0-9a-z]{32}"
+    },
+    "ImageSetMetadataBlob":{
+      "type":"blob",
+      "streaming":true
+    },
+    "ImageSetProperties":{
+      "type":"structure",
+      "required":[
+        "imageSetId",
+        "versionId",
+        "imageSetState"
+      ],
+      "members":{
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>"
+        },
+        "versionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The image set version identifier.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state.</p>"
+        },
+        "ImageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The image set workflow status.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the image set properties were created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the image set properties were updated.</p>"
+        },
+        "deletedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the image set properties were deleted.</p>"
+        },
+        "message":{
+          "shape":"Message",
+          "documentation":"<p>The error message thrown if an image set action fails.</p>"
+        },
+        "overrides":{
+          "shape":"Overrides",
+          "documentation":"<p>Contains details on overrides used when creating the returned version of an image set. For example, if <code>forced</code> exists, the <code>forced</code> flag was used when creating the image set.</p>"
+        },
+        "isPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>The flag to determine whether the image set is primary or not.</p>"
+        }
+      },
+      "documentation":"<p>The image set properties.</p>"
+    },
+    "ImageSetPropertiesList":{
+      "type":"list",
+      "member":{"shape":"ImageSetProperties"}
+    },
+    "ImageSetState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "LOCKED",
+        "DELETED"
+      ]
+    },
+    "ImageSetWorkflowStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "COPIED",
+        "COPYING",
+        "COPYING_WITH_READ_ONLY_ACCESS",
+        "COPY_FAILED",
+        "UPDATING",
+        "UPDATED",
+        "UPDATE_FAILED",
+        "DELETING",
+        "DELETED",
+        "IMPORTING",
+        "IMPORTED",
+        "IMPORT_FAILED"
+      ]
+    },
+    "ImageSetsMetadataSummaries":{
+      "type":"list",
+      "member":{"shape":"ImageSetsMetadataSummary"}
+    },
+    "ImageSetsMetadataSummary":{
+      "type":"structure",
+      "required":["imageSetId"],
+      "members":{
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>"
+        },
+        "version":{
+          "shape":"Integer",
+          "documentation":"<p>The image set version.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The time an image set is created. Sample creation date is provided in <code>1985-04-12T23:20:50.52Z</code> format.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The time an image set was last updated.</p>"
+        },
+        "DICOMTags":{
+          "shape":"DICOMTags",
+          "documentation":"<p>The DICOM tags associated with the image set.</p>"
+        },
+        "isPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>The flag to determine whether the image set is primary or not.</p>"
+        }
+      },
+      "documentation":"<p>Summary of the image set metadata.</p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An unexpected error occurred during processing of the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "JobId":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"[0-9a-z]+"
+    },
+    "JobName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[A-Za-z0-9._/#-]+"
+    },
+    "JobStatus":{
+      "type":"string",
+      "enum":[
+        "SUBMITTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "documentation":"<p>ARN referencing a KMS key or KMS key alias.</p>",
+      "max":512,
+      "min":1,
+      "pattern":"arn:aws[a-zA-Z-]{0,16}:kms:[a-z]{2}(-[a-z]{1,16}){1,3}-\\d{1}:\\d{12}:((key/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})|(alias/[a-zA-Z0-9:/_-]{1,256}))"
+    },
+    "LambdaArn":{
+      "type":"string",
+      "pattern":"arn:(aws[a-zA-Z-]*)?:lambda:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9-_]+(:(\\$LATEST|[a-zA-Z0-9-_]+))?"
+    },
+    "ListDICOMImportJobsRequest":{
+      "type":"structure",
+      "required":["datastoreId"],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "jobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The filters for listing import jobs based on status.</p>",
+          "location":"querystring",
+          "locationName":"jobStatus"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to request the list of import jobs on the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListDICOMImportJobsRequestMaxResultsInteger",
+          "documentation":"<p>The max results count. The upper bound is determined by load testing.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListDICOMImportJobsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListDICOMImportJobsResponse":{
+      "type":"structure",
+      "required":["jobSummaries"],
+      "members":{
+        "jobSummaries":{
+          "shape":"DICOMImportJobSummaries",
+          "documentation":"<p>A list of job summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the list of import jobs on the next page.</p>"
+        }
+      }
+    },
+    "ListDatastoresRequest":{
+      "type":"structure",
+      "members":{
+        "datastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>",
+          "location":"querystring",
+          "locationName":"datastoreStatus"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to request the list of data stores on the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListDatastoresRequestMaxResultsInteger",
+          "documentation":"<p>Valid Range: Minimum value of 1. Maximum value of 50.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListDatastoresRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListDatastoresResponse":{
+      "type":"structure",
+      "members":{
+        "datastoreSummaries":{
+          "shape":"DatastoreSummaries",
+          "documentation":"<p>The list of summaries of data stores.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the list of data stores on the next page.</p>"
+        }
+      }
+    },
+    "ListImageSetVersionsRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to request the list of image set versions on the next page.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListImageSetVersionsRequestMaxResultsInteger",
+          "documentation":"<p>The max results count.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListImageSetVersionsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListImageSetVersionsResponse":{
+      "type":"structure",
+      "required":["imageSetPropertiesList"],
+      "members":{
+        "imageSetPropertiesList":{
+          "shape":"ImageSetPropertiesList",
+          "documentation":"<p>Lists all properties associated with an image set.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the list of image set versions on the next page.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the medical imaging resource to list tags for.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of all tags associated with a medical imaging resource.</p>"
+        }
+      }
+    },
+    "Message":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[\\w -:]+"
+    },
+    "MetadataCopies":{
+      "type":"structure",
+      "required":["copiableAttributes"],
+      "members":{
+        "copiableAttributes":{
+          "shape":"CopiableAttributes",
+          "documentation":"<p>The JSON string used to specify a subset of SOP Instances to copy from source to destination image set.</p>"
+        }
+      },
+      "documentation":"<p>Contains copiable <code>Attributes</code> structure and wraps information related to specific copy use cases. For example, when copying subsets.</p>"
+    },
+    "MetadataUpdates":{
+      "type":"structure",
+      "members":{
+        "DICOMUpdates":{
+          "shape":"DICOMUpdates",
+          "documentation":"<p>The object containing <code>removableAttributes</code> and <code>updatableAttributes</code>.</p>"
+        },
+        "revertToVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>Specifies the previous image set version ID to revert the current image set back to.</p> <note> <p>You must provide either <code>revertToVersionId</code> or <code>DICOMUpdates</code> in your request. A <code>ValidationException</code> error is thrown if both parameters are provided at the same time.</p> </note>"
+        }
+      },
+      "documentation":"<p>Contains DICOMUpdates.</p>",
+      "union":true
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"\\p{ASCII}{0,8192}"
+    },
+    "Operator":{
+      "type":"string",
+      "enum":[
+        "EQUAL",
+        "BETWEEN"
+      ]
+    },
+    "Overrides":{
+      "type":"structure",
+      "members":{
+        "forced":{
+          "shape":"Boolean",
+          "documentation":"<p>Providing this parameter will force completion of the <code>CopyImageSet</code> and <code>UpdateImageSetMetadata</code> actions, even if metadata is inconsistent at the Patient, Study, and/or Series levels.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the overrides used in image set modification calls to <code>CopyImageSet</code> and <code>UpdateImageSetMetadata</code>.</p>"
+    },
+    "PayloadBlob":{
+      "type":"blob",
+      "streaming":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request references a resource which does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:iam::[0-9]{12}:role/.+"
+    },
+    "S3Uri":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?"
+    },
+    "SearchByAttributeValue":{
+      "type":"structure",
+      "members":{
+        "DICOMPatientId":{
+          "shape":"DICOMPatientId",
+          "documentation":"<p>The patient ID input for search.</p>"
+        },
+        "DICOMAccessionNumber":{
+          "shape":"DICOMAccessionNumber",
+          "documentation":"<p>The DICOM accession number for search.</p>"
+        },
+        "DICOMStudyId":{
+          "shape":"DICOMStudyId",
+          "documentation":"<p>The DICOM study ID for search.</p>"
+        },
+        "DICOMStudyInstanceUID":{
+          "shape":"DICOMStudyInstanceUID",
+          "documentation":"<p>The DICOM study instance UID for search.</p>"
+        },
+        "DICOMSeriesInstanceUID":{
+          "shape":"DICOMSeriesInstanceUID",
+          "documentation":"<p>The Series Instance UID input for search.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The created at time of the image set provided for search.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp input for search.</p>"
+        },
+        "DICOMStudyDateAndTime":{
+          "shape":"DICOMStudyDateAndTime",
+          "documentation":"<p>The aggregated structure containing DICOM study date and study time for search.</p>"
+        },
+        "isPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>The primary image set flag provided for search.</p>"
+        }
+      },
+      "documentation":"<p>The search input attribute value.</p>",
+      "union":true
+    },
+    "SearchCriteria":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"SearchCriteriaFiltersList",
+          "documentation":"<p>The filters for the search criteria.</p>"
+        },
+        "sort":{
+          "shape":"Sort",
+          "documentation":"<p>The sort input for search criteria.</p>"
+        }
+      },
+      "documentation":"<p>The search criteria.</p>",
+      "sensitive":true
+    },
+    "SearchCriteriaFiltersList":{
+      "type":"list",
+      "member":{"shape":"SearchFilter"},
+      "max":2,
+      "min":1
+    },
+    "SearchFilter":{
+      "type":"structure",
+      "required":[
+        "values",
+        "operator"
+      ],
+      "members":{
+        "values":{
+          "shape":"SearchFilterValuesList",
+          "documentation":"<p>The search filter values.</p>"
+        },
+        "operator":{
+          "shape":"Operator",
+          "documentation":"<p>The search filter operator for <code>imageSetDateTime</code>.</p>"
+        }
+      },
+      "documentation":"<p>The search filter.</p>"
+    },
+    "SearchFilterValuesList":{
+      "type":"list",
+      "member":{"shape":"SearchByAttributeValue"},
+      "max":2,
+      "min":1
+    },
+    "SearchImageSetsRequest":{
+      "type":"structure",
+      "required":["datastoreId"],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The identifier of the data store where the image sets reside.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "searchCriteria":{
+          "shape":"SearchCriteria",
+          "documentation":"<p>The search criteria that filters by applying a maximum of 1 item to <code>SearchByAttribute</code>.</p>"
+        },
+        "maxResults":{
+          "shape":"SearchImageSetsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results that can be returned in a search.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token used for pagination of results returned in the response. Use the token returned from the previous request to continue results where the previous request ended.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      },
+      "payload":"searchCriteria"
+    },
+    "SearchImageSetsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "SearchImageSetsResponse":{
+      "type":"structure",
+      "required":["imageSetsMetadataSummaries"],
+      "members":{
+        "imageSetsMetadataSummaries":{
+          "shape":"ImageSetsMetadataSummaries",
+          "documentation":"<p>The model containing the image set results.</p>"
+        },
+        "sort":{
+          "shape":"Sort",
+          "documentation":"<p>The sort order for image set search results.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for pagination results.</p>"
+        }
+      }
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request caused a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Sort":{
+      "type":"structure",
+      "required":[
+        "sortOrder",
+        "sortField"
+      ],
+      "members":{
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sort order for search criteria.</p>"
+        },
+        "sortField":{
+          "shape":"SortField",
+          "documentation":"<p>The sort field for search criteria.</p>"
+        }
+      },
+      "documentation":"<p>Sort search results.</p>"
+    },
+    "SortField":{
+      "type":"string",
+      "enum":[
+        "updatedAt",
+        "createdAt",
+        "DICOMStudyDateAndTime"
+      ]
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "StartDICOMImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "dataAccessRoleArn",
+        "clientToken",
+        "datastoreId",
+        "inputS3Uri",
+        "outputS3Uri"
+      ],
+      "members":{
+        "jobName":{
+          "shape":"JobName",
+          "documentation":"<p>The import job name.</p>"
+        },
+        "dataAccessRoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that grants permission to access medical imaging resources.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique identifier for API idempotency.</p>",
+          "idempotencyToken":true
+        },
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "inputS3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The input prefix path for the S3 bucket that contains the DICOM files to be imported.</p>"
+        },
+        "outputS3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The output prefix of the S3 bucket to upload the results of the DICOM import job.</p>"
+        },
+        "inputOwnerAccountId":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The account ID of the source S3 bucket owner.</p>"
+        }
+      }
+    },
+    "StartDICOMImportJobResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "jobId",
+        "jobStatus",
+        "submittedAt"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        },
+        "jobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The import job status.</p>"
+        },
+        "submittedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when the import job was submitted.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[a-zA-Z+-=._:/]+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the medical imaging resource that tags are being added to.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The user-specified key and value tag pairs added to a medical imaging resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the medical imaging resource that tags are being removed from.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The keys for the tags to be removed from the medical imaging resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateImageSetMetadataRequest":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId",
+        "latestVersionId",
+        "updateImageSetMetadataUpdates"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>",
+          "location":"uri",
+          "locationName":"datastoreId"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>",
+          "location":"uri",
+          "locationName":"imageSetId"
+        },
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest image set version identifier.</p>",
+          "location":"querystring",
+          "locationName":"latestVersion"
+        },
+        "force":{
+          "shape":"Boolean",
+          "documentation":"<p>Setting this flag will force the <code>UpdateImageSetMetadata</code> operation for the following attributes:</p> <ul> <li> <p> <code>Tag.StudyInstanceUID</code>, <code>Tag.SeriesInstanceUID</code>, <code>Tag.SOPInstanceUID</code>, and <code>Tag.StudyID</code> </p> </li> <li> <p>Adding, removing, or updating private tags for an individual SOP Instance</p> </li> </ul>",
+          "location":"querystring",
+          "locationName":"force"
+        },
+        "updateImageSetMetadataUpdates":{
+          "shape":"MetadataUpdates",
+          "documentation":"<p>Update image set metadata updates.</p>"
+        }
+      },
+      "payload":"updateImageSetMetadataUpdates"
+    },
+    "UpdateImageSetMetadataResponse":{
+      "type":"structure",
+      "required":[
+        "datastoreId",
+        "imageSetId",
+        "latestVersionId",
+        "imageSetState"
+      ],
+      "members":{
+        "datastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "imageSetId":{
+          "shape":"ImageSetId",
+          "documentation":"<p>The image set identifier.</p>"
+        },
+        "latestVersionId":{
+          "shape":"ImageSetExternalVersionId",
+          "documentation":"<p>The latest image set version identifier.</p>"
+        },
+        "imageSetState":{
+          "shape":"ImageSetState",
+          "documentation":"<p>The image set state.</p>"
+        },
+        "imageSetWorkflowStatus":{
+          "shape":"ImageSetWorkflowStatus",
+          "documentation":"<p>The image set workflow status.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when image set metadata was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp when image set metadata was updated.</p>"
+        },
+        "message":{
+          "shape":"Message",
+          "documentation":"<p>The error message thrown if an update image set metadata action fails.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints set by the service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>This is the <i>AWS HealthImaging API Reference</i>. For an introduction to the service, see <a href=\"https://docs.aws.amazon.com/healthimaging/latest/devguide/what-is.html\">What is AWS HealthImaging?</a> in the <i>AWS HealthImaging Developer Guide</i>.</p>"
+}

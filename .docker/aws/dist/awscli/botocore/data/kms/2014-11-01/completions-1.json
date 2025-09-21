@@ -1,0 +1,326 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Aliase": {
+      "operation": "ListAliases",
+      "resourceIdentifier": {
+        "AliasName": "Aliases[].AliasName",
+        "TargetKeyId": "Aliases[].TargetKeyId"
+      }
+    },
+    "Key": {
+      "operation": "ListKeys",
+      "resourceIdentifier": {
+        "KeyId": "Keys[].KeyId"
+      }
+    }
+  },
+  "operations": {
+    "CancelKeyDeletion": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "DeleteAlias": {
+      "AliasName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasName"
+          }
+        ]
+      }
+    },
+    "DeleteImportedKeyMaterial": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "DescribeKey": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "DisableKey": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "DisableKeyRotation": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "EnableKey": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "EnableKeyRotation": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "Encrypt": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "GenerateDataKey": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "GenerateDataKeyWithoutPlaintext": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "GetKeyPolicy": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "GetKeyRotationStatus": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "GetParametersForImport": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ImportKeyMaterial": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ListAliases": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ListGrants": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ListKeyPolicies": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ListResourceTags": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "PutKeyPolicy": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "RetireGrant": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "RevokeGrant": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "ScheduleKeyDeletion": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "TagResource": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "UntagResource": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    },
+    "UpdateAlias": {
+      "AliasName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasName"
+          }
+        ]
+      },
+      "TargetKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "TargetKeyId"
+          }
+        ]
+      }
+    },
+    "UpdateKeyDescription": {
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Key",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      }
+    }
+  }
+}

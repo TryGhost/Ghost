@@ -1,0 +1,14 @@
+**To decode a authorization failure message**
+
+The following ``decode-authorization-message`` example decodes the message returned by the EC2 console when attempting to launch an instance without the required permissions. ::
+
+    aws sts decode-authorization-message \
+        --encoded-message lxzA8VEjEvu-s0TTt3PgYCXik9YakOqsrFJGRZR98xNcyWAxwRq14xIvd-npzbgTevuufCTbjeBAaDARg9cbTK1rJbg3awM33o-Vy3ebPErE2-mWR9hVYdvX-0zKgVOWF9pWjZaJSMqxB-aLXo-I_8TTvBq88x8IFPbMArNdpu0IjxDjzf22PF3SOE3XvIQ-_PEO0aUqHCCcsSrFtvxm6yQD1nbm6VTIVrfa0Bzy8lsoMo7SjIaJ2r5vph6SY5vCCwg6o2JKe3hIHTa8zRrDbZSFMkcXOT6EOPkQXmaBsAC6ciG7Pz1JnEOvuj5NSTlSMljrAXczWuRKAs5GsMYiU8KZXZhokVzdQCUZkS5aVHumZbadu0io53jpgZqhMqvS4fyfK4auK0yKRMtS6JCXPlhkolEs7ZMFA0RVkutqhQqpSDPB5SX5l00lYipWyFK0_AyAx60vumPuVh8P0AzXwdFsT0l4D0m42NFIKxbWXsoJdqaOqVFyFEd0-Xx9AYAAIr6bhcis7C__bZh4dlAAWooHFGKgfoJcWGwgdzgbu9hWyVvKTpeot5hsb8qANYjJRCPXTKpi6PZfdijIkwb6gDMEsJ9qMtr62qP_989mwmtNgnVvBa_ir6oxJxVe_kL9SH1j5nsGDxQFajvPQhxWOHvEQIg_H0bnKWk
+
+The output is formatted as a single-line string of JSON text that you can parse with any JSON text processor. ::
+
+    {
+        "DecodedMessage": "{\"allowed\":false,\"explicitDeny\":false,\"matchedStatements\":{\"items\":[]},\"failures\":{\"items\":[]},\"context\":{\"principal\":{\"id\":\"AIDAV3ZUEFP6J7GY7O6LO\",\"name\":\"chain-user\",\"arn\":\"arn:aws:iam::403299380220:user/chain-user\"},\"action\":\"ec2:RunInstances\",\"resource\":\"arn:aws:ec2:us-east-2:403299380220:instance/*\",\"conditions\":{\"items\":[{\"key\":\"ec2:InstanceMarketType\",\"values\":{\"items\":[{\"value\":\"on-demand\"}]}},{\"key\":\"aws:Resource\",\"values\":{\"items\":[{\"value\":\"instance/*\"}]}},{\"key\":\"aws:Account\",\"values\":{\"items\":[{\"value\":\"403299380220\"}]}},{\"key\":\"ec2:AvailabilityZone\",\"values\":{\"items\":[{\"value\":\"us-east-2b\"}]}},{\"key\":\"ec2:ebsOptimized\",\"values\":{\"items\":[{\"value\":\"false\"}]}},{\"key\":\"ec2:IsLaunchTemplateResource\",\"values\":{\"items\":[{\"value\":\"false\"}]}},{\"key\":\"ec2:InstanceType\",\"values\":{\"items\":[{\"value\":\"t2.micro\"}]}},{\"key\":\"ec2:RootDeviceType\",\"values\":{\"items\":[{\"value\":\"ebs\"}]}},{\"key\":\"aws:Region\",\"values\":{\"items\":[{\"value\":\"us-east-2\"}]}},{\"key\":\"aws:Service\",\"values\":{\"items\":[{\"value\":\"ec2\"}]}},{\"key\":\"ec2:InstanceID\",\"values\":{\"items\":[{\"value\":\"*\"}]}},{\"key\":\"aws:Type\",\"values\":{\"items\":[{\"value\":\"instance\"}]}},{\"key\":\"ec2:Tenancy\",\"values\":{\"items\":[{\"value\":\"default\"}]}},{\"key\":\"ec2:Region\",\"values\":{\"items\":[{\"value\":\"us-east-2\"}]}},{\"key\":\"aws:ARN\",\"values\":{\"items\":[{\"value\":\"arn:aws:ec2:us-east-2:403299380220:instance/*\"}]}}]}}}"
+    }
+
+For more information, see `How can I decode an authorization failure message after receiving an "UnauthorizedOperation" error during an EC2 instance launch? <https://repost.aws/knowledge-center/ec2-not-auth-launch>`__ in *AWS re:Post*.

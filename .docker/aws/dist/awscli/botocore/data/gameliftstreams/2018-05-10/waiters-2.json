@@ -1,0 +1,88 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "ApplicationDeleted" : {
+      "description" : "Waits until an application is deleted",
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetApplication",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : "ResourceNotFoundException"
+      } ]
+    },
+    "ApplicationReady" : {
+      "description" : "Waits until an application is ready",
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetApplication",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "success",
+        "expected" : "READY"
+      }, {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      } ]
+    },
+    "StreamGroupActive" : {
+      "description" : "Waits until a stream group is active",
+      "delay" : 30,
+      "maxAttempts" : 120,
+      "operation" : "GetStreamGroup",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "success",
+        "expected" : "ACTIVE"
+      }, {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      }, {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "failure",
+        "expected" : "ACTIVE_WITH_ERRORS"
+      }, {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "failure",
+        "expected" : "DELETING"
+      } ]
+    },
+    "StreamGroupDeleted" : {
+      "description" : "Waits until a stream group is deleted",
+      "delay" : 30,
+      "maxAttempts" : 60,
+      "operation" : "GetStreamGroup",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : "ResourceNotFoundException"
+      } ]
+    },
+    "StreamSessionActive" : {
+      "description" : "Waits until a stream session is active",
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetStreamSession",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "success",
+        "expected" : "ACTIVE"
+      }, {
+        "matcher" : "path",
+        "argument" : "Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      } ]
+    }
+  }
+}

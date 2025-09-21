@@ -1,0 +1,304 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-09-30",
+    "endpointPrefix":"metrics.sagemaker",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"SageMaker Metrics",
+    "serviceFullName":"Amazon SageMaker Metrics Service",
+    "serviceId":"SageMaker Metrics",
+    "signatureVersion":"v4",
+    "signingName":"sagemaker",
+    "uid":"sagemaker-metrics-2022-09-30",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "BatchGetMetrics":{
+      "name":"BatchGetMetrics",
+      "http":{
+        "method":"POST",
+        "requestUri":"/BatchGetMetrics"
+      },
+      "input":{"shape":"BatchGetMetricsRequest"},
+      "output":{"shape":"BatchGetMetricsResponse"},
+      "documentation":"<p>Used to retrieve training metrics from SageMaker.</p>"
+    },
+    "BatchPutMetrics":{
+      "name":"BatchPutMetrics",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/BatchPutMetrics"
+      },
+      "input":{"shape":"BatchPutMetricsRequest"},
+      "output":{"shape":"BatchPutMetricsResponse"},
+      "documentation":"<p>Used to ingest training metrics into SageMaker. These metrics can be visualized in SageMaker Studio. </p>"
+    }
+  },
+  "shapes":{
+    "BatchGetMetricsRequest":{
+      "type":"structure",
+      "required":["MetricQueries"],
+      "members":{
+        "MetricQueries":{
+          "shape":"MetricQueryList",
+          "documentation":"<p>Queries made to retrieve training metrics from SageMaker.</p>"
+        }
+      }
+    },
+    "BatchGetMetricsResponse":{
+      "type":"structure",
+      "members":{
+        "MetricQueryResults":{
+          "shape":"MetricQueryResultList",
+          "documentation":"<p>The results of a query to retrieve training metrics from SageMaker.</p>"
+        }
+      }
+    },
+    "BatchPutMetricsError":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"PutMetricsErrorCode",
+          "documentation":"<p>The error code of an error that occured when attempting to put metrics.</p> <ul> <li> <p> <code>METRIC_LIMIT_EXCEEDED</code>: The maximum amount of metrics per resource is exceeded.</p> </li> <li> <p> <code>INTERNAL_ERROR</code>: An internal error occured.</p> </li> <li> <p> <code>VALIDATION_ERROR</code>: The metric data failed validation.</p> </li> <li> <p> <code>CONFLICT_ERROR</code>: Multiple requests attempted to modify the same data simultaneously.</p> </li> </ul>"
+        },
+        "MetricIndex":{
+          "shape":"Integer",
+          "documentation":"<p>An index that corresponds to the metric in the request.</p>"
+        }
+      },
+      "documentation":"<p>An error that occured when putting the metric data.</p>"
+    },
+    "BatchPutMetricsErrorList":{
+      "type":"list",
+      "member":{"shape":"BatchPutMetricsError"},
+      "max":10,
+      "min":1
+    },
+    "BatchPutMetricsRequest":{
+      "type":"structure",
+      "required":[
+        "TrialComponentName",
+        "MetricData"
+      ],
+      "members":{
+        "TrialComponentName":{
+          "shape":"ExperimentEntityName",
+          "documentation":"<p>The name of the Trial Component to associate with the metrics. The Trial Component name must be entirely lowercase.</p>"
+        },
+        "MetricData":{
+          "shape":"RawMetricDataList",
+          "documentation":"<p>A list of raw metric values to put.</p>"
+        }
+      }
+    },
+    "BatchPutMetricsResponse":{
+      "type":"structure",
+      "members":{
+        "Errors":{
+          "shape":"BatchPutMetricsErrorList",
+          "documentation":"<p>Lists any errors that occur when inserting metric data.</p>"
+        }
+      }
+    },
+    "Double":{"type":"double"},
+    "ExperimentEntityName":{
+      "type":"string",
+      "max":120,
+      "min":1,
+      "pattern":"^[a-z0-9](-*[a-z0-9]){0,119}"
+    },
+    "Integer":{"type":"integer"},
+    "Long":{"type":"long"},
+    "Message":{
+      "type":"string",
+      "max":2048,
+      "pattern":".*"
+    },
+    "MetricName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":".+"
+    },
+    "MetricQuery":{
+      "type":"structure",
+      "required":[
+        "MetricName",
+        "ResourceArn",
+        "MetricStat",
+        "Period",
+        "XAxisType"
+      ],
+      "members":{
+        "MetricName":{
+          "shape":"MetricName",
+          "documentation":"<p>The name of the metric to retrieve.</p>"
+        },
+        "ResourceArn":{
+          "shape":"SageMakerResourceArn",
+          "documentation":"<p>The ARN of the SageMaker resource to retrieve metrics for.</p>"
+        },
+        "MetricStat":{
+          "shape":"MetricStatistic",
+          "documentation":"<p>The metrics stat type of metrics to retrieve.</p>"
+        },
+        "Period":{
+          "shape":"Period",
+          "documentation":"<p>The time period of metrics to retrieve.</p>"
+        },
+        "XAxisType":{
+          "shape":"XAxisType",
+          "documentation":"<p>The x-axis type of metrics to retrieve.</p>"
+        },
+        "Start":{
+          "shape":"Long",
+          "documentation":"<p>The start time of metrics to retrieve.</p>",
+          "box":true
+        },
+        "End":{
+          "shape":"Long",
+          "documentation":"<p>The end time of metrics to retrieve.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>Specifies a query to retrieve training metrics from SageMaker.</p>"
+    },
+    "MetricQueryList":{
+      "type":"list",
+      "member":{"shape":"MetricQuery"},
+      "max":100,
+      "min":1
+    },
+    "MetricQueryResult":{
+      "type":"structure",
+      "required":[
+        "Status",
+        "XAxisValues",
+        "MetricValues"
+      ],
+      "members":{
+        "Status":{
+          "shape":"MetricQueryResultStatus",
+          "documentation":"<p>The status of the metric query.</p>"
+        },
+        "Message":{
+          "shape":"Message",
+          "documentation":"<p>A message describing the status of the metric query.</p>"
+        },
+        "XAxisValues":{
+          "shape":"XAxisValues",
+          "documentation":"<p>The values for the x-axis of the metrics.</p>"
+        },
+        "MetricValues":{
+          "shape":"MetricValues",
+          "documentation":"<p>The metric values retrieved by the query.</p>"
+        }
+      },
+      "documentation":"<p>The result of a query to retrieve training metrics from SageMaker.</p>"
+    },
+    "MetricQueryResultList":{
+      "type":"list",
+      "member":{"shape":"MetricQueryResult"},
+      "max":100,
+      "min":1
+    },
+    "MetricQueryResultStatus":{
+      "type":"string",
+      "enum":[
+        "Complete",
+        "Truncated",
+        "InternalError",
+        "ValidationError"
+      ]
+    },
+    "MetricStatistic":{
+      "type":"string",
+      "enum":[
+        "Min",
+        "Max",
+        "Avg",
+        "Count",
+        "StdDev",
+        "Last"
+      ]
+    },
+    "MetricValues":{
+      "type":"list",
+      "member":{"shape":"Double"}
+    },
+    "Period":{
+      "type":"string",
+      "enum":[
+        "OneMinute",
+        "FiveMinute",
+        "OneHour",
+        "IterationNumber"
+      ]
+    },
+    "PutMetricsErrorCode":{
+      "type":"string",
+      "enum":[
+        "METRIC_LIMIT_EXCEEDED",
+        "INTERNAL_ERROR",
+        "VALIDATION_ERROR",
+        "CONFLICT_ERROR"
+      ]
+    },
+    "RawMetricData":{
+      "type":"structure",
+      "required":[
+        "MetricName",
+        "Timestamp",
+        "Value"
+      ],
+      "members":{
+        "MetricName":{
+          "shape":"MetricName",
+          "documentation":"<p>The name of the metric.</p>"
+        },
+        "Timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that the metric was recorded.</p>"
+        },
+        "Step":{
+          "shape":"Step",
+          "documentation":"<p>The metric step (epoch). </p>"
+        },
+        "Value":{
+          "shape":"Double",
+          "documentation":"<p>The metric value.</p>"
+        }
+      },
+      "documentation":"<p>The raw metric data to associate with the resource.</p>"
+    },
+    "RawMetricDataList":{
+      "type":"list",
+      "member":{"shape":"RawMetricData"},
+      "max":10,
+      "min":1
+    },
+    "SageMakerResourceArn":{
+      "type":"string",
+      "max":2048,
+      "pattern":"arn:aws[a-z\\-]*:sagemaker:[a-z0-9\\-]*:[0-9]{12}:[a-z\\-].*/.*"
+    },
+    "Step":{
+      "type":"integer",
+      "min":0
+    },
+    "Timestamp":{"type":"timestamp"},
+    "XAxisType":{
+      "type":"string",
+      "enum":[
+        "IterationNumber",
+        "Timestamp"
+      ]
+    },
+    "XAxisValues":{
+      "type":"list",
+      "member":{"shape":"Long"}
+    }
+  },
+  "documentation":"<p>Contains all data plane API operations and data types for Amazon SageMaker Metrics. Use these APIs to put and retrieve (get) features related to your training run.</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_metrics_BatchPutMetrics.html\">BatchPutMetrics</a> </p> </li> </ul>"
+}

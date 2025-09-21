@@ -1,0 +1,142 @@
+name: CI-CD
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  APP_NAME: ghost-app
+  AWS_REGION: us-east-1
+  ECR_REPO: ghost-app
+  SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+jobs:
+  prepare:
+    name: Prepare metadata
+    runs-on: [self-hosted, devops-runner]
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      short_sha: ${{ steps.meta.outputs.short_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "image_tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+  sonarqube:
+    name: SonarQube Analysis
+    needs: prepare
+    runs-on: [self-hosted, devops-runner]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run SonarQube Scan
+        run: |
+          docker run --rm \
+            -e SONAR_HOST_URL="${SONAR_HOST_URL}" \
+            -e SONAR_LOGIN="${SONAR_TOKEN}" \
+            -v "${PWD}:/usr/src" \
+            sonarsource/sonar-scanner-cli:latest
+
+  build_push:
+    name: Build & Push Image
+    needs: sonarqube
+    runs-on: [self-hosted, devops-runner]
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+        #      - name: Configure AWS Credentials
+        # uses: aws-actions/configure-aws-credentials@v4
+        #with:
+        #  aws-region: ${{ env.AWS_REGION }}
+        #  role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push with Cache
+        run: |
+          REPO_URI="${{ steps.login-ecr.outputs.registry }}/${ECR_REPO}"
+          docker buildx create --name ci-builder --use --driver docker-container || true
+          docker buildx inspect --bootstrap
+          docker buildx build \
+            --file .docker/Dockerfile \
+            --target production \
+            --cache-from=type=registry,ref=${REPO_URI}:buildcache \
+            --cache-to=type=registry,ref=${REPO_URI}:buildcache,mode=max \
+            -t ${REPO_URI}:latest \
+            -t ${REPO_URI}:${IMAGE_TAG} \
+            --push \
+            .
+
+  deploy_staging:
+    name: Deploy to Staging
+    needs: build_push
+    runs-on: [self-hosted, devops-runner]
+    steps:
+      - name: SSH into staging & deploy
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+        run: |
+          echo "${STAGING_SSH_KEY}" | tr -d '\r' > key_staging.pem
+          chmod 600 key_staging.pem
+          ssh -o StrictHostKeyChecking=no -i key_staging.pem ${STAGING_SSH_USER}@${STAGING_HOST} <<'EOS'
+          set -e
+          cd ~/ghost
+          docker compose -f docker-compose.staging.yml pull
+          docker compose -f docker-compose.staging.yml up -d
+          EOS
+
+  smoke_test_staging:
+    name: Smoke Test Staging
+    needs: deploy_staging
+    runs-on: [self-hosted, devops-runner]
+    steps:
+      - name: Check staging URL
+        run: |
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.STAGING_HEALTH_URL }}" || true)
+            echo "Attempt $i => HTTP $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+
+  deploy_production:
+    name: Deploy to Production
+    needs: smoke_test_staging
+    runs-on: [self-hosted, devops-runner]
+    environment:
+      name: production   # requires manual approval
+    steps:
+      - name: SSH into production & deploy
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+        run: |
+          echo "${PROD_SSH_KEY}" | tr -d '\r' > key_prod.pem
+          chmod 600 key_prod.pem
+          ssh -o StrictHostKeyChecking=no -i key_prod.pem ${PROD_SSH_USER}@${PROD_HOST} <<'EOS'
+          set -e
+          cd ~/ghost
+          docker compose -f docker-compose.production.yml pull
+          docker compose -f docker-compose.production.yml up -d
+          EOS
+

@@ -1,0 +1,2293 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-07-26",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"mpa",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Multi-party Approval",
+    "serviceId":"MPA",
+    "signatureVersion":"v4",
+    "signingName":"mpa",
+    "uid":"mpa-2022-07-26"
+  },
+  "operations":{
+    "CancelSession":{
+      "name":"CancelSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/sessions/{SessionArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelSessionRequest"},
+      "output":{"shape":"CancelSessionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Cancels an approval session. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Session</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "CreateApprovalTeam":{
+      "name":"CreateApprovalTeam",
+      "http":{
+        "method":"POST",
+        "requestUri":"/approval-teams",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateApprovalTeamRequest"},
+      "output":{"shape":"CreateApprovalTeamResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a new approval team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Approval team</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "CreateIdentitySource":{
+      "name":"CreateIdentitySource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-sources",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateIdentitySourceRequest"},
+      "output":{"shape":"CreateIdentitySourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a new identity source. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity Source</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "DeleteIdentitySource":{
+      "name":"DeleteIdentitySource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/identity-sources/{IdentitySourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteIdentitySourceRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes an identity source. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity Source</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "DeleteInactiveApprovalTeamVersion":{
+      "name":"DeleteInactiveApprovalTeamVersion",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/approval-teams/{Arn}/{VersionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteInactiveApprovalTeamVersionRequest"},
+      "output":{"shape":"DeleteInactiveApprovalTeamVersionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes an inactive approval team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p> <p>You can also use this operation to delete a team draft. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/update-team.html#update-team-draft-status\">Interacting with drafts</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "GetApprovalTeam":{
+      "name":"GetApprovalTeam",
+      "http":{
+        "method":"GET",
+        "requestUri":"/approval-teams/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetApprovalTeamRequest"},
+      "output":{"shape":"GetApprovalTeamResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details for an approval team.</p>"
+    },
+    "GetIdentitySource":{
+      "name":"GetIdentitySource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/identity-sources/{IdentitySourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIdentitySourceRequest"},
+      "output":{"shape":"GetIdentitySourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details for an identity source. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity Source</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "GetPolicyVersion":{
+      "name":"GetPolicyVersion",
+      "http":{
+        "method":"GET",
+        "requestUri":"/policy-versions/{PolicyVersionArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPolicyVersionRequest"},
+      "output":{"shape":"GetPolicyVersionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details for the version of a policy. Policies define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetResourcePolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns details about a policy for a resource.</p>"
+    },
+    "GetSession":{
+      "name":"GetSession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sessions/{SessionArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSessionRequest"},
+      "output":{"shape":"GetSessionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details for an approval session. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Session</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "ListApprovalTeams":{
+      "name":"ListApprovalTeams",
+      "http":{
+        "method":"POST",
+        "requestUri":"/approval-teams/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApprovalTeamsRequest"},
+      "output":{"shape":"ListApprovalTeamsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of approval teams.</p>"
+    },
+    "ListIdentitySources":{
+      "name":"ListIdentitySources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-sources/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIdentitySourcesRequest"},
+      "output":{"shape":"ListIdentitySourcesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of identity sources. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity Source</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "ListPolicies":{
+      "name":"ListPolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/policies/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPoliciesRequest"},
+      "output":{"shape":"ListPoliciesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of policies. Policies define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "ListPolicyVersions":{
+      "name":"ListPolicyVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/policies/{PolicyArn}/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPolicyVersionsRequest"},
+      "output":{"shape":"ListPolicyVersionsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of the versions for policies. Policies define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "ListResourcePolicies":{
+      "name":"ListResourcePolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/resource-policies/{ResourceArn}/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListResourcePoliciesRequest"},
+      "output":{"shape":"ListResourcePoliciesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of policies for a resource.</p>"
+    },
+    "ListSessions":{
+      "name":"ListSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/approval-teams/{ApprovalTeamArn}/sessions/?List",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSessionsRequest"},
+      "output":{"shape":"ListSessionsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of approval sessions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Session</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of the tags for a resource.</p>"
+    },
+    "StartActiveApprovalTeamDeletion":{
+      "name":"StartActiveApprovalTeamDeletion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/approval-teams/{Arn}?Delete",
+        "responseCode":200
+      },
+      "input":{"shape":"StartActiveApprovalTeamDeletionRequest"},
+      "output":{"shape":"StartActiveApprovalTeamDeletionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Starts the deletion process for an active approval team.</p> <note> <p> <b>Deletions require team approval</b> </p> <p>Requests to delete an active team must be approved by the team.</p> </note>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates or updates a resource tag. Each tag is a label consisting of a user-defined key and value. Tags can help you manage, identify, organize, search for, and filter resources.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a resource tag. Each tag is a label consisting of a user-defined key and value. Tags can help you manage, identify, organize, search for, and filter resources. </p>",
+      "idempotent":true
+    },
+    "UpdateApprovalTeam":{
+      "name":"UpdateApprovalTeam",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/approval-teams/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateApprovalTeamRequest"},
+      "output":{"shape":"UpdateApprovalTeamResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Updates an approval team. You can request to update the team description, approval threshold, and approvers in the team.</p> <note> <p> <b>Updates require team approval</b> </p> <p>Updates to an active team must be approved by the team.</p> </note>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>AccessDeniedException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action. Check your permissions, and try again.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":0,
+      "pattern":"\\d{12}"
+    },
+    "ActionCompletionStrategy":{
+      "type":"string",
+      "enum":["AUTO_COMPLETION_UPON_APPROVAL"]
+    },
+    "ActionName":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "ApprovalStrategy":{
+      "type":"structure",
+      "members":{
+        "MofN":{
+          "shape":"MofNApprovalStrategy",
+          "documentation":"<p>Minimum number of approvals (M) required for a total number of approvers (N).</p>"
+        }
+      },
+      "documentation":"<p>Strategy for how an approval team grants approval.</p>",
+      "union":true
+    },
+    "ApprovalStrategyResponse":{
+      "type":"structure",
+      "members":{
+        "MofN":{
+          "shape":"MofNApprovalStrategy",
+          "documentation":"<p>Minimum number of approvals (M) required for a total number of approvers (N).</p>"
+        }
+      },
+      "documentation":"<p>Contains details for how an approval team grants approval.</p>",
+      "union":true
+    },
+    "ApprovalTeamArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:mpa:[a-z0-9-]{1,20}:[0-9]{12}:approval-team/[a-zA-Z0-9._-]+"
+    },
+    "ApprovalTeamName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"[a-zA-Z0-9._-]+"
+    },
+    "ApprovalTeamRequestApprover":{
+      "type":"structure",
+      "required":[
+        "PrimaryIdentityId",
+        "PrimaryIdentitySourceArn"
+      ],
+      "members":{
+        "PrimaryIdentityId":{
+          "shape":"IdentityId",
+          "documentation":"<p>ID for the user.</p>"
+        },
+        "PrimaryIdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source. The identity source manages the user authentication for approvers.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an approver.</p>"
+    },
+    "ApprovalTeamRequestApprovers":{
+      "type":"list",
+      "member":{"shape":"ApprovalTeamRequestApprover"},
+      "max":20,
+      "min":1
+    },
+    "ApprovalTeamStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INACTIVE",
+        "DELETING",
+        "PENDING"
+      ]
+    },
+    "ApprovalTeamStatusCode":{
+      "type":"string",
+      "enum":[
+        "VALIDATING",
+        "PENDING_ACTIVATION",
+        "FAILED_VALIDATION",
+        "FAILED_ACTIVATION",
+        "UPDATE_PENDING_APPROVAL",
+        "UPDATE_PENDING_ACTIVATION",
+        "UPDATE_FAILED_APPROVAL",
+        "UPDATE_FAILED_ACTIVATION",
+        "UPDATE_FAILED_VALIDATION",
+        "DELETE_PENDING_APPROVAL",
+        "DELETE_FAILED_APPROVAL",
+        "DELETE_FAILED_VALIDATION"
+      ]
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CancelSessionRequest":{
+      "type":"structure",
+      "required":["SessionArn"],
+      "members":{
+        "SessionArn":{
+          "shape":"SessionArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the session.</p>",
+          "location":"uri",
+          "locationName":"SessionArn"
+        }
+      }
+    },
+    "CancelSessionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>ConflictException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The request cannot be completed because it conflicts with the current state of a resource.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateApprovalTeamRequest":{
+      "type":"structure",
+      "required":[
+        "ApprovalStrategy",
+        "Approvers",
+        "Description",
+        "Policies",
+        "Name"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"Token",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services populates this field.</p> <note> <p> <b>What is idempotency?</b> </p> <p>When you make a mutating API request, the request typically returns a result before the operation's asynchronous workflows have completed. Operations might also time out or encounter other server issues before they complete, even though the request has already returned a result. This could make it difficult to determine whether the request succeeded or not, and could lead to multiple retries to ensure that the operation completes successfully. However, if the original request and the subsequent retries are successful, the operation is completed multiple times. This means that you might create more resources than you intended.</p> <p> <i>Idempotency</i> ensures that an API request completes no more than one time. With an idempotent request, if the original request completes successfully, any subsequent retries complete successfully without performing any further actions.</p> </note>",
+          "idempotencyToken":true
+        },
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategy",
+          "documentation":"<p>An <code>ApprovalStrategy</code> object. Contains details for how the team grants approval.</p>"
+        },
+        "Approvers":{
+          "shape":"ApprovalTeamRequestApprovers",
+          "documentation":"<p>An array of <code>ApprovalTeamRequesterApprovers</code> objects. Contains details for the approvers in the team.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "Policies":{
+          "shape":"PoliciesReferences",
+          "documentation":"<p>An array of <code>PolicyReference</code> objects. Contains a list of policies that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "Name":{
+          "shape":"ApprovalTeamName",
+          "documentation":"<p>Name of the team.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags you want to attach to the team.</p>"
+        }
+      }
+    },
+    "CreateApprovalTeamResponse":{
+      "type":"structure",
+      "members":{
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the team was created.</p>"
+        },
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team that was created.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the team that was created.</p>"
+        },
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>Version ID for the team that was created. When a team is updated, the version ID changes.</p>"
+        }
+      }
+    },
+    "CreateIdentitySourceRequest":{
+      "type":"structure",
+      "required":["IdentitySourceParameters"],
+      "members":{
+        "IdentitySourceParameters":{
+          "shape":"IdentitySourceParameters",
+          "documentation":"<p>A <code> IdentitySourceParameters</code> object. Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "ClientToken":{
+          "shape":"Token",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services populates this field.</p> <note> <p> <b>What is idempotency?</b> </p> <p>When you make a mutating API request, the request typically returns a result before the operation's asynchronous workflows have completed. Operations might also time out or encounter other server issues before they complete, even though the request has already returned a result. This could make it difficult to determine whether the request succeeded or not, and could lead to multiple retries to ensure that the operation completes successfully. However, if the original request and the subsequent retries are successful, the operation is completed multiple times. This means that you might create more resources than you intended.</p> <p> <i>Idempotency</i> ensures that an API request completes no more than one time. With an idempotent request, if the original request completes successfully, any subsequent retries complete successfully without performing any further actions.</p> </note>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tag you want to attach to the identity source.</p>"
+        }
+      }
+    },
+    "CreateIdentitySourceResponse":{
+      "type":"structure",
+      "members":{
+        "IdentitySourceType":{
+          "shape":"IdentitySourceType",
+          "documentation":"<p>The type of resource that provided identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source that was created.</p>"
+        },
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the identity source was created.</p>"
+        }
+      }
+    },
+    "DeleteIdentitySourceRequest":{
+      "type":"structure",
+      "required":["IdentitySourceArn"],
+      "members":{
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for identity source.</p>",
+          "location":"uri",
+          "locationName":"IdentitySourceArn"
+        }
+      }
+    },
+    "DeleteInactiveApprovalTeamVersionRequest":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "VersionId"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amaazon Resource Name (ARN) for the team.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        },
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>Version ID for the team.</p>",
+          "location":"uri",
+          "locationName":"VersionId"
+        }
+      }
+    },
+    "DeleteInactiveApprovalTeamVersionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "sensitive":true
+    },
+    "Filter":{
+      "type":"structure",
+      "members":{
+        "FieldName":{
+          "shape":"FilterField",
+          "documentation":"<p>Name of the filter to use.</p> <note> <p> <b>Supported filters</b> </p> <p>The supported filters for <a>ListSessions</a> are: <code>ActionName</code>, <code>SessionStatus</code>, and <code>InitationTime</code>.</p> </note>"
+        },
+        "Operator":{
+          "shape":"Operator",
+          "documentation":"<p>Operator to use for filtering.</p> <ul> <li> <p> <code>EQ</code>: Equal to the specified value</p> </li> <li> <p> <code>NE</code>: Not equal to the specified value</p> </li> <li> <p> <code>GT</code>: Greater than the specified value</p> </li> <li> <p> <code>LT</code>: Less than the specified value</p> </li> <li> <p> <code>GTE</code>: Greater than or equal to the specified value</p> </li> <li> <p> <code>LTE</code>: Less than or equal to the specified value</p> </li> <li> <p> <code>CONTAINS</code>: Contains the specified value</p> </li> <li> <p> <code>NOT_CONTAINS</code>: Does not contain the specified value</p> </li> <li> <p> <code>BETWEEN</code>: Between two values, inclusive of the specified values.</p> </li> </ul> <note> <p> <b>Supported operators for each filter</b>:</p> <ul> <li> <p> <code>ActionName</code>: <code>EQ</code> | <code>NE</code> | <code>CONTAINS</code> | <code>NOT_CONTAINS</code> </p> </li> <li> <p> <code>SessionStatus</code>: <code>EQ</code> | <code>NE</code> </p> </li> <li> <p> <code>InitiationTime</code>: <code>GT</code> | <code>LT</code> | <code>GTE</code> | <code>LTE</code> | <code>BETWEEN</code> </p> </li> </ul> </note>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Value to use for filtering. For the <code>BETWEEN</code> operator, specify values in the format <code>a AND b</code> (<code>AND</code> is case-insensitive).</p>"
+        }
+      },
+      "documentation":"<p>Contains the filter to apply to requests. You can specify up to 10 filters for a request.</p>"
+    },
+    "FilterField":{
+      "type":"string",
+      "enum":[
+        "ActionName",
+        "ApprovalTeamName",
+        "VotingTime",
+        "Vote",
+        "SessionStatus",
+        "InitiationTime"
+      ]
+    },
+    "Filters":{
+      "type":"list",
+      "member":{"shape":"Filter"},
+      "max":10,
+      "min":0
+    },
+    "GetApprovalTeamRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "GetApprovalTeamResponse":{
+      "type":"structure",
+      "members":{
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the team was created.</p>"
+        },
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategyResponse",
+          "documentation":"<p>An <code>ApprovalStrategyResponse</code> object. Contains details for how the team grants approval.</p>"
+        },
+        "NumberOfApprovers":{
+          "shape":"Integer",
+          "documentation":"<p>Total number of approvers in the team.</p>"
+        },
+        "Approvers":{
+          "shape":"GetApprovalTeamResponseApprovers",
+          "documentation":"<p>An array of <code>GetApprovalTeamResponseApprover </code> objects. Contains details for the approvers in the team.</p>"
+        },
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the approval team.</p>"
+        },
+        "Status":{
+          "shape":"ApprovalTeamStatus",
+          "documentation":"<p>Status for the team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusCode":{
+          "shape":"ApprovalTeamStatusCode",
+          "documentation":"<p>Status code for the approval team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusMessage":{
+          "shape":"Message",
+          "documentation":"<p>Message describing the status for the team.</p>"
+        },
+        "UpdateSessionArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the session.</p>"
+        },
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>Version ID for the team.</p>"
+        },
+        "Policies":{
+          "shape":"PoliciesReferences",
+          "documentation":"<p>An array of <code>PolicyReference</code> objects. Contains a list of policies that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "LastUpdateTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the team was last updated.</p>"
+        },
+        "PendingUpdate":{
+          "shape":"PendingUpdate",
+          "documentation":"<p>A <code>PendingUpdate</code> object. Contains details for the pending updates for the team, if applicable.</p>"
+        }
+      }
+    },
+    "GetApprovalTeamResponseApprover":{
+      "type":"structure",
+      "members":{
+        "ApproverId":{
+          "shape":"ParticipantId",
+          "documentation":"<p>ID for the approver.</p>"
+        },
+        "ResponseTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the approver responded to an approval team invitation.</p>"
+        },
+        "PrimaryIdentityId":{
+          "shape":"IdentityId",
+          "documentation":"<p>ID for the user.</p>"
+        },
+        "PrimaryIdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source. The identity source manages the user authentication for approvers.</p>"
+        },
+        "PrimaryIdentityStatus":{
+          "shape":"IdentityStatus",
+          "documentation":"<p>Status for the identity source. For example, if an approver has accepted a team invitation with a user authentication method managed by the identity source.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an approver.</p>"
+    },
+    "GetApprovalTeamResponseApprovers":{
+      "type":"list",
+      "member":{"shape":"GetApprovalTeamResponseApprover"},
+      "max":20,
+      "min":0
+    },
+    "GetIdentitySourceRequest":{
+      "type":"structure",
+      "required":["IdentitySourceArn"],
+      "members":{
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source.</p>",
+          "location":"uri",
+          "locationName":"IdentitySourceArn"
+        }
+      }
+    },
+    "GetIdentitySourceResponse":{
+      "type":"structure",
+      "members":{
+        "IdentitySourceType":{
+          "shape":"IdentitySourceType",
+          "documentation":"<p>The type of resource that provided identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "IdentitySourceParameters":{
+          "shape":"IdentitySourceParametersForGet",
+          "documentation":"<p>A <code> IdentitySourceParameters</code> object. Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source.</p>"
+        },
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the identity source was created.</p>"
+        },
+        "Status":{
+          "shape":"IdentitySourceStatus",
+          "documentation":"<p>Status for the identity source. For example, if the identity source is <code>ACTIVE</code>.</p>"
+        },
+        "StatusCode":{
+          "shape":"IdentitySourceStatusCode",
+          "documentation":"<p>Status code of the identity source.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>Message describing the status for the identity source.</p>"
+        }
+      }
+    },
+    "GetPolicyVersionRequest":{
+      "type":"structure",
+      "required":["PolicyVersionArn"],
+      "members":{
+        "PolicyVersionArn":{
+          "shape":"QualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>",
+          "location":"uri",
+          "locationName":"PolicyVersionArn"
+        }
+      }
+    },
+    "GetPolicyVersionResponse":{
+      "type":"structure",
+      "required":["PolicyVersion"],
+      "members":{
+        "PolicyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>A <code>PolicyVersion</code> object. Contains details for the version of the policy. Policies define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "PolicyName",
+        "PolicyType"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource.</p>"
+        },
+        "PolicyName":{
+          "shape":"String",
+          "documentation":"<p>Name of the policy.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "PolicyType",
+        "PolicyName",
+        "PolicyDocument"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy</p>"
+        },
+        "PolicyVersionArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy version.</p>"
+        },
+        "PolicyName":{
+          "shape":"PolicyName",
+          "documentation":"<p>Name of the policy.</p>"
+        },
+        "PolicyDocument":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>Document that contains the contents for the policy.</p>"
+        }
+      }
+    },
+    "GetSessionRequest":{
+      "type":"structure",
+      "required":["SessionArn"],
+      "members":{
+        "SessionArn":{
+          "shape":"SessionArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the session.</p>",
+          "location":"uri",
+          "locationName":"SessionArn"
+        }
+      }
+    },
+    "GetSessionResponse":{
+      "type":"structure",
+      "members":{
+        "SessionArn":{
+          "shape":"SessionArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the session.</p>"
+        },
+        "ApprovalTeamArn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the approval team.</p>"
+        },
+        "ApprovalTeamName":{
+          "shape":"ApprovalTeamName",
+          "documentation":"<p>Name of the approval team.</p>"
+        },
+        "ProtectedResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the protected operation.</p>"
+        },
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategyResponse",
+          "documentation":"<p>An <code>ApprovalStrategyResponse</code> object. Contains details for how the team grants approval</p>"
+        },
+        "NumberOfApprovers":{
+          "shape":"Integer",
+          "documentation":"<p>Total number of approvers in the session.</p>"
+        },
+        "InitiationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session was initiated.</p>"
+        },
+        "ExpirationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session will expire.</p>"
+        },
+        "CompletionTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session completed.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the session.</p>"
+        },
+        "Metadata":{
+          "shape":"SessionMetadata",
+          "documentation":"<p>Metadata for the session.</p>"
+        },
+        "Status":{
+          "shape":"SessionStatus",
+          "documentation":"<p>Status for the session. For example, if the team has approved the requested operation.</p>"
+        },
+        "StatusCode":{
+          "shape":"SessionStatusCode",
+          "documentation":"<p>Status code of the session.</p>"
+        },
+        "StatusMessage":{
+          "shape":"Message",
+          "documentation":"<p>Message describing the status for session.</p>"
+        },
+        "ExecutionStatus":{
+          "shape":"SessionExecutionStatus",
+          "documentation":"<p>Status for the protected operation. For example, if the operation is <code>PENDING</code>.</p>"
+        },
+        "ActionName":{
+          "shape":"ActionName",
+          "documentation":"<p>Name of the protected operation.</p>"
+        },
+        "RequesterServicePrincipal":{
+          "shape":"ServicePrincipal",
+          "documentation":"<p> <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-services\">Service principal</a> for the service associated with the protected operation.</p>"
+        },
+        "RequesterPrincipalArn":{
+          "shape":"String",
+          "documentation":"<p> <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/intro-structure.html#intro-structure-request\">IAM principal</a> that made the operation request.</p>"
+        },
+        "RequesterAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>ID for the account that made the operation request.</p>"
+        },
+        "RequesterRegion":{
+          "shape":"Region",
+          "documentation":"<p>Amazon Web Services Region where the operation request originated.</p>"
+        },
+        "RequesterComment":{
+          "shape":"RequesterComment",
+          "documentation":"<p>Message from the account that made the operation request</p>"
+        },
+        "ActionCompletionStrategy":{
+          "shape":"ActionCompletionStrategy",
+          "documentation":"<p>Strategy for executing the protected operation. <code>AUTO_COMPLETION_UPON_APPROVAL</code> means the operation is automatically executed using the requester's permissions, if approved.</p>"
+        },
+        "ApproverResponses":{
+          "shape":"GetSessionResponseApproverResponses",
+          "documentation":"<p>An array of <code>GetSessionResponseApproverResponse</code> objects. Contains details for approver responses in the session.</p>"
+        }
+      }
+    },
+    "GetSessionResponseApproverResponse":{
+      "type":"structure",
+      "members":{
+        "ApproverId":{
+          "shape":"ParticipantId",
+          "documentation":"<p>ID for the approver.</p>"
+        },
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source. The identity source manages the user authentication for approvers.</p>"
+        },
+        "IdentityId":{
+          "shape":"IdentityId",
+          "documentation":"<p>ID for the identity source. The identity source manages the user authentication for approvers.</p>"
+        },
+        "Response":{
+          "shape":"SessionResponse",
+          "documentation":"<p>Response to the operation request.</p>"
+        },
+        "ResponseTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when a approver responded to the operation request.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an approver response in an approval session.</p>"
+    },
+    "GetSessionResponseApproverResponses":{
+      "type":"list",
+      "member":{"shape":"GetSessionResponseApproverResponse"},
+      "max":20,
+      "min":0
+    },
+    "IamIdentityCenter":{
+      "type":"structure",
+      "required":[
+        "InstanceArn",
+        "Region"
+      ],
+      "members":{
+        "InstanceArn":{
+          "shape":"IdcInstanceArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the IAM Identity Center instance.</p>"
+        },
+        "Region":{
+          "shape":"String",
+          "documentation":"<p>Amazon Web Services Region where the IAM Identity Center instance is located.</p>"
+        }
+      },
+      "documentation":"<p>IAM Identity Center credentials. For more information see, <a href=\"http://aws.amazon.com/identity-center/\">IAM Identity Center</a> .</p>"
+    },
+    "IamIdentityCenterForGet":{
+      "type":"structure",
+      "members":{
+        "InstanceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the IAM Identity Center instance.</p>"
+        },
+        "ApprovalPortalUrl":{
+          "shape":"String",
+          "documentation":"<p>URL for the approval portal associated with the IAM Identity Center instance.</p>"
+        },
+        "Region":{
+          "shape":"String",
+          "documentation":"<p>Amazon Web Services Region where the IAM Identity Center instance is located.</p>"
+        }
+      },
+      "documentation":"<p>IAM Identity Center credentials. For more information see, <a href=\"http://aws.amazon.com/identity-center/\">IAM Identity Center</a> .</p>"
+    },
+    "IamIdentityCenterForList":{
+      "type":"structure",
+      "members":{
+        "InstanceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the IAM Identity Center instance.</p>"
+        },
+        "ApprovalPortalUrl":{
+          "shape":"String",
+          "documentation":"<p>URL for the approval portal associated with the IAM Identity Center instance.</p>"
+        },
+        "Region":{
+          "shape":"String",
+          "documentation":"<p>Amazon Web Services Region where the IAM Identity Center instance is located.</p>"
+        }
+      },
+      "documentation":"<p>IAM Identity Center credentials. For more information see, <a href=\"http://aws.amazon.com/identity-center/\">IAM Identity Center</a> .</p>"
+    },
+    "IdcInstanceArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:.+:sso:::instance/(?:sso)?ins-[a-zA-Z0-9-.]{16}"
+    },
+    "IdentityId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "IdentitySourceForList":{
+      "type":"structure",
+      "members":{
+        "IdentitySourceType":{
+          "shape":"IdentitySourceType",
+          "documentation":"<p>The type of resource that provided identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "IdentitySourceParameters":{
+          "shape":"IdentitySourceParametersForList",
+          "documentation":"<p>A <code>IdentitySourceParametersForList</code> object. Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance.</p>"
+        },
+        "IdentitySourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the identity source.</p>"
+        },
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the identity source was created.</p>"
+        },
+        "Status":{
+          "shape":"IdentitySourceStatus",
+          "documentation":"<p>Status for the identity source. For example, if the identity source is <code>ACTIVE</code>.</p>"
+        },
+        "StatusCode":{
+          "shape":"IdentitySourceStatusCode",
+          "documentation":"<p>Status code of the identity source.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>Message describing the status for the identity source.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an identity source. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity source</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "IdentitySourceParameters":{
+      "type":"structure",
+      "members":{
+        "IamIdentityCenter":{
+          "shape":"IamIdentityCenter",
+          "documentation":"<p>IAM Identity Center credentials.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance.</p>"
+    },
+    "IdentitySourceParametersForGet":{
+      "type":"structure",
+      "members":{
+        "IamIdentityCenter":{
+          "shape":"IamIdentityCenterForGet",
+          "documentation":"<p>IAM Identity Center credentials.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity source</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "union":true
+    },
+    "IdentitySourceParametersForList":{
+      "type":"structure",
+      "members":{
+        "IamIdentityCenter":{
+          "shape":"IamIdentityCenterForList",
+          "documentation":"<p>IAM Identity Center credentials.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the resource that provides identities to the identity source. For example, an IAM Identity Center instance. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-concepts.html\">Identity source</a> in the <i>Multi-party approval User Guide</i>.</p>",
+      "union":true
+    },
+    "IdentitySourceStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "ERROR"
+      ]
+    },
+    "IdentitySourceStatusCode":{
+      "type":"string",
+      "enum":[
+        "ACCESS_DENIED",
+        "DELETION_FAILED",
+        "IDC_INSTANCE_NOT_FOUND",
+        "IDC_INSTANCE_NOT_VALID"
+      ]
+    },
+    "IdentitySourceType":{
+      "type":"string",
+      "enum":["IAM_IDENTITY_CENTER"]
+    },
+    "IdentitySources":{
+      "type":"list",
+      "member":{"shape":"IdentitySourceForList"},
+      "max":20,
+      "min":0
+    },
+    "IdentityStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED",
+        "INVALID"
+      ]
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>InternalServerException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The service encountered an internal error. Try your request again. If the problem persists, contact Amazon Web Services Support.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "InvalidParameterException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>InvalidParameterException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The request contains an invalid parameter value.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "IsoTimestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "ListApprovalTeamsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListApprovalTeamsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "ApprovalTeams":{
+          "shape":"ListApprovalTeamsResponseApprovalTeams",
+          "documentation":"<p>An array of <code>ListApprovalTeamsResponseApprovalTeam</code> objects. Contains details for approval teams.</p>"
+        }
+      }
+    },
+    "ListApprovalTeamsResponseApprovalTeam":{
+      "type":"structure",
+      "members":{
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the team was created.</p>"
+        },
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategyResponse",
+          "documentation":"<p>An <code>ApprovalStrategyResponse</code> object. Contains details for how an approval team grants approval.</p>"
+        },
+        "NumberOfApprovers":{
+          "shape":"Integer",
+          "documentation":"<p>Total number of approvers in the team.</p>"
+        },
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>"
+        },
+        "Name":{
+          "shape":"ApprovalTeamName",
+          "documentation":"<p>Name of the team.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "Status":{
+          "shape":"ApprovalTeamStatus",
+          "documentation":"<p>Status for the team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusCode":{
+          "shape":"ApprovalTeamStatusCode",
+          "documentation":"<p>Status code for the team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusMessage":{
+          "shape":"Message",
+          "documentation":"<p>Message describing the status for the team.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an approval team</p>"
+    },
+    "ListApprovalTeamsResponseApprovalTeams":{
+      "type":"list",
+      "member":{"shape":"ListApprovalTeamsResponseApprovalTeam"},
+      "max":20,
+      "min":0
+    },
+    "ListIdentitySourcesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListIdentitySourcesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "IdentitySources":{
+          "shape":"IdentitySources",
+          "documentation":"<p>A <code>IdentitySources</code>. Contains details for identity sources.</p>"
+        }
+      }
+    },
+    "ListPoliciesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListPoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "Policies":{
+          "shape":"Policies",
+          "documentation":"<p>An array of <code>Policy</code> objects. Contains a list of policies that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        }
+      }
+    },
+    "ListPolicyVersionsRequest":{
+      "type":"structure",
+      "required":["PolicyArn"],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "PolicyArn":{
+          "shape":"UnqualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>",
+          "location":"uri",
+          "locationName":"PolicyArn"
+        }
+      }
+    },
+    "ListPolicyVersionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "PolicyVersions":{
+          "shape":"PolicyVersions",
+          "documentation":"<p>An array of <code>PolicyVersionSummary</code> objects. Contains details for the version of the policies that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        }
+      }
+    },
+    "ListResourcePoliciesRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListResourcePoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "ResourcePolicies":{
+          "shape":"ListResourcePoliciesResponseResourcePolicies",
+          "documentation":"<p>An array of <code>ListResourcePoliciesResponseResourcePolicy</code> objects. Contains details about the policy for the resource.</p>"
+        }
+      }
+    },
+    "ListResourcePoliciesResponseResourcePolicies":{
+      "type":"list",
+      "member":{"shape":"ListResourcePoliciesResponseResourcePolicy"},
+      "max":100,
+      "min":0
+    },
+    "ListResourcePoliciesResponseResourcePolicy":{
+      "type":"structure",
+      "members":{
+        "PolicyArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for policy.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "PolicyName":{
+          "shape":"String",
+          "documentation":"<p>Name of the policy.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about a policy for a resource.</p>"
+    },
+    "ListSessionsRequest":{
+      "type":"structure",
+      "required":["ApprovalTeamArn"],
+      "members":{
+        "ApprovalTeamArn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the approval team.</p>",
+          "location":"uri",
+          "locationName":"ApprovalTeamArn"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return in the response. If more results exist than the specified <code>MaxResults</code> value, a token is included in the response so that you can retrieve the remaining results.</p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p>An array of <code>Filter</code> objects. Contains the filter to apply when listing sessions.</p>"
+        }
+      }
+    },
+    "ListSessionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If present, indicates that more output is available than is included in the current response. Use this value in the <code>NextToken</code> request parameter in a next call to the operation to get more output. You can repeat this until the <code>NextToken</code> response element returns <code>null</code>.</p>"
+        },
+        "Sessions":{
+          "shape":"ListSessionsResponseSessions",
+          "documentation":"<p>An array of <code>ListSessionsResponseSession</code> objects. Contains details for the sessions.</p>"
+        }
+      }
+    },
+    "ListSessionsResponseSession":{
+      "type":"structure",
+      "members":{
+        "SessionArn":{
+          "shape":"SessionArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the session.</p>"
+        },
+        "ApprovalTeamName":{
+          "shape":"ApprovalTeamName",
+          "documentation":"<p>Name of the approval team.</p>"
+        },
+        "ApprovalTeamArn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the approval team.</p>"
+        },
+        "InitiationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session was initiated.</p>"
+        },
+        "ExpirationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session was expire.</p>"
+        },
+        "CompletionTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the session was completed.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "ActionName":{
+          "shape":"ActionName",
+          "documentation":"<p>Name of the protected operation.</p>"
+        },
+        "ProtectedResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the protected operation.</p>"
+        },
+        "RequesterServicePrincipal":{
+          "shape":"ServicePrincipal",
+          "documentation":"<p> <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-services\">Service principal</a> for the service associated with the protected operation.</p>"
+        },
+        "RequesterPrincipalArn":{
+          "shape":"String",
+          "documentation":"<p> <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/intro-structure.html#intro-structure-request\">IAM principal</a> that made the operation request.</p>"
+        },
+        "RequesterRegion":{
+          "shape":"Region",
+          "documentation":"<p>Amazon Web Services Region where the operation request originated.</p>"
+        },
+        "RequesterAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>ID for the account that made the operation request.</p>"
+        },
+        "Status":{
+          "shape":"SessionStatus",
+          "documentation":"<p>Status for the protected operation. For example, if the operation is <code>PENDING</code>.</p>"
+        },
+        "StatusCode":{
+          "shape":"SessionStatusCode",
+          "documentation":"<p>Status code of the session.</p>"
+        },
+        "StatusMessage":{
+          "shape":"Message",
+          "documentation":"<p>Message describing the status for session.</p>"
+        },
+        "ActionCompletionStrategy":{
+          "shape":"ActionCompletionStrategy",
+          "documentation":"<p>Strategy for executing the protected operation. <code>AUTO_COMPLETION_UPON_APPROVAL</code> means the operation is executed automatically using the requester's permissions, if approved.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for an approval session. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Session</a> in the <i>Multi-party approval User Guide</i> </p>"
+    },
+    "ListSessionsResponseSessions":{
+      "type":"list",
+      "member":{"shape":"ListSessionsResponseSession"},
+      "max":20,
+      "min":0
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "Message":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "MofNApprovalStrategy":{
+      "type":"structure",
+      "required":["MinApprovalsRequired"],
+      "members":{
+        "MinApprovalsRequired":{
+          "shape":"MofNApprovalStrategyMinApprovalsRequiredInteger",
+          "documentation":"<p>Minimum number of approvals (M) required for a total number of approvers (N).</p>"
+        }
+      },
+      "documentation":"<p>Strategy for how an approval team grants approval.</p>"
+    },
+    "MofNApprovalStrategyMinApprovalsRequiredInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "Operator":{
+      "type":"string",
+      "enum":[
+        "EQ",
+        "NE",
+        "GT",
+        "LT",
+        "GTE",
+        "LTE",
+        "CONTAINS",
+        "NOT_CONTAINS",
+        "BETWEEN"
+      ]
+    },
+    "ParticipantId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "PendingUpdate":{
+      "type":"structure",
+      "members":{
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>Version ID for the team.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategyResponse",
+          "documentation":"<p>An <code>ApprovalStrategyResponse</code> object. Contains details for how the team grants approval.</p>"
+        },
+        "NumberOfApprovers":{
+          "shape":"Integer",
+          "documentation":"<p>Total number of approvers in the team.</p>"
+        },
+        "Status":{
+          "shape":"ApprovalTeamStatus",
+          "documentation":"<p>Status for the team. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusCode":{
+          "shape":"ApprovalTeamStatusCode",
+          "documentation":"<p>Status code for the update. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-health.html\">Team health</a> in the <i>Multi-party approval User Guide</i>.</p>"
+        },
+        "StatusMessage":{
+          "shape":"Message",
+          "documentation":"<p>Message describing the status for the team.</p>"
+        },
+        "Approvers":{
+          "shape":"GetApprovalTeamResponseApprovers",
+          "documentation":"<p>An array of <code>GetApprovalTeamResponseApprover </code> objects. Contains details for the approvers in the team.</p>"
+        },
+        "UpdateInitiationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the update request was initiated.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the pending updates for an approval team, if applicable.</p>"
+    },
+    "Policies":{
+      "type":"list",
+      "member":{"shape":"Policy"},
+      "max":20,
+      "min":0
+    },
+    "PoliciesReferences":{
+      "type":"list",
+      "member":{"shape":"PolicyReference"},
+      "max":10,
+      "min":1
+    },
+    "Policy":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "DefaultVersion",
+        "PolicyType",
+        "Name"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"UnqualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>"
+        },
+        "DefaultVersion":{
+          "shape":"PolicyVersionId",
+          "documentation":"<p>Determines if the specified policy is the default for the team.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "Name":{
+          "shape":"PolicyName",
+          "documentation":"<p>Name of the policy.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for a policy. Policies define what operations a team that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "PolicyDocument":{
+      "type":"string",
+      "max":400000,
+      "min":0,
+      "sensitive":true
+    },
+    "PolicyName":{
+      "type":"string",
+      "max":64,
+      "min":0
+    },
+    "PolicyReference":{
+      "type":"structure",
+      "required":["PolicyArn"],
+      "members":{
+        "PolicyArn":{
+          "shape":"QualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>"
+        }
+      },
+      "documentation":"<p>Contains the Amazon Resource Name (ARN) for a policy. Policies define what operations a team that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "PolicyStatus":{
+      "type":"string",
+      "enum":[
+        "ATTACHABLE",
+        "DEPRECATED"
+      ]
+    },
+    "PolicyType":{
+      "type":"string",
+      "enum":[
+        "AWS_MANAGED",
+        "AWS_RAM"
+      ]
+    },
+    "PolicyVersion":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "PolicyArn",
+        "VersionId",
+        "PolicyType",
+        "IsDefault",
+        "Name",
+        "Status",
+        "CreationTime",
+        "LastUpdatedTime",
+        "Document"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"QualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>"
+        },
+        "PolicyArn":{
+          "shape":"UnqualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>"
+        },
+        "VersionId":{
+          "shape":"PolicyVersionId",
+          "documentation":"<p>Verison ID</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "IsDefault":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines if the specified policy is the default for the team.</p>"
+        },
+        "Name":{
+          "shape":"PolicyName",
+          "documentation":"<p>Name of the policy.</p>"
+        },
+        "Status":{
+          "shape":"PolicyStatus",
+          "documentation":"<p>Status for the policy. For example, if the policy is <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/id_groups_manage_attach-policy.html\">attachable</a> or <a href=\"https://docs.aws.amazon.com/access_policies_managed-deprecated.html\">deprecated</a>.</p>"
+        },
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the policy was created.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the policy was last updated.</p>"
+        },
+        "Document":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>Document that contains the policy contents.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the version of a policy. Policies define what operations a team that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "PolicyVersionId":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "PolicyVersionSummary":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "PolicyArn",
+        "VersionId",
+        "PolicyType",
+        "IsDefault",
+        "Name",
+        "Status",
+        "CreationTime",
+        "LastUpdatedTime"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"QualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>"
+        },
+        "PolicyArn":{
+          "shape":"UnqualifiedPolicyArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the policy.</p>"
+        },
+        "VersionId":{
+          "shape":"PolicyVersionId",
+          "documentation":"<p>Version ID for the policy.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "IsDefault":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines if the specified policy is the default for the team.</p>"
+        },
+        "Name":{
+          "shape":"PolicyName",
+          "documentation":"<p>Name of the policy</p>"
+        },
+        "Status":{
+          "shape":"PolicyStatus",
+          "documentation":"<p>Status for the policy. For example, if the policy is <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/id_groups_manage_attach-policy.html\">attachable</a> or <a href=\"https://docs.aws.amazon.com/access_policies_managed-deprecated.html\">deprecated</a>.</p>"
+        },
+        "CreationTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the policy was created.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the policy was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Contains details for the version of a policy. Policies define what operations a team that define the permissions for team resources.</p> <p>The protected operation for a service integration might require specific permissions. For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/mpa-integrations.html\">How other services work with Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+    },
+    "PolicyVersions":{
+      "type":"list",
+      "member":{"shape":"PolicyVersionSummary"},
+      "max":20,
+      "min":0
+    },
+    "QualifiedPolicyArn":{
+      "type":"string",
+      "max":1224,
+      "min":0,
+      "pattern":"arn:.{1,63}:mpa:::aws:policy/[a-zA-Z0-9_\\.-]{1,1023}/[a-zA-Z0-9_\\.-]{1,1023}/(?:[\\d]+|\\$DEFAULT)"
+    },
+    "Region":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "RequesterComment":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>ResourceNotFoundException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource doesn't exist. Check the resource ID, and try again.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServicePrincipal":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>ServiceQuotaExceededException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The request exceeds the service quota for your account. Request a quota increase or reduce your request size.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SessionArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:mpa:[a-z0-9-]{1,20}:[0-9]{12}:session/[a-zA-Z0-9._-]+/[a-zA-Z0-9_-]+"
+    },
+    "SessionExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "EXECUTED",
+        "FAILED",
+        "PENDING"
+      ]
+    },
+    "SessionKey":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\p{P}]*",
+      "sensitive":true
+    },
+    "SessionMetadata":{
+      "type":"map",
+      "key":{"shape":"SessionKey"},
+      "value":{"shape":"SessionValue"},
+      "sensitive":true
+    },
+    "SessionResponse":{
+      "type":"string",
+      "enum":[
+        "APPROVED",
+        "REJECTED",
+        "NO_RESPONSE"
+      ]
+    },
+    "SessionStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "CANCELLED",
+        "APPROVED",
+        "FAILED",
+        "CREATING"
+      ]
+    },
+    "SessionStatusCode":{
+      "type":"string",
+      "enum":[
+        "REJECTED",
+        "EXPIRED",
+        "CONFIGURATION_CHANGED"
+      ]
+    },
+    "SessionValue":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\p{P}]*",
+      "sensitive":true
+    },
+    "StartActiveApprovalTeamDeletionRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "PendingWindowDays":{
+          "shape":"Integer",
+          "documentation":"<p>Number of days between when the team approves the delete request and when the team is deleted.</p>"
+        },
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "StartActiveApprovalTeamDeletionResponse":{
+      "type":"structure",
+      "members":{
+        "DeletionCompletionTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the deletion process is scheduled to complete.</p>"
+        },
+        "DeletionStartTime":{
+          "shape":"IsoTimestamp",
+          "documentation":"<p>Timestamp when the deletion process was initiated.</p>"
+        }
+      }
+    },
+    "String":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "sensitive":true
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource you want to tag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags that you have added to the specified resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>ThrottlingException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Token":{
+      "type":"string",
+      "max":4096,
+      "min":0
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>TooManyTagsException</code> error.</p>"
+        },
+        "ResourceName":{
+          "shape":"String",
+          "documentation":"<p>Name of the resource for the <code>TooManyTagsException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The request exceeds the maximum number of tags allowed for this resource. Remove some tags, and try again.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UnqualifiedPolicyArn":{
+      "type":"string",
+      "max":1224,
+      "min":0,
+      "pattern":"arn:.{1,63}:mpa:::aws:policy/[a-zA-Z0-9_\\.-]{1,1023}/[a-zA-Z0-9_\\.-]{1,1023}"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) for the resource you want to untag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Array of tag key-value pairs that you want to untag.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateApprovalTeamRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "ApprovalStrategy":{
+          "shape":"ApprovalStrategy",
+          "documentation":"<p>An <code>ApprovalStrategy</code> object. Contains details for how the team grants approval.</p>"
+        },
+        "Approvers":{
+          "shape":"ApprovalTeamRequestApprovers",
+          "documentation":"<p>An array of <code>ApprovalTeamRequestApprover</code> objects. Contains details for the approvers in the team.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Description for the team.</p>"
+        },
+        "Arn":{
+          "shape":"ApprovalTeamArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the team.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "UpdateApprovalTeamResponse":{
+      "type":"structure",
+      "members":{
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>Version ID for the team that was created. When an approval team is updated, the version ID changes.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message for the <code>ValidationException</code> error.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>Multi-party approval is a capability of <a href=\"http://aws.amazon.com/organizations\">Organizations</a> that allows you to protect a predefined list of operations through a distributed approval process. Use Multi-party approval to establish approval workflows and transform security processes into team-based decisions.</p> <p> <b>When to use Multi-party approval</b>:</p> <ul> <li> <p>You need to align with the Zero Trust principle of \"never trust, always verify\"</p> </li> <li> <p>You need to make sure that the right humans have access to the right things in the right way</p> </li> <li> <p>You need distributed decision-making for sensitive or critical operations</p> </li> <li> <p>You need to protect against unintended operations on sensitive or critical resources</p> </li> <li> <p>You need formal reviews and approvals for auditing or compliance reasons</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/mpa/latest/userguide/what-is.html\">What is Multi-party approval</a> in the <i>Multi-party approval User Guide</i>.</p>"
+}

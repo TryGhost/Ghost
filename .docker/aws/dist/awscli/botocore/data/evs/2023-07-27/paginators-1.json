@@ -1,0 +1,22 @@
+{
+  "pagination": {
+    "ListEnvironmentHosts": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "environmentHosts"
+    },
+    "ListEnvironmentVlans": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "environmentVlans"
+    },
+    "ListEnvironments": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "environmentSummaries"
+    }
+  }
+}

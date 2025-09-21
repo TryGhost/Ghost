@@ -1,0 +1,72 @@
+{
+  "version": "1.0",
+  "resources": {
+    "MemberAccount": {
+      "operation": "ListMemberAccounts",
+      "resourceIdentifier": {
+        "MemberAccount": "MemberAccounts[]"
+      }
+    },
+    "Policy": {
+      "operation": "ListPolicies",
+      "resourceIdentifier": {
+        "PolicyId": "PolicyList[].PolicyId"
+      }
+    }
+  },
+  "operations": {
+    "DeletePolicy": {
+      "PolicyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyId"
+          }
+        ]
+      }
+    },
+    "GetComplianceDetail": {
+      "PolicyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyId"
+          }
+        ]
+      },
+      "MemberAccount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MemberAccount",
+            "resourceIdentifier": "MemberAccount"
+          }
+        ]
+      }
+    },
+    "GetPolicy": {
+      "PolicyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyId"
+          }
+        ]
+      }
+    },
+    "ListComplianceStatus": {
+      "PolicyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyId"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "version": "1.0",
+  "resources": {
+    "DeliveryStream": {
+      "operation": "ListDeliveryStreams",
+      "resourceIdentifier": {
+        "DeliveryStreamName": "DeliveryStreamNames[]"
+      }
+    }
+  },
+  "operations": {
+    "DeleteDeliveryStream": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "DescribeDeliveryStream": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "ListTagsForDeliveryStream": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "PutRecord": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "PutRecordBatch": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "TagDeliveryStream": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "UntagDeliveryStream": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    },
+    "UpdateDestination": {
+      "DeliveryStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeliveryStream",
+            "resourceIdentifier": "DeliveryStreamName"
+          }
+        ]
+      }
+    }
+  }
+}

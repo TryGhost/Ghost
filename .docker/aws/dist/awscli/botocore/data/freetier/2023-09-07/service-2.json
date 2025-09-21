@@ -1,0 +1,632 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-09-07",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"freetier",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Free Tier",
+    "serviceId":"FreeTier",
+    "signatureVersion":"v4",
+    "signingName":"freetier",
+    "targetPrefix":"AWSFreeTierService",
+    "uid":"freetier-2023-09-07"
+  },
+  "operations":{
+    "GetAccountActivity":{
+      "name":"GetAccountActivity",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAccountActivityRequest"},
+      "output":{"shape":"GetAccountActivityResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns a specific activity record that is available to the customer. </p>"
+    },
+    "GetAccountPlanState":{
+      "name":"GetAccountPlanState",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAccountPlanStateRequest"},
+      "output":{"shape":"GetAccountPlanStateResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> This returns all of the information related to the state of the account plan related to Free Tier. </p>"
+    },
+    "GetFreeTierUsage":{
+      "name":"GetFreeTierUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetFreeTierUsageRequest"},
+      "output":{"shape":"GetFreeTierUsageResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of all Free Tier usage objects that match your filters.</p>"
+    },
+    "ListAccountActivities":{
+      "name":"ListAccountActivities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAccountActivitiesRequest"},
+      "output":{"shape":"ListAccountActivitiesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns a list of activities that are available. This operation supports pagination and filtering by status. </p>"
+    },
+    "UpgradeAccountPlan":{
+      "name":"UpgradeAccountPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpgradeAccountPlanRequest"},
+      "output":{"shape":"UpgradeAccountPlanResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> The account plan type for the Amazon Web Services account. </p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p> You don't have sufficient access to perform this action. </p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "pattern":"[0-9]{12}"
+    },
+    "AccountPlanStatus":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "ACTIVE",
+        "EXPIRED"
+      ]
+    },
+    "AccountPlanType":{
+      "type":"string",
+      "enum":[
+        "FREE",
+        "PAID"
+      ]
+    },
+    "Activities":{
+      "type":"list",
+      "member":{"shape":"ActivitySummary"}
+    },
+    "ActivityId":{
+      "type":"string",
+      "max":32,
+      "min":32,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "ActivityReward":{
+      "type":"structure",
+      "members":{
+        "credit":{
+          "shape":"MonetaryAmount",
+          "documentation":"<p> The credits gained by activity rewards. </p>"
+        }
+      },
+      "documentation":"<p> The summary of the rewards granted as a result of activities completed. </p>",
+      "union":true
+    },
+    "ActivityStatus":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "EXPIRING"
+      ]
+    },
+    "ActivitySummary":{
+      "type":"structure",
+      "required":[
+        "activityId",
+        "title",
+        "reward",
+        "status"
+      ],
+      "members":{
+        "activityId":{
+          "shape":"ActivityId",
+          "documentation":"<p> A unique identifier that identifies the activity. </p>"
+        },
+        "title":{
+          "shape":"GenericString",
+          "documentation":"<p> The title of the activity. </p>"
+        },
+        "reward":{
+          "shape":"ActivityReward",
+          "documentation":"<p> The reward for the activity. </p>"
+        },
+        "status":{
+          "shape":"ActivityStatus",
+          "documentation":"<p> The current status of the activity. </p>"
+        }
+      },
+      "documentation":"<p> The summary of activities. </p>"
+    },
+    "CurrencyCode":{
+      "type":"string",
+      "enum":["USD"]
+    },
+    "Dimension":{
+      "type":"string",
+      "enum":[
+        "SERVICE",
+        "OPERATION",
+        "USAGE_TYPE",
+        "REGION",
+        "FREE_TIER_TYPE",
+        "DESCRIPTION",
+        "USAGE_PERCENTAGE"
+      ]
+    },
+    "DimensionValues":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Values",
+        "MatchOptions"
+      ],
+      "members":{
+        "Key":{
+          "shape":"Dimension",
+          "documentation":"<p>The name of the dimension that you want to filter on.</p>"
+        },
+        "Values":{
+          "shape":"Values",
+          "documentation":"<p>The metadata values you can specify to filter upon, so that the results all match at least one of the specified values.</p>"
+        },
+        "MatchOptions":{
+          "shape":"MatchOptions",
+          "documentation":"<p>The match options that you can use to filter your results. You can specify only one of these values in the array.</p>"
+        }
+      },
+      "documentation":"<p>Contains the specifications for the filters to use for your request.</p>"
+    },
+    "Expression":{
+      "type":"structure",
+      "members":{
+        "Or":{
+          "shape":"Expressions",
+          "documentation":"<p>Return results that match any of the <code>Expressions</code> that you specified. in the array.</p>"
+        },
+        "And":{
+          "shape":"Expressions",
+          "documentation":"<p>Return results that match all <code>Expressions</code> that you specified in the array.</p>"
+        },
+        "Not":{
+          "shape":"Expression",
+          "documentation":"<p>Return results that don’t match the <code>Expression</code> that you specified.</p>"
+        },
+        "Dimensions":{
+          "shape":"DimensionValues",
+          "documentation":"<p>The specific dimension, values, and match type to filter objects with.</p>"
+        }
+      },
+      "documentation":"<p>Use <code>Expression</code> to filter in the <code>GetFreeTierUsage</code> API operation.</p> <p>You can use the following patterns:</p> <ul> <li> <p>Simple dimension values (<code>Dimensions</code> root operator)</p> </li> <li> <p>Complex expressions with logical operators (<code>AND</code>, <code>NOT</code>, and <code>OR</code> root operators).</p> </li> </ul> <p>For <i>simple dimension values</i>, you can set the dimension name, values, and match type for the filters that you plan to use.</p> <p> <b>Example for simple dimension values</b> </p> <p>You can filter to match exactly for <code>REGION==us-east-1 OR REGION==us-west-1</code>.</p> <p>The corresponding <code>Expression</code> appears like the following: <code>{ \"Dimensions\": { \"Key\": \"REGION\", \"Values\": [ \"us-east-1\", \"us-west-1\" ], \"MatchOptions\": [\"EQUALS\"] } }</code> </p> <p>As shown in the previous example, lists of dimension values are combined with <code>OR</code> when you apply the filter.</p> <p>For <i>complex expressions with logical operators</i>, you can have nested expressions to use the logical operators and specify advanced filtering.</p> <p> <b>Example for complex expressions with logical operators</b> </p> <p>You can filter by <code>((REGION == us-east-1 OR REGION == us-west-1) OR (SERVICE CONTAINS AWSLambda)) AND (USAGE_TYPE !CONTAINS DataTransfer)</code>.</p> <p>The corresponding <code>Expression</code> appears like the following: <code>{ \"And\": [ {\"Or\": [ {\"Dimensions\": { \"Key\": \"REGION\", \"Values\": [ \"us-east-1\", \"us-west-1\" ], \"MatchOptions\": [\"EQUALS\"] }}, {\"Dimensions\": { \"Key\": \"SERVICE\", \"Values\": [\"AWSLambda\"], \"MatchOptions\": [\"CONTAINS\"] } } ]}, {\"Not\": {\"Dimensions\": { \"Key\": \"USAGE_TYPE\", \"Values\": [\"DataTransfer\"], \"MatchOptions\": [\"CONTAINS\"] }}} ] }</code> </p> <p>In the following <b>Contents</b>, you must specify exactly one of the following root operators.</p>"
+    },
+    "Expressions":{
+      "type":"list",
+      "member":{"shape":"Expression"}
+    },
+    "FilterActivityStatuses":{
+      "type":"list",
+      "member":{"shape":"ActivityStatus"}
+    },
+    "FreeTierUsage":{
+      "type":"structure",
+      "members":{
+        "service":{
+          "shape":"GenericString",
+          "documentation":"<p>The name of the Amazon Web Services service providing the Free Tier offer. For example, this can be Amazon Elastic Compute Cloud.</p>"
+        },
+        "operation":{
+          "shape":"GenericString",
+          "documentation":"<p>Describes <code>usageType</code> more granularly with the specific Amazon Web Services service API operation. For example, this can be the <code>RunInstances</code> API operation for Amazon Elastic Compute Cloud.</p>"
+        },
+        "usageType":{
+          "shape":"GenericString",
+          "documentation":"<p>Describes the usage details of the offer. For example, this might be <code>Global-BoxUsage:freetrial</code>.</p>"
+        },
+        "region":{
+          "shape":"GenericString",
+          "documentation":"<p>Describes the Amazon Web Services Region for which this offer is applicable</p>"
+        },
+        "actualUsageAmount":{
+          "shape":"GenericDouble",
+          "documentation":"<p>Describes the actual usage accrued month-to-day (MTD) that you've used so far.</p>"
+        },
+        "forecastedUsageAmount":{
+          "shape":"GenericDouble",
+          "documentation":"<p>Describes the forecasted usage by the month that you're expected to use.</p>"
+        },
+        "limit":{
+          "shape":"GenericDouble",
+          "documentation":"<p>Describes the maximum usage allowed in Free Tier.</p>"
+        },
+        "unit":{
+          "shape":"GenericString",
+          "documentation":"<p>Describes the unit of the <code>usageType</code>, such as <code>Hrs</code>.</p>"
+        },
+        "description":{
+          "shape":"GenericString",
+          "documentation":"<p>The description of the Free Tier offer.</p>"
+        },
+        "freeTierType":{
+          "shape":"GenericString",
+          "documentation":"<p>Describes the type of the Free Tier offer. For example, the offer can be <code>\"12 Months Free\"</code>, <code>\"Always Free\"</code>, and <code>\"Free Trial\"</code>.</p>"
+        }
+      },
+      "documentation":"<p>Consists of a Amazon Web Services Free Tier offer’s metadata and your data usage for the offer.</p>"
+    },
+    "FreeTierUsages":{
+      "type":"list",
+      "member":{"shape":"FreeTierUsage"}
+    },
+    "GenericDouble":{"type":"double"},
+    "GenericString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "GetAccountActivityRequest":{
+      "type":"structure",
+      "required":["activityId"],
+      "members":{
+        "activityId":{
+          "shape":"ActivityId",
+          "documentation":"<p> A unique identifier that identifies the activity. </p>"
+        },
+        "languageCode":{
+          "shape":"LanguageCode",
+          "documentation":"<p> The language code used to return translated title and description fields. </p>"
+        }
+      }
+    },
+    "GetAccountActivityResponse":{
+      "type":"structure",
+      "required":[
+        "activityId",
+        "title",
+        "description",
+        "status",
+        "instructionsUrl",
+        "reward"
+      ],
+      "members":{
+        "activityId":{
+          "shape":"ActivityId",
+          "documentation":"<p> A unique identifier that identifies the activity. </p>"
+        },
+        "title":{
+          "shape":"GenericString",
+          "documentation":"<p> A short activity title. </p>"
+        },
+        "description":{
+          "shape":"GenericString",
+          "documentation":"<p> Provides detailed information about the activity and its expected outcomes. </p>"
+        },
+        "status":{
+          "shape":"ActivityStatus",
+          "documentation":"<p> The current activity status. </p>"
+        },
+        "instructionsUrl":{
+          "shape":"GenericString",
+          "documentation":"<p> The URL resource that provides guidance on activity requirements and completion. </p>"
+        },
+        "reward":{
+          "shape":"ActivityReward",
+          "documentation":"<p> A reward granted upon activity completion. </p>"
+        },
+        "estimatedTimeToCompleteInMinutes":{
+          "shape":"Integer",
+          "documentation":"<p> The estimated time to complete the activity. This is the duration in minutes. </p>"
+        },
+        "expiresAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p> The time by which the activity must be completed to receive a reward. </p>"
+        },
+        "startedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p> The timestamp when the activity started. This field appears only for activities in the <code>IN_PROGRESS</code> or <code>COMPLETED</code> states. </p>"
+        },
+        "completedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p> The timestamp when the activity is completed. This field appears only for activities in the <code>COMPLETED</code> state. </p>"
+        }
+      }
+    },
+    "GetAccountPlanStateRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetAccountPlanStateResponse":{
+      "type":"structure",
+      "required":[
+        "accountId",
+        "accountPlanType",
+        "accountPlanStatus"
+      ],
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p> A unique identifier that identifies the account. </p>"
+        },
+        "accountPlanType":{
+          "shape":"AccountPlanType",
+          "documentation":"<p> The plan type for the account. </p>"
+        },
+        "accountPlanStatus":{
+          "shape":"AccountPlanStatus",
+          "documentation":"<p> The current status for the account plan. </p>"
+        },
+        "accountPlanRemainingCredits":{
+          "shape":"MonetaryAmount",
+          "documentation":"<p> The amount of credits remaining for the account. </p>"
+        },
+        "accountPlanExpirationDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p> The timestamp for when the current account plan expires. </p>"
+        }
+      }
+    },
+    "GetFreeTierUsageRequest":{
+      "type":"structure",
+      "members":{
+        "filter":{
+          "shape":"Expression",
+          "documentation":"<p>An expression that specifies the conditions that you want each <code>FreeTierUsage</code> object to meet.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in the response. <code>MaxResults</code> means that there can be up to the specified number of values, but there might be fewer results based on your filters.</p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "GetFreeTierUsageResponse":{
+      "type":"structure",
+      "required":["freeTierUsages"],
+      "members":{
+        "freeTierUsages":{
+          "shape":"FreeTierUsages",
+          "documentation":"<p>The list of Free Tier usage objects that meet your filter expression.</p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>An unexpected error occurred during the processing of your request.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "LanguageCode":{
+      "type":"string",
+      "enum":[
+        "en-US",
+        "en-GB",
+        "id-ID",
+        "de-DE",
+        "es-ES",
+        "fr-FR",
+        "ja-JP",
+        "it-IT",
+        "pt-PT",
+        "ko-KR",
+        "zh-CN",
+        "zh-TW",
+        "tr-TR"
+      ]
+    },
+    "ListAccountActivitiesRequest":{
+      "type":"structure",
+      "members":{
+        "filterActivityStatuses":{
+          "shape":"FilterActivityStatuses",
+          "documentation":"<p> The activity status filter. This field can be used to filter the response by activities status. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token from a previous paginated response. If this is specified, the response includes records beginning from this token (inclusive), up to the number specified by <code>maxResults</code>. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of items to return for this request. To get the next page of items, make another request with the token returned in the output. </p>"
+        },
+        "languageCode":{
+          "shape":"LanguageCode",
+          "documentation":"<p> The language code used to return translated titles. </p>"
+        }
+      }
+    },
+    "ListAccountActivitiesResponse":{
+      "type":"structure",
+      "required":["activities"],
+      "members":{
+        "activities":{
+          "shape":"Activities",
+          "documentation":"<p> A brief information about the activities. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> The token to include in another request to get the next page of items. This value is <code>null</code> when there are no more items to return. </p>"
+        }
+      }
+    },
+    "MatchOption":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "STARTS_WITH",
+        "ENDS_WITH",
+        "CONTAINS",
+        "GREATER_THAN_OR_EQUAL"
+      ]
+    },
+    "MatchOptions":{
+      "type":"list",
+      "member":{"shape":"MatchOption"}
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "MonetaryAmount":{
+      "type":"structure",
+      "required":[
+        "amount",
+        "unit"
+      ],
+      "members":{
+        "amount":{
+          "shape":"GenericDouble",
+          "documentation":"<p> The aggregated monetary amount of credits earned. </p>"
+        },
+        "unit":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The unit that the monetary amount is given in. </p>"
+        }
+      },
+      "documentation":"<p> The monetary amount of the credit. </p>"
+    },
+    "NextPageToken":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p> This exception is thrown when the requested resource cannot be found. </p>",
+      "exception":true
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "UpgradeAccountPlanRequest":{
+      "type":"structure",
+      "required":["accountPlanType"],
+      "members":{
+        "accountPlanType":{
+          "shape":"AccountPlanType",
+          "documentation":"<p> The target account plan type. This makes it explicit about the change and latest value of the <code>accountPlanType</code>. </p>"
+        }
+      }
+    },
+    "UpgradeAccountPlanResponse":{
+      "type":"structure",
+      "required":[
+        "accountId",
+        "accountPlanType",
+        "accountPlanStatus"
+      ],
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p> A unique identifier that identifies the account. </p>"
+        },
+        "accountPlanType":{
+          "shape":"AccountPlanType",
+          "documentation":"<p> The type of plan for the account. </p>"
+        },
+        "accountPlanStatus":{
+          "shape":"AccountPlanStatus",
+          "documentation":"<p> This indicates the latest state of the account plan within its lifecycle. </p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "exception":true
+    },
+    "Value":{
+      "type":"string",
+      "max":20,
+      "min":1,
+      "pattern":"[ a-zA-Z0-9\\-\\:\\.\\_\\/\\,\\$\\(\\)]*"
+    },
+    "Values":{
+      "type":"list",
+      "member":{"shape":"Value"},
+      "min":1
+    }
+  },
+  "documentation":"<p>You can use the Amazon Web Services Free Tier API to query programmatically your Free Tier usage data.</p> <p>Free Tier tracks your monthly usage data for all free tier offers that are associated with your Amazon Web Services account. You can use the Free Tier API to filter and show only the data that you want.</p> <p>Service endpoint</p> <p>The Free Tier API provides the following endpoint:</p> <ul/> <p>For more information, see <a href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-free-tier.html\">Using the Amazon Web Services Free Tier</a> in the <i>Billing User Guide</i>.</p>"
+}

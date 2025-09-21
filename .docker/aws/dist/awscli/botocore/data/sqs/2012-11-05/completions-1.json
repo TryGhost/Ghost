@@ -1,0 +1,200 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Queue": {
+      "operation": "ListQueues",
+      "resourceIdentifier": {
+        "QueueUrl": "QueueUrls[]"
+      }
+    }
+  },
+  "operations": {
+    "AddPermission": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "ChangeMessageVisibility": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "ChangeMessageVisibilityBatch": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "DeleteMessage": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "DeleteMessageBatch": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "DeleteQueue": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "GetQueueAttributes": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "ListDeadLetterSourceQueues": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "ListQueueTags": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "PurgeQueue": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "ReceiveMessage": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "RemovePermission": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "SendMessage": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "SendMessageBatch": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "SetQueueAttributes": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "TagQueue": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    },
+    "UntagQueue": {
+      "QueueUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Queue",
+            "resourceIdentifier": "QueueUrl"
+          }
+        ]
+      }
+    }
+  }
+}

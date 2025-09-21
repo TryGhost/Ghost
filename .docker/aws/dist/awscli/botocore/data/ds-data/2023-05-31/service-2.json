@@ -1,0 +1,1689 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-05-31",
+    "endpointPrefix":"ds-data",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Directory Service Data",
+    "serviceId":"Directory Service Data",
+    "signatureVersion":"v4",
+    "signingName":"ds-data",
+    "uid":"directory-service-data-2023-05-31",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AddGroupMember":{
+      "name":"AddGroupMember",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GroupMemberships/AddGroupMember",
+        "responseCode":200
+      },
+      "input":{"shape":"AddGroupMemberRequest"},
+      "output":{"shape":"AddGroupMemberResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Adds an existing user, group, or computer as a group member.</p>"
+    },
+    "CreateGroup":{
+      "name":"CreateGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/CreateGroup",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateGroupRequest"},
+      "output":{"shape":"CreateGroupResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new group.</p>"
+    },
+    "CreateUser":{
+      "name":"CreateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/CreateUser",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateUserRequest"},
+      "output":{"shape":"CreateUserResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new user.</p>"
+    },
+    "DeleteGroup":{
+      "name":"DeleteGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/DeleteGroup",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteGroupRequest"},
+      "output":{"shape":"DeleteGroupResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a group.</p>"
+    },
+    "DeleteUser":{
+      "name":"DeleteUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/DeleteUser",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteUserRequest"},
+      "output":{"shape":"DeleteUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a user.</p>"
+    },
+    "DescribeGroup":{
+      "name":"DescribeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/DescribeGroup",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeGroupRequest"},
+      "output":{"shape":"DescribeGroupResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns information about a specific group.</p>"
+    },
+    "DescribeUser":{
+      "name":"DescribeUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/DescribeUser",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeUserRequest"},
+      "output":{"shape":"DescribeUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns information about a specific user.</p>"
+    },
+    "DisableUser":{
+      "name":"DisableUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/DisableUser",
+        "responseCode":200
+      },
+      "input":{"shape":"DisableUserRequest"},
+      "output":{"shape":"DisableUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Deactivates an active user account. For information about how to enable an inactive user account, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/devguide/API_ResetUserPassword.html\">ResetUserPassword</a> in the <i>Directory Service API Reference</i>.</p>"
+    },
+    "ListGroupMembers":{
+      "name":"ListGroupMembers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GroupMemberships/ListGroupMembers",
+        "responseCode":200
+      },
+      "input":{"shape":"ListGroupMembersRequest"},
+      "output":{"shape":"ListGroupMembersResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns member information for the specified group. </p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>ListGroupMembers.NextToken</code> member contains a token that you pass in the next call to <code>ListGroupMembers</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "ListGroups":{
+      "name":"ListGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/ListGroups",
+        "responseCode":200
+      },
+      "input":{"shape":"ListGroupsRequest"},
+      "output":{"shape":"ListGroupsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns group information for the specified directory. </p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>ListGroups.NextToken</code> member contains a token that you pass in the next call to <code>ListGroups</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "ListGroupsForMember":{
+      "name":"ListGroupsForMember",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GroupMemberships/ListGroupsForMember",
+        "responseCode":200
+      },
+      "input":{"shape":"ListGroupsForMemberRequest"},
+      "output":{"shape":"ListGroupsForMemberResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns group information for the specified member. </p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>ListGroupsForMember.NextToken</code> member contains a token that you pass in the next call to <code>ListGroupsForMember</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "ListUsers":{
+      "name":"ListUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/ListUsers",
+        "responseCode":200
+      },
+      "input":{"shape":"ListUsersRequest"},
+      "output":{"shape":"ListUsersResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Returns user information for the specified directory. </p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>ListUsers.NextToken</code> member contains a token that you pass in the next call to <code>ListUsers</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "RemoveGroupMember":{
+      "name":"RemoveGroupMember",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GroupMemberships/RemoveGroupMember",
+        "responseCode":200
+      },
+      "input":{"shape":"RemoveGroupMemberRequest"},
+      "output":{"shape":"RemoveGroupMemberResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Removes a member from a group. </p>"
+    },
+    "SearchGroups":{
+      "name":"SearchGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/SearchGroups",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchGroupsRequest"},
+      "output":{"shape":"SearchGroupsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Searches the specified directory for a group. You can find groups that match the <code>SearchString</code> parameter with the value of their attributes included in the <code>SearchString</code> parameter. </p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>SearchGroups.NextToken</code> member contains a token that you pass in the next call to <code>SearchGroups</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "SearchUsers":{
+      "name":"SearchUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/SearchUsers",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchUsersRequest"},
+      "output":{"shape":"SearchUsersResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Searches the specified directory for a user. You can find users that match the <code>SearchString</code> parameter with the value of their attributes included in the <code>SearchString</code> parameter.</p> <p> This operation supports pagination with the use of the <code>NextToken</code> request and response parameters. If more results are available, the <code>SearchUsers.NextToken</code> member contains a token that you pass in the next call to <code>SearchUsers</code>. This retrieves the next set of items. </p> <p> You can also specify a maximum number of return results with the <code>MaxResults</code> parameter. </p>"
+    },
+    "UpdateGroup":{
+      "name":"UpdateGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Groups/UpdateGroup",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateGroupRequest"},
+      "output":{"shape":"UpdateGroupResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates group information. </p>"
+    },
+    "UpdateUser":{
+      "name":"UpdateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/Users/UpdateUser",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateUserRequest"},
+      "output":{"shape":"UpdateUserResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates user information. </p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "Reason":{
+          "shape":"AccessDeniedReason",
+          "documentation":"<p> Reason the request was unauthorized. </p>"
+        }
+      },
+      "documentation":"<p> You don't have permission to perform the request or access the directory. It can also occur when the <code>DirectoryId</code> doesn't exist or the user, member, or group might be outside of your organizational unit (OU). </p> <p> Make sure that you have the authentication and authorization to perform the action. Review the directory information in the request, and make sure that the object isn't outside of your OU. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessDeniedReason":{
+      "type":"string",
+      "enum":[
+        "IAM_AUTH",
+        "DIRECTORY_AUTH",
+        "DATA_DISABLED"
+      ]
+    },
+    "AddGroupMemberRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "GroupName",
+        "MemberName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "GroupName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "MemberName":{
+          "shape":"MemberName",
+          "documentation":"<p> The <code>SAMAccountName</code> of the user, group, or computer to add as a group member. </p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group member. This parameter is required only when adding a member outside of your Managed Microsoft AD domain to a group inside of your Managed Microsoft AD domain. This parameter defaults to the Managed Microsoft AD domain. </p> <note> <p> This parameter is case insensitive. </p> </note>"
+        }
+      }
+    },
+    "AddGroupMemberResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "AttributeValue":{
+      "type":"structure",
+      "members":{
+        "BOOL":{
+          "shape":"BooleanAttributeValue",
+          "documentation":"<p> Indicates that the attribute type value is a boolean. For example: </p> <p> <code>\"BOOL\": true</code> </p>"
+        },
+        "N":{
+          "shape":"NumberAttributeValue",
+          "documentation":"<p> Indicates that the attribute type value is a number. For example: </p> <p> <code>\"N\": \"16\"</code> </p>"
+        },
+        "S":{
+          "shape":"StringAttributeValue",
+          "documentation":"<p> Indicates that the attribute type value is a string. For example: </p> <p> <code>\"S\": \"S Group\"</code> </p>"
+        },
+        "SS":{
+          "shape":"StringSetAttributeValue",
+          "documentation":"<p> Indicates that the attribute type value is a string set. For example: </p> <p> <code>\"SS\": [\"sample_service_class/host.sample.com:1234/sample_service_name_1\", \"sample_service_class/host.sample.com:1234/sample_service_name_2\"]</code> </p>"
+        }
+      },
+      "documentation":"<p> The data type for an attribute. Each attribute value is described as a name-value pair. The name is the AD schema name, and the value is the data itself. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p>",
+      "union":true
+    },
+    "Attributes":{
+      "type":"map",
+      "key":{"shape":"LdapDisplayName"},
+      "value":{"shape":"AttributeValue"},
+      "max":25,
+      "min":1
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BooleanAttributeValue":{
+      "type":"boolean",
+      "box":true,
+      "sensitive":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[\\x00-\\x7F]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p> This error will occur when you try to create a resource that conflicts with an existing object. It can also occur when adding a member to a group that the member is already in.</p> <p> This error can be caused by a request sent within the 8-hour idempotency window with the same client token but different input parameters. Client tokens should not be re-used across different requests. After 8 hours, any request with the same client token is treated as a new request. </p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateGroupRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "GroupScope":{
+          "shape":"GroupScope",
+          "documentation":"<p> The scope of the AD group. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#group-scope\">Active Directory security group scope</a>. </p>"
+        },
+        "GroupType":{
+          "shape":"GroupType",
+          "documentation":"<p> The AD group type. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#how-active-directory-security-groups-work\">Active Directory security group type</a>.</p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression that defines one or more attributes with the data type and value of each attribute. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        }
+      }
+    },
+    "CreateGroupResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the group. </p>"
+        }
+      }
+    },
+    "CreateUserRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that’s associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p> The email address of the user. </p>"
+        },
+        "GivenName":{
+          "shape":"GivenName",
+          "documentation":"<p> The first name of the user. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression that defines one or more attribute names with the data type and value of each attribute. A key is an attribute name, and the value is a list of maps. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p> <note> <p> Attribute names are case insensitive. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        },
+        "Surname":{
+          "shape":"Surname",
+          "documentation":"<p> The last name of the user. </p>"
+        }
+      }
+    },
+    "CreateUserResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory where the address block is added. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the user. </p>"
+        }
+      }
+    },
+    "DeleteGroupRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        }
+      }
+    },
+    "DeleteGroupResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteUserRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        }
+      }
+    },
+    "DeleteUserResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The Identifier (ID) of the directory associated with the group.</p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "OtherAttributes":{
+          "shape":"LdapDisplayNameList",
+          "documentation":"<p> One or more attributes to be returned for the group. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p> <note> <p> This parameter is optional, so you can return groups outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD groups are returned. </p> <p> This value is case insensitive. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        }
+      }
+    },
+    "DescribeGroupResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>"
+        },
+        "DistinguishedName":{
+          "shape":"DistinguishedName",
+          "documentation":"<p> The <a href=\"https://learn.microsoft.com/en-us/windows/win32/ad/object-names-and-identities#distinguished-name\">distinguished name</a> of the object. </p>"
+        },
+        "GroupScope":{
+          "shape":"GroupScope",
+          "documentation":"<p> The scope of the AD group. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#group-scope\">Active Directory security groups</a>. </p>"
+        },
+        "GroupType":{
+          "shape":"GroupType",
+          "documentation":"<p> The AD group type. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#how-active-directory-security-groups-work\">Active Directory security group type</a>. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> The attribute values that are returned for the attribute names that are included in the request. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the group. </p>"
+        }
+      }
+    },
+    "DescribeUserRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "OtherAttributes":{
+          "shape":"LdapDisplayNameList",
+          "documentation":"<p> One or more attribute names to be returned for the user. A key is an attribute name, and the value is a list of maps. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the user. </p> <note> <p> This parameter is optional, so you can return users outside your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD users are returned. </p> <p> This value is case insensitive. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        }
+      }
+    },
+    "DescribeUserResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>"
+        },
+        "DistinguishedName":{
+          "shape":"DistinguishedName",
+          "documentation":"<p> The <a href=\"https://learn.microsoft.com/en-us/windows/win32/ad/object-names-and-identities#distinguished-name\">distinguished name</a> of the object. </p>"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p> The email address of the user. </p>"
+        },
+        "Enabled":{
+          "shape":"Boolean",
+          "documentation":"<p> Indicates whether the user account is active. </p>"
+        },
+        "GivenName":{
+          "shape":"GivenName",
+          "documentation":"<p> The first name of the user. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> The attribute values that are returned for the attribute names that are included in the request. </p> <note> <p> Attribute names are case insensitive. </p> </note>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the user. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the user. </p>"
+        },
+        "Surname":{
+          "shape":"Surname",
+          "documentation":"<p> The last name of the user. </p>"
+        },
+        "UserPrincipalName":{
+          "shape":"UserPrincipalName",
+          "documentation":"<p> The UPN that is an Internet-style login name for a user and is based on the Internet standard <a href=\"https://datatracker.ietf.org/doc/html/rfc822\">RFC 822</a>. The UPN is shorter than the distinguished name and easier to remember. </p>"
+        }
+      }
+    },
+    "DirectoryId":{
+      "type":"string",
+      "pattern":"^d-[0-9a-f]{10}$"
+    },
+    "DirectoryUnavailableException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "Reason":{
+          "shape":"DirectoryUnavailableReason",
+          "documentation":"<p> Reason the request failed for the specified directory. </p>"
+        }
+      },
+      "documentation":"<p> The request could not be completed due to a problem in the configuration or current state of the specified directory. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "DirectoryUnavailableReason":{
+      "type":"string",
+      "enum":[
+        "INVALID_DIRECTORY_STATE",
+        "DIRECTORY_TIMEOUT",
+        "DIRECTORY_RESOURCES_EXCEEDED",
+        "NO_DISK_SPACE",
+        "TRUST_AUTH_FAILURE"
+      ]
+    },
+    "DisableUserRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        }
+      }
+    },
+    "DisableUserResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DistinguishedName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "sensitive":true
+    },
+    "EmailAddress":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "sensitive":true
+    },
+    "ExceptionMessage":{"type":"string"},
+    "GivenName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "sensitive":true
+    },
+    "Group":{
+      "type":"structure",
+      "required":["SAMAccountName"],
+      "members":{
+        "DistinguishedName":{
+          "shape":"DistinguishedName",
+          "documentation":"<p>The <a href=\"https://learn.microsoft.com/en-us/windows/win32/ad/object-names-and-identities#distinguished-name\">distinguished name</a> of the object. </p>"
+        },
+        "GroupScope":{
+          "shape":"GroupScope",
+          "documentation":"<p> The scope of the AD group. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#group-scope\">Active Directory security groups</a> </p>"
+        },
+        "GroupType":{
+          "shape":"GroupType",
+          "documentation":"<p> The AD group type. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#how-active-directory-security-groups-work\">Active Directory security group type</a>. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression of one or more attributes, data types, and the values of a group. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the group. </p>"
+        }
+      },
+      "documentation":"<p> A group object that contains identifying information and attributes for a specified group. </p>"
+    },
+    "GroupList":{
+      "type":"list",
+      "member":{"shape":"Group"}
+    },
+    "GroupName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[^:;|=+\"*?<>/\\\\,\\[\\]@]+$"
+    },
+    "GroupScope":{
+      "type":"string",
+      "enum":[
+        "DomainLocal",
+        "Global",
+        "Universal",
+        "BuiltinLocal"
+      ]
+    },
+    "GroupSummary":{
+      "type":"structure",
+      "required":[
+        "GroupScope",
+        "GroupType",
+        "SAMAccountName",
+        "SID"
+      ],
+      "members":{
+        "GroupScope":{
+          "shape":"GroupScope",
+          "documentation":"<p>The scope of the AD group. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#group-scope\">Active Directory security groups</a>.</p>"
+        },
+        "GroupType":{
+          "shape":"GroupType",
+          "documentation":"<p>The AD group type. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#how-active-directory-security-groups-work\">Active Directory security group type</a>.</p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p>The name of the group.</p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p>The unique security identifier (SID) of the group.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing a subset of fields of a group object from a directory.</p>"
+    },
+    "GroupSummaryList":{
+      "type":"list",
+      "member":{"shape":"GroupSummary"}
+    },
+    "GroupType":{
+      "type":"string",
+      "enum":[
+        "Distribution",
+        "Security"
+      ]
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p> The operation didn't succeed because an internal error occurred. Try again later. </p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "LdapDisplayName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"^[A-Za-z*][A-Za-z-*]*$"
+    },
+    "LdapDisplayNameList":{
+      "type":"list",
+      "member":{"shape":"LdapDisplayName"},
+      "max":25,
+      "min":1
+    },
+    "ListGroupMembersRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group member. This parameter defaults to the Managed Microsoft AD domain. </p> <note> <p> This parameter is optional and case insensitive. </p> </note>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An encoded paging token for paginated calls that can be passed back to retrieve the next page.</p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p> <note> <p> This parameter is optional, so you can return members from a group outside of your Managed Microsoft AD domain. When no value is defined, only members of your Managed Microsoft AD groups are returned. </p> <p> This value is case insensitive. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        }
+      }
+    },
+    "ListGroupMembersResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>Identifier (ID) of the directory associated with the group.</p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the member. </p>"
+        },
+        "Members":{
+          "shape":"MemberList",
+          "documentation":"<p> The member information that the request returns. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p>"
+        }
+      }
+    },
+    "ListGroupsForMemberRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the member. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group member. </p> <note> <p> This parameter is optional, so you can limit your results to the group members in a specific domain. </p> <p> This parameter is case insensitive and defaults to <code>Realm</code> </p> </note>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p> <note> <p> This parameter is optional, so you can return groups outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD groups are returned. </p> <p> This value is case insensitive and defaults to your Managed Microsoft AD domain. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"MemberName",
+          "documentation":"<p> The <code>SAMAccountName</code> of the user, group, or computer that's a member of the group. </p>"
+        }
+      }
+    },
+    "ListGroupsForMemberResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the member. </p>"
+        },
+        "Groups":{
+          "shape":"GroupSummaryList",
+          "documentation":"<p> The group information that the request returns. </p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain that's associated with the member. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain that's associated with the group. </p>"
+        }
+      }
+    },
+    "ListGroupsRequest":{
+      "type":"structure",
+      "required":["DirectoryId"],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name associated with the directory. </p> <note> <p> This parameter is optional, so you can return groups outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD groups are returned. </p> <p> This value is case insensitive. </p> </note>"
+        }
+      }
+    },
+    "ListGroupsResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>"
+        },
+        "Groups":{
+          "shape":"GroupSummaryList",
+          "documentation":"<p> The group information that the request returns. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p>The domain name associated with the group.</p>"
+        }
+      }
+    },
+    "ListUsersRequest":{
+      "type":"structure",
+      "required":["DirectoryId"],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the user. </p> <note> <p> This parameter is optional, so you can return users outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD users are returned. </p> <p> This value is case insensitive. </p> </note>"
+        }
+      }
+    },
+    "ListUsersResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain that's associated with the user. </p>"
+        },
+        "Users":{
+          "shape":"UserSummaryList",
+          "documentation":"<p> The user information that the request returns. </p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "Member":{
+      "type":"structure",
+      "required":[
+        "MemberType",
+        "SAMAccountName",
+        "SID"
+      ],
+      "members":{
+        "MemberType":{
+          "shape":"MemberType",
+          "documentation":"<p> The AD type of the member object.</p>"
+        },
+        "SAMAccountName":{
+          "shape":"MemberName",
+          "documentation":"<p> The name of the group member. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the group member. </p>"
+        }
+      },
+      "documentation":"<p>A member object that contains identifying information for a specified member.</p>"
+    },
+    "MemberList":{
+      "type":"list",
+      "member":{"shape":"Member"}
+    },
+    "MemberName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"^[^:;|=+\"*?<>/\\\\,\\[\\]@]+$"
+    },
+    "MemberType":{
+      "type":"string",
+      "enum":[
+        "USER",
+        "GROUP",
+        "COMPUTER"
+      ]
+    },
+    "NextToken":{
+      "type":"string",
+      "max":6144,
+      "min":1,
+      "sensitive":true
+    },
+    "NumberAttributeValue":{
+      "type":"long",
+      "box":true,
+      "sensitive":true
+    },
+    "Realm":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^([a-zA-Z0-9]+[\\\\.-])+([a-zA-Z0-9])+[.]?$"
+    },
+    "RemoveGroupMemberRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "GroupName",
+        "MemberName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the member. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "GroupName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "MemberName":{
+          "shape":"MemberName",
+          "documentation":"<p> The <code>SAMAccountName</code> of the user, group, or computer to remove from the group. </p>"
+        },
+        "MemberRealm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group member. This parameter defaults to the Managed Microsoft AD domain. </p> <note> <p> This parameter is optional and case insensitive. </p> </note>"
+        }
+      }
+    },
+    "RemoveGroupMemberResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p> The resource couldn't be found. </p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SID":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "SearchGroupsRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SearchAttributes",
+        "SearchString"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the group. </p> <note> <p> This parameter is optional, so you can return groups outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD groups are returned. </p> <p> This value is case insensitive. </p> </note>"
+        },
+        "SearchAttributes":{
+          "shape":"LdapDisplayNameList",
+          "documentation":"<p> One or more data attributes that are used to search for a group. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p>"
+        },
+        "SearchString":{
+          "shape":"SearchString",
+          "documentation":"<p> The attribute value that you want to search for. </p> <note> <p> Wildcard <code>(*)</code> searches aren't supported. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p> </note>"
+        }
+      }
+    },
+    "SearchGroupsResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>"
+        },
+        "Groups":{
+          "shape":"GroupList",
+          "documentation":"<p> The group information that the request returns. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain that's associated with the group. </p>"
+        }
+      }
+    },
+    "SearchString":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "sensitive":true
+    },
+    "SearchUsersRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SearchAttributes",
+        "SearchString"
+      ],
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to be returned per request. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain name that's associated with the user. </p> <note> <p> This parameter is optional, so you can return users outside of your Managed Microsoft AD domain. When no value is defined, only your Managed Microsoft AD users are returned. </p> <p> This value is case insensitive. </p> </note>"
+        },
+        "SearchAttributes":{
+          "shape":"LdapDisplayNameList",
+          "documentation":"<p> One or more data attributes that are used to search for a user. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p>"
+        },
+        "SearchString":{
+          "shape":"SearchString",
+          "documentation":"<p> The attribute value that you want to search for. </p> <note> <p> Wildcard <code>(*)</code> searches aren't supported. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p> </note>"
+        }
+      }
+    },
+    "SearchUsersResult":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory where the address block is added. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An encoded paging token for paginated calls that can be passed back to retrieve the next page. </p>"
+        },
+        "Realm":{
+          "shape":"Realm",
+          "documentation":"<p> The domain that's associated with the user. </p>"
+        },
+        "Users":{
+          "shape":"UserList",
+          "documentation":"<p> The user information that the request returns. </p>"
+        }
+      }
+    },
+    "StringAttributeValue":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "sensitive":true
+    },
+    "StringSetAttributeValue":{
+      "type":"list",
+      "member":{"shape":"StringAttributeValue"},
+      "max":25,
+      "min":0,
+      "sensitive":true
+    },
+    "Surname":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RetryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p> The recommended amount of seconds to retry after a throttling exception. </p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p> The limit on the number of requests per second has been exceeded. </p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "UpdateGroupRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the group. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "GroupScope":{
+          "shape":"GroupScope",
+          "documentation":"<p> The scope of the AD group. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#group-scope\">Active Directory security groups</a>. </p>"
+        },
+        "GroupType":{
+          "shape":"GroupType",
+          "documentation":"<p> The AD group type. For details, see <a href=\"https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#how-active-directory-security-groups-work\">Active Directory security group type</a>. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression that defines one or more attributes with the data type and the value of each attribute. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"GroupName",
+          "documentation":"<p> The name of the group. </p>"
+        },
+        "UpdateType":{
+          "shape":"UpdateType",
+          "documentation":"<p> The type of update to be performed. If no value exists for the attribute, use <code>ADD</code>. Otherwise, use <code>REPLACE</code> to change an attribute value or <code>REMOVE</code> to clear the attribute value. </p>"
+        }
+      }
+    },
+    "UpdateGroupResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateType":{
+      "type":"string",
+      "enum":[
+        "ADD",
+        "REPLACE",
+        "REMOVE"
+      ]
+    },
+    "UpdateUserRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "SAMAccountName"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique and case-sensitive identifier that you provide to make sure the idempotency of the request, so multiple identical calls have the same effect as one single call. </p> <p> A client token is valid for 8 hours after the first request that uses it completes. After 8 hours, any request with the same client token is treated as a new request. If the request succeeds, any future uses of that token will be idempotent for another 8 hours. </p> <p> If you submit a request with the same client token but change one of the other parameters within the 8-hour idempotency window, Directory Service Data returns an <code>ConflictException</code>. </p> <note> <p> This parameter is optional when using the CLI or SDK. </p> </note>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier (ID) of the directory that's associated with the user. </p>",
+          "location":"querystring",
+          "locationName":"DirectoryId"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p> The email address of the user. </p>"
+        },
+        "GivenName":{
+          "shape":"GivenName",
+          "documentation":"<p> The first name of the user. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression that defines one or more attribute names with the data type and value of each attribute. A key is an attribute name, and the value is a list of maps. For a list of supported attributes, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ad_data_attributes.html\">Directory Service Data Attributes</a>. </p> <note> <p> Attribute names are case insensitive. </p> </note>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        },
+        "Surname":{
+          "shape":"Surname",
+          "documentation":"<p> The last name of the user. </p>"
+        },
+        "UpdateType":{
+          "shape":"UpdateType",
+          "documentation":"<p> The type of update to be performed. If no value exists for the attribute, use <code>ADD</code>. Otherwise, use <code>REPLACE</code> to change an attribute value or <code>REMOVE</code> to clear the attribute value. </p>"
+        }
+      }
+    },
+    "UpdateUserResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "User":{
+      "type":"structure",
+      "required":["SAMAccountName"],
+      "members":{
+        "DistinguishedName":{
+          "shape":"DistinguishedName",
+          "documentation":"<p> The <a href=\"https://learn.microsoft.com/en-us/windows/win32/ad/object-names-and-identities#distinguished-name\">distinguished name</a> of the object. </p>"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p> The email address of the user. </p>"
+        },
+        "Enabled":{
+          "shape":"Boolean",
+          "documentation":"<p> Indicates whether the user account is active. </p>"
+        },
+        "GivenName":{
+          "shape":"GivenName",
+          "documentation":"<p> The first name of the user. </p>"
+        },
+        "OtherAttributes":{
+          "shape":"Attributes",
+          "documentation":"<p> An expression that includes one or more attributes, data types, and values of a user.</p>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p> The name of the user. </p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the user. </p>"
+        },
+        "Surname":{
+          "shape":"Surname",
+          "documentation":"<p> The last name of the user. </p>"
+        },
+        "UserPrincipalName":{
+          "shape":"UserPrincipalName",
+          "documentation":"<p> The UPN that is an internet-style login name for a user and based on the internet standard <a href=\"https://datatracker.ietf.org/doc/html/rfc822\">RFC 822</a>. The UPN is shorter than the distinguished name and easier to remember. </p>"
+        }
+      },
+      "documentation":"<p> A user object that contains identifying information and attributes for a specified user. </p>"
+    },
+    "UserList":{
+      "type":"list",
+      "member":{"shape":"User"}
+    },
+    "UserName":{
+      "type":"string",
+      "max":20,
+      "min":1,
+      "pattern":"^[\\w\\-.]+$"
+    },
+    "UserPrincipalName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "sensitive":true
+    },
+    "UserSummary":{
+      "type":"structure",
+      "required":[
+        "Enabled",
+        "SAMAccountName",
+        "SID"
+      ],
+      "members":{
+        "Enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the user account is active.</p>"
+        },
+        "GivenName":{
+          "shape":"GivenName",
+          "documentation":"<p>The first name of the user. </p>"
+        },
+        "SAMAccountName":{
+          "shape":"UserName",
+          "documentation":"<p>The name of the user.</p>"
+        },
+        "SID":{
+          "shape":"SID",
+          "documentation":"<p> The unique security identifier (SID) of the user.</p>"
+        },
+        "Surname":{
+          "shape":"Surname",
+          "documentation":"<p>The last name of the user.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing a subset of the fields of a user object from a directory.</p>"
+    },
+    "UserSummaryList":{
+      "type":"list",
+      "member":{"shape":"UserSummary"}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p> Reason the request failed validation. </p>"
+        }
+      },
+      "documentation":"<p> The request isn't valid. Review the details in the error message to update the invalid parameters or values in your request. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "INVALID_REALM",
+        "INVALID_DIRECTORY_TYPE",
+        "INVALID_SECONDARY_REGION",
+        "INVALID_NEXT_TOKEN",
+        "INVALID_ATTRIBUTE_VALUE",
+        "INVALID_ATTRIBUTE_NAME",
+        "INVALID_ATTRIBUTE_FOR_USER",
+        "INVALID_ATTRIBUTE_FOR_GROUP",
+        "INVALID_ATTRIBUTE_FOR_SEARCH",
+        "INVALID_ATTRIBUTE_FOR_MODIFY",
+        "DUPLICATE_ATTRIBUTE",
+        "MISSING_ATTRIBUTE",
+        "ATTRIBUTE_EXISTS",
+        "LDAP_SIZE_LIMIT_EXCEEDED",
+        "LDAP_UNSUPPORTED_OPERATION"
+      ]
+    }
+  },
+  "documentation":"<p> Amazon Web Services Directory Service Data is an extension of Directory Service. This API reference provides detailed information about Directory Service Data operations and object types. </p> <p> With Directory Service Data, you can create, read, update, and delete users, groups, and memberships from your Managed Microsoft AD without additional costs and without deploying dedicated management instances. You can also perform built-in object management tasks across directories without direct network connectivity, which simplifies provisioning and access management to achieve fully automated deployments. Directory Service Data supports user and group write operations, such as <code>CreateUser</code> and <code>CreateGroup</code>, within the organizational unit (OU) of your Managed Microsoft AD. Directory Service Data supports read operations, such as <code>ListUsers</code> and <code>ListGroups</code>, on all users, groups, and group memberships within your Managed Microsoft AD and across trusted realms. Directory Service Data supports adding and removing group members in your OU and the Amazon Web Services Delegated Groups OU, so you can grant and deny access to specific roles and permissions. For more information, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ms_ad_manage_users_groups.html\">Manage users and groups</a> in the <i>Directory Service Administration Guide</i>. </p> <note> <p> Directory management operations and configuration changes made against the Directory Service API will also reflect in Directory Service Data API with eventual consistency. You can expect a short delay between management changes, such as adding a new directory trust and calling the Directory Service Data API for the newly created trusted realm. </p> </note> <p> Directory Service Data connects to your Managed Microsoft AD domain controllers and performs operations on underlying directory objects. When you create your Managed Microsoft AD, you choose subnets for domain controllers that Directory Service creates on your behalf. If a domain controller is unavailable, Directory Service Data uses an available domain controller. As a result, you might notice eventual consistency while objects replicate from one domain controller to another domain controller. For more information, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ms_ad_getting_started_what_gets_created.html\">What gets created</a> in the <i>Directory Service Administration Guide</i>. Directory limits vary by Managed Microsoft AD edition: </p> <ul> <li> <p> <b>Standard edition</b> – Supports 8 transactions per second (TPS) for read operations and 4 TPS for write operations per directory. There's a concurrency limit of 10 concurrent requests. </p> </li> <li> <p> <b>Enterprise edition</b> – Supports 16 transactions per second (TPS) for read operations and 8 TPS for write operations per directory. There's a concurrency limit of 10 concurrent requests.</p> </li> <li> <p> <b>Amazon Web Services Account</b> - Supports a total of 100 TPS for Directory Service Data operations across all directories.</p> </li> </ul> <p> Directory Service Data only supports the Managed Microsoft AD directory type and is only available in the primary Amazon Web Services Region. For more information, see <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_microsoft_ad.html\">Managed Microsoft AD</a> and <a href=\"https://docs.aws.amazon.com/directoryservice/latest/admin-guide/multi-region-global-primary-additional.html\">Primary vs additional Regions</a> in the <i>Directory Service Administration Guide</i>. </p>"
+}

@@ -1,0 +1,3067 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-09-17",
+    "endpointPrefix":"catalog.marketplace",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"AWS Marketplace Catalog",
+    "serviceFullName":"AWS Marketplace Catalog Service",
+    "serviceId":"Marketplace Catalog",
+    "signatureVersion":"v4",
+    "signingName":"aws-marketplace",
+    "uid":"marketplace-catalog-2018-09-17",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "BatchDescribeEntities":{
+      "name":"BatchDescribeEntities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/BatchDescribeEntities"
+      },
+      "input":{"shape":"BatchDescribeEntitiesRequest"},
+      "output":{"shape":"BatchDescribeEntitiesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns metadata and content for multiple entities. This is the Batch version of the <code>DescribeEntity</code> API and uses the same IAM permission action as <code>DescribeEntity</code> API.</p>"
+    },
+    "CancelChangeSet":{
+      "name":"CancelChangeSet",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/CancelChangeSet"
+      },
+      "input":{"shape":"CancelChangeSetRequest"},
+      "output":{"shape":"CancelChangeSetResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Used to cancel an open change request. Must be sent before the status of the request changes to <code>APPLYING</code>, the final stage of completing your change request. You can describe a change during the 60-day request history retention period for API calls.</p>"
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/DeleteResourcePolicy"
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "output":{"shape":"DeleteResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a resource-based policy on an entity that is identified by its resource ARN.</p>"
+    },
+    "DescribeChangeSet":{
+      "name":"DescribeChangeSet",
+      "http":{
+        "method":"GET",
+        "requestUri":"/DescribeChangeSet"
+      },
+      "input":{"shape":"DescribeChangeSetRequest"},
+      "output":{"shape":"DescribeChangeSetResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Provides information about a given change set.</p>"
+    },
+    "DescribeEntity":{
+      "name":"DescribeEntity",
+      "http":{
+        "method":"GET",
+        "requestUri":"/DescribeEntity"
+      },
+      "input":{"shape":"DescribeEntityRequest"},
+      "output":{"shape":"DescribeEntityResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotSupportedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the metadata and content of the entity.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/GetResourcePolicy"
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Gets a resource-based policy of an entity that is identified by its resource ARN.</p>"
+    },
+    "ListChangeSets":{
+      "name":"ListChangeSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListChangeSets"
+      },
+      "input":{"shape":"ListChangeSetsRequest"},
+      "output":{"shape":"ListChangeSetsResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the list of change sets owned by the account being used to make the call. You can filter this list by providing any combination of <code>entityId</code>, <code>ChangeSetName</code>, and status. If you provide more than one filter, the API operation applies a logical AND between the filters.</p> <p>You can describe a change during the 60-day request history retention period for API calls.</p>"
+    },
+    "ListEntities":{
+      "name":"ListEntities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListEntities"
+      },
+      "input":{"shape":"ListEntitiesRequest"},
+      "output":{"shape":"ListEntitiesResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Provides the list of entities of a given type.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListTagsForResource"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists all tags that have been added to a resource (either an <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#catalog-api-entities\">entity</a> or <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#working-with-change-sets\">change set</a>).</p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutResourcePolicy"
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Attaches a resource-based policy to an entity. Examples of an entity include: <code>AmiProduct</code> and <code>ContainerProduct</code>.</p>"
+    },
+    "StartChangeSet":{
+      "name":"StartChangeSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartChangeSet"
+      },
+      "input":{"shape":"StartChangeSetRequest"},
+      "output":{"shape":"StartChangeSetResponse"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Allows you to request changes for your entities. Within a single <code>ChangeSet</code>, you can't start the same change type against the same entity multiple times. Additionally, when a <code>ChangeSet</code> is running, all the entities targeted by the different changes are locked until the change set has completed (either succeeded, cancelled, or failed). If you try to start a change set containing a change against an entity that is already locked, you will receive a <code>ResourceInUseException</code> error.</p> <p>For example, you can't start the <code>ChangeSet</code> described in the <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/API_StartChangeSet.html#API_StartChangeSet_Examples\">example</a> later in this topic because it contains two changes to run the same change type (<code>AddRevisions</code>) against the same entity (<code>entity-id@1</code>).</p> <p>For more information about working with change sets, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#working-with-change-sets\"> Working with change sets</a>. For information about change types for single-AMI products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/ami-products.html#working-with-single-AMI-products\">Working with single-AMI products</a>. Also, for more information about change types available for container-based products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/container-products.html#working-with-container-products\">Working with container products</a>.</p> <p>To download \"DetailsDocument\" shapes, see <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-python\">Python</a> and <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-java/tree/main\">Java</a> shapes on GitHub.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/TagResource"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Tags a resource (either an <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#catalog-api-entities\">entity</a> or <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#working-with-change-sets\">change set</a>).</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UntagResource"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes a tag or list of tags from a resource (either an <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#catalog-api-entities\">entity</a> or <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/welcome.html#working-with-change-sets\">change set</a>).</p>"
+    }
+  },
+  "shapes":{
+    "ARN":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9:*/-]+$"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>Access is denied.</p> <p>HTTP status code: 403</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true,
+      "synthetic":true
+    },
+    "AmiProductEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"AmiProductEntityIdFilterValueList",
+          "documentation":"<p>A string array of unique entity id values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on entity id of an AMI product.</p>"
+    },
+    "AmiProductEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"AmiProductEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "AmiProductEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "AmiProductFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"AmiProductEntityIdFilter",
+          "documentation":"<p>Unique identifier for the AMI product.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"AmiProductLastModifiedDateFilter",
+          "documentation":"<p>The last date on which the AMI product was modified.</p>"
+        },
+        "ProductTitle":{
+          "shape":"AmiProductTitleFilter",
+          "documentation":"<p>The title of the AMI product.</p>"
+        },
+        "Visibility":{
+          "shape":"AmiProductVisibilityFilter",
+          "documentation":"<p>The visibility of the AMI product.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for AMI products. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "AmiProductLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"AmiProductLastModifiedDateFilterDateRange",
+          "documentation":"<p>Dates between which the AMI product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering based on the last modified date of AMI products.</p>"
+    },
+    "AmiProductLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date after which the AMI product was last modified.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date before which the AMI product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains date range of the last modified date to be filtered on. You can optionally provide a <code>BeforeValue</code> and/or <code>AfterValue</code>. Both are inclusive.</p>"
+    },
+    "AmiProductSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"AmiProductSortBy",
+          "documentation":"<p>Field to sort the AMI products by.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order. Can be <code>ASCENDING</code> or <code>DESCENDING</code>. The default value is <code>DESCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>Objects that allows sorting on AMI products based on certain fields and sorting order.</p>"
+    },
+    "AmiProductSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "LastModifiedDate",
+        "ProductTitle",
+        "Visibility"
+      ]
+    },
+    "AmiProductSummary":{
+      "type":"structure",
+      "members":{
+        "ProductTitle":{
+          "shape":"AmiProductTitleString",
+          "documentation":"<p>The title of the AMI product.</p>"
+        },
+        "Visibility":{
+          "shape":"AmiProductVisibilityString",
+          "documentation":"<p>The lifecycle of the AMI product.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains summarized information about an AMI product.</p>"
+    },
+    "AmiProductTitleFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"AmiProductTitleFilterValueList",
+          "documentation":"<p>A string array of unique product title values to be filtered on.</p>"
+        },
+        "WildCardValue":{
+          "shape":"AmiProductTitleString",
+          "documentation":"<p>A string that will be the <code>wildCard</code> input for product tile filter. It matches the provided value as a substring in the actual value.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on product title.</p>"
+    },
+    "AmiProductTitleFilterValueList":{
+      "type":"list",
+      "member":{"shape":"AmiProductTitleString"},
+      "max":10,
+      "min":1
+    },
+    "AmiProductTitleString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "AmiProductVisibilityFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"AmiProductVisibilityFilterValueList",
+          "documentation":"<p>A string array of unique visibility values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on the visibility of the product in the AWS Marketplace.</p>"
+    },
+    "AmiProductVisibilityFilterValueList":{
+      "type":"list",
+      "member":{"shape":"AmiProductVisibilityString"},
+      "max":10,
+      "min":1
+    },
+    "AmiProductVisibilityString":{
+      "type":"string",
+      "enum":[
+        "Limited",
+        "Public",
+        "Restricted",
+        "Draft"
+      ]
+    },
+    "BatchDescribeEntitiesRequest":{
+      "type":"structure",
+      "required":["EntityRequestList"],
+      "members":{
+        "EntityRequestList":{
+          "shape":"EntityRequestList",
+          "documentation":"<p>List of entity IDs and the catalogs the entities are present in.</p>"
+        }
+      }
+    },
+    "BatchDescribeEntitiesResponse":{
+      "type":"structure",
+      "members":{
+        "EntityDetails":{
+          "shape":"EntityDetails",
+          "documentation":"<p>Details about each entity.</p>"
+        },
+        "Errors":{
+          "shape":"Errors",
+          "documentation":"<p>A map of errors returned, with <code>EntityId</code> as the key and <code>errorDetail</code> as the value.</p>"
+        }
+      }
+    },
+    "BatchDescribeErrorCodeString":{
+      "type":"string",
+      "max":72,
+      "min":1,
+      "pattern":"^[a-zA-Z_]+$"
+    },
+    "BatchDescribeErrorDetail":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{
+          "shape":"BatchDescribeErrorCodeString",
+          "documentation":"<p>The error code returned.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"BatchDescribeErrorMessageContent",
+          "documentation":"<p>The error message returned.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains an error code and error message.</p>"
+    },
+    "BatchDescribeErrorMessageContent":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "CancelChangeSetRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "ChangeSetId"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>Required. The catalog related to the request. Fixed value: <code>AWSMarketplace</code>.</p>",
+          "location":"querystring",
+          "locationName":"catalog"
+        },
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>Required. The unique identifier of the <code>StartChangeSet</code> request that you want to cancel.</p>",
+          "location":"querystring",
+          "locationName":"changeSetId"
+        }
+      }
+    },
+    "CancelChangeSetResponse":{
+      "type":"structure",
+      "members":{
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The unique identifier for the change set referenced in this request.</p>"
+        },
+        "ChangeSetArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated with the change set referenced in this request.</p>"
+        }
+      }
+    },
+    "Catalog":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z]+$"
+    },
+    "Change":{
+      "type":"structure",
+      "required":[
+        "ChangeType",
+        "Entity"
+      ],
+      "members":{
+        "ChangeType":{
+          "shape":"ChangeType",
+          "documentation":"<p>Change types are single string values that describe your intention for the change. Each change type is unique for each <code>EntityType</code> provided in the change's scope. For more information about change types available for single-AMI products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/ami-products.html#working-with-single-AMI-products\">Working with single-AMI products</a>. Also, for more information about change types available for container-based products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/container-products.html#working-with-container-products\">Working with container products</a>.</p>"
+        },
+        "Entity":{
+          "shape":"Entity",
+          "documentation":"<p>The entity to be changed.</p>"
+        },
+        "EntityTags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags associated with the change.</p>"
+        },
+        "Details":{
+          "shape":"Json",
+          "documentation":"<p>This object contains details specific to the change type of the requested change. For more information about change types available for single-AMI products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/ami-products.html#working-with-single-AMI-products\">Working with single-AMI products</a>. Also, for more information about change types available for container-based products, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/container-products.html#working-with-container-products\">Working with container products</a>.</p>"
+        },
+        "DetailsDocument":{
+          "shape":"JsonDocumentType",
+          "documentation":"<p>Alternative field that accepts a JSON value instead of a string for <code>ChangeType</code> details. You can use either <code>Details</code> or <code>DetailsDocument</code>, but not both.</p> <p>To download the \"DetailsDocument\" shapes, see the <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-python\">Python</a> and <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-java/tree/main\">Java</a> shapes on GitHub.</p>"
+        },
+        "ChangeName":{
+          "shape":"ChangeName",
+          "documentation":"<p>Optional name for the change.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains the <code>ChangeType</code>, <code>Details</code>, and <code>Entity</code>.</p>"
+    },
+    "ChangeName":{
+      "type":"string",
+      "max":72,
+      "min":1,
+      "pattern":"^[a-zA-Z]$"
+    },
+    "ChangeSetDescription":{
+      "type":"list",
+      "member":{"shape":"ChangeSummary"}
+    },
+    "ChangeSetName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^[\\w\\s+=.:@-]+$"
+    },
+    "ChangeSetSummaryList":{
+      "type":"list",
+      "member":{"shape":"ChangeSetSummaryListItem"}
+    },
+    "ChangeSetSummaryListItem":{
+      "type":"structure",
+      "members":{
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The unique identifier for a change set.</p>"
+        },
+        "ChangeSetArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated with the unique identifier for the change set referenced in this request.</p>"
+        },
+        "ChangeSetName":{
+          "shape":"ChangeSetName",
+          "documentation":"<p>The non-unique name for the change set.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The time, in ISO 8601 format (2018-02-27T13:45:22Z), when the change set was started.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The time, in ISO 8601 format (2018-02-27T13:45:22Z), when the change set was finished.</p>"
+        },
+        "Status":{
+          "shape":"ChangeStatus",
+          "documentation":"<p>The current status of the change set.</p>"
+        },
+        "EntityIdList":{
+          "shape":"ResourceIdList",
+          "documentation":"<p>This object is a list of entity IDs (string) that are a part of a change set. The entity ID list is a maximum of 20 entities. It must contain at least one entity.</p>"
+        },
+        "FailureCode":{
+          "shape":"FailureCode",
+          "documentation":"<p>Returned if the change set is in <code>FAILED</code> status. Can be either <code>CLIENT_ERROR</code>, which means that there are issues with the request (see the <code>ErrorDetailList</code> of <code>DescribeChangeSet</code>), or <code>SERVER_FAULT</code>, which means that there is a problem in the system, and you should retry your request.</p>"
+        }
+      },
+      "documentation":"<p>A summary of a change set returned in a list of change sets when the <code>ListChangeSets</code> action is called.</p>"
+    },
+    "ChangeStatus":{
+      "type":"string",
+      "enum":[
+        "PREPARING",
+        "APPLYING",
+        "SUCCEEDED",
+        "CANCELLED",
+        "FAILED"
+      ]
+    },
+    "ChangeSummary":{
+      "type":"structure",
+      "members":{
+        "ChangeType":{
+          "shape":"ChangeType",
+          "documentation":"<p>The type of the change.</p>"
+        },
+        "Entity":{
+          "shape":"Entity",
+          "documentation":"<p>The entity to be changed.</p>"
+        },
+        "Details":{
+          "shape":"Json",
+          "documentation":"<p>This object contains details specific to the change type of the requested change.</p>"
+        },
+        "DetailsDocument":{
+          "shape":"JsonDocumentType",
+          "documentation":"<p>The JSON value of the details specific to the change type of the requested change.</p> <p>To download the \"DetailsDocument\" shapes, see the <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-python\">Python</a> and <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-java/tree/main\">Java</a> shapes on GitHub.</p>"
+        },
+        "ErrorDetailList":{
+          "shape":"ErrorDetailList",
+          "documentation":"<p>An array of <code>ErrorDetail</code> objects associated with the change.</p>"
+        },
+        "ChangeName":{
+          "shape":"ChangeName",
+          "documentation":"<p>Optional name for the change.</p>"
+        }
+      },
+      "documentation":"<p>This object is a container for common summary information about the change. The summary doesn't contain the whole change structure.</p>"
+    },
+    "ChangeType":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[A-Z][\\w]*$"
+    },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[!-~]+$"
+    },
+    "ContainerProductEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ContainerProductEntityIdFilterValueList",
+          "documentation":"<p>A string array of unique entity id values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on entity id of a container product.</p>"
+    },
+    "ContainerProductEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ContainerProductEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "ContainerProductEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "ContainerProductFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"ContainerProductEntityIdFilter",
+          "documentation":"<p>Unique identifier for the container product.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"ContainerProductLastModifiedDateFilter",
+          "documentation":"<p>The last date on which the container product was modified.</p>"
+        },
+        "ProductTitle":{
+          "shape":"ContainerProductTitleFilter",
+          "documentation":"<p>The title of the container product.</p>"
+        },
+        "Visibility":{
+          "shape":"ContainerProductVisibilityFilter",
+          "documentation":"<p>The visibility of the container product.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for container products. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "ContainerProductLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"ContainerProductLastModifiedDateFilterDateRange",
+          "documentation":"<p>Dates between which the container product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering based on the last modified date of container products.</p>"
+    },
+    "ContainerProductLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date after which the container product was last modified.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date before which the container product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains date range of the last modified date to be filtered on. You can optionally provide a <code>BeforeValue</code> and/or <code>AfterValue</code>. Both are inclusive.</p>"
+    },
+    "ContainerProductSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"ContainerProductSortBy",
+          "documentation":"<p>Field to sort the container products by.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order. Can be <code>ASCENDING</code> or <code>DESCENDING</code>. The default value is <code>DESCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>Objects that allows sorting on container products based on certain fields and sorting order.</p>"
+    },
+    "ContainerProductSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "LastModifiedDate",
+        "ProductTitle",
+        "Visibility"
+      ]
+    },
+    "ContainerProductSummary":{
+      "type":"structure",
+      "members":{
+        "ProductTitle":{
+          "shape":"ContainerProductTitleString",
+          "documentation":"<p>The title of the container product.</p>"
+        },
+        "Visibility":{
+          "shape":"ContainerProductVisibilityString",
+          "documentation":"<p>The lifecycle of the product.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains summarized information about a container product.</p>"
+    },
+    "ContainerProductTitleFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ContainerProductTitleFilterValueList",
+          "documentation":"<p>A string array of unique product title values to be filtered on.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ContainerProductTitleString",
+          "documentation":"<p>A string that will be the <code>wildCard</code> input for product tile filter. It matches the provided value as a substring in the actual value.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on product title.</p>"
+    },
+    "ContainerProductTitleFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ContainerProductTitleString"},
+      "max":10,
+      "min":1
+    },
+    "ContainerProductTitleString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ContainerProductVisibilityFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ContainerProductVisibilityFilterValueList",
+          "documentation":"<p>A string array of unique visibility values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on the visibility of the product in the AWS Marketplace.</p>"
+    },
+    "ContainerProductVisibilityFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ContainerProductVisibilityString"},
+      "max":10,
+      "min":1
+    },
+    "ContainerProductVisibilityString":{
+      "type":"string",
+      "enum":[
+        "Limited",
+        "Public",
+        "Restricted",
+        "Draft"
+      ]
+    },
+    "DataProductEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"DataProductEntityIdFilterValueList",
+          "documentation":"<p>A string array of unique entity id values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on entity id of a data product.</p>"
+    },
+    "DataProductEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"DataProductEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "DataProductEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "DataProductFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"DataProductEntityIdFilter",
+          "documentation":"<p>Unique identifier for the data product.</p>"
+        },
+        "ProductTitle":{
+          "shape":"DataProductTitleFilter",
+          "documentation":"<p>The title of the data product.</p>"
+        },
+        "Visibility":{
+          "shape":"DataProductVisibilityFilter",
+          "documentation":"<p>The visibility of the data product.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"DataProductLastModifiedDateFilter",
+          "documentation":"<p>The last date on which the data product was modified.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for data products. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "DataProductLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"DataProductLastModifiedDateFilterDateRange",
+          "documentation":"<p>Dates between which the data product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering based on the last modified date of data products.</p>"
+    },
+    "DataProductLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date after which the data product was last modified.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date before which the data product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains date range of the last modified date to be filtered on. You can optionally provide a <code>BeforeValue</code> and/or <code>AfterValue</code>. Both are inclusive.</p>"
+    },
+    "DataProductSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"DataProductSortBy",
+          "documentation":"<p>Field to sort the data products by.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order. Can be <code>ASCENDING</code> or <code>DESCENDING</code>. The default value is <code>DESCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>Objects that allows sorting on data products based on certain fields and sorting order.</p>"
+    },
+    "DataProductSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "ProductTitle",
+        "Visibility",
+        "LastModifiedDate"
+      ]
+    },
+    "DataProductSummary":{
+      "type":"structure",
+      "members":{
+        "ProductTitle":{
+          "shape":"DataProductTitleString",
+          "documentation":"<p>The title of the data product.</p>"
+        },
+        "Visibility":{
+          "shape":"DataProductVisibilityString",
+          "documentation":"<p>The lifecycle of the data product.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains summarized information about a data product.</p>"
+    },
+    "DataProductTitleFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"DataProductTitleFilterValueList",
+          "documentation":"<p>A string array of unique product title values to be filtered on.</p>"
+        },
+        "WildCardValue":{
+          "shape":"DataProductTitleString",
+          "documentation":"<p>A string that will be the <code>wildCard</code> input for product tile filter. It matches the provided value as a substring in the actual value.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on product title.</p>"
+    },
+    "DataProductTitleFilterValueList":{
+      "type":"list",
+      "member":{"shape":"DataProductTitleString"},
+      "max":10,
+      "min":1
+    },
+    "DataProductTitleString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "DataProductVisibilityFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"DataProductVisibilityFilterValueList",
+          "documentation":"<p>A string array of unique visibility values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on the visibility of the product in the AWS Marketplace.</p>"
+    },
+    "DataProductVisibilityFilterValueList":{
+      "type":"list",
+      "member":{"shape":"DataProductVisibilityString"},
+      "max":10,
+      "min":1
+    },
+    "DataProductVisibilityString":{
+      "type":"string",
+      "enum":[
+        "Limited",
+        "Public",
+        "Restricted",
+        "Unavailable",
+        "Draft"
+      ]
+    },
+    "DateTimeISO8601":{
+      "type":"string",
+      "max":20,
+      "min":20,
+      "pattern":"^([\\d]{4})\\-(1[0-2]|0[1-9])\\-(3[01]|0[1-9]|[12][\\d])T(2[0-3]|[01][\\d]):([0-5][\\d]):([0-5][\\d])Z$"
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the entity resource that is associated with the resource policy.</p>",
+          "location":"querystring",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "DeleteResourcePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeChangeSetRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "ChangeSetId"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>Required. The catalog related to the request. Fixed value: <code>AWSMarketplace</code> </p>",
+          "location":"querystring",
+          "locationName":"catalog"
+        },
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>Required. The unique identifier for the <code>StartChangeSet</code> request that you want to describe the details for.</p>",
+          "location":"querystring",
+          "locationName":"changeSetId"
+        }
+      }
+    },
+    "DescribeChangeSetResponse":{
+      "type":"structure",
+      "members":{
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>Required. The unique identifier for the change set referenced in this request.</p>"
+        },
+        "ChangeSetArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated with the unique identifier for the change set referenced in this request.</p>"
+        },
+        "ChangeSetName":{
+          "shape":"ChangeSetName",
+          "documentation":"<p>The optional name provided in the <code>StartChangeSet</code> request. If you do not provide a name, one is set by default.</p>"
+        },
+        "Intent":{
+          "shape":"Intent",
+          "documentation":"<p>The optional intent provided in the <code>StartChangeSet</code> request. If you do not provide an intent, <code>APPLY</code> is set by default.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The date and time, in ISO 8601 format (2018-02-27T13:45:22Z), the request started. </p>"
+        },
+        "EndTime":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The date and time, in ISO 8601 format (2018-02-27T13:45:22Z), the request transitioned to a terminal state. The change cannot transition to a different state. Null if the request is not in a terminal state. </p>"
+        },
+        "Status":{
+          "shape":"ChangeStatus",
+          "documentation":"<p>The status of the change request.</p>"
+        },
+        "FailureCode":{
+          "shape":"FailureCode",
+          "documentation":"<p>Returned if the change set is in <code>FAILED</code> status. Can be either <code>CLIENT_ERROR</code>, which means that there are issues with the request (see the <code>ErrorDetailList</code>), or <code>SERVER_FAULT</code>, which means that there is a problem in the system, and you should retry your request.</p>"
+        },
+        "FailureDescription":{
+          "shape":"ExceptionMessageContent",
+          "documentation":"<p>Returned if there is a failure on the change set, but that failure is not related to any of the changes in the request.</p>"
+        },
+        "ChangeSet":{
+          "shape":"ChangeSetDescription",
+          "documentation":"<p>An array of <code>ChangeSummary</code> objects.</p>"
+        }
+      }
+    },
+    "DescribeEntityRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "EntityId"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>Required. The catalog related to the request. Fixed value: <code>AWSMarketplace</code> </p>",
+          "location":"querystring",
+          "locationName":"catalog"
+        },
+        "EntityId":{
+          "shape":"ResourceId",
+          "documentation":"<p>Required. The unique ID of the entity to describe.</p>",
+          "location":"querystring",
+          "locationName":"entityId"
+        }
+      }
+    },
+    "DescribeEntityResponse":{
+      "type":"structure",
+      "members":{
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>The named type of the entity, in the format of <code>EntityType@Version</code>.</p>"
+        },
+        "EntityIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the entity, in the format of <code>EntityId@RevisionId</code>.</p>"
+        },
+        "EntityArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated to the unique identifier for the entity referenced in this request.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The last modified date of the entity, in ISO 8601 format (2018-02-27T13:45:22Z).</p>"
+        },
+        "Details":{
+          "shape":"Json",
+          "documentation":"<p>This stringified JSON object includes the details of the entity.</p>"
+        },
+        "DetailsDocument":{
+          "shape":"JsonDocumentType",
+          "documentation":"<p>The JSON value of the details specific to the entity.</p> <p>To download \"DetailsDocument\" shapes, see the <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-python\">Python</a> and <a href=\"https://github.com/awslabs/aws-marketplace-catalog-api-shapes-for-java/tree/main\">Java</a> shapes on GitHub.</p>"
+        }
+      }
+    },
+    "Entity":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "Type":{
+          "shape":"EntityType",
+          "documentation":"<p>The type of entity.</p>"
+        },
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier for the entity.</p>"
+        }
+      },
+      "documentation":"<p>An entity contains data that describes your product, its supported features, and how it can be used or launched by your customer. </p>"
+    },
+    "EntityDetail":{
+      "type":"structure",
+      "members":{
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>The entity type of the entity, in the format of <code>EntityType@Version</code>.</p>"
+        },
+        "EntityArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the entity.</p>"
+        },
+        "EntityIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The ID of the entity, in the format of <code>EntityId@RevisionId</code>.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The last time the entity was modified.</p>"
+        },
+        "DetailsDocument":{
+          "shape":"JsonDocumentType",
+          "documentation":"<p>An object that contains all the details of the entity.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains metadata and details about the entity.</p>"
+    },
+    "EntityDetails":{
+      "type":"map",
+      "key":{"shape":"EntityId"},
+      "value":{"shape":"EntityDetail"}
+    },
+    "EntityId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "EntityNameString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^\\\\S+[\\\\S\\\\s]*"
+    },
+    "EntityRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "EntityId"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>The name of the catalog the entity is present in. The only value at this time is <code>AWSMarketplace</code>.</p>"
+        },
+        "EntityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains entity ID and the catalog in which the entity is present.</p>"
+    },
+    "EntityRequestList":{
+      "type":"list",
+      "member":{"shape":"EntityRequest"},
+      "max":20,
+      "min":1
+    },
+    "EntitySummary":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"EntityNameString",
+          "documentation":"<p>The name for the entity. This value is not unique. It is defined by the seller.</p>"
+        },
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>The type of the entity.</p>"
+        },
+        "EntityId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The unique identifier for the entity.</p>"
+        },
+        "EntityArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated with the unique identifier for the entity.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The last time the entity was published, using ISO 8601 format (2018-02-27T13:45:22Z).</p>"
+        },
+        "Visibility":{
+          "shape":"VisibilityValue",
+          "documentation":"<p>The visibility status of the entity to buyers. This value can be <code>Public</code> (everyone can view the entity), <code>Limited</code> (the entity is visible to limited accounts only), or <code>Restricted</code> (the entity was published and then unpublished and only existing buyers can view it). </p>"
+        },
+        "AmiProductSummary":{
+          "shape":"AmiProductSummary",
+          "documentation":"<p>An object that contains summary information about the AMI product.</p>"
+        },
+        "ContainerProductSummary":{
+          "shape":"ContainerProductSummary",
+          "documentation":"<p>An object that contains summary information about the container product.</p>"
+        },
+        "DataProductSummary":{
+          "shape":"DataProductSummary",
+          "documentation":"<p>An object that contains summary information about the data product.</p>"
+        },
+        "SaaSProductSummary":{
+          "shape":"SaaSProductSummary",
+          "documentation":"<p>An object that contains summary information about the SaaS product.</p>"
+        },
+        "OfferSummary":{
+          "shape":"OfferSummary",
+          "documentation":"<p>An object that contains summary information about the offer.</p>"
+        },
+        "ResaleAuthorizationSummary":{
+          "shape":"ResaleAuthorizationSummary",
+          "documentation":"<p>An object that contains summary information about the Resale Authorization.</p>"
+        },
+        "MachineLearningProductSummary":{"shape":"MachineLearningProductSummary"}
+      },
+      "documentation":"<p>This object is a container for common summary information about the entity. The summary doesn't contain the whole entity structure, but it does contain information common across all entities.</p>"
+    },
+    "EntitySummaryList":{
+      "type":"list",
+      "member":{"shape":"EntitySummary"}
+    },
+    "EntityType":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z]+$"
+    },
+    "EntityTypeFilters":{
+      "type":"structure",
+      "members":{
+        "DataProductFilters":{
+          "shape":"DataProductFilters",
+          "documentation":"<p>A filter for data products.</p>"
+        },
+        "SaaSProductFilters":{
+          "shape":"SaaSProductFilters",
+          "documentation":"<p>A filter for SaaS products.</p>"
+        },
+        "AmiProductFilters":{
+          "shape":"AmiProductFilters",
+          "documentation":"<p>A filter for AMI products.</p>"
+        },
+        "OfferFilters":{
+          "shape":"OfferFilters",
+          "documentation":"<p>A filter for offers.</p>"
+        },
+        "ContainerProductFilters":{
+          "shape":"ContainerProductFilters",
+          "documentation":"<p>A filter for container products.</p>"
+        },
+        "ResaleAuthorizationFilters":{
+          "shape":"ResaleAuthorizationFilters",
+          "documentation":"<p>A filter for Resale Authorizations.</p>"
+        },
+        "MachineLearningProductFilters":{"shape":"MachineLearningProductFilters"}
+      },
+      "documentation":"<p>Object containing all the filter fields per entity type.</p>",
+      "union":true
+    },
+    "EntityTypeSort":{
+      "type":"structure",
+      "members":{
+        "DataProductSort":{
+          "shape":"DataProductSort",
+          "documentation":"<p>A sort for data products.</p>"
+        },
+        "SaaSProductSort":{
+          "shape":"SaaSProductSort",
+          "documentation":"<p>A sort for SaaS products.</p>"
+        },
+        "AmiProductSort":{
+          "shape":"AmiProductSort",
+          "documentation":"<p>A sort for AMI products.</p>"
+        },
+        "OfferSort":{
+          "shape":"OfferSort",
+          "documentation":"<p>A sort for offers.</p>"
+        },
+        "ContainerProductSort":{
+          "shape":"ContainerProductSort",
+          "documentation":"<p>A sort for container products.</p>"
+        },
+        "ResaleAuthorizationSort":{
+          "shape":"ResaleAuthorizationSort",
+          "documentation":"<p>A sort for Resale Authorizations.</p>"
+        },
+        "MachineLearningProductSort":{"shape":"MachineLearningProductSort"}
+      },
+      "documentation":"<p>Object containing all the sort fields per entity type.</p>",
+      "union":true
+    },
+    "ErrorCodeString":{
+      "type":"string",
+      "max":72,
+      "min":1,
+      "pattern":"^[a-zA-Z_]+$"
+    },
+    "ErrorDetail":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{
+          "shape":"ErrorCodeString",
+          "documentation":"<p>The error code that identifies the type of error.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"ExceptionMessageContent",
+          "documentation":"<p>The message for the error.</p>"
+        }
+      },
+      "documentation":"<p>Details about the error.</p>"
+    },
+    "ErrorDetailList":{
+      "type":"list",
+      "member":{"shape":"ErrorDetail"}
+    },
+    "Errors":{
+      "type":"map",
+      "key":{"shape":"EntityId"},
+      "value":{"shape":"BatchDescribeErrorDetail"}
+    },
+    "ExceptionMessageContent":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "FailureCode":{
+      "type":"string",
+      "enum":[
+        "CLIENT_ERROR",
+        "SERVER_FAULT"
+      ]
+    },
+    "Filter":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"FilterName",
+          "documentation":"<p>For <code>ListEntities</code>, the supported value for this is an <code>EntityId</code>.</p> <p>For <code>ListChangeSets</code>, the supported values are as follows:</p>"
+        },
+        "ValueList":{
+          "shape":"ValueList",
+          "documentation":"<p> <code>ListEntities</code> - This is a list of unique <code>EntityId</code>s.</p> <p> <code>ListChangeSets</code> - The supported filter names and associated <code>ValueList</code>s is as follows:</p> <ul> <li> <p> <code>ChangeSetName</code> - The supported <code>ValueList</code> is a list of non-unique <code>ChangeSetName</code>s. These are defined when you call the <code>StartChangeSet</code> action.</p> </li> <li> <p> <code>Status</code> - The supported <code>ValueList</code> is a list of statuses for all change set requests.</p> </li> <li> <p> <code>EntityId</code> - The supported <code>ValueList</code> is a list of unique <code>EntityId</code>s.</p> </li> <li> <p> <code>BeforeStartTime</code> - The supported <code>ValueList</code> is a list of all change sets that started before the filter value.</p> </li> <li> <p> <code>AfterStartTime</code> - The supported <code>ValueList</code> is a list of all change sets that started after the filter value.</p> </li> <li> <p> <code>BeforeEndTime</code> - The supported <code>ValueList</code> is a list of all change sets that ended before the filter value.</p> </li> <li> <p> <code>AfterEndTime</code> - The supported <code>ValueList</code> is a list of all change sets that ended after the filter value.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>A filter object, used to optionally filter results from calls to the <code>ListEntities</code> and <code>ListChangeSets</code> actions.</p>"
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"},
+      "max":8,
+      "min":1
+    },
+    "FilterName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z]+$"
+    },
+    "FilterValueContent":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the entity resource that is associated with the resource policy.</p>",
+          "location":"querystring",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "Policy":{
+          "shape":"ResourcePolicyJson",
+          "documentation":"<p>The policy document to set; formatted in JSON.</p>"
+        }
+      }
+    },
+    "Identifier":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[\\w\\-@]+$"
+    },
+    "Intent":{
+      "type":"string",
+      "enum":[
+        "VALIDATE",
+        "APPLY"
+      ]
+    },
+    "InternalServiceException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>There was an internal service exception.</p> <p>HTTP status code: 500</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "synthetic":true
+    },
+    "Json":{
+      "type":"string",
+      "max":16384,
+      "min":2,
+      "pattern":"^[\\s]*\\{[\\s\\S]*\\}[\\s]*$"
+    },
+    "JsonDocumentType":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "ListChangeSetsMaxResultInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "ListChangeSetsRequest":{
+      "type":"structure",
+      "required":["Catalog"],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>The catalog related to the request. Fixed value: <code>AWSMarketplace</code> </p>"
+        },
+        "FilterList":{
+          "shape":"FilterList",
+          "documentation":"<p>An array of filter objects.</p>"
+        },
+        "Sort":{
+          "shape":"Sort",
+          "documentation":"<p>An object that contains two attributes, <code>SortBy</code> and <code>SortOrder</code>.</p>"
+        },
+        "MaxResults":{
+          "shape":"ListChangeSetsMaxResultInteger",
+          "documentation":"<p>The maximum number of results returned by a single call. This value must be provided in the next call to retrieve the next set of results. By default, this value is 20.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        }
+      }
+    },
+    "ListChangeSetsResponse":{
+      "type":"structure",
+      "members":{
+        "ChangeSetSummaryList":{
+          "shape":"ChangeSetSummaryList",
+          "documentation":"<p> Array of <code>ChangeSetSummaryListItem</code> objects.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The value of the next token, if it exists. Null if there are no more results.</p>"
+        }
+      }
+    },
+    "ListEntitiesMaxResultInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListEntitiesRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "EntityType"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>The catalog related to the request. Fixed value: <code>AWSMarketplace</code> </p>"
+        },
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>The type of entities to retrieve. Valid values are: <code>AmiProduct</code>, <code>ContainerProduct</code>, <code>DataProduct</code>, <code>SaaSProduct</code>, <code>ProcurementPolicy</code>, <code>Experience</code>, <code>Audience</code>, <code>BrandingSettings</code>, <code>Offer</code>, <code>Seller</code>, <code>ResaleAuthorization</code>.</p>"
+        },
+        "FilterList":{
+          "shape":"FilterList",
+          "documentation":"<p>An array of filter objects. Each filter object contains two attributes, <code>filterName</code> and <code>filterValues</code>.</p>"
+        },
+        "Sort":{
+          "shape":"Sort",
+          "documentation":"<p>An object that contains two attributes, <code>SortBy</code> and <code>SortOrder</code>.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The value of the next token, if it exists. Null if there are no more results.</p>"
+        },
+        "MaxResults":{
+          "shape":"ListEntitiesMaxResultInteger",
+          "documentation":"<p>Specifies the upper limit of the elements on a single page. If a value isn't provided, the default value is 20.</p>"
+        },
+        "OwnershipType":{
+          "shape":"OwnershipType",
+          "documentation":"<p>Filters the returned set of entities based on their owner. The default is <code>SELF</code>. To list entities shared with you through AWS Resource Access Manager (AWS RAM), set to <code>SHARED</code>. Entities shared through the AWS Marketplace Catalog API <code>PutResourcePolicy</code> operation can't be discovered through the <code>SHARED</code> parameter.</p>"
+        },
+        "EntityTypeFilters":{
+          "shape":"EntityTypeFilters",
+          "documentation":"<p>A Union object containing filter shapes for all <code>EntityType</code>s. Each <code>EntityTypeFilter</code> shape will have filters applicable for that <code>EntityType</code> that can be used to search or filter entities.</p>"
+        },
+        "EntityTypeSort":{
+          "shape":"EntityTypeSort",
+          "documentation":"<p>A Union object containing <code>Sort</code> shapes for all <code>EntityType</code>s. Each <code>EntityTypeSort</code> shape will have <code>SortBy</code> and <code>SortOrder</code> applicable for fields on that <code>EntityType</code>. This can be used to sort the results of the filter query.</p>"
+        }
+      }
+    },
+    "ListEntitiesResponse":{
+      "type":"structure",
+      "members":{
+        "EntitySummaryList":{
+          "shape":"EntitySummaryList",
+          "documentation":"<p>Array of <code>EntitySummary</code> objects.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The value of the next token if it exists. Null if there is no more result.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>Required. The Amazon Resource Name (ARN) associated with the resource you want to list tags on.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>Required. The ARN associated with the resource you want to list tags on.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Required. A list of objects specifying each key name and value. Number of objects allowed: 1-50.</p>"
+        }
+      }
+    },
+    "MachineLearningProductEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"MachineLearningProductEntityIdFilterValueList",
+          "documentation":"<p>A list of entity IDs to filter by. The operation returns machine learning products with entity IDs that match the values in this list.</p>"
+        }
+      },
+      "documentation":"<p>The filter for machine learning product entity IDs.</p>"
+    },
+    "MachineLearningProductEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"MachineLearningProductEntityIdString"},
+      "documentation":"<p>A list of entity ID values to filter by. You can include up to 10 entity IDs in this list.</p>",
+      "max":10,
+      "min":1
+    },
+    "MachineLearningProductEntityIdString":{
+      "type":"string",
+      "documentation":"<p>The entity ID of a machine learning product. This string uniquely identifies the product.</p>",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "MachineLearningProductFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"MachineLearningProductEntityIdFilter",
+          "documentation":"<p>Filter machine learning products by their entity IDs.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"MachineLearningProductLastModifiedDateFilter",
+          "documentation":"<p>Filter machine learning products by their last modified date.</p>"
+        },
+        "ProductTitle":{
+          "shape":"MachineLearningProductTitleFilter",
+          "documentation":"<p>Filter machine learning products by their product titles.</p>"
+        },
+        "Visibility":{
+          "shape":"MachineLearningProductVisibilityFilter",
+          "documentation":"<p>Filter machine learning products by their visibility status.</p>"
+        }
+      },
+      "documentation":"<p>The filters that you can use with the ListEntities operation to filter machine learning products. You can filter by EntityId, LastModifiedDate, ProductTitle, and Visibility.</p>"
+    },
+    "MachineLearningProductLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"MachineLearningProductLastModifiedDateFilterDateRange",
+          "documentation":"<p>A date range to filter by. The operation returns machine learning products with last modified dates that fall within this range.</p>"
+        }
+      },
+      "documentation":"<p>The filter for machine learning product last modified date.</p>"
+    },
+    "MachineLearningProductLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The start date (inclusive) of the date range. The operation returns machine learning products with last modified dates on or after this date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The end date (inclusive) of the date range. The operation returns machine learning products with last modified dates on or before this date.</p>"
+        }
+      },
+      "documentation":"<p>A date range for filtering machine learning products by their last modified date.</p>"
+    },
+    "MachineLearningProductSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"MachineLearningProductSortBy",
+          "documentation":"<p>The field to sort by. Valid values: <code>EntityId</code>, <code>LastModifiedDate</code>, <code>ProductTitle</code>, and <code>Visibility</code>.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sort order. Valid values are <code>ASC</code> (ascending) and <code>DESC</code> (descending).</p>"
+        }
+      },
+      "documentation":"<p>The sort options for machine learning products.</p>"
+    },
+    "MachineLearningProductSortBy":{
+      "type":"string",
+      "documentation":"<p>The fields that you can sort machine learning products by.</p>",
+      "enum":[
+        "EntityId",
+        "LastModifiedDate",
+        "ProductTitle",
+        "Visibility"
+      ]
+    },
+    "MachineLearningProductSummary":{
+      "type":"structure",
+      "members":{
+        "ProductTitle":{
+          "shape":"MachineLearningProductTitleString",
+          "documentation":"<p>The title of the machine learning product.</p>"
+        },
+        "Visibility":{
+          "shape":"MachineLearningProductVisibilityString",
+          "documentation":"<p>The visibility status of the machine learning product. Valid values are <code>Limited</code>, <code>Public</code>, <code>Restricted</code>, and <code>Draft</code>.</p>"
+        }
+      },
+      "documentation":"<p>A summary of a machine learning product.</p>"
+    },
+    "MachineLearningProductTitleFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"MachineLearningProductTitleFilterValueList",
+          "documentation":"<p>A list of product titles to filter by. The operation returns machine learning products with titles that exactly match the values in this list.</p>"
+        },
+        "WildCardValue":{
+          "shape":"MachineLearningProductTitleString",
+          "documentation":"<p>A wildcard value to filter product titles. The operation returns machine learning products with titles that match this wildcard pattern.</p>"
+        }
+      },
+      "documentation":"<p>The filter for machine learning product titles.</p>"
+    },
+    "MachineLearningProductTitleFilterValueList":{
+      "type":"list",
+      "member":{"shape":"MachineLearningProductTitleString"},
+      "documentation":"<p>A list of product title values to filter by. You can include up to 10 product titles in this list.</p>",
+      "max":10,
+      "min":1
+    },
+    "MachineLearningProductTitleString":{
+      "type":"string",
+      "documentation":"<p>The title of a machine learning product.</p>",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "MachineLearningProductVisibilityFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"MachineLearningProductVisibilityFilterValueList",
+          "documentation":"<p>A list of visibility values to filter by. The operation returns machine learning products with visibility status that match the values in this list.</p>"
+        }
+      },
+      "documentation":"<p>The filter for machine learning product visibility status.</p>"
+    },
+    "MachineLearningProductVisibilityFilterValueList":{
+      "type":"list",
+      "member":{"shape":"MachineLearningProductVisibilityString"},
+      "documentation":"<p>A list of visibility status values to filter by. You can include up to 10 visibility status values in this list.</p>",
+      "max":10,
+      "min":1
+    },
+    "MachineLearningProductVisibilityString":{
+      "type":"string",
+      "documentation":"<p>The visibility status of a machine learning product. Valid values are:</p> <ul> <li> <p> <code>Limited</code> - The product is available to a limited set of buyers.</p> </li> <li> <p> <code>Public</code> - The product is publicly available to all buyers.</p> </li> <li> <p> <code>Restricted</code> - The product has restricted availability.</p> </li> <li> <p> <code>Draft</code> - The product is in draft state and not yet available to buyers.</p> </li> </ul>",
+      "enum":[
+        "Limited",
+        "Public",
+        "Restricted",
+        "Draft"
+      ]
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[\\w+=.:@\\-\\/]$"
+    },
+    "OfferAvailabilityEndDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"OfferAvailabilityEndDateFilterDateRange",
+          "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer with date range as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer.</p>"
+    },
+    "OfferAvailabilityEndDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer with date range as input.</p>"
+    },
+    "OfferBuyerAccountsFilter":{
+      "type":"structure",
+      "members":{
+        "WildCardValue":{
+          "shape":"OfferBuyerAccountsFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>BuyerAccounts</code> of an offer with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>BuyerAccounts</code> of an offer.</p>"
+    },
+    "OfferBuyerAccountsFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "OfferBuyerAccountsList":{
+      "type":"list",
+      "member":{"shape":"OfferBuyerAccountsString"},
+      "max":26,
+      "min":0
+    },
+    "OfferBuyerAccountsString":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "OfferEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferEntityIdFilterValueList",
+          "documentation":"<p>Allows filtering on entity id of an offer with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the entity id of an offer.</p>"
+    },
+    "OfferEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "OfferEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "OfferFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"OfferEntityIdFilter",
+          "documentation":"<p>Allows filtering on <code>EntityId</code> of an offer.</p>"
+        },
+        "Name":{
+          "shape":"OfferNameFilter",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of an offer.</p>"
+        },
+        "ProductId":{
+          "shape":"OfferProductIdFilter",
+          "documentation":"<p>Allows filtering on the <code>ProductId</code> of an offer.</p>"
+        },
+        "ResaleAuthorizationId":{
+          "shape":"OfferResaleAuthorizationIdFilter",
+          "documentation":"<p>Allows filtering on the <code>ResaleAuthorizationId</code> of an offer.</p> <note> <p>Not all offers have a <code>ResaleAuthorizationId</code>. The response will only include offers for which you have permissions.</p> </note>"
+        },
+        "ReleaseDate":{
+          "shape":"OfferReleaseDateFilter",
+          "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of an offer.</p>"
+        },
+        "AvailabilityEndDate":{
+          "shape":"OfferAvailabilityEndDateFilter",
+          "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of an offer.</p>"
+        },
+        "BuyerAccounts":{
+          "shape":"OfferBuyerAccountsFilter",
+          "documentation":"<p>Allows filtering on the <code>BuyerAccounts</code> of an offer.</p>"
+        },
+        "State":{
+          "shape":"OfferStateFilter",
+          "documentation":"<p>Allows filtering on the <code>State</code> of an offer.</p>"
+        },
+        "Targeting":{
+          "shape":"OfferTargetingFilter",
+          "documentation":"<p>Allows filtering on the <code>Targeting</code> of an offer.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"OfferLastModifiedDateFilter",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for offers entity. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "OfferLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"OfferLastModifiedDateFilterDateRange",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer with date range as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer.</p>"
+    },
+    "OfferLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of an offer with date range as input.</p>"
+    },
+    "OfferNameFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferNameFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of an offer with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"OfferNameString",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of an offer with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>Name</code> of an offer.</p>"
+    },
+    "OfferNameFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferNameString"},
+      "max":10,
+      "min":1
+    },
+    "OfferNameString":{
+      "type":"string",
+      "max":150,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "OfferProductIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferProductIdFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ProductId</code> of an offer with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ProductId</code> of an offer.</p>"
+    },
+    "OfferProductIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferProductIdString"},
+      "max":10,
+      "min":1
+    },
+    "OfferProductIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "OfferReleaseDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"OfferReleaseDateFilterDateRange",
+          "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of an offer with date range as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of an offer.</p>"
+    },
+    "OfferReleaseDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of offers after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of offers before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ReleaseDate</code> of an offer with date range as input.</p>"
+    },
+    "OfferResaleAuthorizationIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferResaleAuthorizationIdFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ResaleAuthorizationId</code> of an offer with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ResaleAuthorizationId</code> of an offer.</p> <note> <p>Not all offers have a <code>ResaleAuthorizationId</code>. The response will only include offers for which you have permissions.</p> </note>"
+    },
+    "OfferResaleAuthorizationIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferResaleAuthorizationIdString"},
+      "max":10,
+      "min":1
+    },
+    "OfferResaleAuthorizationIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "OfferSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"OfferSortBy",
+          "documentation":"<p>Allows to sort offers.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>Allows to sort offers.</p>"
+        }
+      },
+      "documentation":"<p>Allows to sort offers.</p>"
+    },
+    "OfferSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "Name",
+        "ProductId",
+        "ResaleAuthorizationId",
+        "ReleaseDate",
+        "AvailabilityEndDate",
+        "BuyerAccounts",
+        "State",
+        "Targeting",
+        "LastModifiedDate"
+      ]
+    },
+    "OfferStateFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferStateFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>State</code> of an offer with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>State</code> of an offer.</p>"
+    },
+    "OfferStateFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferStateString"},
+      "max":2,
+      "min":1
+    },
+    "OfferStateString":{
+      "type":"string",
+      "enum":[
+        "Draft",
+        "Released"
+      ]
+    },
+    "OfferSummary":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"OfferNameString",
+          "documentation":"<p>The name of the offer.</p>"
+        },
+        "ProductId":{
+          "shape":"OfferProductIdString",
+          "documentation":"<p>The product ID of the offer.</p>"
+        },
+        "ResaleAuthorizationId":{
+          "shape":"OfferResaleAuthorizationIdString",
+          "documentation":"<p>The ResaleAuthorizationId of the offer.</p>"
+        },
+        "ReleaseDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The release date of the offer.</p>"
+        },
+        "AvailabilityEndDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The availability end date of the offer.</p>"
+        },
+        "BuyerAccounts":{
+          "shape":"OfferBuyerAccountsList",
+          "documentation":"<p>The buyer accounts in the offer.</p>"
+        },
+        "State":{
+          "shape":"OfferStateString",
+          "documentation":"<p>The status of the offer.</p>"
+        },
+        "Targeting":{
+          "shape":"OfferTargetingList",
+          "documentation":"<p>The targeting in the offer.</p>"
+        }
+      },
+      "documentation":"<p>Summarized information about an offer.</p>"
+    },
+    "OfferTargetingFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"OfferTargetingFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>Targeting</code> of an offer with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>Targeting</code> of an offer.</p>"
+    },
+    "OfferTargetingFilterValueList":{
+      "type":"list",
+      "member":{"shape":"OfferTargetingString"},
+      "max":4,
+      "min":1
+    },
+    "OfferTargetingList":{
+      "type":"list",
+      "member":{"shape":"OfferTargetingString"},
+      "max":4,
+      "min":0
+    },
+    "OfferTargetingString":{
+      "type":"string",
+      "enum":[
+        "BuyerAccounts",
+        "ParticipatingPrograms",
+        "CountryCodes",
+        "None"
+      ]
+    },
+    "OwnershipType":{
+      "type":"string",
+      "enum":[
+        "SELF",
+        "SHARED"
+      ]
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Policy"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the entity resource you want to associate with a resource policy.</p>"
+        },
+        "Policy":{
+          "shape":"ResourcePolicyJson",
+          "documentation":"<p>The policy document to set; formatted in JSON.</p>"
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "RequestedChangeList":{
+      "type":"list",
+      "member":{"shape":"Change"},
+      "max":20,
+      "min":1
+    },
+    "ResaleAuthorizationAvailabilityEndDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"ResaleAuthorizationAvailabilityEndDateFilterDateRange",
+          "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization with date range as input</p>"
+        },
+        "ValueList":{
+          "shape":"ResaleAuthorizationAvailabilityEndDateFilterValueList",
+          "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization with date value as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationAvailabilityEndDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on <code>AvailabilityEndDate</code> of a ResaleAuthorization with date range as input.</p>"
+    },
+    "ResaleAuthorizationAvailabilityEndDateFilterValueList":{
+      "type":"list",
+      "member":{"shape":"DateTimeISO8601"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationCreatedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"ResaleAuthorizationCreatedDateFilterDateRange",
+          "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization with date range as input.</p>"
+        },
+        "ValueList":{
+          "shape":"ResaleAuthorizationCreatedDateFilterValueList",
+          "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization with date value as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationCreatedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on <code>CreatedDate</code> of a ResaleAuthorization with date range as input.</p>"
+    },
+    "ResaleAuthorizationCreatedDateFilterValueList":{
+      "type":"list",
+      "member":{"shape":"DateTimeISO8601"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationEntityIdFilterValueList",
+          "documentation":"<p>Allows filtering on <code>EntityId</code> of a ResaleAuthorization with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on <code>EntityId</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "ResaleAuthorizationFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"ResaleAuthorizationEntityIdFilter",
+          "documentation":"<p>Allows filtering on the <code>EntityId</code> of a ResaleAuthorization.</p>"
+        },
+        "Name":{
+          "shape":"ResaleAuthorizationNameFilter",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of a ResaleAuthorization.</p>"
+        },
+        "ProductId":{
+          "shape":"ResaleAuthorizationProductIdFilter",
+          "documentation":"<p>Allows filtering on the <code>ProductId</code> of a ResaleAuthorization.</p>"
+        },
+        "CreatedDate":{
+          "shape":"ResaleAuthorizationCreatedDateFilter",
+          "documentation":"<p>Allows filtering on the <code>CreatedDate</code> of a ResaleAuthorization.</p>"
+        },
+        "AvailabilityEndDate":{
+          "shape":"ResaleAuthorizationAvailabilityEndDateFilter",
+          "documentation":"<p>Allows filtering on the <code>AvailabilityEndDate</code> of a ResaleAuthorization.</p>"
+        },
+        "ManufacturerAccountId":{
+          "shape":"ResaleAuthorizationManufacturerAccountIdFilter",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerAccountId</code> of a ResaleAuthorization.</p>"
+        },
+        "ProductName":{
+          "shape":"ResaleAuthorizationProductNameFilter",
+          "documentation":"<p>Allows filtering on the <code>ProductName</code> of a ResaleAuthorization.</p>"
+        },
+        "ManufacturerLegalName":{
+          "shape":"ResaleAuthorizationManufacturerLegalNameFilter",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerLegalName</code> of a ResaleAuthorization.</p>"
+        },
+        "ResellerAccountID":{
+          "shape":"ResaleAuthorizationResellerAccountIDFilter",
+          "documentation":"<p>Allows filtering on the <code>ResellerAccountID</code> of a ResaleAuthorization.</p>"
+        },
+        "ResellerLegalName":{
+          "shape":"ResaleAuthorizationResellerLegalNameFilter",
+          "documentation":"<p>Allows filtering on the <code>ResellerLegalName</code> of a ResaleAuthorization.</p>"
+        },
+        "Status":{
+          "shape":"ResaleAuthorizationStatusFilter",
+          "documentation":"<p>Allows filtering on the <code>Status</code> of a ResaleAuthorization.</p>"
+        },
+        "OfferExtendedStatus":{
+          "shape":"ResaleAuthorizationOfferExtendedStatusFilter",
+          "documentation":"<p>Allows filtering on the <code>OfferExtendedStatus</code> of a ResaleAuthorization.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"ResaleAuthorizationLastModifiedDateFilter",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for resale authorization entity. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "ResaleAuthorizationLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"ResaleAuthorizationLastModifiedDateFilterDateRange",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization with date range as input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization after a date.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization before a date.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>LastModifiedDate</code> of a ResaleAuthorization with date range as input.</p>"
+    },
+    "ResaleAuthorizationManufacturerAccountIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationManufacturerAccountIdFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerAccountId</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationManufacturerAccountIdFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerAccountId</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ManufacturerAccountId</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationManufacturerAccountIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationManufacturerAccountIdString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationManufacturerAccountIdFilterWildcard":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "ResaleAuthorizationManufacturerAccountIdString":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "ResaleAuthorizationManufacturerLegalNameFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationManufacturerLegalNameFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerLegalName</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationManufacturerLegalNameFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>ManufacturerLegalName</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ManufacturerLegalName</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationManufacturerLegalNameFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationManufacturerLegalNameString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationManufacturerLegalNameFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationManufacturerLegalNameString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationNameFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationNameFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationNameFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>Name</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>Name</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationNameFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationNameString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationNameFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationNameString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationOfferExtendedStatusFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationOfferExtendedStatusFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>OfferExtendedStatus</code> of a ResaleAuthorization with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>OfferExtendedStatus</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationOfferExtendedStatusFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationOfferExtendedStatusString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationOfferExtendedStatusString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationProductIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationProductIdFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ProductId</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationProductIdFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>ProductId</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ProductId</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationProductIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationProductIdString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationProductIdFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationProductIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationProductNameFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationProductNameFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ProductName</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationProductNameFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>ProductName</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ProductName</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationProductNameFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationProductNameString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationProductNameFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationProductNameString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationResellerAccountIDFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationResellerAccountIDFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>ResellerAccountID</code> of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationResellerAccountIDFilterWildcard",
+          "documentation":"<p>Allows filtering on the <code>ResellerAccountID</code> of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>ResellerAccountID</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationResellerAccountIDFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationResellerAccountIDString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationResellerAccountIDFilterWildcard":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "ResaleAuthorizationResellerAccountIDString":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "ResaleAuthorizationResellerLegalNameFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationResellerLegalNameFilterValueList",
+          "documentation":"<p>Allows filtering on the ResellerLegalNameProductName of a ResaleAuthorization with list input.</p>"
+        },
+        "WildCardValue":{
+          "shape":"ResaleAuthorizationResellerLegalNameFilterWildcard",
+          "documentation":"<p>Allows filtering on the ResellerLegalName of a ResaleAuthorization with wild card input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the ResellerLegalName of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationResellerLegalNameFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationResellerLegalNameString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationResellerLegalNameFilterWildcard":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationResellerLegalNameString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "ResaleAuthorizationSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"ResaleAuthorizationSortBy",
+          "documentation":"<p>Allows to sort ResaleAuthorization.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>Allows to sort ResaleAuthorization.</p>"
+        }
+      },
+      "documentation":"<p>Allows to sort ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "Name",
+        "ProductId",
+        "ProductName",
+        "ManufacturerAccountId",
+        "ManufacturerLegalName",
+        "ResellerAccountID",
+        "ResellerLegalName",
+        "Status",
+        "OfferExtendedStatus",
+        "CreatedDate",
+        "AvailabilityEndDate",
+        "LastModifiedDate"
+      ]
+    },
+    "ResaleAuthorizationStatusFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"ResaleAuthorizationStatusFilterValueList",
+          "documentation":"<p>Allows filtering on the <code>Status</code> of a ResaleAuthorization with list input.</p>"
+        }
+      },
+      "documentation":"<p>Allows filtering on the <code>Status</code> of a ResaleAuthorization.</p>"
+    },
+    "ResaleAuthorizationStatusFilterValueList":{
+      "type":"list",
+      "member":{"shape":"ResaleAuthorizationStatusString"},
+      "max":10,
+      "min":1
+    },
+    "ResaleAuthorizationStatusString":{
+      "type":"string",
+      "enum":[
+        "Draft",
+        "Active",
+        "Restricted"
+      ]
+    },
+    "ResaleAuthorizationSummary":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"ResaleAuthorizationNameString",
+          "documentation":"<p>The name of the ResaleAuthorization.</p>"
+        },
+        "ProductId":{
+          "shape":"ResaleAuthorizationProductIdString",
+          "documentation":"<p>The product ID of the ResaleAuthorization.</p>"
+        },
+        "ProductName":{
+          "shape":"ResaleAuthorizationProductNameString",
+          "documentation":"<p>The product name of the ResaleAuthorization.</p>"
+        },
+        "ManufacturerAccountId":{
+          "shape":"ResaleAuthorizationManufacturerAccountIdString",
+          "documentation":"<p>The manufacturer account ID of the ResaleAuthorization.</p>"
+        },
+        "ManufacturerLegalName":{
+          "shape":"ResaleAuthorizationManufacturerLegalNameString",
+          "documentation":"<p>The manufacturer legal name of the ResaleAuthorization.</p>"
+        },
+        "ResellerAccountID":{
+          "shape":"ResaleAuthorizationResellerAccountIDString",
+          "documentation":"<p>The reseller account ID of the ResaleAuthorization.</p>"
+        },
+        "ResellerLegalName":{
+          "shape":"ResaleAuthorizationResellerLegalNameString",
+          "documentation":"<p>The reseller legal name of the ResaleAuthorization</p>"
+        },
+        "Status":{
+          "shape":"ResaleAuthorizationStatusString",
+          "documentation":"<p>The status of the ResaleAuthorization.</p>"
+        },
+        "OfferExtendedStatus":{
+          "shape":"ResaleAuthorizationOfferExtendedStatusString",
+          "documentation":"<p>The offer extended status of the ResaleAuthorization</p>"
+        },
+        "CreatedDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The created date of the ResaleAuthorization.</p>"
+        },
+        "AvailabilityEndDate":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>The availability end date of the ResaleAuthorization.</p>"
+        }
+      },
+      "documentation":"<p>Summarized information about a Resale Authorization.</p>"
+    },
+    "ResourceARN":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^arn:[\\w+=/,.@-]+:aws-marketplace:[\\w+=/,.@-]*:[0-9]+:[\\w+=,.@-]+(/[\\w+=,.@-]+)*$"
+    },
+    "ResourceId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[\\w\\-]+$"
+    },
+    "ResourceIdList":{
+      "type":"list",
+      "member":{"shape":"ResourceId"}
+    },
+    "ResourceInUseException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>The resource is currently in use.</p>",
+      "error":{"httpStatusCode":423},
+      "exception":true,
+      "synthetic":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>The specified resource wasn't found.</p> <p>HTTP status code: 404</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true,
+      "synthetic":true
+    },
+    "ResourceNotSupportedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>Currently, the specified resource is not supported.</p>",
+      "error":{"httpStatusCode":415},
+      "exception":true,
+      "synthetic":true
+    },
+    "ResourcePolicyJson":{
+      "type":"string",
+      "max":10240,
+      "min":1,
+      "pattern":"^[\\u0009\\u000A\\u000D\\u0020-\\u00FF]+$"
+    },
+    "SaaSProductEntityIdFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"SaaSProductEntityIdFilterValueList",
+          "documentation":"<p>A string array of unique entity id values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on entity id of a SaaS product.</p>"
+    },
+    "SaaSProductEntityIdFilterValueList":{
+      "type":"list",
+      "member":{"shape":"SaaSProductEntityIdString"},
+      "max":10,
+      "min":1
+    },
+    "SaaSProductEntityIdString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][.a-zA-Z0-9/-]+[a-zA-Z0-9]$"
+    },
+    "SaaSProductFilters":{
+      "type":"structure",
+      "members":{
+        "EntityId":{
+          "shape":"SaaSProductEntityIdFilter",
+          "documentation":"<p>Unique identifier for the SaaS product.</p>"
+        },
+        "ProductTitle":{
+          "shape":"SaaSProductTitleFilter",
+          "documentation":"<p>The title of the SaaS product.</p>"
+        },
+        "Visibility":{
+          "shape":"SaaSProductVisibilityFilter",
+          "documentation":"<p>The visibility of the SaaS product.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"SaaSProductLastModifiedDateFilter",
+          "documentation":"<p>The last date on which the SaaS product was modified.</p>"
+        }
+      },
+      "documentation":"<p>Object containing all the filter fields for SaaS products. Client can add only one wildcard filter and a maximum of 8 filters in a single <code>ListEntities</code> request.</p>"
+    },
+    "SaaSProductLastModifiedDateFilter":{
+      "type":"structure",
+      "members":{
+        "DateRange":{
+          "shape":"SaaSProductLastModifiedDateFilterDateRange",
+          "documentation":"<p>Dates between which the SaaS product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering based on the last modified date of SaaS products</p>"
+    },
+    "SaaSProductLastModifiedDateFilterDateRange":{
+      "type":"structure",
+      "members":{
+        "AfterValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date after which the SaaS product was last modified.</p>"
+        },
+        "BeforeValue":{
+          "shape":"DateTimeISO8601",
+          "documentation":"<p>Date before which the SaaS product was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains date range of the last modified date to be filtered on. You can optionally provide a <code>BeforeValue</code> and/or <code>AfterValue</code>. Both are inclusive.</p>"
+    },
+    "SaaSProductSort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"SaaSProductSortBy",
+          "documentation":"<p>Field to sort the SaaS products by.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order. Can be <code>ASCENDING</code> or <code>DESCENDING</code>. The default value is <code>DESCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>Objects that allows sorting on SaaS products based on certain fields and sorting order.</p>"
+    },
+    "SaaSProductSortBy":{
+      "type":"string",
+      "enum":[
+        "EntityId",
+        "ProductTitle",
+        "Visibility",
+        "LastModifiedDate"
+      ]
+    },
+    "SaaSProductSummary":{
+      "type":"structure",
+      "members":{
+        "ProductTitle":{
+          "shape":"SaaSProductTitleString",
+          "documentation":"<p>The title of the SaaS product.</p>"
+        },
+        "Visibility":{
+          "shape":"SaaSProductVisibilityString",
+          "documentation":"<p>The lifecycle of the SaaS product.</p>"
+        }
+      },
+      "documentation":"<p>Object that contains summarized information about a SaaS product.</p>"
+    },
+    "SaaSProductTitleFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"SaaSProductTitleFilterValueList",
+          "documentation":"<p>A string array of unique product title values to be filtered on.</p>"
+        },
+        "WildCardValue":{
+          "shape":"SaaSProductTitleString",
+          "documentation":"<p>A string that will be the <code>wildCard</code> input for product tile filter. It matches the provided value as a substring in the actual value.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on product title.</p>"
+    },
+    "SaaSProductTitleFilterValueList":{
+      "type":"list",
+      "member":{"shape":"SaaSProductTitleString"},
+      "max":10,
+      "min":1
+    },
+    "SaaSProductTitleString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^(.)+$"
+    },
+    "SaaSProductVisibilityFilter":{
+      "type":"structure",
+      "members":{
+        "ValueList":{
+          "shape":"SaaSProductVisibilityFilterValueList",
+          "documentation":"<p>A string array of unique visibility values to be filtered on.</p>"
+        }
+      },
+      "documentation":"<p>Object that allows filtering on the visibility of the product in the AWS Marketplace.</p>"
+    },
+    "SaaSProductVisibilityFilterValueList":{
+      "type":"list",
+      "member":{"shape":"SaaSProductVisibilityString"},
+      "max":10,
+      "min":1
+    },
+    "SaaSProductVisibilityString":{
+      "type":"string",
+      "enum":[
+        "Limited",
+        "Public",
+        "Restricted",
+        "Draft"
+      ]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>The maximum number of open requests per account has been exceeded.</p>",
+      "error":{"httpStatusCode":402},
+      "exception":true,
+      "synthetic":true
+    },
+    "Sort":{
+      "type":"structure",
+      "members":{
+        "SortBy":{
+          "shape":"SortBy",
+          "documentation":"<p>For <code>ListEntities</code>, supported attributes include <code>LastModifiedDate</code> (default) and <code>EntityId</code>. In addition to <code>LastModifiedDate</code> and <code>EntityId</code>, each <code>EntityType</code> might support additional fields.</p> <p>For <code>ListChangeSets</code>, supported attributes include <code>StartTime</code> and <code>EndTime</code>.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order. Can be <code>ASCENDING</code> or <code>DESCENDING</code>. The default value is <code>DESCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains two attributes, <code>SortBy</code> and <code>SortOrder</code>.</p>"
+    },
+    "SortBy":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z]+$"
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "StartChangeSetRequest":{
+      "type":"structure",
+      "required":[
+        "Catalog",
+        "ChangeSet"
+      ],
+      "members":{
+        "Catalog":{
+          "shape":"Catalog",
+          "documentation":"<p>The catalog related to the request. Fixed value: <code>AWSMarketplace</code> </p>"
+        },
+        "ChangeSet":{
+          "shape":"RequestedChangeList",
+          "documentation":"<p>Array of <code>change</code> object.</p>"
+        },
+        "ChangeSetName":{
+          "shape":"ChangeSetName",
+          "documentation":"<p>Optional case sensitive string of up to 100 ASCII characters. The change set name can be used to filter the list of change sets. </p>"
+        },
+        "ClientRequestToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>A unique token to identify the request to ensure idempotency.</p>",
+          "idempotencyToken":true
+        },
+        "ChangeSetTags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of objects specifying each key name and value for the <code>ChangeSetTags</code> property.</p>"
+        },
+        "Intent":{
+          "shape":"Intent",
+          "documentation":"<p>The intent related to the request. The default is <code>APPLY</code>. To test your request before applying changes to your entities, use <code>VALIDATE</code>. This feature is currently available for adding versions to single-AMI products. For more information, see <a href=\"https://docs.aws.amazon.com/marketplace-catalog/latest/api-reference/ami-products.html#ami-add-version\">Add a new version</a>.</p>"
+        }
+      }
+    },
+    "StartChangeSetResponse":{
+      "type":"structure",
+      "members":{
+        "ChangeSetId":{
+          "shape":"ResourceId",
+          "documentation":"<p>Unique identifier generated for the request.</p>"
+        },
+        "ChangeSetArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN associated to the unique identifier generated for the request.</p>"
+        }
+      }
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key associated with the tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value associated with the tag.</p>"
+        }
+      },
+      "documentation":"<p>A list of objects specifying each key name and value.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>Required. The Amazon Resource Name (ARN) associated with the resource you want to tag.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Required. A list of objects specifying each key name and value. Number of objects allowed: 1-50.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>Too many requests.</p> <p>HTTP status code: 429</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true,
+      "synthetic":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceARN",
+          "documentation":"<p>Required. The Amazon Resource Name (ARN) associated with the resource you want to remove the tag from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Required. A list of key names of tags to be removed. Number of strings allowed: 0-256.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessageContent"}
+      },
+      "documentation":"<p>An error occurred during validation.</p> <p>HTTP status code: 422</p>",
+      "error":{"httpStatusCode":422},
+      "exception":true,
+      "synthetic":true
+    },
+    "ValueList":{
+      "type":"list",
+      "member":{"shape":"FilterValueContent"},
+      "max":10,
+      "min":1
+    },
+    "VisibilityValue":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z]+$"
+    }
+  },
+  "documentation":"<p>Catalog API actions allow you to manage your entities through list, describe, and update capabilities. An <i>entity</i> can be a product or an offer on AWS Marketplace. </p> <p>You can automate your entity update process by integrating the AWS Marketplace Catalog API with your AWS Marketplace product build or deployment pipelines. You can also create your own applications on top of the Catalog API to manage your products on AWS Marketplace.</p>"
+}

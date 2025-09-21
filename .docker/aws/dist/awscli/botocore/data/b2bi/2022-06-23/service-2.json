@@ -1,0 +1,3740 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-06-23",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"b2bi",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"AWS B2BI",
+    "serviceFullName":"AWS B2B Data Interchange",
+    "serviceId":"b2bi",
+    "signatureVersion":"v4",
+    "signingName":"b2bi",
+    "targetPrefix":"B2BI",
+    "uid":"b2bi-2022-06-23"
+  },
+  "operations":{
+    "CreateCapability":{
+      "name":"CreateCapability",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateCapabilityRequest"},
+      "output":{"shape":"CreateCapabilityResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Instantiates a capability based on the specified parameters. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>",
+      "idempotent":true
+    },
+    "CreatePartnership":{
+      "name":"CreatePartnership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreatePartnershipRequest"},
+      "output":{"shape":"CreatePartnershipResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a partnership between a customer and a trading partner, based on the supplied parameters. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>",
+      "idempotent":true
+    },
+    "CreateProfile":{
+      "name":"CreateProfile",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateProfileRequest"},
+      "output":{"shape":"CreateProfileResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a customer profile. You can have up to five customer profiles, each representing a distinct private network. A profile is the mechanism used to create the concept of a private network.</p>",
+      "idempotent":true
+    },
+    "CreateStarterMappingTemplate":{
+      "name":"CreateStarterMappingTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateStarterMappingTemplateRequest"},
+      "output":{"shape":"CreateStarterMappingTemplateResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Amazon Web Services B2B Data Interchange uses a mapping template in JSONata or XSLT format to transform a customer input file into a JSON or XML file that can be converted to EDI.</p> <p>If you provide a sample EDI file with the same structure as the EDI files that you wish to generate, then the service can generate a mapping template. The starter template contains placeholder values which you can replace with JSONata or XSLT expressions to take data from your input file and insert it into the JSON or XML file that is used to generate the EDI.</p> <p>If you do not provide a sample EDI file, then the service can generate a mapping template based on the EDI settings in the <code>templateDetails</code> parameter. </p> <p> Currently, we only support generating a template that can generate the input to produce an Outbound X12 EDI file.</p>"
+    },
+    "CreateTransformer":{
+      "name":"CreateTransformer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateTransformerRequest"},
+      "output":{"shape":"CreateTransformerResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a transformer. Amazon Web Services B2B Data Interchange currently supports two scenarios:</p> <ul> <li> <p> <i>Inbound EDI</i>: the Amazon Web Services customer receives an EDI file from their trading partner. Amazon Web Services B2B Data Interchange converts this EDI file into a JSON or XML file with a service-defined structure. A mapping template provided by the customer, in JSONata or XSLT format, is optionally applied to this file to produce a JSON or XML file with the structure the customer requires.</p> </li> <li> <p> <i>Outbound EDI</i>: the Amazon Web Services customer has a JSON or XML file containing data that they wish to use in an EDI file. A mapping template, provided by the customer (in either JSONata or XSLT format) is applied to this file to generate a JSON or XML file in the service-defined structure. This file is then converted to an EDI file.</p> </li> </ul> <note> <p>The following fields are provided for backwards compatibility only: <code>fileFormat</code>, <code>mappingTemplate</code>, <code>ediType</code>, and <code>sampleDocument</code>.</p> <ul> <li> <p>Use the <code>mapping</code> data type in place of <code>mappingTemplate</code> and <code>fileFormat</code> </p> </li> <li> <p>Use the <code>sampleDocuments</code> data type in place of <code>sampleDocument</code> </p> </li> <li> <p>Use either the <code>inputConversion</code> or <code>outputConversion</code> in place of <code>ediType</code> </p> </li> </ul> </note>",
+      "idempotent":true
+    },
+    "DeleteCapability":{
+      "name":"DeleteCapability",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteCapabilityRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified capability. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>",
+      "idempotent":true
+    },
+    "DeletePartnership":{
+      "name":"DeletePartnership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeletePartnershipRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified partnership. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>",
+      "idempotent":true
+    },
+    "DeleteProfile":{
+      "name":"DeleteProfile",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteProfileRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified profile. A profile is the mechanism used to create the concept of a private network.</p>",
+      "idempotent":true
+    },
+    "DeleteTransformer":{
+      "name":"DeleteTransformer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteTransformerRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified transformer. A transformer can take an EDI file as input and transform it into a JSON-or XML-formatted document. Alternatively, a transformer can take a JSON-or XML-formatted document as input and transform it into an EDI file.</p>",
+      "idempotent":true
+    },
+    "GenerateMapping":{
+      "name":"GenerateMapping",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GenerateMappingRequest"},
+      "output":{"shape":"GenerateMappingResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Takes sample input and output documents and uses Amazon Bedrock to generate a mapping automatically. Depending on the accuracy and other factors, you can then edit the mapping for your needs.</p> <note> <p>Before you can use the AI-assisted feature for Amazon Web Services B2B Data Interchange you must enable models in Amazon Bedrock. For details, see <a href=\"https://docs.aws.amazon.com/b2bi/latest/userguide/ai-assisted-mapping.html#ai-assist-prereq\">AI-assisted template mapping prerequisites</a> in the <i>Amazon Web Services B2B Data Interchange User guide</i>.</p> </note> <p>To generate a mapping, perform the following steps:</p> <ol> <li> <p>Start with an X12 EDI document to use as the input.</p> </li> <li> <p>Call <code>TestMapping</code> using your EDI document.</p> </li> <li> <p>Use the output from the <code>TestMapping</code> operation as either input or output for your GenerateMapping call, along with your sample file.</p> </li> </ol>",
+      "idempotent":true
+    },
+    "GetCapability":{
+      "name":"GetCapability",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetCapabilityRequest"},
+      "output":{"shape":"GetCapabilityResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details for the specified capability. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>"
+    },
+    "GetPartnership":{
+      "name":"GetPartnership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPartnershipRequest"},
+      "output":{"shape":"GetPartnershipResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details for a partnership, based on the partner and profile IDs specified. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>"
+    },
+    "GetProfile":{
+      "name":"GetProfile",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetProfileRequest"},
+      "output":{"shape":"GetProfileResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details for the profile specified by the profile ID. A profile is the mechanism used to create the concept of a private network.</p>"
+    },
+    "GetTransformer":{
+      "name":"GetTransformer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTransformerRequest"},
+      "output":{"shape":"GetTransformerResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details for the transformer specified by the transformer ID. A transformer can take an EDI file as input and transform it into a JSON-or XML-formatted document. Alternatively, a transformer can take a JSON-or XML-formatted document as input and transform it into an EDI file.</p>"
+    },
+    "GetTransformerJob":{
+      "name":"GetTransformerJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTransformerJobRequest"},
+      "output":{"shape":"GetTransformerJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the details of the transformer run, based on the Transformer job ID.</p> <note> <p>If 30 days have elapsed since your transformer job was started, the system deletes it. So, if you run <code>GetTransformerJob</code> and supply a <code>transformerId</code> and <code>transformerJobId</code> for a job that was started more than 30 days previously, you receive a 404 response.</p> </note>"
+    },
+    "ListCapabilities":{
+      "name":"ListCapabilities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListCapabilitiesRequest"},
+      "output":{"shape":"ListCapabilitiesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the capabilities associated with your Amazon Web Services account for your current or specified region. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>"
+    },
+    "ListPartnerships":{
+      "name":"ListPartnerships",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPartnershipsRequest"},
+      "output":{"shape":"ListPartnershipsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the partnerships associated with your Amazon Web Services account for your current or specified region. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>"
+    },
+    "ListProfiles":{
+      "name":"ListProfiles",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListProfilesRequest"},
+      "output":{"shape":"ListProfilesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the profiles associated with your Amazon Web Services account for your current or specified region. A profile is the mechanism used to create the concept of a private network.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all of the tags associated with the Amazon Resource Name (ARN) that you specify. The resource can be a capability, partnership, profile, or transformer.</p>"
+    },
+    "ListTransformers":{
+      "name":"ListTransformers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTransformersRequest"},
+      "output":{"shape":"ListTransformersResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the available transformers. A transformer can take an EDI file as input and transform it into a JSON-or XML-formatted document. Alternatively, a transformer can take a JSON-or XML-formatted document as input and transform it into an EDI file.</p>"
+    },
+    "StartTransformerJob":{
+      "name":"StartTransformerJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartTransformerJobRequest"},
+      "output":{"shape":"StartTransformerJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Runs a job, using a transformer, to parse input EDI (electronic data interchange) file into the output structures used by Amazon Web Services B2B Data Interchange.</p> <p>If you only want to transform EDI (electronic data interchange) documents, you don't need to create profiles, partnerships or capabilities. Just create and configure a transformer, and then run the <code>StartTransformerJob</code> API to process your files.</p> <note> <p>The system stores transformer jobs for 30 days. During that period, you can run <a href=\"https://docs.aws.amazon.com/b2bi/latest/APIReference/API_GetTransformerJob.html\">GetTransformerJob</a> and supply its <code>transformerId</code> and <code>transformerJobId</code> to return details of the job.</p> </note>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Attaches a key-value pair to a resource, as identified by its Amazon Resource Name (ARN). Resources are capability, partnership, profile, transformers and other entities.</p> <p>There is no response returned from this call.</p>"
+    },
+    "TestConversion":{
+      "name":"TestConversion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TestConversionRequest"},
+      "output":{"shape":"TestConversionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation mimics the latter half of a typical Outbound EDI request. It takes an input JSON/XML in the B2Bi shape as input, converts it to an X12 EDI string, and return that string.</p>",
+      "idempotent":true
+    },
+    "TestMapping":{
+      "name":"TestMapping",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TestMappingRequest"},
+      "output":{"shape":"TestMappingResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Maps the input file according to the provided template file. The API call downloads the file contents from the Amazon S3 location, and passes the contents in as a string, to the <code>inputFileContent</code> parameter.</p>",
+      "idempotent":true
+    },
+    "TestParsing":{
+      "name":"TestParsing",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TestParsingRequest"},
+      "output":{"shape":"TestParsingResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Parses the input EDI (electronic data interchange) file. The input file has a file size limit of 250 KB.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Detaches a key-value pair from the specified resource, as identified by its Amazon Resource Name (ARN). Resources are capability, partnership, profile, transformers and other entities.</p>",
+      "idempotent":true
+    },
+    "UpdateCapability":{
+      "name":"UpdateCapability",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateCapabilityRequest"},
+      "output":{"shape":"UpdateCapabilityResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates some of the parameters for a capability, based on the specified parameters. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>",
+      "idempotent":true
+    },
+    "UpdatePartnership":{
+      "name":"UpdatePartnership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePartnershipRequest"},
+      "output":{"shape":"UpdatePartnershipResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates some of the parameters for a partnership between a customer and trading partner. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>",
+      "idempotent":true
+    },
+    "UpdateProfile":{
+      "name":"UpdateProfile",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateProfileRequest"},
+      "output":{"shape":"UpdateProfileResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the specified parameters for a profile. A profile is the mechanism used to create the concept of a private network.</p>",
+      "idempotent":true
+    },
+    "UpdateTransformer":{
+      "name":"UpdateTransformer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTransformerRequest"},
+      "output":{"shape":"UpdateTransformerResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the specified parameters for a transformer. A transformer can take an EDI file as input and transform it into a JSON-or XML-formatted document. Alternatively, a transformer can take a JSON-or XML-formatted document as input and transform it into an EDI file.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AdvancedOptions":{
+      "type":"structure",
+      "members":{
+        "x12":{
+          "shape":"X12AdvancedOptions",
+          "documentation":"<p>A structure that contains X12-specific advanced options, such as split options for processing X12 EDI files.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains advanced options for EDI processing. Currently, only X12 advanced options are supported.</p>"
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "BusinessName":{
+      "type":"string",
+      "max":254,
+      "min":1
+    },
+    "CapabilityConfiguration":{
+      "type":"structure",
+      "members":{
+        "edi":{
+          "shape":"EdiConfiguration",
+          "documentation":"<p>An EDI (electronic data interchange) configuration object.</p>"
+        }
+      },
+      "documentation":"<p>A capability object. Currently, only EDI (electronic data interchange) capabilities are supported. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>",
+      "union":true
+    },
+    "CapabilityDirection":{
+      "type":"string",
+      "enum":[
+        "INBOUND",
+        "OUTBOUND"
+      ]
+    },
+    "CapabilityId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "CapabilityList":{
+      "type":"list",
+      "member":{"shape":"CapabilitySummary"}
+    },
+    "CapabilityName":{
+      "type":"string",
+      "max":254,
+      "min":1
+    },
+    "CapabilityOptions":{
+      "type":"structure",
+      "members":{
+        "outboundEdi":{
+          "shape":"OutboundEdiOptions",
+          "documentation":"<p>A structure that contains the outbound EDI options.</p>"
+        },
+        "inboundEdi":{
+          "shape":"InboundEdiOptions",
+          "documentation":"<p>A structure that contains the inbound EDI options for the capability.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details for an Outbound EDI capability.</p>"
+    },
+    "CapabilitySummary":{
+      "type":"structure",
+      "required":[
+        "capabilityId",
+        "name",
+        "type",
+        "createdAt"
+      ],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Returns a system-assigned unique identifier for the capability.</p>"
+        },
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>The display name of the capability.</p>"
+        },
+        "type":{
+          "shape":"CapabilityType",
+          "documentation":"<p>Returns the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the capability.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp that identifies the most recent date and time that the capability was modified.</p>"
+        }
+      },
+      "documentation":"<p>Returns the capability summary details. A trading capability contains the information required to transform incoming EDI documents into JSON or XML outputs.</p>"
+    },
+    "CapabilityType":{
+      "type":"string",
+      "enum":["edi"]
+    },
+    "CodeList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A conflict exception is thrown when you attempt to delete a resource (such as a profile or a capability) that is being used by other resources.</p>",
+      "exception":true
+    },
+    "ConversionSource":{
+      "type":"structure",
+      "required":[
+        "fileFormat",
+        "inputFile"
+      ],
+      "members":{
+        "fileFormat":{
+          "shape":"ConversionSourceFormat",
+          "documentation":"<p>The format for the input file: either JSON or XML.</p>"
+        },
+        "inputFile":{
+          "shape":"InputFileSource",
+          "documentation":"<p>File to be converted</p>"
+        }
+      },
+      "documentation":"<p>Describes the input for an outbound transformation. </p>"
+    },
+    "ConversionSourceFormat":{
+      "type":"string",
+      "enum":[
+        "JSON",
+        "XML"
+      ]
+    },
+    "ConversionTarget":{
+      "type":"structure",
+      "required":["fileFormat"],
+      "members":{
+        "fileFormat":{
+          "shape":"ConversionTargetFormat",
+          "documentation":"<p>Currently, only X12 format is supported.</p>"
+        },
+        "formatDetails":{
+          "shape":"ConversionTargetFormatDetails",
+          "documentation":"<p>A structure that contains the formatting details for the conversion target.</p>"
+        },
+        "outputSampleFile":{
+          "shape":"OutputSampleFileSource",
+          "documentation":"<p>Customer uses this to provide a sample on what should file look like after conversion X12 EDI use case around this would be discovering the file syntax</p>"
+        },
+        "advancedOptions":{"shape":"AdvancedOptions"}
+      },
+      "documentation":"<p>Provide a sample of what the output of the transformation should look like.</p>"
+    },
+    "ConversionTargetFormat":{
+      "type":"string",
+      "enum":["X12"]
+    },
+    "ConversionTargetFormatDetails":{
+      "type":"structure",
+      "members":{
+        "x12":{"shape":"X12Details"}
+      },
+      "documentation":"<p>Contains a structure describing the X12 details for the conversion target.</p>",
+      "union":true
+    },
+    "CreateCapabilityRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type",
+        "configuration"
+      ],
+      "members":{
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>Specifies the name of the capability, used to identify it.</p>"
+        },
+        "type":{
+          "shape":"CapabilityType",
+          "documentation":"<p>Specifies the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "configuration":{
+          "shape":"CapabilityConfiguration",
+          "documentation":"<p>Specifies a structure that contains the details for a capability.</p>"
+        },
+        "instructionsDocuments":{
+          "shape":"InstructionsDocuments",
+          "documentation":"<p>Specifies one or more locations in Amazon S3, each specifying an EDI document that can be used with this capability. Each item contains the name of the bucket and the key, to identify the document's location.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Reserved for future use.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "CreateCapabilityResponse":{
+      "type":"structure",
+      "required":[
+        "capabilityId",
+        "capabilityArn",
+        "name",
+        "type",
+        "configuration",
+        "createdAt"
+      ],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Returns a system-assigned unique identifier for the capability.</p>"
+        },
+        "capabilityArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>Returns the name of the capability used to identify it.</p>"
+        },
+        "type":{
+          "shape":"CapabilityType",
+          "documentation":"<p>Returns the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "configuration":{
+          "shape":"CapabilityConfiguration",
+          "documentation":"<p>Returns a structure that contains the details for a capability.</p>"
+        },
+        "instructionsDocuments":{
+          "shape":"InstructionsDocuments",
+          "documentation":"<p>Returns one or more locations in Amazon S3, each specifying an EDI document that can be used with this capability. Each item contains the name of the bucket and the key, to identify the document's location.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the capability.</p>"
+        }
+      }
+    },
+    "CreatePartnershipRequest":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "name",
+        "email",
+        "capabilities"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>Specifies a descriptive name for the partnership.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Specifies the email address associated with this trading partner.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Specifies the phone number associated with the partnership.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>Specifies a list of the capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{
+          "shape":"CapabilityOptions",
+          "documentation":"<p>Specify the structure that contains the details for the associated capabilities.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Reserved for future use.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "CreatePartnershipResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "partnershipId",
+        "partnershipArn",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a partnership.</p>"
+        },
+        "partnershipArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>Returns a descriptive name for the partnership.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this trading partner.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the partnership.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>Returns one or more capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{
+          "shape":"CapabilityOptions",
+          "documentation":"<p>Returns the structure that contains the details for the associated capabilities.</p>"
+        },
+        "tradingPartnerId":{
+          "shape":"TradingPartnerId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a trading partner.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the partnership.</p>"
+        }
+      }
+    },
+    "CreateProfileRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "phone",
+        "businessName",
+        "logging"
+      ],
+      "members":{
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>Specifies the name of the profile.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Specifies the email address associated with this customer profile.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Specifies the phone number associated with the profile.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Specifies the name for the business associated with this profile.</p>"
+        },
+        "logging":{
+          "shape":"Logging",
+          "documentation":"<p>Specifies whether or not logging is enabled for this profile.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Reserved for future use.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "CreateProfileResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "profileArn",
+        "name",
+        "businessName",
+        "phone",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile.</p>"
+        },
+        "profileArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for the profile.</p>"
+        },
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>Returns the name of the profile, used to identify it.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Returns the name for the business associated with this profile.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the profile.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this customer profile.</p>"
+        },
+        "logging":{
+          "shape":"Logging",
+          "documentation":"<p>Returns whether or not logging is turned on for this profile.</p>"
+        },
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>Returns the name of the logging group.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp representing the time the profile was created.</p>"
+        }
+      }
+    },
+    "CreateStarterMappingTemplateRequest":{
+      "type":"structure",
+      "required":[
+        "mappingType",
+        "templateDetails"
+      ],
+      "members":{
+        "outputSampleLocation":{
+          "shape":"S3Location",
+          "documentation":"<p>Specify the location of the sample EDI file that is used to generate the mapping template.</p>"
+        },
+        "mappingType":{
+          "shape":"MappingType",
+          "documentation":"<p>Specify the format for the mapping template: either JSONATA or XSLT.</p>"
+        },
+        "templateDetails":{
+          "shape":"TemplateDetails",
+          "documentation":"<p> Describes the details needed for generating the template. Specify the X12 transaction set and version for which the template is used: currently, we only support X12. </p>"
+        }
+      }
+    },
+    "CreateStarterMappingTemplateResponse":{
+      "type":"structure",
+      "required":["mappingTemplate"],
+      "members":{
+        "mappingTemplate":{
+          "shape":"String",
+          "documentation":"<p>Returns a string that represents the mapping template.</p>"
+        }
+      }
+    },
+    "CreateTransformerRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Specifies the name of the transformer, used to identify it.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Reserved for future use.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Specifies that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Specifies the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p> <note> <p>This parameter is available for backwards compatibility. Use the <a href=\"https://docs.aws.amazon.com/b2bi/latest/APIReference/API_Mapping.html\">Mapping</a> data type instead.</p> </note>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Specifies the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Specifies a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>Specify the <code>InputConversion</code> object, which contains the format options for the inbound transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Specify the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>A structure that contains the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Specify a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      }
+    },
+    "CreateTransformerResponse":{
+      "type":"structure",
+      "required":[
+        "transformerId",
+        "transformerArn",
+        "name",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Returns the system-assigned unique identifier for the transformer.</p>"
+        },
+        "transformerArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Returns the name of the transformer, used to identify it.</p>"
+        },
+        "status":{
+          "shape":"TransformerStatus",
+          "documentation":"<p>Returns the state of the newly created transformer. The transformer can be either <code>active</code> or <code>inactive</code>. For the transformer to be used in a capability, its status must <code>active</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the transformer.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Returns that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Returns the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Returns the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Returns a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>Returns the <code>InputConversion</code> object, which contains the format options for the inbound transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Returns the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>Returns the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Returns a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      }
+    },
+    "CreatedDate":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "DeleteCapabilityRequest":{
+      "type":"structure",
+      "required":["capabilityId"],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Specifies a system-assigned unique identifier for the capability.</p>"
+        }
+      }
+    },
+    "DeletePartnershipRequest":{
+      "type":"structure",
+      "required":["partnershipId"],
+      "members":{
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for a partnership.</p>"
+        }
+      }
+    },
+    "DeleteProfileRequest":{
+      "type":"structure",
+      "required":["profileId"],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for the profile.</p>"
+        }
+      }
+    },
+    "DeleteTransformerRequest":{
+      "type":"structure",
+      "required":["transformerId"],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Specifies the system-assigned unique identifier for the transformer.</p>"
+        }
+      }
+    },
+    "EdiConfiguration":{
+      "type":"structure",
+      "required":[
+        "type",
+        "inputLocation",
+        "outputLocation",
+        "transformerId"
+      ],
+      "members":{
+        "capabilityDirection":{
+          "shape":"CapabilityDirection",
+          "documentation":"<p>Specifies whether this is capability is for inbound or outbound transformations.</p>"
+        },
+        "type":{
+          "shape":"EdiType",
+          "documentation":"<p>Returns the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "inputLocation":{
+          "shape":"S3Location",
+          "documentation":"<p>Contains the Amazon S3 bucket and prefix for the location of the input file, which is contained in an <code>S3Location</code> object.</p>"
+        },
+        "outputLocation":{
+          "shape":"S3Location",
+          "documentation":"<p>Contains the Amazon S3 bucket and prefix for the location of the output file, which is contained in an <code>S3Location</code> object.</p>"
+        },
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Returns the system-assigned unique identifier for the transformer.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the details for the EDI (electronic data interchange) transformation.</p>"
+    },
+    "EdiType":{
+      "type":"structure",
+      "members":{
+        "x12Details":{
+          "shape":"X12Details",
+          "documentation":"<p>Returns the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+      "union":true
+    },
+    "ElementId":{
+      "type":"string",
+      "documentation":"<p>A string type representing an X12 element ID. Element IDs are four-digit numeric identifiers that uniquely identify elements within the X12 standard. This type enforces a pattern of exactly four digits to ensure valid element IDs are used in validation rules.</p>"
+    },
+    "ElementPosition":{
+      "type":"string",
+      "documentation":"<p>A string type representing the position of an element within an X12 segment. The format follows the pattern of segment identifier followed by element position (e.g., \"ST-01\" for the first element of the ST segment) and optionally a component position (e.g., \"ST-01-02\" for the second component of the first element). This type is used in validation rules to precisely identify which element in which position is being validated.</p>"
+    },
+    "ElementRequirement":{
+      "type":"string",
+      "enum":[
+        "OPTIONAL",
+        "MANDATORY"
+      ]
+    },
+    "Email":{
+      "type":"string",
+      "max":254,
+      "min":5,
+      "pattern":"[\\w\\.\\-]+@[\\w\\.\\-]+",
+      "sensitive":true
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":1024,
+      "min":10
+    },
+    "FileFormat":{
+      "type":"string",
+      "enum":[
+        "XML",
+        "JSON",
+        "NOT_USED"
+      ]
+    },
+    "FileLocation":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "FormatOptions":{
+      "type":"structure",
+      "members":{
+        "x12":{"shape":"X12Details"}
+      },
+      "documentation":"<p>A structure that contains the X12 transaction set and version.</p>",
+      "union":true
+    },
+    "FromFormat":{
+      "type":"string",
+      "enum":["X12"]
+    },
+    "GenerateMappingInputFileContent":{
+      "type":"string",
+      "max":5000000,
+      "min":0
+    },
+    "GenerateMappingOutputFileContent":{
+      "type":"string",
+      "max":5000000,
+      "min":0
+    },
+    "GenerateMappingRequest":{
+      "type":"structure",
+      "required":[
+        "inputFileContent",
+        "outputFileContent",
+        "mappingType"
+      ],
+      "members":{
+        "inputFileContent":{
+          "shape":"GenerateMappingInputFileContent",
+          "documentation":"<p>Provide the contents of a sample X12 EDI file, either in JSON or XML format, to use as a starting point for the mapping.</p>"
+        },
+        "outputFileContent":{
+          "shape":"GenerateMappingOutputFileContent",
+          "documentation":"<p>Provide the contents of a sample X12 EDI file, either in JSON or XML format, to use as a target for the mapping.</p>"
+        },
+        "mappingType":{
+          "shape":"MappingType",
+          "documentation":"<p>Specify the mapping type: either <code>JSONATA</code> or <code>XSLT.</code> </p>"
+        }
+      }
+    },
+    "GenerateMappingResponse":{
+      "type":"structure",
+      "required":["mappingTemplate"],
+      "members":{
+        "mappingTemplate":{
+          "shape":"String",
+          "documentation":"<p>Returns a mapping template based on your inputs.</p>"
+        },
+        "mappingAccuracy":{
+          "shape":"GenerateMappingResponseMappingAccuracyFloat",
+          "documentation":"<p>Returns a percentage that estimates the accuracy of the generated mapping.</p>"
+        }
+      }
+    },
+    "GenerateMappingResponseMappingAccuracyFloat":{
+      "type":"float",
+      "box":true,
+      "max":1.0,
+      "min":0.0
+    },
+    "GetCapabilityRequest":{
+      "type":"structure",
+      "required":["capabilityId"],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Specifies a system-assigned unique identifier for the capability.</p>"
+        }
+      }
+    },
+    "GetCapabilityResponse":{
+      "type":"structure",
+      "required":[
+        "capabilityId",
+        "capabilityArn",
+        "name",
+        "type",
+        "configuration",
+        "createdAt"
+      ],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Returns a system-assigned unique identifier for the capability.</p>"
+        },
+        "capabilityArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>Returns the name of the capability, used to identify it.</p>"
+        },
+        "type":{
+          "shape":"CapabilityType",
+          "documentation":"<p>Returns the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "configuration":{
+          "shape":"CapabilityConfiguration",
+          "documentation":"<p>Returns a structure that contains the details for a capability.</p>"
+        },
+        "instructionsDocuments":{
+          "shape":"InstructionsDocuments",
+          "documentation":"<p>Returns one or more locations in Amazon S3, each specifying an EDI document that can be used with this capability. Each item contains the name of the bucket and the key, to identify the document's location.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the capability.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the capability was modified.</p>"
+        }
+      }
+    },
+    "GetPartnershipRequest":{
+      "type":"structure",
+      "required":["partnershipId"],
+      "members":{
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for a partnership.</p>"
+        }
+      }
+    },
+    "GetPartnershipResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "partnershipId",
+        "partnershipArn",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a partnership.</p>"
+        },
+        "partnershipArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>Returns the display name of the partnership</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this trading partner.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the partnership.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>Returns one or more capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{"shape":"CapabilityOptions"},
+        "tradingPartnerId":{
+          "shape":"TradingPartnerId",
+          "documentation":"<p>Returns the unique identifier for the partner for this partnership.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the partnership.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp that identifies the most recent date and time that the partnership was modified.</p>"
+        }
+      }
+    },
+    "GetProfileRequest":{
+      "type":"structure",
+      "required":["profileId"],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for the profile.</p>"
+        }
+      }
+    },
+    "GetProfileResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "profileArn",
+        "name",
+        "phone",
+        "businessName",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile.</p>"
+        },
+        "profileArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>Returns the name of the profile, used to identify it.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this customer profile.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the profile.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Returns the name for the business associated with this profile.</p>"
+        },
+        "logging":{
+          "shape":"Logging",
+          "documentation":"<p>Returns whether or not logging is enabled for this profile.</p>"
+        },
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>Returns the name of the logging group.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the transformer.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the profile was modified.</p>"
+        }
+      }
+    },
+    "GetTransformerJobRequest":{
+      "type":"structure",
+      "required":[
+        "transformerJobId",
+        "transformerId"
+      ],
+      "members":{
+        "transformerJobId":{
+          "shape":"TransformerJobId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for a transformer run.</p>"
+        },
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Specifies the system-assigned unique identifier for the transformer.</p>"
+        }
+      }
+    },
+    "GetTransformerJobResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"TransformerJobStatus",
+          "documentation":"<p>Returns the current state of the transformer job, either <code>running</code>, <code>succeeded</code>, or <code>failed</code>.</p>"
+        },
+        "outputFiles":{
+          "shape":"S3LocationList",
+          "documentation":"<p>Returns the location for the output files. If the caller specified a directory for the output, then this contains the full path to the output file, including the file name generated by the service.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Returns an optional error message, which gets populated when the job is not run successfully.</p>"
+        }
+      }
+    },
+    "GetTransformerRequest":{
+      "type":"structure",
+      "required":["transformerId"],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Specifies the system-assigned unique identifier for the transformer.</p>"
+        }
+      }
+    },
+    "GetTransformerResponse":{
+      "type":"structure",
+      "required":[
+        "transformerId",
+        "transformerArn",
+        "name",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Returns the system-assigned unique identifier for the transformer.</p>"
+        },
+        "transformerArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Returns the name of the transformer, used to identify it.</p>"
+        },
+        "status":{
+          "shape":"TransformerStatus",
+          "documentation":"<p>Returns the state of the newly created transformer. The transformer can be either <code>active</code> or <code>inactive</code>. For the transformer to be used in a capability, its status must <code>active</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the transformer.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the transformer was modified.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Returns that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Returns the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Returns the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Returns a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>Returns the <code>InputConversion</code> object, which contains the format options for the inbound transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Returns the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>Returns the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Returns a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      }
+    },
+    "InboundEdiOptions":{
+      "type":"structure",
+      "members":{
+        "x12":{
+          "shape":"X12InboundEdiOptions",
+          "documentation":"<p>A structure that contains X12-specific options for processing inbound X12 EDI files.</p>"
+        }
+      },
+      "documentation":"<p>Contains options for processing inbound EDI files. These options allow for customizing how incoming EDI documents are processed.</p>"
+    },
+    "InputConversion":{
+      "type":"structure",
+      "required":["fromFormat"],
+      "members":{
+        "fromFormat":{
+          "shape":"FromFormat",
+          "documentation":"<p>The format for the transformer input: currently on <code>X12</code> is supported.</p>"
+        },
+        "formatOptions":{
+          "shape":"FormatOptions",
+          "documentation":"<p>A structure that contains the formatting options for an inbound transformer.</p>"
+        },
+        "advancedOptions":{
+          "shape":"AdvancedOptions",
+          "documentation":"<p>Specifies advanced options for the input conversion process. These options provide additional control over how EDI files are processed during transformation.</p>"
+        }
+      },
+      "documentation":"<p>Contains the input formatting options for an inbound transformer (takes an X12-formatted EDI document as input and converts it to JSON or XML.</p>"
+    },
+    "InputFileSource":{
+      "type":"structure",
+      "members":{
+        "fileContent":{
+          "shape":"InputFileSourceFileContentString",
+          "documentation":"<p>Specify the input contents, as a string, for the source of an outbound transformation.</p>"
+        }
+      },
+      "documentation":"<p>The input file to use for an outbound transformation.</p>",
+      "union":true
+    },
+    "InputFileSourceFileContentString":{
+      "type":"string",
+      "max":5000000,
+      "min":1
+    },
+    "InstructionsDocuments":{
+      "type":"list",
+      "member":{"shape":"S3Location"},
+      "max":5,
+      "min":0
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The server attempts to retry a failed command.</p>"
+        }
+      },
+      "documentation":"<p>This exception is thrown when an error occurs in the Amazon Web Services B2B Data Interchange service.</p>",
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "KeyList":{
+      "type":"list",
+      "member":{"shape":"SampleDocumentKeys"}
+    },
+    "LineLength":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "LineTerminator":{
+      "type":"string",
+      "enum":[
+        "CRLF",
+        "LF",
+        "CR"
+      ]
+    },
+    "ListCapabilitiesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of capabilities to return.</p>"
+        }
+      }
+    },
+    "ListCapabilitiesResponse":{
+      "type":"structure",
+      "required":["capabilities"],
+      "members":{
+        "capabilities":{
+          "shape":"CapabilityList",
+          "documentation":"<p>Returns one or more capabilities associated with this partnership.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        }
+      }
+    },
+    "ListPartnershipsRequest":{
+      "type":"structure",
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of capabilities to return.</p>"
+        }
+      }
+    },
+    "ListPartnershipsResponse":{
+      "type":"structure",
+      "required":["partnerships"],
+      "members":{
+        "partnerships":{
+          "shape":"PartnershipList",
+          "documentation":"<p>Specifies a list of your partnerships.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        }
+      }
+    },
+    "ListProfilesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of profiles to return.</p>"
+        }
+      }
+    },
+    "ListProfilesResponse":{
+      "type":"structure",
+      "required":["profiles"],
+      "members":{
+        "profiles":{
+          "shape":"ProfileList",
+          "documentation":"<p>Returns an array of <code>ProfileSummary</code> objects.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>Requests the tags associated with a particular Amazon Resource Name (ARN). An ARN is an identifier for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Returns the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "ListTransformersRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the number of items to return for the API response.</p>"
+        }
+      }
+    },
+    "ListTransformersResponse":{
+      "type":"structure",
+      "required":["transformers"],
+      "members":{
+        "transformers":{
+          "shape":"TransformerList",
+          "documentation":"<p>Returns an array of one or more transformer objects.</p> <p>For each transformer, a <code>TransformerSummary</code> object is returned. The <code>TransformerSummary</code> contains all the details for a specific transformer.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>When additional results are obtained from the command, a <code>NextToken</code> parameter is returned in the output. You can then pass the <code>NextToken</code> parameter in a subsequent command to continue listing additional resources.</p>"
+        }
+      }
+    },
+    "LogGroupName":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "Logging":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "Mapping":{
+      "type":"structure",
+      "required":["templateLanguage"],
+      "members":{
+        "templateLanguage":{
+          "shape":"MappingTemplateLanguage",
+          "documentation":"<p>The transformation language for the template, either XSLT or JSONATA.</p>"
+        },
+        "template":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>A string that represents the mapping template, in the transformation language specified in <code>templateLanguage</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p>"
+    },
+    "MappingTemplate":{
+      "type":"string",
+      "max":350000,
+      "min":0
+    },
+    "MappingTemplateLanguage":{
+      "type":"string",
+      "enum":[
+        "XSLT",
+        "JSONATA"
+      ]
+    },
+    "MappingType":{
+      "type":"string",
+      "enum":[
+        "JSONATA",
+        "XSLT"
+      ]
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ModifiedDate":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "OutboundEdiOptions":{
+      "type":"structure",
+      "members":{
+        "x12":{
+          "shape":"X12Envelope",
+          "documentation":"<p>A structure that contains an X12 envelope structure.</p>"
+        }
+      },
+      "documentation":"<p>A container for outbound EDI options.</p>",
+      "union":true
+    },
+    "OutputConversion":{
+      "type":"structure",
+      "required":["toFormat"],
+      "members":{
+        "toFormat":{
+          "shape":"ToFormat",
+          "documentation":"<p>The format for the output from an outbound transformer: only X12 is currently supported.</p>"
+        },
+        "formatOptions":{
+          "shape":"FormatOptions",
+          "documentation":"<p>A structure that contains the X12 transaction set and version for the transformer output.</p>"
+        },
+        "advancedOptions":{"shape":"AdvancedOptions"}
+      },
+      "documentation":"<p>Contains the formatting options for an outbound transformer (takes JSON or XML as input and converts it to an EDI document (currently only X12 format is supported).</p>"
+    },
+    "OutputSampleFileSource":{
+      "type":"structure",
+      "members":{
+        "fileLocation":{"shape":"S3Location"}
+      },
+      "documentation":"<p>Container for the location of a sample file used for outbound transformations.</p>",
+      "union":true
+    },
+    "PageToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ParsedSplitFileContentsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "PartnerName":{
+      "type":"string",
+      "max":254,
+      "min":1
+    },
+    "PartnershipCapabilities":{
+      "type":"list",
+      "member":{"shape":"CapabilityId"}
+    },
+    "PartnershipId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "PartnershipList":{
+      "type":"list",
+      "member":{"shape":"PartnershipSummary"}
+    },
+    "PartnershipSummary":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "partnershipId",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a partnership.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>Returns the name of the partnership.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>Returns one or more capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{"shape":"CapabilityOptions"},
+        "tradingPartnerId":{
+          "shape":"TradingPartnerId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a trading partner.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the partnership.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp that identifies the most recent date and time that the partnership was modified.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the details for a partnership. A partnership represents the connection between you and your trading partner. It ties together a profile and one or more trading capabilities.</p>"
+    },
+    "Phone":{
+      "type":"string",
+      "max":22,
+      "min":7,
+      "pattern":"\\+?([0-9 \\t\\-()\\/]{7,})(?:\\s*(?:#|x\\.?|ext\\.?|extension) \\t*(\\d+))?",
+      "sensitive":true
+    },
+    "ProfileId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "ProfileList":{
+      "type":"list",
+      "member":{"shape":"ProfileSummary"}
+    },
+    "ProfileName":{
+      "type":"string",
+      "max":254,
+      "min":1
+    },
+    "ProfileSummary":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "name",
+        "businessName",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile.</p>"
+        },
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>Returns the display name for profile.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Returns the name for the business associated with this profile.</p>"
+        },
+        "logging":{
+          "shape":"Logging",
+          "documentation":"<p>Specifies whether or not logging is enabled for this profile.</p>"
+        },
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>Returns the name of the logging group.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns the timestamp for creation date and time of the profile.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns the timestamp that identifies the most recent date and time that the profile was modified.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details for a profile. A profile is the mechanism used to create the concept of a private network.</p>"
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when the requested resource does not exist, or cannot be found. In some cases, the resource exists in a region other than the region specified in the API call.</p>",
+      "exception":true
+    },
+    "S3Key":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "S3Location":{
+      "type":"structure",
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Specifies the name of the Amazon S3 bucket.</p>"
+        },
+        "key":{
+          "shape":"S3Key",
+          "documentation":"<p>Specifies the Amazon S3 key for the file location.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the details for the Amazon S3 file location that is being used with Amazon Web Services B2B Data Interchange. File locations in Amazon S3 are identified using a combination of the bucket and key.</p>"
+    },
+    "S3LocationList":{
+      "type":"list",
+      "member":{"shape":"S3Location"}
+    },
+    "SampleDocumentKeys":{
+      "type":"structure",
+      "members":{
+        "input":{
+          "shape":"S3Key",
+          "documentation":"<p>An array of keys for your input sample documents.</p>"
+        },
+        "output":{
+          "shape":"S3Key",
+          "documentation":"<p>An array of keys for your output sample documents.</p>"
+        }
+      },
+      "documentation":"<p>An array of the Amazon S3 keys used to identify the location for your sample documents.</p>"
+    },
+    "SampleDocuments":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "keys"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Contains the Amazon S3 bucket that is used to hold your sample documents.</p>"
+        },
+        "keys":{
+          "shape":"KeyList",
+          "documentation":"<p>Contains an array of the Amazon S3 keys used to identify the location for your sample documents.</p>"
+        }
+      },
+      "documentation":"<p>Describes a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID for the resource that exceeded the quota, which caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type (profile, partnership, transformer, or capability) that exceeded the quota, which caused the exception.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code responsible for exceeding the quota, which caused the exception.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The quota that was exceeded, which caused the exception.</p>"
+        }
+      },
+      "documentation":"<p>Occurs when the calling command attempts to exceed one of the service quotas, for example trying to create a capability when you already have the maximum number of capabilities allowed.</p>",
+      "exception":true
+    },
+    "StartTransformerJobRequest":{
+      "type":"structure",
+      "required":[
+        "inputFile",
+        "outputLocation",
+        "transformerId"
+      ],
+      "members":{
+        "inputFile":{
+          "shape":"S3Location",
+          "documentation":"<p>Specifies the location of the input file for the transformation. The location consists of an Amazon S3 bucket and prefix.</p>"
+        },
+        "outputLocation":{
+          "shape":"S3Location",
+          "documentation":"<p>Specifies the location of the output file for the transformation. The location consists of an Amazon S3 bucket and prefix.</p>"
+        },
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Specifies the system-assigned unique identifier for the transformer.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Reserved for future use.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartTransformerJobResponse":{
+      "type":"structure",
+      "required":["transformerJobId"],
+      "members":{
+        "transformerJobId":{
+          "shape":"TransformerJobId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a transformer run.</p>"
+        }
+      }
+    },
+    "StartingFunctionalGroupControlNumber":{
+      "type":"integer",
+      "box":true,
+      "max":999999999,
+      "min":1
+    },
+    "StartingInterchangeControlNumber":{
+      "type":"integer",
+      "box":true,
+      "max":999999999,
+      "min":1
+    },
+    "StartingTransactionSetControlNumber":{
+      "type":"integer",
+      "box":true,
+      "max":999999999,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>Specifies the name assigned to the tag that you create.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>Contains one or more values that you assigned to the key name that you create.</p>"
+        }
+      },
+      "documentation":"<p>Creates a key-value pair for a specific resource. Tags are metadata that you can use to search for and group a resource for various purposes. You can apply tags to capabilities, partnerships, profiles and transformers. A tag key can take more than one value. For example, to group capabilities for accounting purposes, you might create a tag called <code>Group</code> and assign the values <code>Research</code> and <code>Accounting</code> to that group.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>Specifies an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TemplateDetails":{
+      "type":"structure",
+      "members":{
+        "x12":{"shape":"X12Details"}
+      },
+      "documentation":"<p>A data structure that contains the information to use when generating a mapping template.</p>",
+      "union":true
+    },
+    "TestConversionRequest":{
+      "type":"structure",
+      "required":[
+        "source",
+        "target"
+      ],
+      "members":{
+        "source":{
+          "shape":"ConversionSource",
+          "documentation":"<p>Specify the source file for an outbound EDI request.</p>"
+        },
+        "target":{
+          "shape":"ConversionTarget",
+          "documentation":"<p>Specify the format (X12 is the only currently supported format), and other details for the conversion target.</p>"
+        }
+      }
+    },
+    "TestConversionResponse":{
+      "type":"structure",
+      "required":["convertedFileContent"],
+      "members":{
+        "convertedFileContent":{
+          "shape":"String",
+          "documentation":"<p>Returns the converted file content.</p>"
+        },
+        "validationMessages":{
+          "shape":"ValidationMessages",
+          "documentation":"<p>Returns an array of validation messages that Amazon Web Services B2B Data Interchange generates during the conversion process. These messages include both standard EDI validation results and custom validation messages when custom validation rules are configured. Custom validation messages provide detailed feedback on element length constraints, code list validations, and element requirement checks applied during the outbound EDI generation process.</p>"
+        }
+      }
+    },
+    "TestMappingInputFileContent":{
+      "type":"string",
+      "max":5000000,
+      "min":0
+    },
+    "TestMappingRequest":{
+      "type":"structure",
+      "required":[
+        "inputFileContent",
+        "mappingTemplate",
+        "fileFormat"
+      ],
+      "members":{
+        "inputFileContent":{
+          "shape":"TestMappingInputFileContent",
+          "documentation":"<p>Specify the contents of the EDI (electronic data interchange) XML or JSON file that is used as input for the transform.</p>"
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Specifies the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p> <note> <p>This parameter is available for backwards compatibility. Use the <a href=\"https://docs.aws.amazon.com/b2bi/latest/APIReference/API_Mapping.html\">Mapping</a> data type instead.</p> </note>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Specifies that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>"
+        }
+      }
+    },
+    "TestMappingResponse":{
+      "type":"structure",
+      "required":["mappedFileContent"],
+      "members":{
+        "mappedFileContent":{
+          "shape":"String",
+          "documentation":"<p>Returns a string for the mapping that can be used to identify the mapping. Similar to a fingerprint</p>"
+        }
+      }
+    },
+    "TestParsingRequest":{
+      "type":"structure",
+      "required":[
+        "inputFile",
+        "fileFormat",
+        "ediType"
+      ],
+      "members":{
+        "inputFile":{
+          "shape":"S3Location",
+          "documentation":"<p>Specifies an <code>S3Location</code> object, which contains the Amazon S3 bucket and prefix for the location of the input file.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Specifies that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>"
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Specifies the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>"
+        },
+        "advancedOptions":{
+          "shape":"AdvancedOptions",
+          "documentation":"<p>Specifies advanced options for parsing the input EDI file. These options allow for more granular control over the parsing process, including split options for X12 files.</p>"
+        }
+      }
+    },
+    "TestParsingResponse":{
+      "type":"structure",
+      "required":["parsedFileContent"],
+      "members":{
+        "parsedFileContent":{
+          "shape":"String",
+          "documentation":"<p>Returns the contents of the input file being tested, parsed according to the specified EDI (electronic data interchange) type.</p>"
+        },
+        "parsedSplitFileContents":{
+          "shape":"ParsedSplitFileContentsList",
+          "documentation":"<p>Returns an array of parsed file contents when the input file is split according to the specified split options. Each element in the array represents a separate split file's parsed content.</p>"
+        },
+        "validationMessages":{
+          "shape":"ValidationMessages",
+          "documentation":"<p>Returns an array of validation messages generated during EDI validation. These messages provide detailed information about validation errors, warnings, or confirmations based on the configured X12 validation rules such as element length constraints, code list validations, and element requirement checks. This field is populated when the <code>TestParsing</code> API validates EDI documents.</p>"
+        }
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The server attempts to retry a command that was throttled.</p>"
+        }
+      },
+      "documentation":"<p>The request was denied due to throttling: the data speed and rendering may be limited depending on various parameters and conditions.</p>",
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "ToFormat":{
+      "type":"string",
+      "enum":["X12"]
+    },
+    "TradingPartnerId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "TransformerId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "TransformerJobId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "TransformerJobStatus":{
+      "type":"string",
+      "enum":[
+        "running",
+        "succeeded",
+        "failed"
+      ]
+    },
+    "TransformerList":{
+      "type":"list",
+      "member":{"shape":"TransformerSummary"}
+    },
+    "TransformerName":{
+      "type":"string",
+      "max":254,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]{1,512}"
+    },
+    "TransformerStatus":{
+      "type":"string",
+      "enum":[
+        "active",
+        "inactive"
+      ]
+    },
+    "TransformerSummary":{
+      "type":"structure",
+      "required":[
+        "transformerId",
+        "name",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Returns the system-assigned unique identifier for the transformer.</p>"
+        },
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Returns the descriptive name for the transformer.</p>"
+        },
+        "status":{
+          "shape":"TransformerStatus",
+          "documentation":"<p>Returns the state of the newly created transformer. The transformer can be either <code>active</code> or <code>inactive</code>. For the transformer to be used in a capability, its status must <code>active</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp indicating when the transformer was created. For example, <code>2023-07-20T19:58:44.624Z</code>.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp representing the date and time for the most recent change for the transformer object.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Returns that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Returns the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Returns the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Returns a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>Returns a structure that contains the format options for the transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Returns the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>Returns the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Returns a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details for a transformer object. A transformer can take an EDI file as input and transform it into a JSON-or XML-formatted document. Alternatively, a transformer can take a JSON-or XML-formatted document as input and transform it into an EDI file.</p>"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>Specifies an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Specifies the key-value pairs assigned to ARNs that you can use to group and search for resources by type. You can attach this metadata to resources (capabilities, partnerships, and so on) for any purpose.</p>"
+        }
+      }
+    },
+    "UpdateCapabilityRequest":{
+      "type":"structure",
+      "required":["capabilityId"],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Specifies a system-assigned unique identifier for the capability.</p>"
+        },
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>Specifies a new name for the capability, to replace the existing name.</p>"
+        },
+        "configuration":{
+          "shape":"CapabilityConfiguration",
+          "documentation":"<p>Specifies a structure that contains the details for a capability.</p>"
+        },
+        "instructionsDocuments":{
+          "shape":"InstructionsDocuments",
+          "documentation":"<p>Specifies one or more locations in Amazon S3, each specifying an EDI document that can be used with this capability. Each item contains the name of the bucket and the key, to identify the document's location.</p>"
+        }
+      }
+    },
+    "UpdateCapabilityResponse":{
+      "type":"structure",
+      "required":[
+        "capabilityId",
+        "capabilityArn",
+        "name",
+        "type",
+        "configuration",
+        "createdAt"
+      ],
+      "members":{
+        "capabilityId":{
+          "shape":"CapabilityId",
+          "documentation":"<p>Returns a system-assigned unique identifier for the capability.</p>"
+        },
+        "capabilityArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"CapabilityName",
+          "documentation":"<p>Returns the name of the capability, used to identify it.</p>"
+        },
+        "type":{
+          "shape":"CapabilityType",
+          "documentation":"<p>Returns the type of the capability. Currently, only <code>edi</code> is supported.</p>"
+        },
+        "configuration":{
+          "shape":"CapabilityConfiguration",
+          "documentation":"<p>Returns a structure that contains the details for a capability.</p>"
+        },
+        "instructionsDocuments":{
+          "shape":"InstructionsDocuments",
+          "documentation":"<p>Returns one or more locations in Amazon S3, each specifying an EDI document that can be used with this capability. Each item contains the name of the bucket and the key, to identify the document's location.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the capability.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the capability was modified.</p>"
+        }
+      }
+    },
+    "UpdatePartnershipRequest":{
+      "type":"structure",
+      "required":["partnershipId"],
+      "members":{
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for a partnership.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>The name of the partnership, used to identify it.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>List of the capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{
+          "shape":"CapabilityOptions",
+          "documentation":"<p>To update, specify the structure that contains the details for the associated capabilities.</p>"
+        }
+      }
+    },
+    "UpdatePartnershipResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "partnershipId",
+        "partnershipArn",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile connected to this partnership.</p>"
+        },
+        "partnershipId":{
+          "shape":"PartnershipId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a partnership.</p>"
+        },
+        "partnershipArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"PartnerName",
+          "documentation":"<p>The name of the partnership, used to identify it.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this trading partner.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the partnership.</p>"
+        },
+        "capabilities":{
+          "shape":"PartnershipCapabilities",
+          "documentation":"<p>Returns one or more capabilities associated with this partnership.</p>"
+        },
+        "capabilityOptions":{
+          "shape":"CapabilityOptions",
+          "documentation":"<p>Returns the structure that contains the details for the associated capabilities.</p>"
+        },
+        "tradingPartnerId":{
+          "shape":"TradingPartnerId",
+          "documentation":"<p>Returns the unique, system-generated identifier for a trading partner.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp that identifies the most recent date and time that the partnership was modified.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp that identifies the most recent date and time that the partnership was modified.</p>"
+        }
+      }
+    },
+    "UpdateProfileRequest":{
+      "type":"structure",
+      "required":["profileId"],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Specifies the unique, system-generated identifier for the profile.</p>"
+        },
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the profile, used to identify it.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Specifies the email address associated with this customer profile.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Specifies the phone number associated with the profile.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Specifies the name for the business associated with this profile.</p>"
+        }
+      }
+    },
+    "UpdateProfileResponse":{
+      "type":"structure",
+      "required":[
+        "profileId",
+        "profileArn",
+        "name",
+        "phone",
+        "businessName",
+        "createdAt"
+      ],
+      "members":{
+        "profileId":{
+          "shape":"ProfileId",
+          "documentation":"<p>Returns the unique, system-generated identifier for the profile.</p>"
+        },
+        "profileArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for the profile.</p>"
+        },
+        "name":{
+          "shape":"ProfileName",
+          "documentation":"<p>Returns the name of the profile.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>Returns the email address associated with this customer profile.</p>"
+        },
+        "phone":{
+          "shape":"Phone",
+          "documentation":"<p>Returns the phone number associated with the profile.</p>"
+        },
+        "businessName":{
+          "shape":"BusinessName",
+          "documentation":"<p>Returns the name for the business associated with this profile.</p>"
+        },
+        "logging":{
+          "shape":"Logging",
+          "documentation":"<p>Specifies whether or not logging is enabled for this profile.</p>"
+        },
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>Returns the name of the logging group.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the profile.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the profile was modified.</p>"
+        }
+      }
+    },
+    "UpdateTransformerRequest":{
+      "type":"structure",
+      "required":["transformerId"],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Specifies the system-assigned unique identifier for the transformer.</p>"
+        },
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Specify a new name for the transformer, if you want to update it.</p>"
+        },
+        "status":{
+          "shape":"TransformerStatus",
+          "documentation":"<p>Specifies the transformer's status. You can update the state of the transformer from <code>inactive</code> to <code>active</code>.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Specifies that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Specifies the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p> <note> <p>This parameter is available for backwards compatibility. Use the <a href=\"https://docs.aws.amazon.com/b2bi/latest/APIReference/API_Mapping.html\">Mapping</a> data type instead.</p> </note>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Specifies the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Specifies a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>To update, specify the <code>InputConversion</code> object, which contains the format options for the inbound transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Specify the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>To update, specify the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Specify a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      }
+    },
+    "UpdateTransformerResponse":{
+      "type":"structure",
+      "required":[
+        "transformerId",
+        "transformerArn",
+        "name",
+        "status",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "transformerId":{
+          "shape":"TransformerId",
+          "documentation":"<p>Returns the system-assigned unique identifier for the transformer.</p>"
+        },
+        "transformerArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>Returns an Amazon Resource Name (ARN) for a specific Amazon Web Services resource, such as a capability, partnership, profile, or transformer.</p>"
+        },
+        "name":{
+          "shape":"TransformerName",
+          "documentation":"<p>Returns the name of the transformer.</p>"
+        },
+        "status":{
+          "shape":"TransformerStatus",
+          "documentation":"<p>Returns the state of the newly created transformer. The transformer can be either <code>active</code> or <code>inactive</code>. For the transformer to be used in a capability, its status must <code>active</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"CreatedDate",
+          "documentation":"<p>Returns a timestamp for creation date and time of the transformer.</p>"
+        },
+        "modifiedAt":{
+          "shape":"ModifiedDate",
+          "documentation":"<p>Returns a timestamp for last time the transformer was modified.</p>"
+        },
+        "fileFormat":{
+          "shape":"FileFormat",
+          "documentation":"<p>Returns that the currently supported file formats for EDI transformations are <code>JSON</code> and <code>XML</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "mappingTemplate":{
+          "shape":"MappingTemplate",
+          "documentation":"<p>Returns the mapping template for the transformer. This template is used to map the parsed EDI file using JSONata or XSLT.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "ediType":{
+          "shape":"EdiType",
+          "documentation":"<p>Returns the details for the EDI standard that is being used for the transformer. Currently, only X12 is supported. X12 is a set of standards and corresponding messages that define specific business documents.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "sampleDocument":{
+          "shape":"FileLocation",
+          "documentation":"<p>Returns a sample EDI document that is used by a transformer as a guide for processing the EDI data.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This is a legacy trait. Please use input-conversion or output-conversion."
+        },
+        "inputConversion":{
+          "shape":"InputConversion",
+          "documentation":"<p>Returns the <code>InputConversion</code> object, which contains the format options for the inbound transformation.</p>"
+        },
+        "mapping":{
+          "shape":"Mapping",
+          "documentation":"<p>Returns the structure that contains the mapping template and its language (either XSLT or JSONATA).</p>"
+        },
+        "outputConversion":{
+          "shape":"OutputConversion",
+          "documentation":"<p>Returns the <code>OutputConversion</code> object, which contains the format options for the outbound transformation.</p>"
+        },
+        "sampleDocuments":{
+          "shape":"SampleDocuments",
+          "documentation":"<p>Returns a structure that contains the Amazon S3 bucket and an array of the corresponding keys used to identify the location for your sample documents.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when a B2BI object cannot be validated against a request from another object. This exception can be thrown during standard EDI validation or when custom validation rules fail, such as when element length constraints are violated, invalid codes are used in code list validations, or required elements are missing based on configured element requirement rules.</p>",
+      "exception":true
+    },
+    "ValidationMessages":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "WrapFormat":{
+      "type":"string",
+      "enum":[
+        "SEGMENT",
+        "ONE_LINE",
+        "LINE_LENGTH"
+      ]
+    },
+    "WrapOptions":{
+      "type":"structure",
+      "required":["wrapBy"],
+      "members":{
+        "wrapBy":{
+          "shape":"WrapFormat",
+          "documentation":"<p>Specifies the method used for wrapping lines in the EDI output. Valid values:</p> <ul> <li> <p> <code>SEGMENT</code>: Wraps by segment.</p> </li> <li> <p> <code>ONE_LINE</code>: Indicates that the entire content is on a single line.</p> <note> <p>When you specify <code>ONE_LINE</code>, do not provide either the line length nor the line terminator value.</p> </note> </li> <li> <p> <code>LINE_LENGTH</code>: Wraps by character count, as specified by <code>lineLength</code> value.</p> </li> </ul>"
+        },
+        "lineTerminator":{
+          "shape":"LineTerminator",
+          "documentation":"<p>Specifies the character sequence used to terminate lines when wrapping. Valid values:</p> <ul> <li> <p> <code>CRLF</code>: carriage return and line feed</p> </li> <li> <p> <code>LF</code>: line feed)</p> </li> <li> <p> <code>CR</code>: carriage return</p> </li> </ul>"
+        },
+        "lineLength":{
+          "shape":"LineLength",
+          "documentation":"<p>Specifies the maximum length of a line before wrapping occurs. This value is used when <code>wrapBy</code> is set to <code>LINE_LENGTH</code>.</p>"
+        }
+      },
+      "documentation":"<p>Contains options for wrapping (line folding) in X12 EDI files. Wrapping controls how long lines are handled in the EDI output.</p>"
+    },
+    "X12AcknowledgmentOptions":{
+      "type":"structure",
+      "required":[
+        "functionalAcknowledgment",
+        "technicalAcknowledgment"
+      ],
+      "members":{
+        "functionalAcknowledgment":{
+          "shape":"X12FunctionalAcknowledgment",
+          "documentation":"<p>Specifies whether functional acknowledgments (997/999) should be generated for incoming X12 transactions. Valid values are <code>DO_NOT_GENERATE</code>, <code>GENERATE_ALL_SEGMENTS</code> and <code>GENERATE_WITHOUT_TRANSACTION_SET_RESPONSE_LOOP</code>.</p> <p>If you choose <code>GENERATE_WITHOUT_TRANSACTION_SET_RESPONSE_LOOP</code>, Amazon Web Services B2B Data Interchange skips the AK2_Loop when generating an acknowledgment document.</p>"
+        },
+        "technicalAcknowledgment":{
+          "shape":"X12TechnicalAcknowledgment",
+          "documentation":"<p>Specifies whether technical acknowledgments (TA1) should be generated for incoming X12 interchanges. Valid values are <code>DO_NOT_GENERATE</code> and <code>GENERATE_ALL_SEGMENTS</code> and.</p>"
+        }
+      },
+      "documentation":"<p>Contains options for configuring X12 acknowledgments. These options control how functional and technical acknowledgments are handled.</p>"
+    },
+    "X12AcknowledgmentRequestedCode":{
+      "type":"string",
+      "max":1,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "X12AdvancedOptions":{
+      "type":"structure",
+      "members":{
+        "splitOptions":{
+          "shape":"X12SplitOptions",
+          "documentation":"<p>Specifies options for splitting X12 EDI files. These options control how large X12 files are divided into smaller, more manageable units.</p>"
+        },
+        "validationOptions":{
+          "shape":"X12ValidationOptions",
+          "documentation":"<p>Specifies validation options for X12 EDI processing. These options control how validation rules are applied during EDI document processing, including custom validation rules for element length constraints, code list validations, and element requirement checks.</p>"
+        }
+      },
+      "documentation":"<p>Contains advanced options specific to X12 EDI processing, such as splitting large X12 files into smaller units.</p>"
+    },
+    "X12ApplicationReceiverCode":{
+      "type":"string",
+      "max":15,
+      "min":2,
+      "pattern":"[a-zA-Z0-9 ]*"
+    },
+    "X12ApplicationSenderCode":{
+      "type":"string",
+      "max":15,
+      "min":2,
+      "pattern":"[a-zA-Z0-9 ]*"
+    },
+    "X12CodeListValidationRule":{
+      "type":"structure",
+      "required":["elementId"],
+      "members":{
+        "elementId":{
+          "shape":"ElementId",
+          "documentation":"<p>Specifies the four-digit element ID to which the code list modifications apply. This identifies which X12 element will have its allowed code values modified.</p>"
+        },
+        "codesToAdd":{
+          "shape":"CodeList",
+          "documentation":"<p>Specifies a list of code values to add to the element's allowed values. These codes will be considered valid for the specified element in addition to the standard codes defined by the X12 specification.</p>"
+        },
+        "codesToRemove":{
+          "shape":"CodeList",
+          "documentation":"<p>Specifies a list of code values to remove from the element's allowed values. These codes will be considered invalid for the specified element, even if they are part of the standard codes defined by the X12 specification.</p>"
+        }
+      },
+      "documentation":"<p>Defines a validation rule that modifies the allowed code values for a specific X12 element. This rule allows you to add or remove valid codes from an element's standard code list, providing flexibility to accommodate trading partner-specific requirements or industry variations. You can specify codes to add to expand the allowed values beyond the X12 standard, or codes to remove to restrict the allowed values for stricter validation.</p>"
+    },
+    "X12ComponentSeparator":{
+      "type":"string",
+      "max":1,
+      "min":1,
+      "pattern":"[!&'()*+,\\-./:;?=%@\\[\\]_{}|<>~^`\"]"
+    },
+    "X12ControlNumbers":{
+      "type":"structure",
+      "members":{
+        "startingInterchangeControlNumber":{
+          "shape":"StartingInterchangeControlNumber",
+          "documentation":"<p>Specifies the starting interchange control number (ISA13) to use for X12 EDI generation. This number is incremented for each new interchange. For the ISA (interchange) envelope, Amazon Web Services B2B Data Interchange generates an interchange control number that is unique for the ISA05 and ISA06 (sender) &amp; ISA07 and ISA08 (receiver) combination. </p>"
+        },
+        "startingFunctionalGroupControlNumber":{
+          "shape":"StartingFunctionalGroupControlNumber",
+          "documentation":"<p>Specifies the starting functional group control number (GS06) to use for X12 EDI generation. This number is incremented for each new functional group. For the GS (functional group) envelope, Amazon Web Services B2B Data Interchange generates a functional group control number that is unique to the sender ID, receiver ID, and functional identifier code combination. </p>"
+        },
+        "startingTransactionSetControlNumber":{
+          "shape":"StartingTransactionSetControlNumber",
+          "documentation":"<p>Specifies the starting transaction set control number (ST02) to use for X12 EDI generation. This number is incremented for each new transaction set.</p>"
+        }
+      },
+      "documentation":"<p>Contains configuration for X12 control numbers used in X12 EDI generation. Control numbers are used to uniquely identify interchanges, functional groups, and transaction sets.</p>"
+    },
+    "X12DataElementSeparator":{
+      "type":"string",
+      "max":1,
+      "min":1,
+      "pattern":"[!&'()*+,\\-./:;?=%@\\[\\]_{}|<>~^`\"]"
+    },
+    "X12Delimiters":{
+      "type":"structure",
+      "members":{
+        "componentSeparator":{
+          "shape":"X12ComponentSeparator",
+          "documentation":"<p>The component, or sub-element, separator. The default value is <code>:</code> (colon).</p>"
+        },
+        "dataElementSeparator":{
+          "shape":"X12DataElementSeparator",
+          "documentation":"<p>The data element separator. The default value is <code>*</code> (asterisk).</p>"
+        },
+        "segmentTerminator":{
+          "shape":"X12SegmentTerminator",
+          "documentation":"<p>The segment terminator. The default value is <code>~</code> (tilde).</p>"
+        }
+      },
+      "documentation":"<p>In X12 EDI messages, delimiters are used to mark the end of segments or elements, and are defined in the interchange control header. The delimiters are part of the message's syntax and divide up its different elements.</p>"
+    },
+    "X12Details":{
+      "type":"structure",
+      "members":{
+        "transactionSet":{
+          "shape":"X12TransactionSet",
+          "documentation":"<p>Returns an enumerated type where each value identifies an X12 transaction set. Transaction sets are maintained by the X12 Accredited Standards Committee.</p>"
+        },
+        "version":{
+          "shape":"X12Version",
+          "documentation":"<p>Returns the version to use for the specified X12 transaction set.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the X12 transaction set and version. The X12 structure is used when the system transforms an EDI (electronic data interchange) file.</p> <note> <p>If an EDI input file contains more than one transaction, each transaction must have the same transaction set and version, for example 214/4010. If not, the transformer cannot parse the file.</p> </note>"
+    },
+    "X12ElementLengthValidationRule":{
+      "type":"structure",
+      "required":[
+        "elementId",
+        "maxLength",
+        "minLength"
+      ],
+      "members":{
+        "elementId":{
+          "shape":"ElementId",
+          "documentation":"<p>Specifies the four-digit element ID to which the length constraints will be applied. This identifies which X12 element will have its length requirements modified.</p>"
+        },
+        "maxLength":{
+          "shape":"X12ElementLengthValidationRuleMaxLengthInteger",
+          "documentation":"<p>Specifies the maximum allowed length for the identified element. This value must be between 1 and 200 characters and defines the upper limit for the element's content length.</p>"
+        },
+        "minLength":{
+          "shape":"X12ElementLengthValidationRuleMinLengthInteger",
+          "documentation":"<p>Specifies the minimum required length for the identified element. This value must be between 1 and 200 characters and defines the lower limit for the element's content length.</p>"
+        }
+      },
+      "documentation":"<p>Defines a validation rule that specifies custom length constraints for a specific X12 element. This rule allows you to override the standard minimum and maximum length requirements for an element, enabling validation of trading partner-specific length requirements that may differ from the X12 specification. Both minimum and maximum length values must be specified and must be between 1 and 200 characters.</p>"
+    },
+    "X12ElementLengthValidationRuleMaxLengthInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000000,
+      "min":1
+    },
+    "X12ElementLengthValidationRuleMinLengthInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000000,
+      "min":1
+    },
+    "X12ElementRequirementValidationRule":{
+      "type":"structure",
+      "required":[
+        "elementPosition",
+        "requirement"
+      ],
+      "members":{
+        "elementPosition":{
+          "shape":"ElementPosition",
+          "documentation":"<p>Specifies the position of the element within an X12 segment for which the requirement status will be modified. The format follows the pattern of segment identifier followed by element position (e.g., \"ST-01\" for the first element of the ST segment).</p>"
+        },
+        "requirement":{
+          "shape":"ElementRequirement",
+          "documentation":"<p>Specifies the requirement status for the element at the specified position. Valid values are OPTIONAL (the element may be omitted) or MANDATORY (the element must be present).</p>"
+        }
+      },
+      "documentation":"<p>Defines a validation rule that modifies the requirement status of a specific X12 element within a segment. This rule allows you to make optional elements mandatory or mandatory elements optional, providing flexibility to accommodate different trading partner requirements and business rules. The rule targets a specific element position within a segment and sets its requirement status to either OPTIONAL or MANDATORY.</p>"
+    },
+    "X12Envelope":{
+      "type":"structure",
+      "members":{
+        "common":{
+          "shape":"X12OutboundEdiHeaders",
+          "documentation":"<p>A container for the X12 outbound EDI headers.</p>"
+        },
+        "wrapOptions":{"shape":"WrapOptions"}
+      },
+      "documentation":"<p>A wrapper structure for an X12 definition object.</p> <p>the X12 envelope ensures the integrity of the data and the efficiency of the information exchange. The X12 message structure has hierarchical levels. From highest to the lowest, they are:</p> <ul> <li> <p>Interchange Envelope</p> </li> <li> <p>Functional Group</p> </li> <li> <p>Transaction Set</p> </li> </ul>"
+    },
+    "X12FunctionalAcknowledgment":{
+      "type":"string",
+      "enum":[
+        "DO_NOT_GENERATE",
+        "GENERATE_ALL_SEGMENTS",
+        "GENERATE_WITHOUT_TRANSACTION_SET_RESPONSE_LOOP"
+      ]
+    },
+    "X12FunctionalGroupHeaders":{
+      "type":"structure",
+      "members":{
+        "applicationSenderCode":{
+          "shape":"X12ApplicationSenderCode",
+          "documentation":"<p>A value representing the code used to identify the party transmitting a message, at position GS-02.</p>"
+        },
+        "applicationReceiverCode":{
+          "shape":"X12ApplicationReceiverCode",
+          "documentation":"<p>A value representing the code used to identify the party receiving a message, at position GS-03.</p>"
+        },
+        "responsibleAgencyCode":{
+          "shape":"X12ResponsibleAgencyCode",
+          "documentation":"<p>A code that identifies the issuer of the standard, at position GS-07.</p>"
+        }
+      },
+      "documentation":"<p>Part of the X12 message structure. These are the functional group headers for the X12 EDI object.</p>"
+    },
+    "X12GS05TimeFormat":{
+      "type":"string",
+      "documentation":"<p>Specifies the time format in the GS05 element (time) of the functional group header. The following formats use 24-hour clock time:</p> <ul> <li> <p> <code>HHMM</code> - Hours and minutes</p> </li> <li> <p> <code>HHMMSS</code> - Hours, minutes, and seconds</p> </li> <li> <p> <code>HHMMSSDD</code> - Hours, minutes, seconds, and decimal seconds</p> </li> </ul> <p>Where:</p> <ul> <li> <p> <code>HH</code> - Hours (00-23)</p> </li> <li> <p> <code>MM</code> - Minutes (00-59)</p> </li> <li> <p> <code>SS</code> - Seconds (00-59)</p> </li> <li> <p> <code>DD</code> - Hundredths of seconds (00-99)</p> </li> </ul>",
+      "enum":[
+        "HHMM",
+        "HHMMSS",
+        "HHMMSSDD"
+      ]
+    },
+    "X12IdQualifier":{
+      "type":"string",
+      "max":2,
+      "min":2,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "X12InboundEdiOptions":{
+      "type":"structure",
+      "members":{
+        "acknowledgmentOptions":{
+          "shape":"X12AcknowledgmentOptions",
+          "documentation":"<p>Specifies acknowledgment options for inbound X12 EDI files. These options control how functional and technical acknowledgments are handled.</p>"
+        }
+      },
+      "documentation":"<p>Contains options specific to processing inbound X12 EDI files.</p>"
+    },
+    "X12InterchangeControlHeaders":{
+      "type":"structure",
+      "members":{
+        "senderIdQualifier":{
+          "shape":"X12IdQualifier",
+          "documentation":"<p>Located at position ISA-05 in the header. Qualifier for the sender ID. Together, the ID and qualifier uniquely identify the sending trading partner.</p>"
+        },
+        "senderId":{
+          "shape":"X12SenderId",
+          "documentation":"<p>Located at position ISA-06 in the header. This value (along with the <code>senderIdQualifier</code>) identifies the sender of the interchange. </p>"
+        },
+        "receiverIdQualifier":{
+          "shape":"X12IdQualifier",
+          "documentation":"<p>Located at position ISA-07 in the header. Qualifier for the receiver ID. Together, the ID and qualifier uniquely identify the receiving trading partner.</p>"
+        },
+        "receiverId":{
+          "shape":"X12ReceiverId",
+          "documentation":"<p>Located at position ISA-08 in the header. This value (along with the <code>receiverIdQualifier</code>) identifies the intended recipient of the interchange. </p>"
+        },
+        "repetitionSeparator":{
+          "shape":"X12RepetitionSeparator",
+          "documentation":"<p>Located at position ISA-11 in the header. This string makes it easier when you need to group similar adjacent element values together without using extra segments.</p> <note> <p>This parameter is only honored for version greater than 401 (<code>VERSION_4010</code> and higher).</p> <p>For versions less than 401, this field is called <a href=\"https://www.stedi.com/edi/x12-004010/segment/ISA#ISA-11\">StandardsId</a>, in which case our service sets the value to <code>U</code>.</p> </note>"
+        },
+        "acknowledgmentRequestedCode":{
+          "shape":"X12AcknowledgmentRequestedCode",
+          "documentation":"<p>Located at position ISA-14 in the header. The value \"1\" indicates that the sender is requesting an interchange acknowledgment at receipt of the interchange. The value \"0\" is used otherwise.</p>"
+        },
+        "usageIndicatorCode":{
+          "shape":"X12UsageIndicatorCode",
+          "documentation":"<p>Located at position ISA-15 in the header. Specifies how this interchange is being used:</p> <ul> <li> <p> <code>T</code> indicates this interchange is for testing.</p> </li> <li> <p> <code>P</code> indicates this interchange is for production.</p> </li> <li> <p> <code>I</code> indicates this interchange is informational.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>In X12, the Interchange Control Header is the first segment of an EDI document and is part of the Interchange Envelope. It contains information about the sender and receiver, the date and time of transmission, and the X12 version being used. It also includes delivery information, such as the sender and receiver IDs.</p>"
+    },
+    "X12OutboundEdiHeaders":{
+      "type":"structure",
+      "members":{
+        "interchangeControlHeaders":{
+          "shape":"X12InterchangeControlHeaders",
+          "documentation":"<p>In X12 EDI messages, delimiters are used to mark the end of segments or elements, and are defined in the interchange control header.</p>"
+        },
+        "functionalGroupHeaders":{
+          "shape":"X12FunctionalGroupHeaders",
+          "documentation":"<p>The functional group headers for the X12 object.</p>"
+        },
+        "delimiters":{
+          "shape":"X12Delimiters",
+          "documentation":"<p>The delimiters, for example semicolon (<code>;</code>), that separates sections of the headers for the X12 object.</p>"
+        },
+        "validateEdi":{
+          "shape":"X12ValidateEdi",
+          "documentation":"<p>Specifies whether or not to validate the EDI for this X12 object: <code>TRUE</code> or <code>FALSE</code>. When enabled, this performs both standard EDI validation and applies any configured custom validation rules including element length constraints, code list validations, and element requirement checks. Validation results are returned in the response validation messages.</p>"
+        },
+        "controlNumbers":{
+          "shape":"X12ControlNumbers",
+          "documentation":"<p>Specifies control number configuration for outbound X12 EDI headers. These settings determine the starting values for interchange, functional group, and transaction set control numbers.</p>"
+        },
+        "gs05TimeFormat":{"shape":"X12GS05TimeFormat"}
+      },
+      "documentation":"<p>A structure containing the details for an outbound EDI object.</p>"
+    },
+    "X12ReceiverId":{
+      "type":"string",
+      "max":15,
+      "min":15,
+      "pattern":"[a-zA-Z0-9 ]*"
+    },
+    "X12RepetitionSeparator":{
+      "type":"string",
+      "max":1,
+      "min":1
+    },
+    "X12ResponsibleAgencyCode":{
+      "type":"string",
+      "max":2,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "X12SegmentTerminator":{
+      "type":"string",
+      "max":1,
+      "min":1,
+      "pattern":"[!&'()*+,\\-./:;?=%@\\[\\]_{}|<>~^`\"]"
+    },
+    "X12SenderId":{
+      "type":"string",
+      "max":15,
+      "min":15,
+      "pattern":"[a-zA-Z0-9 ]*"
+    },
+    "X12SplitBy":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "TRANSACTION"
+      ]
+    },
+    "X12SplitOptions":{
+      "type":"structure",
+      "required":["splitBy"],
+      "members":{
+        "splitBy":{
+          "shape":"X12SplitBy",
+          "documentation":"<p>Specifies the method used to split X12 EDI files. Valid values include <code>TRANSACTION</code> (split by individual transaction sets), or <code>NONE</code> (no splitting).</p>"
+        }
+      },
+      "documentation":"<p>Contains options for splitting X12 EDI files into smaller units. This is useful for processing large EDI files more efficiently.</p>"
+    },
+    "X12TechnicalAcknowledgment":{
+      "type":"string",
+      "enum":[
+        "DO_NOT_GENERATE",
+        "GENERATE_ALL_SEGMENTS"
+      ]
+    },
+    "X12TransactionSet":{
+      "type":"string",
+      "enum":[
+        "X12_100",
+        "X12_101",
+        "X12_102",
+        "X12_103",
+        "X12_104",
+        "X12_105",
+        "X12_106",
+        "X12_107",
+        "X12_108",
+        "X12_109",
+        "X12_110",
+        "X12_111",
+        "X12_112",
+        "X12_113",
+        "X12_120",
+        "X12_121",
+        "X12_124",
+        "X12_125",
+        "X12_126",
+        "X12_127",
+        "X12_128",
+        "X12_129",
+        "X12_130",
+        "X12_131",
+        "X12_132",
+        "X12_133",
+        "X12_135",
+        "X12_138",
+        "X12_139",
+        "X12_140",
+        "X12_141",
+        "X12_142",
+        "X12_143",
+        "X12_144",
+        "X12_146",
+        "X12_147",
+        "X12_148",
+        "X12_149",
+        "X12_150",
+        "X12_151",
+        "X12_152",
+        "X12_153",
+        "X12_154",
+        "X12_155",
+        "X12_157",
+        "X12_158",
+        "X12_159",
+        "X12_160",
+        "X12_161",
+        "X12_163",
+        "X12_170",
+        "X12_175",
+        "X12_176",
+        "X12_179",
+        "X12_180",
+        "X12_185",
+        "X12_186",
+        "X12_187",
+        "X12_188",
+        "X12_189",
+        "X12_190",
+        "X12_191",
+        "X12_194",
+        "X12_195",
+        "X12_196",
+        "X12_197",
+        "X12_198",
+        "X12_199",
+        "X12_200",
+        "X12_201",
+        "X12_202",
+        "X12_203",
+        "X12_204",
+        "X12_205",
+        "X12_206",
+        "X12_210",
+        "X12_211",
+        "X12_212",
+        "X12_213",
+        "X12_214",
+        "X12_215",
+        "X12_216",
+        "X12_217",
+        "X12_218",
+        "X12_219",
+        "X12_220",
+        "X12_222",
+        "X12_223",
+        "X12_224",
+        "X12_225",
+        "X12_227",
+        "X12_228",
+        "X12_240",
+        "X12_242",
+        "X12_244",
+        "X12_245",
+        "X12_248",
+        "X12_249",
+        "X12_250",
+        "X12_251",
+        "X12_252",
+        "X12_255",
+        "X12_256",
+        "X12_259",
+        "X12_260",
+        "X12_261",
+        "X12_262",
+        "X12_263",
+        "X12_264",
+        "X12_265",
+        "X12_266",
+        "X12_267",
+        "X12_268",
+        "X12_269",
+        "X12_270",
+        "X12_271",
+        "X12_272",
+        "X12_273",
+        "X12_274",
+        "X12_275",
+        "X12_276",
+        "X12_277",
+        "X12_278",
+        "X12_280",
+        "X12_283",
+        "X12_284",
+        "X12_285",
+        "X12_286",
+        "X12_288",
+        "X12_290",
+        "X12_300",
+        "X12_301",
+        "X12_303",
+        "X12_304",
+        "X12_309",
+        "X12_310",
+        "X12_311",
+        "X12_312",
+        "X12_313",
+        "X12_315",
+        "X12_317",
+        "X12_319",
+        "X12_322",
+        "X12_323",
+        "X12_324",
+        "X12_325",
+        "X12_326",
+        "X12_350",
+        "X12_352",
+        "X12_353",
+        "X12_354",
+        "X12_355",
+        "X12_356",
+        "X12_357",
+        "X12_358",
+        "X12_361",
+        "X12_362",
+        "X12_404",
+        "X12_410",
+        "X12_412",
+        "X12_414",
+        "X12_417",
+        "X12_418",
+        "X12_419",
+        "X12_420",
+        "X12_421",
+        "X12_422",
+        "X12_423",
+        "X12_424",
+        "X12_425",
+        "X12_426",
+        "X12_429",
+        "X12_431",
+        "X12_432",
+        "X12_433",
+        "X12_434",
+        "X12_435",
+        "X12_436",
+        "X12_437",
+        "X12_440",
+        "X12_451",
+        "X12_452",
+        "X12_453",
+        "X12_455",
+        "X12_456",
+        "X12_460",
+        "X12_463",
+        "X12_466",
+        "X12_468",
+        "X12_470",
+        "X12_475",
+        "X12_485",
+        "X12_486",
+        "X12_490",
+        "X12_492",
+        "X12_494",
+        "X12_500",
+        "X12_501",
+        "X12_503",
+        "X12_504",
+        "X12_511",
+        "X12_517",
+        "X12_521",
+        "X12_527",
+        "X12_536",
+        "X12_540",
+        "X12_561",
+        "X12_567",
+        "X12_568",
+        "X12_601",
+        "X12_602",
+        "X12_620",
+        "X12_625",
+        "X12_650",
+        "X12_715",
+        "X12_753",
+        "X12_754",
+        "X12_805",
+        "X12_806",
+        "X12_810",
+        "X12_811",
+        "X12_812",
+        "X12_813",
+        "X12_814",
+        "X12_815",
+        "X12_816",
+        "X12_818",
+        "X12_819",
+        "X12_820",
+        "X12_821",
+        "X12_822",
+        "X12_823",
+        "X12_824",
+        "X12_826",
+        "X12_827",
+        "X12_828",
+        "X12_829",
+        "X12_830",
+        "X12_831",
+        "X12_832",
+        "X12_833",
+        "X12_834",
+        "X12_835",
+        "X12_836",
+        "X12_837",
+        "X12_838",
+        "X12_839",
+        "X12_840",
+        "X12_841",
+        "X12_842",
+        "X12_843",
+        "X12_844",
+        "X12_845",
+        "X12_846",
+        "X12_847",
+        "X12_848",
+        "X12_849",
+        "X12_850",
+        "X12_851",
+        "X12_852",
+        "X12_853",
+        "X12_854",
+        "X12_855",
+        "X12_856",
+        "X12_857",
+        "X12_858",
+        "X12_859",
+        "X12_860",
+        "X12_861",
+        "X12_862",
+        "X12_863",
+        "X12_864",
+        "X12_865",
+        "X12_866",
+        "X12_867",
+        "X12_868",
+        "X12_869",
+        "X12_870",
+        "X12_871",
+        "X12_872",
+        "X12_873",
+        "X12_874",
+        "X12_875",
+        "X12_876",
+        "X12_877",
+        "X12_878",
+        "X12_879",
+        "X12_880",
+        "X12_881",
+        "X12_882",
+        "X12_883",
+        "X12_884",
+        "X12_885",
+        "X12_886",
+        "X12_887",
+        "X12_888",
+        "X12_889",
+        "X12_891",
+        "X12_893",
+        "X12_894",
+        "X12_895",
+        "X12_896",
+        "X12_920",
+        "X12_924",
+        "X12_925",
+        "X12_926",
+        "X12_928",
+        "X12_940",
+        "X12_943",
+        "X12_944",
+        "X12_945",
+        "X12_947",
+        "X12_980",
+        "X12_990",
+        "X12_993",
+        "X12_996",
+        "X12_997",
+        "X12_998",
+        "X12_999",
+        "X12_270_X279",
+        "X12_271_X279",
+        "X12_275_X210",
+        "X12_275_X211",
+        "X12_276_X212",
+        "X12_277_X212",
+        "X12_277_X214",
+        "X12_277_X364",
+        "X12_278_X217",
+        "X12_820_X218",
+        "X12_820_X306",
+        "X12_824_X186",
+        "X12_834_X220",
+        "X12_834_X307",
+        "X12_834_X318",
+        "X12_835_X221",
+        "X12_837_X222",
+        "X12_837_X223",
+        "X12_837_X224",
+        "X12_837_X291",
+        "X12_837_X292",
+        "X12_837_X298",
+        "X12_999_X231"
+      ]
+    },
+    "X12UsageIndicatorCode":{
+      "type":"string",
+      "max":1,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "X12ValidateEdi":{
+      "type":"boolean",
+      "box":true
+    },
+    "X12ValidationOptions":{
+      "type":"structure",
+      "members":{
+        "validationRules":{
+          "shape":"X12ValidationRules",
+          "documentation":"<p>Specifies a list of validation rules to apply during EDI document processing. These rules can include code list modifications, element length constraints, and element requirement changes.</p>"
+        }
+      },
+      "documentation":"<p>Contains configuration options for X12 EDI validation. This structure allows you to specify custom validation rules that will be applied during EDI document processing, including element length constraints, code list modifications, and element requirement changes. These validation options provide flexibility to accommodate trading partner-specific requirements while maintaining EDI compliance. The validation rules are applied in addition to standard X12 validation to ensure documents meet both standard and custom requirements.</p>"
+    },
+    "X12ValidationRule":{
+      "type":"structure",
+      "members":{
+        "codeListValidationRule":{
+          "shape":"X12CodeListValidationRule",
+          "documentation":"<p>Specifies a code list validation rule that modifies the allowed code values for a specific X12 element. This rule enables you to customize which codes are considered valid for an element, allowing for trading partner-specific code requirements.</p>"
+        },
+        "elementLengthValidationRule":{
+          "shape":"X12ElementLengthValidationRule",
+          "documentation":"<p>Specifies an element length validation rule that defines custom length constraints for a specific X12 element. This rule allows you to enforce minimum and maximum length requirements that may differ from the standard X12 specification.</p>"
+        },
+        "elementRequirementValidationRule":{
+          "shape":"X12ElementRequirementValidationRule",
+          "documentation":"<p>Specifies an element requirement validation rule that modifies whether a specific X12 element is required or optional within a segment. This rule provides flexibility to accommodate different trading partner requirements for element presence.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single validation rule that can be applied during X12 EDI processing. This is a union type that can contain one of several specific validation rule types: code list validation rules for modifying allowed element codes, element length validation rules for enforcing custom length constraints, or element requirement validation rules for changing mandatory/optional status. Each validation rule targets specific aspects of EDI document validation to ensure compliance with trading partner requirements and business rules.</p>",
+      "union":true
+    },
+    "X12ValidationRules":{
+      "type":"list",
+      "member":{"shape":"X12ValidationRule"},
+      "documentation":"<p>A list of X12 validation rules to be applied during EDI document processing. This collection allows you to specify multiple validation rules of different types that will be enforced when validating X12 EDI documents.</p>"
+    },
+    "X12Version":{
+      "type":"string",
+      "enum":[
+        "VERSION_4010",
+        "VERSION_4030",
+        "VERSION_4050",
+        "VERSION_4060",
+        "VERSION_5010",
+        "VERSION_5010_HIPAA"
+      ]
+    }
+  },
+  "documentation":"<p>This is the <i>Amazon Web Services B2B Data Interchange API Reference</i>. It provides descriptions, API request parameters, and the XML response for each of the B2BI API actions.</p> <p>B2BI enables automated exchange of EDI (electronic data interchange) based business-critical transactions at cloud scale, with elasticity and pay-as-you-go pricing. Businesses use EDI documents to exchange transactional data with trading partners, such as suppliers and end customers, using standardized formats such as X12.</p> <note> <p>Rather than actually running a command, you can use the <code>--generate-cli-skeleton</code> parameter with any API call to generate and display a parameter template. You can then use the generated template to customize and use as input on a later command. For details, see <a href=\"https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-skeleton.html#cli-usage-skeleton-generate\">Generate and use a parameter skeleton file</a>.</p> </note>"
+}

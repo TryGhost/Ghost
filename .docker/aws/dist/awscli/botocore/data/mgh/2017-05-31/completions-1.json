@@ -1,0 +1,253 @@
+{
+  "version": "1.0",
+  "resources": {
+    "MigrationTask": {
+      "operation": "ListMigrationTasks",
+      "resourceIdentifier": {
+        "ProgressUpdateStream": "MigrationTaskSummaryList[].ProgressUpdateStream",
+        "MigrationTaskName": "MigrationTaskSummaryList[].MigrationTaskName",
+        "Status": "MigrationTaskSummaryList[].Status",
+        "UpdateDateTime": "MigrationTaskSummaryList[].UpdateDateTime"
+      }
+    },
+    "ProgressUpdateStream": {
+      "operation": "ListProgressUpdateStreams",
+      "resourceIdentifier": {
+        "ProgressUpdateStreamName": "ProgressUpdateStreamSummaryList[].ProgressUpdateStreamName"
+      }
+    }
+  },
+  "operations": {
+    "AssociateCreatedArtifact": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "AssociateDiscoveredResource": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "DeleteProgressUpdateStream": {
+      "ProgressUpdateStreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ProgressUpdateStream",
+            "resourceIdentifier": "ProgressUpdateStreamName"
+          }
+        ]
+      }
+    },
+    "DescribeMigrationTask": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "DisassociateCreatedArtifact": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "DisassociateDiscoveredResource": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "ImportMigrationTask": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "ListCreatedArtifacts": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "ListDiscoveredResources": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    },
+    "NotifyApplicationState": {
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "NotifyMigrationTaskState": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      },
+      "UpdateDateTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "UpdateDateTime"
+          }
+        ]
+      }
+    },
+    "PutResourceAttributes": {
+      "ProgressUpdateStream": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "ProgressUpdateStream"
+          }
+        ]
+      },
+      "MigrationTaskName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MigrationTask",
+            "resourceIdentifier": "MigrationTaskName"
+          }
+        ]
+      }
+    }
+  }
+}

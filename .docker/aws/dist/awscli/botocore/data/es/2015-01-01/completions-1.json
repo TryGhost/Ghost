@@ -1,0 +1,208 @@
+{
+  "version": "1.0",
+  "resources": {
+    "ReservedElasticsearchInstance": {
+      "operation": "DescribeReservedElasticsearchInstances",
+      "resourceIdentifier": {
+        "ReservationName": "ReservedElasticsearchInstances[].ReservationName",
+        "ReservedElasticsearchInstanceId": "ReservedElasticsearchInstances[].ReservedElasticsearchInstanceId",
+        "ReservedElasticsearchInstanceOfferingId": "ReservedElasticsearchInstances[].ReservedElasticsearchInstanceOfferingId"
+      }
+    },
+    "DomainName": {
+      "operation": "ListDomainNames",
+      "resourceIdentifier": {
+        "DomainName": "DomainNames[].DomainName"
+      }
+    },
+    "ElasticsearchVersion": {
+      "operation": "ListElasticsearchVersions",
+      "resourceIdentifier": {
+        "ElasticsearchVersion": "ElasticsearchVersions[]"
+      }
+    }
+  },
+  "operations": {
+    "DeleteElasticsearchDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeElasticsearchDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeElasticsearchDomainConfig": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeElasticsearchDomains": {
+      "DomainNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeElasticsearchInstanceTypeLimits": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      },
+      "ElasticsearchVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ElasticsearchVersion",
+            "resourceIdentifier": "ElasticsearchVersion"
+          }
+        ]
+      }
+    },
+    "DescribeReservedElasticsearchInstanceOfferings": {
+      "ReservedElasticsearchInstanceOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedElasticsearchInstance",
+            "resourceIdentifier": "ReservedElasticsearchInstanceOfferingId"
+          }
+        ]
+      }
+    },
+    "DescribeReservedElasticsearchInstances": {
+      "ReservedElasticsearchInstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedElasticsearchInstance",
+            "resourceIdentifier": "ReservedElasticsearchInstanceId"
+          }
+        ]
+      }
+    },
+    "GetCompatibleElasticsearchVersions": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetUpgradeHistory": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetUpgradeStatus": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "ListElasticsearchInstanceTypes": {
+      "ElasticsearchVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ElasticsearchVersion",
+            "resourceIdentifier": "ElasticsearchVersion"
+          }
+        ]
+      },
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "PurchaseReservedElasticsearchInstanceOffering": {
+      "ReservedElasticsearchInstanceOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedElasticsearchInstance",
+            "resourceIdentifier": "ReservedElasticsearchInstanceOfferingId"
+          }
+        ]
+      },
+      "ReservationName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedElasticsearchInstance",
+            "resourceIdentifier": "ReservationName"
+          }
+        ]
+      }
+    },
+    "UpdateElasticsearchDomainConfig": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpgradeElasticsearchDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DomainName",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    }
+  }
+}

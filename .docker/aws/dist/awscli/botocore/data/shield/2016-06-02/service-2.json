@@ -1,0 +1,2311 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2016-06-02",
+    "endpointPrefix":"shield",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"AWS Shield",
+    "serviceFullName":"AWS Shield",
+    "serviceId":"Shield",
+    "signatureVersion":"v4",
+    "targetPrefix":"AWSShield_20160616",
+    "uid":"shield-2016-06-02",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AssociateDRTLogBucket":{
+      "name":"AssociateDRTLogBucket",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateDRTLogBucketRequest"},
+      "output":{"shape":"AssociateDRTLogBucketResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"NoAssociatedRoleException"},
+        {"shape":"LimitsExceededException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"AccessDeniedForDependencyException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Authorizes the Shield Response Team (SRT) to access the specified Amazon S3 bucket containing log data such as Application Load Balancer access logs, CloudFront logs, or logs from third party sources. You can associate up to 10 Amazon S3 buckets with your subscription.</p> <p>To use the services of the SRT and make an <code>AssociateDRTLogBucket</code> request, you must be subscribed to the <a href=\"http://aws.amazon.com/premiumsupport/business-support/\">Business Support plan</a> or the <a href=\"http://aws.amazon.com/premiumsupport/enterprise-support/\">Enterprise Support plan</a>.</p>"
+    },
+    "AssociateDRTRole":{
+      "name":"AssociateDRTRole",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateDRTRoleRequest"},
+      "output":{"shape":"AssociateDRTRoleResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"AccessDeniedForDependencyException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Authorizes the Shield Response Team (SRT) using the specified role, to access your Amazon Web Services account to assist with DDoS attack mitigation during potential attacks. This enables the SRT to inspect your WAF configuration and create or update WAF rules and web ACLs.</p> <p>You can associate only one <code>RoleArn</code> with your subscription. If you submit an <code>AssociateDRTRole</code> request for an account that already has an associated role, the new <code>RoleArn</code> will replace the existing <code>RoleArn</code>. </p> <p>Prior to making the <code>AssociateDRTRole</code> request, you must attach the <code>AWSShieldDRTAccessPolicy</code> managed policy to the role that you'll specify in the request. You can access this policy in the IAM console at <a href=\"https://console.aws.amazon.com/iam/home?#/policies/arn:aws:iam::aws:policy/service-role/AWSShieldDRTAccessPolicy\">AWSShieldDRTAccessPolicy</a>. For more information see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html\">Adding and removing IAM identity permissions</a>. The role must also trust the service principal <code>drt.shield.amazonaws.com</code>. For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html\">IAM JSON policy elements: Principal</a>.</p> <p>The SRT will have access only to your WAF and Shield resources. By submitting this request, you authorize the SRT to inspect your WAF and Shield configuration and create and update WAF rules and web ACLs on your behalf. The SRT takes these actions only if explicitly authorized by you.</p> <p>You must have the <code>iam:PassRole</code> permission to make an <code>AssociateDRTRole</code> request. For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html\">Granting a user permissions to pass a role to an Amazon Web Services service</a>. </p> <p>To use the services of the SRT and make an <code>AssociateDRTRole</code> request, you must be subscribed to the <a href=\"http://aws.amazon.com/premiumsupport/business-support/\">Business Support plan</a> or the <a href=\"http://aws.amazon.com/premiumsupport/enterprise-support/\">Enterprise Support plan</a>.</p>"
+    },
+    "AssociateHealthCheck":{
+      "name":"AssociateHealthCheck",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateHealthCheckRequest"},
+      "output":{"shape":"AssociateHealthCheckResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"LimitsExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidResourceException"}
+      ],
+      "documentation":"<p>Adds health-based detection to the Shield Advanced protection for a resource. Shield Advanced health-based detection uses the health of your Amazon Web Services resource to improve responsiveness and accuracy in attack detection and response. </p> <p>You define the health check in Route 53 and then associate it with your Shield Advanced protection. For more information, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html#ddos-advanced-health-check-option\">Shield Advanced Health-Based Detection</a> in the <i>WAF Developer Guide</i>. </p>"
+    },
+    "AssociateProactiveEngagementDetails":{
+      "name":"AssociateProactiveEngagementDetails",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateProactiveEngagementDetailsRequest"},
+      "output":{"shape":"AssociateProactiveEngagementDetailsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"}
+      ],
+      "documentation":"<p>Initializes proactive engagement and sets the list of contacts for the Shield Response Team (SRT) to use. You must provide at least one phone number in the emergency contact list. </p> <p>After you have initialized proactive engagement using this call, to disable or enable proactive engagement, use the calls <code>DisableProactiveEngagement</code> and <code>EnableProactiveEngagement</code>. </p> <note> <p>This call defines the list of email addresses and phone numbers that the SRT can use to contact you for escalations to the SRT and to initiate proactive customer support.</p> <p>The contacts that you provide in the request replace any contacts that were already defined. If you already have contacts defined and want to use them, retrieve the list using <code>DescribeEmergencyContactSettings</code> and then provide it to this call. </p> </note>"
+    },
+    "CreateProtection":{
+      "name":"CreateProtection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateProtectionRequest"},
+      "output":{"shape":"CreateProtectionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"LimitsExceededException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Enables Shield Advanced for a specific Amazon Web Services resource. The resource can be an Amazon CloudFront distribution, Amazon Route 53 hosted zone, Global Accelerator standard accelerator, Elastic IP Address, Application Load Balancer, or a Classic Load Balancer. You can protect Amazon EC2 instances and Network Load Balancers by association with protected Amazon EC2 Elastic IP addresses.</p> <p>You can add protection to only a single resource with each <code>CreateProtection</code> request. You can add protection to multiple resources at once through the Shield Advanced console at <a href=\"https://console.aws.amazon.com/wafv2/shieldv2#/\">https://console.aws.amazon.com/wafv2/shieldv2#/</a>. For more information see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/getting-started-ddos.html\">Getting Started with Shield Advanced</a> and <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/configure-new-protection.html\">Adding Shield Advanced protection to Amazon Web Services resources</a>.</p>"
+    },
+    "CreateProtectionGroup":{
+      "name":"CreateProtectionGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateProtectionGroupRequest"},
+      "output":{"shape":"CreateProtectionGroupResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"LimitsExceededException"}
+      ],
+      "documentation":"<p>Creates a grouping of protected resources so they can be handled as a collective. This resource grouping improves the accuracy of detection and reduces false positives. </p>"
+    },
+    "CreateSubscription":{
+      "name":"CreateSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSubscriptionRequest"},
+      "output":{"shape":"CreateSubscriptionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceAlreadyExistsException"}
+      ],
+      "documentation":"<p>Activates Shield Advanced for an account.</p> <note> <p>For accounts that are members of an Organizations organization, Shield Advanced subscriptions are billed against the organization's payer account, regardless of whether the payer account itself is subscribed. </p> </note> <p>When you initially create a subscription, your subscription is set to be automatically renewed at the end of the existing subscription period. You can change this by submitting an <code>UpdateSubscription</code> request. </p>"
+    },
+    "DeleteProtection":{
+      "name":"DeleteProtection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteProtectionRequest"},
+      "output":{"shape":"DeleteProtectionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"}
+      ],
+      "documentation":"<p>Deletes an Shield Advanced <a>Protection</a>.</p>"
+    },
+    "DeleteProtectionGroup":{
+      "name":"DeleteProtectionGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteProtectionGroupRequest"},
+      "output":{"shape":"DeleteProtectionGroupResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified protection group.</p>"
+    },
+    "DeleteSubscription":{
+      "name":"DeleteSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSubscriptionRequest"},
+      "output":{"shape":"DeleteSubscriptionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"LockedSubscriptionException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes Shield Advanced from an account. Shield Advanced requires a 1-year subscription commitment. You cannot delete a subscription prior to the completion of that commitment. </p>",
+      "deprecated":true
+    },
+    "DescribeAttack":{
+      "name":"DescribeAttack",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeAttackRequest"},
+      "output":{"shape":"DescribeAttackResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the details of a DDoS attack. </p>"
+    },
+    "DescribeAttackStatistics":{
+      "name":"DescribeAttackStatistics",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeAttackStatisticsRequest"},
+      "output":{"shape":"DescribeAttackStatisticsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"}
+      ],
+      "documentation":"<p>Provides information about the number and type of attacks Shield has detected in the last year for all resources that belong to your account, regardless of whether you've defined Shield protections for them. This operation is available to Shield customers as well as to Shield Advanced customers.</p> <p>The operation returns data for the time range of midnight UTC, one year ago, to midnight UTC, today. For example, if the current time is <code>2020-10-26 15:39:32 PDT</code>, equal to <code>2020-10-26 22:39:32 UTC</code>, then the time range for the attack data returned is from <code>2019-10-26 00:00:00 UTC</code> to <code>2020-10-26 00:00:00 UTC</code>. </p> <p>The time range indicates the period covered by the attack statistics data items.</p>"
+    },
+    "DescribeDRTAccess":{
+      "name":"DescribeDRTAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeDRTAccessRequest"},
+      "output":{"shape":"DescribeDRTAccessResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the current role and list of Amazon S3 log buckets used by the Shield Response Team (SRT) to access your Amazon Web Services account while assisting with attack mitigation.</p>"
+    },
+    "DescribeEmergencyContactSettings":{
+      "name":"DescribeEmergencyContactSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEmergencyContactSettingsRequest"},
+      "output":{"shape":"DescribeEmergencyContactSettingsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>A list of email addresses and phone numbers that the Shield Response Team (SRT) can use to contact you if you have proactive engagement enabled, for escalations to the SRT and to initiate proactive customer support.</p>"
+    },
+    "DescribeProtection":{
+      "name":"DescribeProtection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeProtectionRequest"},
+      "output":{"shape":"DescribeProtectionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the details of a <a>Protection</a> object.</p>"
+    },
+    "DescribeProtectionGroup":{
+      "name":"DescribeProtectionGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeProtectionGroupRequest"},
+      "output":{"shape":"DescribeProtectionGroupResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the specification for the specified protection group.</p>"
+    },
+    "DescribeSubscription":{
+      "name":"DescribeSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSubscriptionRequest"},
+      "output":{"shape":"DescribeSubscriptionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Provides details about the Shield Advanced subscription for an account.</p>"
+    },
+    "DisableApplicationLayerAutomaticResponse":{
+      "name":"DisableApplicationLayerAutomaticResponse",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisableApplicationLayerAutomaticResponseRequest"},
+      "output":{"shape":"DisableApplicationLayerAutomaticResponseResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidOperationException"}
+      ],
+      "documentation":"<p>Disable the Shield Advanced automatic application layer DDoS mitigation feature for the protected resource. This stops Shield Advanced from creating, verifying, and applying WAF rules for attacks that it detects for the resource. </p>"
+    },
+    "DisableProactiveEngagement":{
+      "name":"DisableProactiveEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisableProactiveEngagementRequest"},
+      "output":{"shape":"DisableProactiveEngagementResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"}
+      ],
+      "documentation":"<p>Removes authorization from the Shield Response Team (SRT) to notify contacts about escalations to the SRT and to initiate proactive customer support.</p>"
+    },
+    "DisassociateDRTLogBucket":{
+      "name":"DisassociateDRTLogBucket",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisassociateDRTLogBucketRequest"},
+      "output":{"shape":"DisassociateDRTLogBucketResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"NoAssociatedRoleException"},
+        {"shape":"AccessDeniedForDependencyException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the Shield Response Team's (SRT) access to the specified Amazon S3 bucket containing the logs that you shared previously.</p>"
+    },
+    "DisassociateDRTRole":{
+      "name":"DisassociateDRTRole",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisassociateDRTRoleRequest"},
+      "output":{"shape":"DisassociateDRTRoleResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the Shield Response Team's (SRT) access to your Amazon Web Services account.</p>"
+    },
+    "DisassociateHealthCheck":{
+      "name":"DisassociateHealthCheck",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisassociateHealthCheckRequest"},
+      "output":{"shape":"DisassociateHealthCheckResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidResourceException"}
+      ],
+      "documentation":"<p>Removes health-based detection from the Shield Advanced protection for a resource. Shield Advanced health-based detection uses the health of your Amazon Web Services resource to improve responsiveness and accuracy in attack detection and response. </p> <p>You define the health check in Route 53 and then associate or disassociate it with your Shield Advanced protection. For more information, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/ddos-overview.html#ddos-advanced-health-check-option\">Shield Advanced Health-Based Detection</a> in the <i>WAF Developer Guide</i>. </p>"
+    },
+    "EnableApplicationLayerAutomaticResponse":{
+      "name":"EnableApplicationLayerAutomaticResponse",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"EnableApplicationLayerAutomaticResponseRequest"},
+      "output":{"shape":"EnableApplicationLayerAutomaticResponseResponse"},
+      "errors":[
+        {"shape":"LimitsExceededException"},
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidOperationException"}
+      ],
+      "documentation":"<p>Enable the Shield Advanced automatic application layer DDoS mitigation for the protected resource. </p> <note> <p>This feature is available for Amazon CloudFront distributions and Application Load Balancers only.</p> </note> <p>This causes Shield Advanced to create, verify, and apply WAF rules for DDoS attacks that it detects for the resource. Shield Advanced applies the rules in a Shield rule group inside the web ACL that you've associated with the resource. For information about how automatic mitigation works and the requirements for using it, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/ddos-advanced-automatic-app-layer-response.html\">Shield Advanced automatic application layer DDoS mitigation</a>.</p> <note> <p>Don't use this action to make changes to automatic mitigation settings when it's already enabled for a resource. Instead, use <a>UpdateApplicationLayerAutomaticResponse</a>.</p> </note> <p>To use this feature, you must associate a web ACL with the protected resource. The web ACL must be created using the latest version of WAF (v2). You can associate the web ACL through the Shield Advanced console at <a href=\"https://console.aws.amazon.com/wafv2/shieldv2#/\">https://console.aws.amazon.com/wafv2/shieldv2#/</a>. For more information, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/getting-started-ddos.html\">Getting Started with Shield Advanced</a>. You can also associate the web ACL to the resource through the WAF console or the WAF API, but you must manage Shield Advanced automatic mitigation through Shield Advanced. For information about WAF, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/\">WAF Developer Guide</a>.</p>"
+    },
+    "EnableProactiveEngagement":{
+      "name":"EnableProactiveEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"EnableProactiveEngagementRequest"},
+      "output":{"shape":"EnableProactiveEngagementResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidOperationException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"}
+      ],
+      "documentation":"<p>Authorizes the Shield Response Team (SRT) to use email and phone to notify contacts about escalations to the SRT and to initiate proactive customer support.</p>"
+    },
+    "GetSubscriptionState":{
+      "name":"GetSubscriptionState",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSubscriptionStateRequest"},
+      "output":{"shape":"GetSubscriptionStateResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"}
+      ],
+      "documentation":"<p>Returns the <code>SubscriptionState</code>, either <code>Active</code> or <code>Inactive</code>.</p>"
+    },
+    "ListAttacks":{
+      "name":"ListAttacks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAttacksRequest"},
+      "output":{"shape":"ListAttacksResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidOperationException"}
+      ],
+      "documentation":"<p>Returns all ongoing DDoS attacks or all DDoS attacks during a specified time period.</p>"
+    },
+    "ListProtectionGroups":{
+      "name":"ListProtectionGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListProtectionGroupsRequest"},
+      "output":{"shape":"ListProtectionGroupsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidPaginationTokenException"}
+      ],
+      "documentation":"<p>Retrieves <a>ProtectionGroup</a> objects for the account. You can retrieve all protection groups or you can provide filtering criteria and retrieve just the subset of protection groups that match the criteria. </p>"
+    },
+    "ListProtections":{
+      "name":"ListProtections",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListProtectionsRequest"},
+      "output":{"shape":"ListProtectionsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidPaginationTokenException"}
+      ],
+      "documentation":"<p>Retrieves <a>Protection</a> objects for the account. You can retrieve all protections or you can provide filtering criteria and retrieve just the subset of protections that match the criteria. </p>"
+    },
+    "ListResourcesInProtectionGroup":{
+      "name":"ListResourcesInProtectionGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListResourcesInProtectionGroupRequest"},
+      "output":{"shape":"ListResourcesInProtectionGroupResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidPaginationTokenException"}
+      ],
+      "documentation":"<p>Retrieves the resources that are included in the protection group. </p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidResourceException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets information about Amazon Web Services tags for a specified Amazon Resource Name (ARN) in Shield.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds or updates tags for a resource in Shield.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidResourceException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from a resource in Shield.</p>"
+    },
+    "UpdateApplicationLayerAutomaticResponse":{
+      "name":"UpdateApplicationLayerAutomaticResponse",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateApplicationLayerAutomaticResponseRequest"},
+      "output":{"shape":"UpdateApplicationLayerAutomaticResponseResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidOperationException"}
+      ],
+      "documentation":"<p>Updates an existing Shield Advanced automatic application layer DDoS mitigation configuration for the specified resource.</p>"
+    },
+    "UpdateEmergencyContactSettings":{
+      "name":"UpdateEmergencyContactSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateEmergencyContactSettingsRequest"},
+      "output":{"shape":"UpdateEmergencyContactSettingsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates the details of the list of email addresses and phone numbers that the Shield Response Team (SRT) can use to contact you if you have proactive engagement enabled, for escalations to the SRT and to initiate proactive customer support.</p>"
+    },
+    "UpdateProtectionGroup":{
+      "name":"UpdateProtectionGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateProtectionGroupRequest"},
+      "output":{"shape":"UpdateProtectionGroupResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OptimisticLockException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Updates an existing protection group. A protection group is a grouping of protected resources so they can be handled as a collective. This resource grouping improves the accuracy of detection and reduces false positives. </p>"
+    },
+    "UpdateSubscription":{
+      "name":"UpdateSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSubscriptionRequest"},
+      "output":{"shape":"UpdateSubscriptionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"LockedSubscriptionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"OptimisticLockException"}
+      ],
+      "documentation":"<p>Updates the details of an existing subscription. Only enter values for parameters you want to change. Empty parameters are not updated.</p> <note> <p>For accounts that are members of an Organizations organization, Shield Advanced subscriptions are billed against the organization's payer account, regardless of whether the payer account itself is subscribed. </p> </note>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates the specified <code>AttackId</code> does not exist, or the requester does not have the appropriate permissions to access the <code>AttackId</code>.</p>",
+      "exception":true
+    },
+    "AccessDeniedForDependencyException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>In order to grant the necessary access to the Shield Response Team (SRT) the user submitting the request must have the <code>iam:PassRole</code> permission. This error indicates the user did not have the appropriate permissions. For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html\">Granting a User Permissions to Pass a Role to an Amazon Web Services Service</a>. </p>",
+      "exception":true
+    },
+    "ApplicationLayerAutomaticResponseConfiguration":{
+      "type":"structure",
+      "required":[
+        "Status",
+        "Action"
+      ],
+      "members":{
+        "Status":{
+          "shape":"ApplicationLayerAutomaticResponseStatus",
+          "documentation":"<p>Indicates whether automatic application layer DDoS mitigation is enabled for the protection. </p>"
+        },
+        "Action":{
+          "shape":"ResponseAction",
+          "documentation":"<p>Specifies the action setting that Shield Advanced should use in the WAF rules that it creates on behalf of the protected resource in response to DDoS attacks. You specify this as part of the configuration for the automatic application layer DDoS mitigation feature, when you enable or update automatic mitigation. Shield Advanced creates the WAF rules in a Shield Advanced-managed rule group, inside the web ACL that you have associated with the resource. </p>"
+        }
+      },
+      "documentation":"<p>The automatic application layer DDoS mitigation settings for a <a>Protection</a>. This configuration determines whether Shield Advanced automatically manages rules in the web ACL in order to respond to application layer events that Shield Advanced determines to be DDoS attacks. </p>"
+    },
+    "ApplicationLayerAutomaticResponseStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "AssociateDRTLogBucketRequest":{
+      "type":"structure",
+      "required":["LogBucket"],
+      "members":{
+        "LogBucket":{
+          "shape":"LogBucket",
+          "documentation":"<p>The Amazon S3 bucket that contains the logs that you want to share.</p>"
+        }
+      }
+    },
+    "AssociateDRTLogBucketResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "AssociateDRTRoleRequest":{
+      "type":"structure",
+      "required":["RoleArn"],
+      "members":{
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role the SRT will use to access your Amazon Web Services account.</p> <p>Prior to making the <code>AssociateDRTRole</code> request, you must attach the <a href=\"https://console.aws.amazon.com/iam/home?#/policies/arn:aws:iam::aws:policy/service-role/AWSShieldDRTAccessPolicy\">AWSShieldDRTAccessPolicy</a> managed policy to this role. For more information see <a href=\" https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html\">Attaching and Detaching IAM Policies</a>.</p>"
+        }
+      }
+    },
+    "AssociateDRTRoleResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "AssociateHealthCheckRequest":{
+      "type":"structure",
+      "required":[
+        "ProtectionId",
+        "HealthCheckArn"
+      ],
+      "members":{
+        "ProtectionId":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) for the <a>Protection</a> object to add the health check association to. </p>"
+        },
+        "HealthCheckArn":{
+          "shape":"HealthCheckArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the health check to associate with the protection.</p>"
+        }
+      }
+    },
+    "AssociateHealthCheckResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "AssociateProactiveEngagementDetailsRequest":{
+      "type":"structure",
+      "required":["EmergencyContactList"],
+      "members":{
+        "EmergencyContactList":{
+          "shape":"EmergencyContactList",
+          "documentation":"<p>A list of email addresses and phone numbers that the Shield Response Team (SRT) can use to contact you for escalations to the SRT and to initiate proactive customer support. </p> <p>To enable proactive engagement, the contact list must include at least one phone number.</p> <note> <p>The contacts that you provide here replace any contacts that were already defined. If you already have contacts defined and want to use them, retrieve the list using <code>DescribeEmergencyContactSettings</code> and then provide it here. </p> </note>"
+        }
+      }
+    },
+    "AssociateProactiveEngagementDetailsResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "AttackDetail":{
+      "type":"structure",
+      "members":{
+        "AttackId":{
+          "shape":"AttackId",
+          "documentation":"<p>The unique identifier (ID) of the attack.</p>"
+        },
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the resource that was attacked.</p>"
+        },
+        "SubResources":{
+          "shape":"SubResourceSummaryList",
+          "documentation":"<p>If applicable, additional detail about the resource being attacked, for example, IP address or URL.</p>"
+        },
+        "StartTime":{
+          "shape":"AttackTimestamp",
+          "documentation":"<p>The time the attack started, in Unix time in seconds. </p>"
+        },
+        "EndTime":{
+          "shape":"AttackTimestamp",
+          "documentation":"<p>The time the attack ended, in Unix time in seconds. </p>"
+        },
+        "AttackCounters":{
+          "shape":"SummarizedCounterList",
+          "documentation":"<p>List of counters that describe the attack for the specified time period.</p>"
+        },
+        "AttackProperties":{
+          "shape":"AttackProperties",
+          "documentation":"<p>The array of objects that provide details of the Shield event. </p> <p>For infrastructure layer events (L3 and L4 events), you can view metrics for top contributors in Amazon CloudWatch metrics. For more information, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/monitoring-cloudwatch.html#set-ddos-alarms\">Shield metrics and alarms</a> in the <i>WAF Developer Guide</i>. </p>"
+        },
+        "Mitigations":{
+          "shape":"MitigationList",
+          "documentation":"<p>List of mitigation actions taken for the attack.</p>"
+        }
+      },
+      "documentation":"<p>The details of a DDoS attack.</p>"
+    },
+    "AttackId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\\\-]*"
+    },
+    "AttackLayer":{
+      "type":"string",
+      "enum":[
+        "NETWORK",
+        "APPLICATION"
+      ]
+    },
+    "AttackProperties":{
+      "type":"list",
+      "member":{"shape":"AttackProperty"}
+    },
+    "AttackProperty":{
+      "type":"structure",
+      "members":{
+        "AttackLayer":{
+          "shape":"AttackLayer",
+          "documentation":"<p>The type of Shield event that was observed. <code>NETWORK</code> indicates layer 3 and layer 4 events and <code>APPLICATION</code> indicates layer 7 events.</p> <p>For infrastructure layer events (L3 and L4 events), you can view metrics for top contributors in Amazon CloudWatch metrics. For more information, see <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/monitoring-cloudwatch.html#set-ddos-alarms\">Shield metrics and alarms</a> in the <i>WAF Developer Guide</i>. </p>"
+        },
+        "AttackPropertyIdentifier":{
+          "shape":"AttackPropertyIdentifier",
+          "documentation":"<p>Defines the Shield event property information that is provided. The <code>WORDPRESS_PINGBACK_REFLECTOR</code> and <code>WORDPRESS_PINGBACK_SOURCE</code> values are valid only for WordPress reflective pingback events.</p>"
+        },
+        "TopContributors":{
+          "shape":"TopContributors",
+          "documentation":"<p>Contributor objects for the top five contributors to a Shield event. A contributor is a source of traffic that Shield Advanced identifies as responsible for some or all of an event.</p>"
+        },
+        "Unit":{
+          "shape":"Unit",
+          "documentation":"<p>The unit used for the <code>Contributor</code> <code>Value</code> property. </p>"
+        },
+        "Total":{
+          "shape":"Long",
+          "documentation":"<p>The total contributions made to this Shield event by all contributors.</p>"
+        }
+      },
+      "documentation":"<p>Details of a Shield event. This is provided as part of an <a>AttackDetail</a>.</p>"
+    },
+    "AttackPropertyIdentifier":{
+      "type":"string",
+      "enum":[
+        "DESTINATION_URL",
+        "REFERRER",
+        "SOURCE_ASN",
+        "SOURCE_COUNTRY",
+        "SOURCE_IP_ADDRESS",
+        "SOURCE_USER_AGENT",
+        "WORDPRESS_PINGBACK_REFLECTOR",
+        "WORDPRESS_PINGBACK_SOURCE"
+      ]
+    },
+    "AttackStatisticsDataItem":{
+      "type":"structure",
+      "required":["AttackCount"],
+      "members":{
+        "AttackVolume":{
+          "shape":"AttackVolume",
+          "documentation":"<p>Information about the volume of attacks during the time period. If the accompanying <code>AttackCount</code> is zero, this setting might be empty.</p>"
+        },
+        "AttackCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of attacks detected during the time period. This is always present, but might be zero. </p>"
+        }
+      },
+      "documentation":"<p>A single attack statistics data record. This is returned by <a>DescribeAttackStatistics</a> along with a time range indicating the time period that the attack statistics apply to. </p>"
+    },
+    "AttackStatisticsDataList":{
+      "type":"list",
+      "member":{"shape":"AttackStatisticsDataItem"}
+    },
+    "AttackSummaries":{
+      "type":"list",
+      "member":{"shape":"AttackSummary"}
+    },
+    "AttackSummary":{
+      "type":"structure",
+      "members":{
+        "AttackId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier (ID) of the attack.</p>"
+        },
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the resource that was attacked.</p>"
+        },
+        "StartTime":{
+          "shape":"AttackTimestamp",
+          "documentation":"<p>The start time of the attack, in Unix time in seconds. </p>"
+        },
+        "EndTime":{
+          "shape":"AttackTimestamp",
+          "documentation":"<p>The end time of the attack, in Unix time in seconds. </p>"
+        },
+        "AttackVectors":{
+          "shape":"AttackVectorDescriptionList",
+          "documentation":"<p>The list of attacks for a specified time period.</p>"
+        }
+      },
+      "documentation":"<p>Summarizes all DDoS attacks for a specified time period.</p>"
+    },
+    "AttackTimestamp":{"type":"timestamp"},
+    "AttackVectorDescription":{
+      "type":"structure",
+      "required":["VectorType"],
+      "members":{
+        "VectorType":{
+          "shape":"String",
+          "documentation":"<p>The attack type. Valid values:</p> <ul> <li> <p>UDP_TRAFFIC</p> </li> <li> <p>UDP_FRAGMENT</p> </li> <li> <p>GENERIC_UDP_REFLECTION</p> </li> <li> <p>DNS_REFLECTION</p> </li> <li> <p>NTP_REFLECTION</p> </li> <li> <p>CHARGEN_REFLECTION</p> </li> <li> <p>SSDP_REFLECTION</p> </li> <li> <p>PORT_MAPPER</p> </li> <li> <p>RIP_REFLECTION</p> </li> <li> <p>SNMP_REFLECTION</p> </li> <li> <p>MSSQL_REFLECTION</p> </li> <li> <p>NET_BIOS_REFLECTION</p> </li> <li> <p>SYN_FLOOD</p> </li> <li> <p>ACK_FLOOD</p> </li> <li> <p>REQUEST_FLOOD</p> </li> <li> <p>HTTP_REFLECTION</p> </li> <li> <p>UDS_REFLECTION</p> </li> <li> <p>MEMCACHED_REFLECTION</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Describes the attack.</p>"
+    },
+    "AttackVectorDescriptionList":{
+      "type":"list",
+      "member":{"shape":"AttackVectorDescription"}
+    },
+    "AttackVolume":{
+      "type":"structure",
+      "members":{
+        "BitsPerSecond":{
+          "shape":"AttackVolumeStatistics",
+          "documentation":"<p>A statistics object that uses bits per second as the unit. This is included for network level attacks. </p>"
+        },
+        "PacketsPerSecond":{
+          "shape":"AttackVolumeStatistics",
+          "documentation":"<p>A statistics object that uses packets per second as the unit. This is included for network level attacks. </p>"
+        },
+        "RequestsPerSecond":{
+          "shape":"AttackVolumeStatistics",
+          "documentation":"<p>A statistics object that uses requests per second as the unit. This is included for application level attacks, and is only available for accounts that are subscribed to Shield Advanced.</p>"
+        }
+      },
+      "documentation":"<p>Information about the volume of attacks during the time period, included in an <a>AttackStatisticsDataItem</a>. If the accompanying <code>AttackCount</code> in the statistics object is zero, this setting might be empty.</p>"
+    },
+    "AttackVolumeStatistics":{
+      "type":"structure",
+      "required":["Max"],
+      "members":{
+        "Max":{
+          "shape":"Double",
+          "documentation":"<p>The maximum attack volume observed for the given unit.</p>"
+        }
+      },
+      "documentation":"<p>Statistics objects for the various data types in <a>AttackVolume</a>. </p>"
+    },
+    "AutoRenew":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "BlockAction":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Specifies that Shield Advanced should configure its WAF rules with the WAF <code>Block</code> action. </p> <p>This is only used in the context of the <code>ResponseAction</code> setting. </p> <p>JSON specification: <code>\"Block\": {}</code> </p>"
+    },
+    "ContactNotes":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^[\\w\\s\\.\\-,:/()+@]*$"
+    },
+    "Contributor":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the contributor. The type of name that you'll find here depends on the <code>AttackPropertyIdentifier</code> setting in the <code>AttackProperty</code> where this contributor is defined. For example, if the <code>AttackPropertyIdentifier</code> is <code>SOURCE_COUNTRY</code>, the <code>Name</code> could be <code>United States</code>.</p>"
+        },
+        "Value":{
+          "shape":"Long",
+          "documentation":"<p>The contribution of this contributor expressed in <a>Protection</a> units. For example <code>10,000</code>.</p>"
+        }
+      },
+      "documentation":"<p>A contributor to the attack and their contribution. </p>"
+    },
+    "CountAction":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Specifies that Shield Advanced should configure its WAF rules with the WAF <code>Count</code> action. </p> <p>This is only used in the context of the <code>ResponseAction</code> setting. </p> <p>JSON specification: <code>\"Count\": {}</code> </p>"
+    },
+    "CreateProtectionGroupRequest":{
+      "type":"structure",
+      "required":[
+        "ProtectionGroupId",
+        "Aggregation",
+        "Pattern"
+      ],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        },
+        "Aggregation":{
+          "shape":"ProtectionGroupAggregation",
+          "documentation":"<p>Defines how Shield combines resource data for the group in order to detect, mitigate, and report events.</p> <ul> <li> <p>Sum - Use the total traffic across the group. This is a good choice for most cases. Examples include Elastic IP addresses for EC2 instances that scale manually or automatically.</p> </li> <li> <p>Mean - Use the average of the traffic across the group. This is a good choice for resources that share traffic uniformly. Examples include accelerators and load balancers.</p> </li> <li> <p>Max - Use the highest traffic from each resource. This is useful for resources that don't share traffic and for resources that share that traffic in a non-uniform way. Examples include Amazon CloudFront and origin resources for CloudFront distributions.</p> </li> </ul>"
+        },
+        "Pattern":{
+          "shape":"ProtectionGroupPattern",
+          "documentation":"<p>The criteria to use to choose the protected resources for inclusion in the group. You can include all resources that have protections, provide a list of resource Amazon Resource Names (ARNs), or include all resources of a specified resource type. </p>"
+        },
+        "ResourceType":{
+          "shape":"ProtectedResourceType",
+          "documentation":"<p>The resource type to include in the protection group. All protected resources of this type are included in the protection group. Newly protected resources of this type are automatically added to the group. You must set this when you set <code>Pattern</code> to <code>BY_RESOURCE_TYPE</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        },
+        "Members":{
+          "shape":"ProtectionGroupMembers",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the resources to include in the protection group. You must set this when you set <code>Pattern</code> to <code>ARBITRARY</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>One or more tag key-value pairs for the protection group.</p>"
+        }
+      }
+    },
+    "CreateProtectionGroupResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreateProtectionRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ResourceArn"
+      ],
+      "members":{
+        "Name":{
+          "shape":"ProtectionName",
+          "documentation":"<p>Friendly name for the <code>Protection</code> you are creating.</p>"
+        },
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the resource to be protected.</p> <p>The ARN should be in one of the following formats:</p> <ul> <li> <p>For an Application Load Balancer: <code>arn:aws:elasticloadbalancing:<i>region</i>:<i>account-id</i>:loadbalancer/app/<i>load-balancer-name</i>/<i>load-balancer-id</i> </code> </p> </li> <li> <p>For an Elastic Load Balancer (Classic Load Balancer): <code>arn:aws:elasticloadbalancing:<i>region</i>:<i>account-id</i>:loadbalancer/<i>load-balancer-name</i> </code> </p> </li> <li> <p>For an Amazon CloudFront distribution: <code>arn:aws:cloudfront::<i>account-id</i>:distribution/<i>distribution-id</i> </code> </p> </li> <li> <p>For an Global Accelerator standard accelerator: <code>arn:aws:globalaccelerator::<i>account-id</i>:accelerator/<i>accelerator-id</i> </code> </p> </li> <li> <p>For Amazon Route 53: <code>arn:aws:route53:::hostedzone/<i>hosted-zone-id</i> </code> </p> </li> <li> <p>For an Elastic IP address: <code>arn:aws:ec2:<i>region</i>:<i>account-id</i>:eip-allocation/<i>allocation-id</i> </code> </p> </li> </ul>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>One or more tag key-value pairs for the <a>Protection</a> object that is created.</p>"
+        }
+      }
+    },
+    "CreateProtectionResponse":{
+      "type":"structure",
+      "members":{
+        "ProtectionId":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) for the <a>Protection</a> object that is created.</p>"
+        }
+      }
+    },
+    "CreateSubscriptionRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreateSubscriptionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteProtectionGroupRequest":{
+      "type":"structure",
+      "required":["ProtectionGroupId"],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        }
+      }
+    },
+    "DeleteProtectionGroupResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteProtectionRequest":{
+      "type":"structure",
+      "required":["ProtectionId"],
+      "members":{
+        "ProtectionId":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) for the <a>Protection</a> object to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteProtectionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteSubscriptionRequest":{
+      "type":"structure",
+      "members":{},
+      "deprecated":true
+    },
+    "DeleteSubscriptionResponse":{
+      "type":"structure",
+      "members":{},
+      "deprecated":true
+    },
+    "DescribeAttackRequest":{
+      "type":"structure",
+      "required":["AttackId"],
+      "members":{
+        "AttackId":{
+          "shape":"AttackId",
+          "documentation":"<p>The unique identifier (ID) for the attack.</p>"
+        }
+      }
+    },
+    "DescribeAttackResponse":{
+      "type":"structure",
+      "members":{
+        "Attack":{
+          "shape":"AttackDetail",
+          "documentation":"<p>The attack that you requested. </p>"
+        }
+      }
+    },
+    "DescribeAttackStatisticsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeAttackStatisticsResponse":{
+      "type":"structure",
+      "required":[
+        "TimeRange",
+        "DataItems"
+      ],
+      "members":{
+        "TimeRange":{
+          "shape":"TimeRange",
+          "documentation":"<p>The time range of the attack.</p>"
+        },
+        "DataItems":{
+          "shape":"AttackStatisticsDataList",
+          "documentation":"<p>The data that describes the attacks detected during the time period.</p>"
+        }
+      }
+    },
+    "DescribeDRTAccessRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeDRTAccessResponse":{
+      "type":"structure",
+      "members":{
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role the SRT used to access your Amazon Web Services account.</p>"
+        },
+        "LogBucketList":{
+          "shape":"LogBucketList",
+          "documentation":"<p>The list of Amazon S3 buckets accessed by the SRT.</p>"
+        }
+      }
+    },
+    "DescribeEmergencyContactSettingsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeEmergencyContactSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "EmergencyContactList":{
+          "shape":"EmergencyContactList",
+          "documentation":"<p>A list of email addresses and phone numbers that the Shield Response Team (SRT) can use to contact you if you have proactive engagement enabled, for escalations to the SRT and to initiate proactive customer support.</p>"
+        }
+      }
+    },
+    "DescribeProtectionGroupRequest":{
+      "type":"structure",
+      "required":["ProtectionGroupId"],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        }
+      }
+    },
+    "DescribeProtectionGroupResponse":{
+      "type":"structure",
+      "required":["ProtectionGroup"],
+      "members":{
+        "ProtectionGroup":{
+          "shape":"ProtectionGroup",
+          "documentation":"<p>A grouping of protected resources that you and Shield Advanced can monitor as a collective. This resource grouping improves the accuracy of detection and reduces false positives. </p>"
+        }
+      }
+    },
+    "DescribeProtectionRequest":{
+      "type":"structure",
+      "members":{
+        "ProtectionId":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) for the <a>Protection</a> object to describe. You must provide either the <code>ResourceArn</code> of the protected resource or the <code>ProtectionID</code> of the protection, but not both.</p>"
+        },
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the protected Amazon Web Services resource. You must provide either the <code>ResourceArn</code> of the protected resource or the <code>ProtectionID</code> of the protection, but not both.</p>"
+        }
+      }
+    },
+    "DescribeProtectionResponse":{
+      "type":"structure",
+      "members":{
+        "Protection":{
+          "shape":"Protection",
+          "documentation":"<p>The <a>Protection</a> that you requested. </p>"
+        }
+      }
+    },
+    "DescribeSubscriptionRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeSubscriptionResponse":{
+      "type":"structure",
+      "members":{
+        "Subscription":{
+          "shape":"Subscription",
+          "documentation":"<p>The Shield Advanced subscription details for an account.</p>"
+        }
+      }
+    },
+    "DisableApplicationLayerAutomaticResponseRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the protected resource.</p>"
+        }
+      }
+    },
+    "DisableApplicationLayerAutomaticResponseResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisableProactiveEngagementRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisableProactiveEngagementResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisassociateDRTLogBucketRequest":{
+      "type":"structure",
+      "required":["LogBucket"],
+      "members":{
+        "LogBucket":{
+          "shape":"LogBucket",
+          "documentation":"<p>The Amazon S3 bucket that contains the logs that you want to share.</p>"
+        }
+      }
+    },
+    "DisassociateDRTLogBucketResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisassociateDRTRoleRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisassociateDRTRoleResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisassociateHealthCheckRequest":{
+      "type":"structure",
+      "required":[
+        "ProtectionId",
+        "HealthCheckArn"
+      ],
+      "members":{
+        "ProtectionId":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) for the <a>Protection</a> object to remove the health check association from. </p>"
+        },
+        "HealthCheckArn":{
+          "shape":"HealthCheckArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the health check that is associated with the protection.</p>"
+        }
+      }
+    },
+    "DisassociateHealthCheckResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Double":{"type":"double"},
+    "DurationInSeconds":{
+      "type":"long",
+      "min":0
+    },
+    "EmailAddress":{
+      "type":"string",
+      "max":150,
+      "min":1,
+      "pattern":"^\\S+@\\S+\\.\\S+$"
+    },
+    "EmergencyContact":{
+      "type":"structure",
+      "required":["EmailAddress"],
+      "members":{
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The email address for the contact.</p>"
+        },
+        "PhoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number for the contact.</p>"
+        },
+        "ContactNotes":{
+          "shape":"ContactNotes",
+          "documentation":"<p>Additional notes regarding the contact. </p>"
+        }
+      },
+      "documentation":"<p>Contact information that the SRT can use to contact you if you have proactive engagement enabled, for escalations to the SRT and to initiate proactive customer support.</p>"
+    },
+    "EmergencyContactList":{
+      "type":"list",
+      "member":{"shape":"EmergencyContact"},
+      "max":10,
+      "min":0
+    },
+    "EnableApplicationLayerAutomaticResponseRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Action"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the protected resource.</p>"
+        },
+        "Action":{
+          "shape":"ResponseAction",
+          "documentation":"<p>Specifies the action setting that Shield Advanced should use in the WAF rules that it creates on behalf of the protected resource in response to DDoS attacks. You specify this as part of the configuration for the automatic application layer DDoS mitigation feature, when you enable or update automatic mitigation. Shield Advanced creates the WAF rules in a Shield Advanced-managed rule group, inside the web ACL that you have associated with the resource. </p>"
+        }
+      }
+    },
+    "EnableApplicationLayerAutomaticResponseResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "EnableProactiveEngagementRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "EnableProactiveEngagementResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "GetSubscriptionStateRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "GetSubscriptionStateResponse":{
+      "type":"structure",
+      "required":["SubscriptionState"],
+      "members":{
+        "SubscriptionState":{
+          "shape":"SubscriptionState",
+          "documentation":"<p>The status of the subscription.</p>"
+        }
+      }
+    },
+    "HealthCheckArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:aws:route53:::healthcheck/\\S{36}$"
+    },
+    "HealthCheckId":{"type":"string"},
+    "HealthCheckIds":{
+      "type":"list",
+      "member":{"shape":"HealthCheckId"}
+    },
+    "InclusionProtectionFilters":{
+      "type":"structure",
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArnFilters",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the resource whose protection you want to retrieve. </p>"
+        },
+        "ProtectionNames":{
+          "shape":"ProtectionNameFilters",
+          "documentation":"<p>The name of the protection that you want to retrieve. </p>"
+        },
+        "ResourceTypes":{
+          "shape":"ProtectedResourceTypeFilters",
+          "documentation":"<p>The type of protected resource whose protections you want to retrieve. </p>"
+        }
+      },
+      "documentation":"<p>Narrows the set of protections that the call retrieves. You can retrieve a single protection by providing its name or the ARN (Amazon Resource Name) of its protected resource. You can also retrieve all protections for a specific resource type. You can provide up to one criteria per filter type. Shield Advanced returns protections that exactly match all of the filter criteria that you provide.</p>"
+    },
+    "InclusionProtectionGroupFilters":{
+      "type":"structure",
+      "members":{
+        "ProtectionGroupIds":{
+          "shape":"ProtectionGroupIdFilters",
+          "documentation":"<p>The ID of the protection group that you want to retrieve. </p>"
+        },
+        "Patterns":{
+          "shape":"ProtectionGroupPatternFilters",
+          "documentation":"<p>The pattern specification of the protection groups that you want to retrieve. </p>"
+        },
+        "ResourceTypes":{
+          "shape":"ProtectedResourceTypeFilters",
+          "documentation":"<p>The resource type configuration of the protection groups that you want to retrieve. In the protection group configuration, you specify the resource type when you set the group's <code>Pattern</code> to <code>BY_RESOURCE_TYPE</code>. </p>"
+        },
+        "Aggregations":{
+          "shape":"ProtectionGroupAggregationFilters",
+          "documentation":"<p>The aggregation setting of the protection groups that you want to retrieve. </p>"
+        }
+      },
+      "documentation":"<p>Narrows the set of protection groups that the call retrieves. You can retrieve a single protection group by its name and you can retrieve all protection groups that are configured with a specific pattern, aggregation, or resource type. You can provide up to one criteria per filter type. Shield Advanced returns the protection groups that exactly match all of the search criteria that you provide.</p>"
+    },
+    "Integer":{"type":"integer"},
+    "InternalErrorException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates that a problem occurred with the service infrastructure. You can retry the request.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "InvalidOperationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates that the operation would not cause any change to occur.</p>",
+      "exception":true
+    },
+    "InvalidPaginationTokenException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates that the <code>NextToken</code> specified in the request is invalid. Submit the request using the <code>NextToken</code> value that was returned in the prior response.</p>",
+      "exception":true
+    },
+    "InvalidParameterException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Additional information about the exception.</p>"
+        },
+        "fields":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>Fields that caused the exception.</p>"
+        }
+      },
+      "documentation":"<p>Exception that indicates that the parameters passed to the API are invalid. If available, this exception includes details in additional properties. </p>",
+      "exception":true
+    },
+    "InvalidResourceException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates that the resource is invalid. You might not have access to the resource, or the resource might not exist.</p>",
+      "exception":true
+    },
+    "Limit":{
+      "type":"structure",
+      "members":{
+        "Type":{
+          "shape":"String",
+          "documentation":"<p>The type of protection.</p>"
+        },
+        "Max":{
+          "shape":"Long",
+          "documentation":"<p>The maximum number of protections that can be created for the specified <code>Type</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies how many protections of a given type you can create.</p>"
+    },
+    "LimitNumber":{"type":"long"},
+    "LimitType":{"type":"string"},
+    "Limits":{
+      "type":"list",
+      "member":{"shape":"Limit"}
+    },
+    "LimitsExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"},
+        "Type":{
+          "shape":"LimitType",
+          "documentation":"<p>The type of limit that would be exceeded.</p>"
+        },
+        "Limit":{
+          "shape":"LimitNumber",
+          "documentation":"<p>The threshold that would be exceeded.</p>"
+        }
+      },
+      "documentation":"<p>Exception that indicates that the operation would exceed a limit.</p>",
+      "exception":true
+    },
+    "ListAttacksRequest":{
+      "type":"structure",
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArnFilterList",
+          "documentation":"<p>The ARNs (Amazon Resource Names) of the resources that were attacked. If you leave this blank, all applicable resources for this account will be included.</p>"
+        },
+        "StartTime":{
+          "shape":"TimeRange",
+          "documentation":"<p>The start of the time period for the attacks. This is a <code>timestamp</code> type. The request syntax listing for this call indicates a <code>number</code> type, but you can provide the time in any valid <a href=\"https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-types.html#parameter-type-timestamp\">timestamp format</a> setting. </p>"
+        },
+        "EndTime":{
+          "shape":"TimeRange",
+          "documentation":"<p>The end of the time period for the attacks. This is a <code>timestamp</code> type. The request syntax listing for this call indicates a <code>number</code> type, but you can provide the time in any valid <a href=\"https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-types.html#parameter-type-timestamp\">timestamp format</a> setting. </p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p> <p>On your first call to a list operation, leave this setting empty.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The greatest number of objects that you want Shield Advanced to return to the list request. Shield Advanced might return fewer objects than you indicate in this setting, even if more objects are available. If there are more objects remaining, Shield Advanced will always also return a <code>NextToken</code> value in the response.</p> <p>The default setting is 20.</p>"
+        }
+      }
+    },
+    "ListAttacksResponse":{
+      "type":"structure",
+      "members":{
+        "AttackSummaries":{
+          "shape":"AttackSummaries",
+          "documentation":"<p>The attack information for the specified time range.</p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p>"
+        }
+      }
+    },
+    "ListProtectionGroupsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p> <p>On your first call to a list operation, leave this setting empty.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The greatest number of objects that you want Shield Advanced to return to the list request. Shield Advanced might return fewer objects than you indicate in this setting, even if more objects are available. If there are more objects remaining, Shield Advanced will always also return a <code>NextToken</code> value in the response.</p> <p>The default setting is 20.</p>"
+        },
+        "InclusionFilters":{
+          "shape":"InclusionProtectionGroupFilters",
+          "documentation":"<p>Narrows the set of protection groups that the call retrieves. You can retrieve a single protection group by its name and you can retrieve all protection groups that are configured with specific pattern or aggregation settings. You can provide up to one criteria per filter type. Shield Advanced returns the protection groups that exactly match all of the search criteria that you provide.</p>"
+        }
+      }
+    },
+    "ListProtectionGroupsResponse":{
+      "type":"structure",
+      "required":["ProtectionGroups"],
+      "members":{
+        "ProtectionGroups":{
+          "shape":"ProtectionGroups",
+          "documentation":"<p/>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p>"
+        }
+      }
+    },
+    "ListProtectionsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p> <p>On your first call to a list operation, leave this setting empty.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The greatest number of objects that you want Shield Advanced to return to the list request. Shield Advanced might return fewer objects than you indicate in this setting, even if more objects are available. If there are more objects remaining, Shield Advanced will always also return a <code>NextToken</code> value in the response.</p> <p>The default setting is 20.</p>"
+        },
+        "InclusionFilters":{
+          "shape":"InclusionProtectionFilters",
+          "documentation":"<p>Narrows the set of protections that the call retrieves. You can retrieve a single protection by providing its name or the ARN (Amazon Resource Name) of its protected resource. You can also retrieve all protections for a specific resource type. You can provide up to one criteria per filter type. Shield Advanced returns protections that exactly match all of the filter criteria that you provide.</p>"
+        }
+      }
+    },
+    "ListProtectionsResponse":{
+      "type":"structure",
+      "members":{
+        "Protections":{
+          "shape":"Protections",
+          "documentation":"<p>The array of enabled <a>Protection</a> objects.</p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p>"
+        }
+      }
+    },
+    "ListResourcesInProtectionGroupRequest":{
+      "type":"structure",
+      "required":["ProtectionGroupId"],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p> <p>On your first call to a list operation, leave this setting empty.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The greatest number of objects that you want Shield Advanced to return to the list request. Shield Advanced might return fewer objects than you indicate in this setting, even if more objects are available. If there are more objects remaining, Shield Advanced will always also return a <code>NextToken</code> value in the response.</p> <p>The default setting is 20.</p>"
+        }
+      }
+    },
+    "ListResourcesInProtectionGroupResponse":{
+      "type":"structure",
+      "required":["ResourceArns"],
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the resources that are included in the protection group.</p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>When you request a list of objects from Shield Advanced, if the response does not include all of the remaining available objects, Shield Advanced includes a <code>NextToken</code> value in the response. You can retrieve the next batch of objects by requesting the list again and providing the token that was returned by the prior call in your request. </p> <p>You can indicate the maximum number of objects that you want Shield Advanced to return for a single call with the <code>MaxResults</code> setting. Shield Advanced will not return more than <code>MaxResults</code> objects, but may return fewer, even if more objects are still available.</p> <p>Whenever more objects remain that Shield Advanced has not yet returned to you, the response will include a <code>NextToken</code> value.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to get tags for.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tag key and value pairs associated with the specified resource.</p>"
+        }
+      }
+    },
+    "LockedSubscriptionException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>You are trying to update a subscription that has not yet completed the 1-year commitment. You can change the <code>AutoRenew</code> parameter during the last 30 days of your subscription. This exception indicates that you are attempting to change <code>AutoRenew</code> prior to that period.</p>",
+      "exception":true
+    },
+    "LogBucket":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^([a-z]|(\\d(?!\\d{0,2}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})))([a-z\\d]|(\\.(?!(\\.|-)))|(-(?!\\.))){1,61}[a-z\\d]$"
+    },
+    "LogBucketList":{
+      "type":"list",
+      "member":{"shape":"LogBucket"},
+      "max":10,
+      "min":0
+    },
+    "Long":{"type":"long"},
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":10000,
+      "min":0
+    },
+    "Mitigation":{
+      "type":"structure",
+      "members":{
+        "MitigationName":{
+          "shape":"String",
+          "documentation":"<p>The name of the mitigation taken for this attack.</p>"
+        }
+      },
+      "documentation":"<p>The mitigation applied to a DDoS attack.</p>"
+    },
+    "MitigationList":{
+      "type":"list",
+      "member":{"shape":"Mitigation"}
+    },
+    "NoAssociatedRoleException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>The ARN of the role that you specified does not exist.</p>",
+      "exception":true
+    },
+    "OptimisticLockException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Exception that indicates that the resource state has been modified by another client. Retrieve the resource and then retry your request.</p>",
+      "exception":true
+    },
+    "PhoneNumber":{
+      "type":"string",
+      "max":16,
+      "min":1,
+      "pattern":"^\\+[1-9]\\d{1,14}$"
+    },
+    "ProactiveEngagementStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED",
+        "PENDING"
+      ]
+    },
+    "ProtectedResourceType":{
+      "type":"string",
+      "enum":[
+        "CLOUDFRONT_DISTRIBUTION",
+        "ROUTE_53_HOSTED_ZONE",
+        "ELASTIC_IP_ALLOCATION",
+        "CLASSIC_LOAD_BALANCER",
+        "APPLICATION_LOAD_BALANCER",
+        "GLOBAL_ACCELERATOR"
+      ]
+    },
+    "ProtectedResourceTypeFilters":{
+      "type":"list",
+      "member":{"shape":"ProtectedResourceType"},
+      "max":1,
+      "min":1
+    },
+    "Protection":{
+      "type":"structure",
+      "members":{
+        "Id":{
+          "shape":"ProtectionId",
+          "documentation":"<p>The unique identifier (ID) of the protection.</p>"
+        },
+        "Name":{
+          "shape":"ProtectionName",
+          "documentation":"<p>The name of the protection. For example, <code>My CloudFront distributions</code>.</p>"
+        },
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the Amazon Web Services resource that is protected.</p>"
+        },
+        "HealthCheckIds":{
+          "shape":"HealthCheckIds",
+          "documentation":"<p>The unique identifier (ID) for the Route 53 health check that's associated with the protection. </p>"
+        },
+        "ProtectionArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the protection.</p>"
+        },
+        "ApplicationLayerAutomaticResponseConfiguration":{
+          "shape":"ApplicationLayerAutomaticResponseConfiguration",
+          "documentation":"<p>The automatic application layer DDoS mitigation settings for the protection. This configuration determines whether Shield Advanced automatically manages rules in the web ACL in order to respond to application layer events that Shield Advanced determines to be DDoS attacks. </p>"
+        }
+      },
+      "documentation":"<p>An object that represents a resource that is under DDoS protection.</p>"
+    },
+    "ProtectionGroup":{
+      "type":"structure",
+      "required":[
+        "ProtectionGroupId",
+        "Aggregation",
+        "Pattern",
+        "Members"
+      ],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        },
+        "Aggregation":{
+          "shape":"ProtectionGroupAggregation",
+          "documentation":"<p>Defines how Shield combines resource data for the group in order to detect, mitigate, and report events.</p> <ul> <li> <p>Sum - Use the total traffic across the group. This is a good choice for most cases. Examples include Elastic IP addresses for EC2 instances that scale manually or automatically.</p> </li> <li> <p>Mean - Use the average of the traffic across the group. This is a good choice for resources that share traffic uniformly. Examples include accelerators and load balancers.</p> </li> <li> <p>Max - Use the highest traffic from each resource. This is useful for resources that don't share traffic and for resources that share that traffic in a non-uniform way. Examples include Amazon CloudFront distributions and origin resources for CloudFront distributions.</p> </li> </ul>"
+        },
+        "Pattern":{
+          "shape":"ProtectionGroupPattern",
+          "documentation":"<p>The criteria to use to choose the protected resources for inclusion in the group. You can include all resources that have protections, provide a list of resource ARNs (Amazon Resource Names), or include all resources of a specified resource type.</p>"
+        },
+        "ResourceType":{
+          "shape":"ProtectedResourceType",
+          "documentation":"<p>The resource type to include in the protection group. All protected resources of this type are included in the protection group. You must set this when you set <code>Pattern</code> to <code>BY_RESOURCE_TYPE</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        },
+        "Members":{
+          "shape":"ProtectionGroupMembers",
+          "documentation":"<p>The ARNs (Amazon Resource Names) of the resources to include in the protection group. You must set this when you set <code>Pattern</code> to <code>ARBITRARY</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        },
+        "ProtectionGroupArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the protection group.</p>"
+        }
+      },
+      "documentation":"<p>A grouping of protected resources that you and Shield Advanced can monitor as a collective. This resource grouping improves the accuracy of detection and reduces false positives. </p>"
+    },
+    "ProtectionGroupAggregation":{
+      "type":"string",
+      "enum":[
+        "SUM",
+        "MEAN",
+        "MAX"
+      ]
+    },
+    "ProtectionGroupAggregationFilters":{
+      "type":"list",
+      "member":{"shape":"ProtectionGroupAggregation"},
+      "max":1,
+      "min":1
+    },
+    "ProtectionGroupArbitraryPatternLimits":{
+      "type":"structure",
+      "required":["MaxMembers"],
+      "members":{
+        "MaxMembers":{
+          "shape":"Long",
+          "documentation":"<p>The maximum number of resources you can specify for a single arbitrary pattern in a protection group.</p>"
+        }
+      },
+      "documentation":"<p>Limits settings on protection groups with arbitrary pattern type. </p>"
+    },
+    "ProtectionGroupId":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\\\-]*"
+    },
+    "ProtectionGroupIdFilters":{
+      "type":"list",
+      "member":{"shape":"ProtectionGroupId"},
+      "max":1,
+      "min":1
+    },
+    "ProtectionGroupLimits":{
+      "type":"structure",
+      "required":[
+        "MaxProtectionGroups",
+        "PatternTypeLimits"
+      ],
+      "members":{
+        "MaxProtectionGroups":{
+          "shape":"Long",
+          "documentation":"<p>The maximum number of protection groups that you can have at one time. </p>"
+        },
+        "PatternTypeLimits":{
+          "shape":"ProtectionGroupPatternTypeLimits",
+          "documentation":"<p>Limits settings by pattern type in the protection groups for your subscription. </p>"
+        }
+      },
+      "documentation":"<p>Limits settings on protection groups for your subscription. </p>"
+    },
+    "ProtectionGroupMembers":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"},
+      "max":10000,
+      "min":0
+    },
+    "ProtectionGroupPattern":{
+      "type":"string",
+      "enum":[
+        "ALL",
+        "ARBITRARY",
+        "BY_RESOURCE_TYPE"
+      ]
+    },
+    "ProtectionGroupPatternFilters":{
+      "type":"list",
+      "member":{"shape":"ProtectionGroupPattern"},
+      "max":1,
+      "min":1
+    },
+    "ProtectionGroupPatternTypeLimits":{
+      "type":"structure",
+      "required":["ArbitraryPatternLimits"],
+      "members":{
+        "ArbitraryPatternLimits":{
+          "shape":"ProtectionGroupArbitraryPatternLimits",
+          "documentation":"<p>Limits settings on protection groups with arbitrary pattern type. </p>"
+        }
+      },
+      "documentation":"<p>Limits settings by pattern type in the protection groups for your subscription. </p>"
+    },
+    "ProtectionGroups":{
+      "type":"list",
+      "member":{"shape":"ProtectionGroup"}
+    },
+    "ProtectionId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-zA-Z0-9\\\\-]*"
+    },
+    "ProtectionLimits":{
+      "type":"structure",
+      "required":["ProtectedResourceTypeLimits"],
+      "members":{
+        "ProtectedResourceTypeLimits":{
+          "shape":"Limits",
+          "documentation":"<p>The maximum number of resource types that you can specify in a protection.</p>"
+        }
+      },
+      "documentation":"<p>Limits settings on protections for your subscription. </p>"
+    },
+    "ProtectionName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[ a-zA-Z0-9_\\\\.\\\\-]*"
+    },
+    "ProtectionNameFilters":{
+      "type":"list",
+      "member":{"shape":"ProtectionName"},
+      "max":1,
+      "min":1
+    },
+    "Protections":{
+      "type":"list",
+      "member":{"shape":"Protection"}
+    },
+    "ResourceAlreadyExistsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"},
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of resource that already exists.</p>"
+        }
+      },
+      "documentation":"<p>Exception indicating the specified resource already exists. If available, this exception includes details in additional properties. </p>",
+      "exception":true
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:aws.*"
+    },
+    "ResourceArnFilterList":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"}
+    },
+    "ResourceArnFilters":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"},
+      "max":1,
+      "min":1
+    },
+    "ResourceArnList":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"},
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of resource.</p>"
+        }
+      },
+      "documentation":"<p>Exception indicating the specified resource does not exist. If available, this exception includes details in additional properties. </p>",
+      "exception":true
+    },
+    "ResponseAction":{
+      "type":"structure",
+      "members":{
+        "Block":{
+          "shape":"BlockAction",
+          "documentation":"<p>Specifies that Shield Advanced should configure its WAF rules with the WAF <code>Block</code> action. </p> <p>You must specify exactly one action, either <code>Block</code> or <code>Count</code>.</p>"
+        },
+        "Count":{
+          "shape":"CountAction",
+          "documentation":"<p>Specifies that Shield Advanced should configure its WAF rules with the WAF <code>Count</code> action. </p> <p>You must specify exactly one action, either <code>Block</code> or <code>Count</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the action setting that Shield Advanced should use in the WAF rules that it creates on behalf of the protected resource in response to DDoS attacks. You specify this as part of the configuration for the automatic application layer DDoS mitigation feature, when you enable or update automatic mitigation. Shield Advanced creates the WAF rules in a Shield Advanced-managed rule group, inside the web ACL that you have associated with the resource. </p>"
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:aws:iam::\\d{12}:role/?[a-zA-Z_0-9+=,.@\\-_/]+"
+    },
+    "String":{"type":"string"},
+    "SubResourceSummary":{
+      "type":"structure",
+      "members":{
+        "Type":{
+          "shape":"SubResourceType",
+          "documentation":"<p>The <code>SubResource</code> type.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier (ID) of the <code>SubResource</code>.</p>"
+        },
+        "AttackVectors":{
+          "shape":"SummarizedAttackVectorList",
+          "documentation":"<p>The list of attack types and associated counters.</p>"
+        },
+        "Counters":{
+          "shape":"SummarizedCounterList",
+          "documentation":"<p>The counters that describe the details of the attack.</p>"
+        }
+      },
+      "documentation":"<p>The attack information for the specified SubResource.</p>"
+    },
+    "SubResourceSummaryList":{
+      "type":"list",
+      "member":{"shape":"SubResourceSummary"}
+    },
+    "SubResourceType":{
+      "type":"string",
+      "enum":[
+        "IP",
+        "URL"
+      ]
+    },
+    "Subscription":{
+      "type":"structure",
+      "required":["SubscriptionLimits"],
+      "members":{
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time of the subscription, in Unix time in seconds. </p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time your subscription will end.</p>"
+        },
+        "TimeCommitmentInSeconds":{
+          "shape":"DurationInSeconds",
+          "documentation":"<p>The length, in seconds, of the Shield Advanced subscription for the account.</p>"
+        },
+        "AutoRenew":{
+          "shape":"AutoRenew",
+          "documentation":"<p>If <code>ENABLED</code>, the subscription will be automatically renewed at the end of the existing subscription period.</p> <p>When you initally create a subscription, <code>AutoRenew</code> is set to <code>ENABLED</code>. You can change this by submitting an <code>UpdateSubscription</code> request. If the <code>UpdateSubscription</code> request does not included a value for <code>AutoRenew</code>, the existing value for <code>AutoRenew</code> remains unchanged.</p>"
+        },
+        "Limits":{
+          "shape":"Limits",
+          "documentation":"<p>Specifies how many protections of a given type you can create.</p>"
+        },
+        "ProactiveEngagementStatus":{
+          "shape":"ProactiveEngagementStatus",
+          "documentation":"<p>If <code>ENABLED</code>, the Shield Response Team (SRT) will use email and phone to notify contacts about escalations to the SRT and to initiate proactive customer support.</p> <p>If <code>PENDING</code>, you have requested proactive engagement and the request is pending. The status changes to <code>ENABLED</code> when your request is fully processed.</p> <p>If <code>DISABLED</code>, the SRT will not proactively notify contacts about escalations or to initiate proactive customer support. </p>"
+        },
+        "SubscriptionLimits":{
+          "shape":"SubscriptionLimits",
+          "documentation":"<p>Limits settings for your subscription. </p>"
+        },
+        "SubscriptionArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the subscription.</p>"
+        }
+      },
+      "documentation":"<p>Information about the Shield Advanced subscription for an account.</p>"
+    },
+    "SubscriptionLimits":{
+      "type":"structure",
+      "required":[
+        "ProtectionLimits",
+        "ProtectionGroupLimits"
+      ],
+      "members":{
+        "ProtectionLimits":{
+          "shape":"ProtectionLimits",
+          "documentation":"<p>Limits settings on protections for your subscription. </p>"
+        },
+        "ProtectionGroupLimits":{
+          "shape":"ProtectionGroupLimits",
+          "documentation":"<p>Limits settings on protection groups for your subscription. </p>"
+        }
+      },
+      "documentation":"<p>Limits settings for your subscription. </p>"
+    },
+    "SubscriptionState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INACTIVE"
+      ]
+    },
+    "SummarizedAttackVector":{
+      "type":"structure",
+      "required":["VectorType"],
+      "members":{
+        "VectorType":{
+          "shape":"String",
+          "documentation":"<p>The attack type, for example, SNMP reflection or SYN flood.</p>"
+        },
+        "VectorCounters":{
+          "shape":"SummarizedCounterList",
+          "documentation":"<p>The list of counters that describe the details of the attack.</p>"
+        }
+      },
+      "documentation":"<p>A summary of information about the attack.</p>"
+    },
+    "SummarizedAttackVectorList":{
+      "type":"list",
+      "member":{"shape":"SummarizedAttackVector"}
+    },
+    "SummarizedCounter":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The counter name.</p>"
+        },
+        "Max":{
+          "shape":"Double",
+          "documentation":"<p>The maximum value of the counter for a specified time period.</p>"
+        },
+        "Average":{
+          "shape":"Double",
+          "documentation":"<p>The average value of the counter for a specified time period.</p>"
+        },
+        "Sum":{
+          "shape":"Double",
+          "documentation":"<p>The total of counter values for a specified time period.</p>"
+        },
+        "N":{
+          "shape":"Integer",
+          "documentation":"<p>The number of counters for a specified time period.</p>"
+        },
+        "Unit":{
+          "shape":"String",
+          "documentation":"<p>The unit of the counters.</p>"
+        }
+      },
+      "documentation":"<p>The counter that describes a DDoS attack.</p>"
+    },
+    "SummarizedCounterList":{
+      "type":"list",
+      "member":{"shape":"SummarizedCounter"}
+    },
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>Part of the key:value pair that defines a tag. You can use a tag key to describe a category of information, such as \"customer.\" Tag keys are case-sensitive.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>Part of the key:value pair that defines a tag. You can use a tag value to describe a specific value within a category, such as \"companyA\" or \"companyB.\" Tag values are case-sensitive.</p>"
+        }
+      },
+      "documentation":"<p>A tag associated with an Amazon Web Services resource. Tags are key:value pairs that you can use to categorize and manage your resources, for purposes like billing or other management. Typically, the tag key represents a category, such as \"environment\", and the tag value represents a specific value within that category, such as \"test,\" \"development,\" or \"production\". Or you might set the tag key to \"customer\" and the value to the customer name or ID. You can specify one or more tags to add to each Amazon Web Services resource, up to 50 tags for a resource.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to add or update tags for.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags that you want to modify or add to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TimeRange":{
+      "type":"structure",
+      "members":{
+        "FromInclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time, in Unix time in seconds. </p>"
+        },
+        "ToExclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end time, in Unix time in seconds. </p>"
+        }
+      },
+      "documentation":"<p>The time range. </p>"
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Token":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "TopContributors":{
+      "type":"list",
+      "member":{"shape":"Contributor"}
+    },
+    "Unit":{
+      "type":"string",
+      "enum":[
+        "BITS",
+        "BYTES",
+        "PACKETS",
+        "REQUESTS"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to remove tags from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag key for each tag that you want to remove from the resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateApplicationLayerAutomaticResponseRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Action"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the resource.</p>"
+        },
+        "Action":{
+          "shape":"ResponseAction",
+          "documentation":"<p>Specifies the action setting that Shield Advanced should use in the WAF rules that it creates on behalf of the protected resource in response to DDoS attacks. You specify this as part of the configuration for the automatic application layer DDoS mitigation feature, when you enable or update automatic mitigation. Shield Advanced creates the WAF rules in a Shield Advanced-managed rule group, inside the web ACL that you have associated with the resource. </p>"
+        }
+      }
+    },
+    "UpdateApplicationLayerAutomaticResponseResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateEmergencyContactSettingsRequest":{
+      "type":"structure",
+      "members":{
+        "EmergencyContactList":{
+          "shape":"EmergencyContactList",
+          "documentation":"<p>A list of email addresses and phone numbers that the Shield Response Team (SRT) can use to contact you if you have proactive engagement enabled, for escalations to the SRT and to initiate proactive customer support.</p> <p>If you have proactive engagement enabled, the contact list must include at least one phone number.</p>"
+        }
+      }
+    },
+    "UpdateEmergencyContactSettingsResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateProtectionGroupRequest":{
+      "type":"structure",
+      "required":[
+        "ProtectionGroupId",
+        "Aggregation",
+        "Pattern"
+      ],
+      "members":{
+        "ProtectionGroupId":{
+          "shape":"ProtectionGroupId",
+          "documentation":"<p>The name of the protection group. You use this to identify the protection group in lists and to manage the protection group, for example to update, delete, or describe it. </p>"
+        },
+        "Aggregation":{
+          "shape":"ProtectionGroupAggregation",
+          "documentation":"<p>Defines how Shield combines resource data for the group in order to detect, mitigate, and report events.</p> <ul> <li> <p>Sum - Use the total traffic across the group. This is a good choice for most cases. Examples include Elastic IP addresses for EC2 instances that scale manually or automatically.</p> </li> <li> <p>Mean - Use the average of the traffic across the group. This is a good choice for resources that share traffic uniformly. Examples include accelerators and load balancers.</p> </li> <li> <p>Max - Use the highest traffic from each resource. This is useful for resources that don't share traffic and for resources that share that traffic in a non-uniform way. Examples include Amazon CloudFront distributions and origin resources for CloudFront distributions.</p> </li> </ul>"
+        },
+        "Pattern":{
+          "shape":"ProtectionGroupPattern",
+          "documentation":"<p>The criteria to use to choose the protected resources for inclusion in the group. You can include all resources that have protections, provide a list of resource Amazon Resource Names (ARNs), or include all resources of a specified resource type.</p>"
+        },
+        "ResourceType":{
+          "shape":"ProtectedResourceType",
+          "documentation":"<p>The resource type to include in the protection group. All protected resources of this type are included in the protection group. You must set this when you set <code>Pattern</code> to <code>BY_RESOURCE_TYPE</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        },
+        "Members":{
+          "shape":"ProtectionGroupMembers",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the resources to include in the protection group. You must set this when you set <code>Pattern</code> to <code>ARBITRARY</code> and you must not set it for any other <code>Pattern</code> setting. </p>"
+        }
+      }
+    },
+    "UpdateProtectionGroupResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateSubscriptionRequest":{
+      "type":"structure",
+      "members":{
+        "AutoRenew":{
+          "shape":"AutoRenew",
+          "documentation":"<p>When you initally create a subscription, <code>AutoRenew</code> is set to <code>ENABLED</code>. If <code>ENABLED</code>, the subscription will be automatically renewed at the end of the existing subscription period. You can change this by submitting an <code>UpdateSubscription</code> request. If the <code>UpdateSubscription</code> request does not included a value for <code>AutoRenew</code>, the existing value for <code>AutoRenew</code> remains unchanged.</p>"
+        }
+      }
+    },
+    "UpdateSubscriptionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter that failed validation.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The message describing why the parameter failed validation.</p>"
+        }
+      },
+      "documentation":"<p>Provides information about a particular parameter passed inside a request that resulted in an exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "FIELD_VALIDATION_FAILED",
+        "OTHER"
+      ]
+    },
+    "errorMessage":{"type":"string"}
+  },
+  "documentation":"<fullname>Shield Advanced</fullname> <p>This is the <i>Shield Advanced API Reference</i>. This guide is for developers who need detailed information about the Shield Advanced API actions, data types, and errors. For detailed information about WAF and Shield Advanced features and an overview of how to use the WAF and Shield Advanced APIs, see the <a href=\"https://docs.aws.amazon.com/waf/latest/developerguide/\">WAF and Shield Developer Guide</a>.</p>"
+}

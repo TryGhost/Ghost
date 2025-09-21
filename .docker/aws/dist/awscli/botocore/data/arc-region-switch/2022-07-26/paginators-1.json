@@ -1,0 +1,46 @@
+{
+  "pagination": {
+    "GetPlanEvaluationStatus": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "warnings"
+    },
+    "GetPlanExecution": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "stepStates"
+    },
+    "ListPlanExecutionEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "items"
+    },
+    "ListPlanExecutions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "items"
+    },
+    "ListPlans": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "plans"
+    },
+    "ListPlansInRegion": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "plans"
+    },
+    "ListRoute53HealthChecks": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "healthChecks"
+    }
+  }
+}

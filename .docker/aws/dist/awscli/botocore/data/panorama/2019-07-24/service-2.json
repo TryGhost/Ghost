@@ -1,0 +1,3883 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2019-07-24",
+    "endpointPrefix":"panorama",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceAbbreviation":"Panorama",
+    "serviceFullName":"AWS Panorama",
+    "serviceId":"Panorama",
+    "signatureVersion":"v4",
+    "signingName":"panorama",
+    "uid":"panorama-2019-07-24"
+  },
+  "operations":{
+    "CreateApplicationInstance":{
+      "name":"CreateApplicationInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/application-instances",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateApplicationInstanceRequest"},
+      "output":{"shape":"CreateApplicationInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates an application instance and deploys it to a device.</p>"
+    },
+    "CreateJobForDevices":{
+      "name":"CreateJobForDevices",
+      "http":{
+        "method":"POST",
+        "requestUri":"/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateJobForDevicesRequest"},
+      "output":{"shape":"CreateJobForDevicesResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a job to run on a device. A job can update a device's software or reboot it.</p>"
+    },
+    "CreateNodeFromTemplateJob":{
+      "name":"CreateNodeFromTemplateJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/packages/template-job",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateNodeFromTemplateJobRequest"},
+      "output":{"shape":"CreateNodeFromTemplateJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a camera stream node.</p>"
+    },
+    "CreatePackage":{
+      "name":"CreatePackage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/packages",
+        "responseCode":200
+      },
+      "input":{"shape":"CreatePackageRequest"},
+      "output":{"shape":"CreatePackageResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a package and storage location in an Amazon S3 access point.</p>"
+    },
+    "CreatePackageImportJob":{
+      "name":"CreatePackageImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/packages/import-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"CreatePackageImportJobRequest"},
+      "output":{"shape":"CreatePackageImportJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Imports a node package.</p>"
+    },
+    "DeleteDevice":{
+      "name":"DeleteDevice",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/devices/{DeviceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDeviceRequest"},
+      "output":{"shape":"DeleteDeviceResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a device.</p>"
+    },
+    "DeletePackage":{
+      "name":"DeletePackage",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/packages/{PackageId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeletePackageRequest"},
+      "output":{"shape":"DeletePackageResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a package.</p> <note> <p>To delete a package, you need permission to call <code>s3:DeleteObject</code> in addition to permissions for the AWS Panorama API.</p> </note>"
+    },
+    "DeregisterPackageVersion":{
+      "name":"DeregisterPackageVersion",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/packages/{PackageId}/versions/{PackageVersion}/patch/{PatchVersion}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeregisterPackageVersionRequest"},
+      "output":{"shape":"DeregisterPackageVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deregisters a package version.</p>"
+    },
+    "DescribeApplicationInstance":{
+      "name":"DescribeApplicationInstance",
+      "http":{
+        "method":"GET",
+        "requestUri":"/application-instances/{ApplicationInstanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeApplicationInstanceRequest"},
+      "output":{"shape":"DescribeApplicationInstanceResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about an application instance on a device.</p>"
+    },
+    "DescribeApplicationInstanceDetails":{
+      "name":"DescribeApplicationInstanceDetails",
+      "http":{
+        "method":"GET",
+        "requestUri":"/application-instances/{ApplicationInstanceId}/details",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeApplicationInstanceDetailsRequest"},
+      "output":{"shape":"DescribeApplicationInstanceDetailsResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about an application instance's configuration manifest.</p>"
+    },
+    "DescribeDevice":{
+      "name":"DescribeDevice",
+      "http":{
+        "method":"GET",
+        "requestUri":"/devices/{DeviceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeDeviceRequest"},
+      "output":{"shape":"DescribeDeviceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a device.</p>"
+    },
+    "DescribeDeviceJob":{
+      "name":"DescribeDeviceJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs/{JobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeDeviceJobRequest"},
+      "output":{"shape":"DescribeDeviceJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a device job.</p>"
+    },
+    "DescribeNode":{
+      "name":"DescribeNode",
+      "http":{
+        "method":"GET",
+        "requestUri":"/nodes/{NodeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeNodeRequest"},
+      "output":{"shape":"DescribeNodeResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a node.</p>"
+    },
+    "DescribeNodeFromTemplateJob":{
+      "name":"DescribeNodeFromTemplateJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/template-job/{JobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeNodeFromTemplateJobRequest"},
+      "output":{"shape":"DescribeNodeFromTemplateJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a job to create a camera stream node.</p>"
+    },
+    "DescribePackage":{
+      "name":"DescribePackage",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/metadata/{PackageId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribePackageRequest"},
+      "output":{"shape":"DescribePackageResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a package.</p>"
+    },
+    "DescribePackageImportJob":{
+      "name":"DescribePackageImportJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/import-jobs/{JobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribePackageImportJobRequest"},
+      "output":{"shape":"DescribePackageImportJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a package import job.</p>"
+    },
+    "DescribePackageVersion":{
+      "name":"DescribePackageVersion",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/metadata/{PackageId}/versions/{PackageVersion}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribePackageVersionRequest"},
+      "output":{"shape":"DescribePackageVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about a package version.</p>"
+    },
+    "ListApplicationInstanceDependencies":{
+      "name":"ListApplicationInstanceDependencies",
+      "http":{
+        "method":"GET",
+        "requestUri":"/application-instances/{ApplicationInstanceId}/package-dependencies",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationInstanceDependenciesRequest"},
+      "output":{"shape":"ListApplicationInstanceDependenciesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of application instance dependencies.</p>"
+    },
+    "ListApplicationInstanceNodeInstances":{
+      "name":"ListApplicationInstanceNodeInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/application-instances/{ApplicationInstanceId}/node-instances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationInstanceNodeInstancesRequest"},
+      "output":{"shape":"ListApplicationInstanceNodeInstancesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of application node instances.</p>"
+    },
+    "ListApplicationInstances":{
+      "name":"ListApplicationInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/application-instances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationInstancesRequest"},
+      "output":{"shape":"ListApplicationInstancesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of application instances.</p>"
+    },
+    "ListDevices":{
+      "name":"ListDevices",
+      "http":{
+        "method":"GET",
+        "requestUri":"/devices",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevicesRequest"},
+      "output":{"shape":"ListDevicesResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of devices.</p>"
+    },
+    "ListDevicesJobs":{
+      "name":"ListDevicesJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevicesJobsRequest"},
+      "output":{"shape":"ListDevicesJobsResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of jobs.</p>"
+    },
+    "ListNodeFromTemplateJobs":{
+      "name":"ListNodeFromTemplateJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/template-job",
+        "responseCode":200
+      },
+      "input":{"shape":"ListNodeFromTemplateJobsRequest"},
+      "output":{"shape":"ListNodeFromTemplateJobsResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of camera stream node jobs.</p>"
+    },
+    "ListNodes":{
+      "name":"ListNodes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/nodes",
+        "responseCode":200
+      },
+      "input":{"shape":"ListNodesRequest"},
+      "output":{"shape":"ListNodesResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of nodes.</p>"
+    },
+    "ListPackageImportJobs":{
+      "name":"ListPackageImportJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages/import-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPackageImportJobsRequest"},
+      "output":{"shape":"ListPackageImportJobsResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of package import jobs.</p>"
+    },
+    "ListPackages":{
+      "name":"ListPackages",
+      "http":{
+        "method":"GET",
+        "requestUri":"/packages",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPackagesRequest"},
+      "output":{"shape":"ListPackagesResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of packages.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of tags for a resource.</p>"
+    },
+    "ProvisionDevice":{
+      "name":"ProvisionDevice",
+      "http":{
+        "method":"POST",
+        "requestUri":"/devices",
+        "responseCode":200
+      },
+      "input":{"shape":"ProvisionDeviceRequest"},
+      "output":{"shape":"ProvisionDeviceResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a device and returns a configuration archive. The configuration archive is a ZIP file that contains a provisioning certificate that is valid for 5 minutes. Name the configuration archive <code>certificates-omni_<i>device-name</i>.zip</code> and transfer it to the device within 5 minutes. Use the included USB storage device and connect it to the USB 3.0 port next to the HDMI output.</p>"
+    },
+    "RegisterPackageVersion":{
+      "name":"RegisterPackageVersion",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/packages/{PackageId}/versions/{PackageVersion}/patch/{PatchVersion}",
+        "responseCode":200
+      },
+      "input":{"shape":"RegisterPackageVersionRequest"},
+      "output":{"shape":"RegisterPackageVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Registers a package version.</p>"
+    },
+    "RemoveApplicationInstance":{
+      "name":"RemoveApplicationInstance",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/application-instances/{ApplicationInstanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"RemoveApplicationInstanceRequest"},
+      "output":{"shape":"RemoveApplicationInstanceResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes an application instance.</p>"
+    },
+    "SignalApplicationInstanceNodeInstances":{
+      "name":"SignalApplicationInstanceNodeInstances",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/application-instances/{ApplicationInstanceId}/node-signals",
+        "responseCode":200
+      },
+      "input":{"shape":"SignalApplicationInstanceNodeInstancesRequest"},
+      "output":{"shape":"SignalApplicationInstanceNodeInstancesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Signal camera nodes to stop or resume.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Tags a resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes tags from a resource.</p>"
+    },
+    "UpdateDeviceMetadata":{
+      "name":"UpdateDeviceMetadata",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/devices/{DeviceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDeviceMetadataRequest"},
+      "output":{"shape":"UpdateDeviceMetadataResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a device's metadata.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The requestor does not have permission to access the target action or resource.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AlternateSoftwareMetadata":{
+      "type":"structure",
+      "members":{
+        "Version":{
+          "shape":"Version",
+          "documentation":"<p>The appliance software version.</p>"
+        }
+      },
+      "documentation":"<p>Details about a beta appliance software update.</p>"
+    },
+    "AlternateSoftwares":{
+      "type":"list",
+      "member":{"shape":"AlternateSoftwareMetadata"}
+    },
+    "ApplicationInstance":{
+      "type":"structure",
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>"
+        },
+        "Arn":{
+          "shape":"ApplicationInstanceArn",
+          "documentation":"<p>The application instance's ARN.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the application instance was created.</p>"
+        },
+        "DefaultRuntimeContextDevice":{
+          "shape":"DefaultRuntimeContextDevice",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "DefaultRuntimeContextDeviceName":{
+          "shape":"DeviceName",
+          "documentation":"<p>The device's name.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The application instance's description.</p>"
+        },
+        "HealthStatus":{
+          "shape":"ApplicationInstanceHealthStatus",
+          "documentation":"<p>The application instance's health status.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationInstanceName",
+          "documentation":"<p>The application instance's name.</p>"
+        },
+        "RuntimeContextStates":{
+          "shape":"ReportedRuntimeContextStates",
+          "documentation":"<p>The application's state.</p>"
+        },
+        "Status":{
+          "shape":"ApplicationInstanceStatus",
+          "documentation":"<p>The application instance's status.</p>"
+        },
+        "StatusDescription":{
+          "shape":"ApplicationInstanceStatusDescription",
+          "documentation":"<p>The application instance's status description.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The application instance's tags.</p>"
+        }
+      },
+      "documentation":"<p>An application instance on a device.</p>"
+    },
+    "ApplicationInstanceArn":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ApplicationInstanceHealthStatus":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "ERROR",
+        "NOT_AVAILABLE"
+      ]
+    },
+    "ApplicationInstanceId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "ApplicationInstanceName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "ApplicationInstanceStatus":{
+      "type":"string",
+      "enum":[
+        "DEPLOYMENT_PENDING",
+        "DEPLOYMENT_REQUESTED",
+        "DEPLOYMENT_IN_PROGRESS",
+        "DEPLOYMENT_ERROR",
+        "DEPLOYMENT_SUCCEEDED",
+        "REMOVAL_PENDING",
+        "REMOVAL_REQUESTED",
+        "REMOVAL_IN_PROGRESS",
+        "REMOVAL_FAILED",
+        "REMOVAL_SUCCEEDED",
+        "DEPLOYMENT_FAILED"
+      ]
+    },
+    "ApplicationInstanceStatusDescription":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ApplicationInstances":{
+      "type":"list",
+      "member":{"shape":"ApplicationInstance"}
+    },
+    "Boolean":{"type":"boolean"},
+    "Bucket":{"type":"string"},
+    "BucketName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "Certificates":{"type":"blob"},
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "ErrorArguments":{
+          "shape":"ConflictExceptionErrorArgumentList",
+          "documentation":"<p>A list of attributes that led to the exception and their values.</p>"
+        },
+        "ErrorId":{
+          "shape":"String",
+          "documentation":"<p>A unique ID for the error.</p>"
+        },
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource's ID.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource's type.</p>"
+        }
+      },
+      "documentation":"<p>The target resource is in use.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConflictExceptionErrorArgument":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Value"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The error argument's name.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The error argument's value.</p>"
+        }
+      },
+      "documentation":"<p>A conflict exception error argument.</p>"
+    },
+    "ConflictExceptionErrorArgumentList":{
+      "type":"list",
+      "member":{"shape":"ConflictExceptionErrorArgument"}
+    },
+    "ConnectionType":{
+      "type":"string",
+      "enum":[
+        "STATIC_IP",
+        "DHCP"
+      ]
+    },
+    "CreateApplicationInstanceRequest":{
+      "type":"structure",
+      "required":[
+        "DefaultRuntimeContextDevice",
+        "ManifestPayload"
+      ],
+      "members":{
+        "ApplicationInstanceIdToReplace":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The ID of an application instance to replace with the new instance.</p>"
+        },
+        "DefaultRuntimeContextDevice":{
+          "shape":"DefaultRuntimeContextDevice",
+          "documentation":"<p>A device's ID.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the application instance.</p>"
+        },
+        "ManifestOverridesPayload":{
+          "shape":"ManifestOverridesPayload",
+          "documentation":"<p>Setting overrides for the application manifest.</p>"
+        },
+        "ManifestPayload":{
+          "shape":"ManifestPayload",
+          "documentation":"<p>The application's manifest document.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationInstanceName",
+          "documentation":"<p>A name for the application instance.</p>"
+        },
+        "RuntimeRoleArn":{
+          "shape":"RuntimeRoleArn",
+          "documentation":"<p>The ARN of a runtime role for the application instance.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags for the application instance.</p>"
+        }
+      }
+    },
+    "CreateApplicationInstanceResponse":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>"
+        }
+      }
+    },
+    "CreateJobForDevicesRequest":{
+      "type":"structure",
+      "required":[
+        "DeviceIds",
+        "JobType"
+      ],
+      "members":{
+        "DeviceIds":{
+          "shape":"DeviceIdList",
+          "documentation":"<p>ID of target device.</p>"
+        },
+        "DeviceJobConfig":{
+          "shape":"DeviceJobConfig",
+          "documentation":"<p>Configuration settings for a software update job.</p>"
+        },
+        "JobType":{
+          "shape":"JobType",
+          "documentation":"<p>The type of job to run.</p>"
+        }
+      }
+    },
+    "CreateJobForDevicesResponse":{
+      "type":"structure",
+      "required":["Jobs"],
+      "members":{
+        "Jobs":{
+          "shape":"JobList",
+          "documentation":"<p>A list of jobs.</p>"
+        }
+      }
+    },
+    "CreateNodeFromTemplateJobRequest":{
+      "type":"structure",
+      "required":[
+        "NodeName",
+        "OutputPackageName",
+        "OutputPackageVersion",
+        "TemplateParameters",
+        "TemplateType"
+      ],
+      "members":{
+        "JobTags":{
+          "shape":"JobTagsList",
+          "documentation":"<p>Tags for the job.</p>"
+        },
+        "NodeDescription":{
+          "shape":"Description",
+          "documentation":"<p>A description for the node.</p>"
+        },
+        "NodeName":{
+          "shape":"NodeName",
+          "documentation":"<p>A name for the node.</p>"
+        },
+        "OutputPackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>An output package name for the node.</p>"
+        },
+        "OutputPackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>An output package version for the node.</p>"
+        },
+        "TemplateParameters":{
+          "shape":"TemplateParametersMap",
+          "documentation":"<p>Template parameters for the node.</p>"
+        },
+        "TemplateType":{
+          "shape":"TemplateType",
+          "documentation":"<p>The type of node.</p>"
+        }
+      }
+    },
+    "CreateNodeFromTemplateJobResponse":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        }
+      }
+    },
+    "CreatePackageImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "ClientToken",
+        "InputConfig",
+        "JobType",
+        "OutputConfig"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A client token for the package import job.</p>"
+        },
+        "InputConfig":{
+          "shape":"PackageImportJobInputConfig",
+          "documentation":"<p>An input config for the package import job.</p>"
+        },
+        "JobTags":{
+          "shape":"JobTagsList",
+          "documentation":"<p>Tags for the package import job.</p>"
+        },
+        "JobType":{
+          "shape":"PackageImportJobType",
+          "documentation":"<p>A job type for the package import job.</p>"
+        },
+        "OutputConfig":{
+          "shape":"PackageImportJobOutputConfig",
+          "documentation":"<p>An output config for the package import job.</p>"
+        }
+      }
+    },
+    "CreatePackageImportJobResponse":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        }
+      }
+    },
+    "CreatePackageRequest":{
+      "type":"structure",
+      "required":["PackageName"],
+      "members":{
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>A name for the package.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags for the package.</p>"
+        }
+      }
+    },
+    "CreatePackageResponse":{
+      "type":"structure",
+      "required":["StorageLocation"],
+      "members":{
+        "Arn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The package's ARN.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>"
+        },
+        "StorageLocation":{
+          "shape":"StorageLocation",
+          "documentation":"<p>The package's storage location.</p>"
+        }
+      }
+    },
+    "CreatedTime":{"type":"timestamp"},
+    "CurrentSoftware":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DefaultGateway":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "DefaultRuntimeContextDevice":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "DeleteDeviceRequest":{
+      "type":"structure",
+      "required":["DeviceId"],
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>",
+          "location":"uri",
+          "locationName":"DeviceId"
+        }
+      }
+    },
+    "DeleteDeviceResponse":{
+      "type":"structure",
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        }
+      }
+    },
+    "DeletePackageRequest":{
+      "type":"structure",
+      "required":["PackageId"],
+      "members":{
+        "ForceDelete":{
+          "shape":"Boolean",
+          "documentation":"<p>Delete the package even if it has artifacts stored in its access point. Deletes the package's artifacts from Amazon S3.</p>",
+          "location":"querystring",
+          "locationName":"ForceDelete"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>",
+          "location":"uri",
+          "locationName":"PackageId"
+        }
+      }
+    },
+    "DeletePackageResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeregisterPackageVersionRequest":{
+      "type":"structure",
+      "required":[
+        "PackageId",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>An owner account.</p>",
+          "location":"querystring",
+          "locationName":"OwnerAccount"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>A package ID.</p>",
+          "location":"uri",
+          "locationName":"PackageId"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>A package version.</p>",
+          "location":"uri",
+          "locationName":"PackageVersion"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>A patch version.</p>",
+          "location":"uri",
+          "locationName":"PatchVersion"
+        },
+        "UpdatedLatestPatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>If the version was marked latest, the new version to maker as latest.</p>",
+          "location":"querystring",
+          "locationName":"UpdatedLatestPatchVersion"
+        }
+      }
+    },
+    "DeregisterPackageVersionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeApplicationInstanceDetailsRequest":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        }
+      }
+    },
+    "DescribeApplicationInstanceDetailsResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>"
+        },
+        "ApplicationInstanceIdToReplace":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The ID of the application instance that this instance replaced.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the application instance was created.</p>"
+        },
+        "DefaultRuntimeContextDevice":{
+          "shape":"DefaultRuntimeContextDevice",
+          "documentation":"<p>The application instance's default runtime context device.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The application instance's description.</p>"
+        },
+        "ManifestOverridesPayload":{
+          "shape":"ManifestOverridesPayload",
+          "documentation":"<p>Parameter overrides for the configuration manifest.</p>"
+        },
+        "ManifestPayload":{
+          "shape":"ManifestPayload",
+          "documentation":"<p>The application instance's configuration manifest.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationInstanceName",
+          "documentation":"<p>The application instance's name.</p>"
+        }
+      }
+    },
+    "DescribeApplicationInstanceRequest":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        }
+      }
+    },
+    "DescribeApplicationInstanceResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>"
+        },
+        "ApplicationInstanceIdToReplace":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The ID of the application instance that this instance replaced.</p>"
+        },
+        "Arn":{
+          "shape":"ApplicationInstanceArn",
+          "documentation":"<p>The application instance's ARN.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the application instance was created.</p>"
+        },
+        "DefaultRuntimeContextDevice":{
+          "shape":"DefaultRuntimeContextDevice",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "DefaultRuntimeContextDeviceName":{
+          "shape":"DeviceName",
+          "documentation":"<p>The device's bane.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The application instance's description.</p>"
+        },
+        "HealthStatus":{
+          "shape":"ApplicationInstanceHealthStatus",
+          "documentation":"<p>The application instance's health status.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The application instance was updated.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationInstanceName",
+          "documentation":"<p>The application instance's name.</p>"
+        },
+        "RuntimeContextStates":{
+          "shape":"ReportedRuntimeContextStates",
+          "documentation":"<p>The application instance's state.</p>"
+        },
+        "RuntimeRoleArn":{
+          "shape":"RuntimeRoleArn",
+          "documentation":"<p>The application instance's runtime role ARN.</p>"
+        },
+        "Status":{
+          "shape":"ApplicationInstanceStatus",
+          "documentation":"<p>The application instance's status.</p>"
+        },
+        "StatusDescription":{
+          "shape":"ApplicationInstanceStatusDescription",
+          "documentation":"<p>The application instance's status description.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The application instance's tags.</p>"
+        }
+      }
+    },
+    "DescribeDeviceJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "DescribeDeviceJobResponse":{
+      "type":"structure",
+      "members":{
+        "CreatedTime":{
+          "shape":"UpdateCreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "DeviceArn":{
+          "shape":"DeviceArn",
+          "documentation":"<p>The device's ARN.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "DeviceName":{
+          "shape":"DeviceName",
+          "documentation":"<p>The device's name.</p>"
+        },
+        "DeviceType":{
+          "shape":"DeviceType",
+          "documentation":"<p>The device's type.</p>"
+        },
+        "ImageVersion":{
+          "shape":"ImageVersion",
+          "documentation":"<p>For an OTA job, the target version of the device software.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "JobType":{
+          "shape":"JobType",
+          "documentation":"<p>The job's type.</p>"
+        },
+        "Status":{
+          "shape":"UpdateProgress",
+          "documentation":"<p>The job's status.</p>"
+        }
+      }
+    },
+    "DescribeDeviceRequest":{
+      "type":"structure",
+      "required":["DeviceId"],
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>",
+          "location":"uri",
+          "locationName":"DeviceId"
+        }
+      }
+    },
+    "DescribeDeviceResponse":{
+      "type":"structure",
+      "members":{
+        "AlternateSoftwares":{
+          "shape":"AlternateSoftwares",
+          "documentation":"<p>Beta software releases available for the device.</p>"
+        },
+        "Arn":{
+          "shape":"DeviceArn",
+          "documentation":"<p>The device's ARN.</p>"
+        },
+        "Brand":{
+          "shape":"DeviceBrand",
+          "documentation":"<p>The device's maker.</p>"
+        },
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the device was created.</p>"
+        },
+        "CurrentNetworkingStatus":{
+          "shape":"NetworkStatus",
+          "documentation":"<p>The device's networking status.</p>"
+        },
+        "CurrentSoftware":{
+          "shape":"CurrentSoftware",
+          "documentation":"<p>The device's current software version.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The device's description.</p>"
+        },
+        "DeviceAggregatedStatus":{
+          "shape":"DeviceAggregatedStatus",
+          "documentation":"<p>A device's aggregated status. Including the device's connection status, provisioning status, and lease status.</p>"
+        },
+        "DeviceConnectionStatus":{
+          "shape":"DeviceConnectionStatus",
+          "documentation":"<p>The device's connection status.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "LatestAlternateSoftware":{
+          "shape":"LatestAlternateSoftware",
+          "documentation":"<p>The most recent beta software release.</p>"
+        },
+        "LatestDeviceJob":{
+          "shape":"LatestDeviceJob",
+          "documentation":"<p>A device's latest job. Includes the target image version, and the job status.</p>"
+        },
+        "LatestSoftware":{
+          "shape":"LatestSoftware",
+          "documentation":"<p>The latest software version available for the device.</p>"
+        },
+        "LeaseExpirationTime":{
+          "shape":"LeaseExpirationTime",
+          "documentation":"<p>The device's lease expiration time.</p>"
+        },
+        "Name":{
+          "shape":"DeviceName",
+          "documentation":"<p>The device's name.</p>"
+        },
+        "NetworkingConfiguration":{
+          "shape":"NetworkPayload",
+          "documentation":"<p>The device's networking configuration.</p>"
+        },
+        "ProvisioningStatus":{
+          "shape":"DeviceStatus",
+          "documentation":"<p>The device's provisioning status.</p>"
+        },
+        "SerialNumber":{
+          "shape":"DeviceSerialNumber",
+          "documentation":"<p>The device's serial number.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The device's tags.</p>"
+        },
+        "Type":{
+          "shape":"DeviceType",
+          "documentation":"<p>The device's type.</p>"
+        }
+      }
+    },
+    "DescribeNodeFromTemplateJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "DescribeNodeFromTemplateJobResponse":{
+      "type":"structure",
+      "required":[
+        "CreatedTime",
+        "JobId",
+        "LastUpdatedTime",
+        "NodeName",
+        "OutputPackageName",
+        "OutputPackageVersion",
+        "Status",
+        "StatusMessage",
+        "TemplateParameters",
+        "TemplateType"
+      ],
+      "members":{
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "JobTags":{
+          "shape":"JobTagsList",
+          "documentation":"<p>The job's tags.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"LastUpdatedTime",
+          "documentation":"<p>When the job was updated.</p>"
+        },
+        "NodeDescription":{
+          "shape":"Description",
+          "documentation":"<p>The node's description.</p>"
+        },
+        "NodeName":{
+          "shape":"NodeName",
+          "documentation":"<p>The node's name.</p>"
+        },
+        "OutputPackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The job's output package name.</p>"
+        },
+        "OutputPackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The job's output package version.</p>"
+        },
+        "Status":{
+          "shape":"NodeFromTemplateJobStatus",
+          "documentation":"<p>The job's status.</p>"
+        },
+        "StatusMessage":{
+          "shape":"NodeFromTemplateJobStatusMessage",
+          "documentation":"<p>The job's status message.</p>"
+        },
+        "TemplateParameters":{
+          "shape":"TemplateParametersMap",
+          "documentation":"<p>The job's template parameters.</p>"
+        },
+        "TemplateType":{
+          "shape":"TemplateType",
+          "documentation":"<p>The job's template type.</p>"
+        }
+      }
+    },
+    "DescribeNodeRequest":{
+      "type":"structure",
+      "required":["NodeId"],
+      "members":{
+        "NodeId":{
+          "shape":"NodeId",
+          "documentation":"<p>The node's ID.</p>",
+          "location":"uri",
+          "locationName":"NodeId"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>The account ID of the node's owner.</p>",
+          "location":"querystring",
+          "locationName":"OwnerAccount"
+        }
+      }
+    },
+    "DescribeNodeResponse":{
+      "type":"structure",
+      "required":[
+        "Category",
+        "CreatedTime",
+        "Description",
+        "LastUpdatedTime",
+        "Name",
+        "NodeId",
+        "NodeInterface",
+        "OwnerAccount",
+        "PackageId",
+        "PackageName",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "AssetName":{
+          "shape":"NodeAssetName",
+          "documentation":"<p>The node's asset name.</p>"
+        },
+        "Category":{
+          "shape":"NodeCategory",
+          "documentation":"<p>The node's category.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the node was created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The node's description.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the node was updated.</p>"
+        },
+        "Name":{
+          "shape":"NodeName",
+          "documentation":"<p>The node's name.</p>"
+        },
+        "NodeId":{
+          "shape":"NodeId",
+          "documentation":"<p>The node's ID.</p>"
+        },
+        "NodeInterface":{
+          "shape":"NodeInterface",
+          "documentation":"<p>The node's interface.</p>"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>The account ID of the node's owner.</p>"
+        },
+        "PackageArn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The node's ARN.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The node's package ID.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The node's package name.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The node's package version.</p>"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The node's patch version.</p>"
+        }
+      }
+    },
+    "DescribePackageImportJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "DescribePackageImportJobResponse":{
+      "type":"structure",
+      "required":[
+        "CreatedTime",
+        "InputConfig",
+        "JobId",
+        "JobType",
+        "LastUpdatedTime",
+        "Output",
+        "OutputConfig",
+        "Status",
+        "StatusMessage"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>The job's client token.</p>"
+        },
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "InputConfig":{
+          "shape":"PackageImportJobInputConfig",
+          "documentation":"<p>The job's input config.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "JobTags":{
+          "shape":"JobTagsList",
+          "documentation":"<p>The job's tags.</p>"
+        },
+        "JobType":{
+          "shape":"PackageImportJobType",
+          "documentation":"<p>The job's type.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"LastUpdatedTime",
+          "documentation":"<p>When the job was updated.</p>"
+        },
+        "Output":{
+          "shape":"PackageImportJobOutput",
+          "documentation":"<p>The job's output.</p>"
+        },
+        "OutputConfig":{
+          "shape":"PackageImportJobOutputConfig",
+          "documentation":"<p>The job's output config.</p>"
+        },
+        "Status":{
+          "shape":"PackageImportJobStatus",
+          "documentation":"<p>The job's status.</p>"
+        },
+        "StatusMessage":{
+          "shape":"PackageImportJobStatusMessage",
+          "documentation":"<p>The job's status message.</p>"
+        }
+      }
+    },
+    "DescribePackageRequest":{
+      "type":"structure",
+      "required":["PackageId"],
+      "members":{
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>",
+          "location":"uri",
+          "locationName":"PackageId"
+        }
+      }
+    },
+    "DescribePackageResponse":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreatedTime",
+        "PackageId",
+        "PackageName",
+        "StorageLocation",
+        "Tags"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The package's ARN.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the package was created.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The package's name.</p>"
+        },
+        "ReadAccessPrincipalArns":{
+          "shape":"PrincipalArnsList",
+          "documentation":"<p>ARNs of accounts that have read access to the package.</p>"
+        },
+        "StorageLocation":{
+          "shape":"StorageLocation",
+          "documentation":"<p>The package's storage location.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The package's tags.</p>"
+        },
+        "WriteAccessPrincipalArns":{
+          "shape":"PrincipalArnsList",
+          "documentation":"<p>ARNs of accounts that have write access to the package.</p>"
+        }
+      }
+    },
+    "DescribePackageVersionRequest":{
+      "type":"structure",
+      "required":[
+        "PackageId",
+        "PackageVersion"
+      ],
+      "members":{
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>The version's owner account.</p>",
+          "location":"querystring",
+          "locationName":"OwnerAccount"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The version's ID.</p>",
+          "location":"uri",
+          "locationName":"PackageId"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The version's version.</p>",
+          "location":"uri",
+          "locationName":"PackageVersion"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The version's patch version.</p>",
+          "location":"querystring",
+          "locationName":"PatchVersion"
+        }
+      }
+    },
+    "DescribePackageVersionResponse":{
+      "type":"structure",
+      "required":[
+        "IsLatestPatch",
+        "PackageId",
+        "PackageName",
+        "PackageVersion",
+        "PatchVersion",
+        "Status"
+      ],
+      "members":{
+        "IsLatestPatch":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the version is the latest available.</p>"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>The account ID of the version's owner.</p>"
+        },
+        "PackageArn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The ARN of the package.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The version's ID.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The version's name.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The version's version.</p>"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The version's patch version.</p>"
+        },
+        "RegisteredTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The version's registered time.</p>"
+        },
+        "Status":{
+          "shape":"PackageVersionStatus",
+          "documentation":"<p>The version's status.</p>"
+        },
+        "StatusDescription":{
+          "shape":"PackageVersionStatusDescription",
+          "documentation":"<p>The version's status description.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^.*$"
+    },
+    "DesiredState":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "STOPPED",
+        "REMOVED"
+      ]
+    },
+    "Device":{
+      "type":"structure",
+      "members":{
+        "Brand":{
+          "shape":"DeviceBrand",
+          "documentation":"<p>The device's maker.</p>"
+        },
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the device was created.</p>"
+        },
+        "CurrentSoftware":{
+          "shape":"CurrentSoftware",
+          "documentation":"<p>A device's current software.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the device.</p>"
+        },
+        "DeviceAggregatedStatus":{
+          "shape":"DeviceAggregatedStatus",
+          "documentation":"<p>A device's aggregated status. Including the device's connection status, provisioning status, and lease status.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"LastUpdatedTime",
+          "documentation":"<p>When the device was updated.</p>"
+        },
+        "LatestDeviceJob":{
+          "shape":"LatestDeviceJob",
+          "documentation":"<p>A device's latest job. Includes the target image version, and the update job status.</p>"
+        },
+        "LeaseExpirationTime":{
+          "shape":"LeaseExpirationTime",
+          "documentation":"<p>The device's lease expiration time.</p>"
+        },
+        "Name":{
+          "shape":"DeviceName",
+          "documentation":"<p>The device's name.</p>"
+        },
+        "ProvisioningStatus":{
+          "shape":"DeviceStatus",
+          "documentation":"<p>The device's provisioning status.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The device's tags.</p>"
+        },
+        "Type":{
+          "shape":"DeviceType",
+          "documentation":"<p>The device's type.</p>"
+        }
+      },
+      "documentation":"<p>A device.</p>"
+    },
+    "DeviceAggregatedStatus":{
+      "type":"string",
+      "enum":[
+        "ERROR",
+        "AWAITING_PROVISIONING",
+        "PENDING",
+        "FAILED",
+        "DELETING",
+        "ONLINE",
+        "OFFLINE",
+        "LEASE_EXPIRED",
+        "UPDATE_NEEDED",
+        "REBOOTING"
+      ]
+    },
+    "DeviceArn":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DeviceBrand":{
+      "type":"string",
+      "enum":[
+        "AWS_PANORAMA",
+        "LENOVO"
+      ]
+    },
+    "DeviceConnectionStatus":{
+      "type":"string",
+      "enum":[
+        "ONLINE",
+        "OFFLINE",
+        "AWAITING_CREDENTIALS",
+        "NOT_AVAILABLE",
+        "ERROR"
+      ]
+    },
+    "DeviceId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "DeviceIdList":{
+      "type":"list",
+      "member":{"shape":"DeviceId"},
+      "max":1,
+      "min":1
+    },
+    "DeviceJob":{
+      "type":"structure",
+      "members":{
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the target device.</p>"
+        },
+        "DeviceName":{
+          "shape":"DeviceName",
+          "documentation":"<p>The name of the target device</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "JobType":{
+          "shape":"JobType",
+          "documentation":"<p>The job's type.</p>"
+        }
+      },
+      "documentation":"<p>A job that runs on a device.</p>"
+    },
+    "DeviceJobConfig":{
+      "type":"structure",
+      "members":{
+        "OTAJobConfig":{
+          "shape":"OTAJobConfig",
+          "documentation":"<p>A configuration for an over-the-air (OTA) upgrade. Required for OTA jobs.</p>"
+        }
+      },
+      "documentation":"<p>A job's configuration.</p>"
+    },
+    "DeviceJobList":{
+      "type":"list",
+      "member":{"shape":"DeviceJob"}
+    },
+    "DeviceList":{
+      "type":"list",
+      "member":{"shape":"Device"}
+    },
+    "DeviceName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "DeviceReportedStatus":{
+      "type":"string",
+      "enum":[
+        "STOPPING",
+        "STOPPED",
+        "STOP_ERROR",
+        "REMOVAL_FAILED",
+        "REMOVAL_IN_PROGRESS",
+        "STARTING",
+        "RUNNING",
+        "INSTALL_ERROR",
+        "LAUNCHED",
+        "LAUNCH_ERROR",
+        "INSTALL_IN_PROGRESS"
+      ]
+    },
+    "DeviceSerialNumber":{
+      "type":"string",
+      "pattern":"^[0-9]{1,20}$"
+    },
+    "DeviceStatus":{
+      "type":"string",
+      "enum":[
+        "AWAITING_PROVISIONING",
+        "PENDING",
+        "SUCCEEDED",
+        "FAILED",
+        "ERROR",
+        "DELETING"
+      ]
+    },
+    "DeviceType":{
+      "type":"string",
+      "enum":[
+        "PANORAMA_APPLIANCE_DEVELOPER_KIT",
+        "PANORAMA_APPLIANCE"
+      ]
+    },
+    "Dns":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "DnsList":{
+      "type":"list",
+      "member":{"shape":"Dns"}
+    },
+    "EthernetPayload":{
+      "type":"structure",
+      "required":["ConnectionType"],
+      "members":{
+        "ConnectionType":{
+          "shape":"ConnectionType",
+          "documentation":"<p>How the device gets an IP address.</p>"
+        },
+        "StaticIpConnectionInfo":{
+          "shape":"StaticIpConnectionInfo",
+          "documentation":"<p>Network configuration for a static IP connection.</p>"
+        }
+      },
+      "documentation":"<p>A device's network configuration.</p>"
+    },
+    "EthernetStatus":{
+      "type":"structure",
+      "members":{
+        "ConnectionStatus":{
+          "shape":"NetworkConnectionStatus",
+          "documentation":"<p>The device's connection status.</p>"
+        },
+        "HwAddress":{
+          "shape":"HwAddress",
+          "documentation":"<p>The device's physical address.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>The device's IP address.</p>"
+        }
+      },
+      "documentation":"<p>A device's Ethernet status.</p>"
+    },
+    "HwAddress":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ImageVersion":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "InputPortList":{
+      "type":"list",
+      "member":{"shape":"NodeInputPort"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds a client should wait before retrying the call.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An internal error occurred.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "IotThingName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "IpAddress":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d))(:(6553[0-5]|655[0-2]\\d|65[0-4]\\d{2}|6[0-4]\\d{3}|[1-5]\\d{4}|[1-9]\\d{0,3}))?$"
+    },
+    "IpAddressOrServerName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"(^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}$)|(^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d))(:(6553[0-5]|655[0-2]\\d|65[0-4]\\d{2}|6[0-4]\\d{3}|[1-5]\\d{4}|[1-9]\\d{0,3}))?$)"
+    },
+    "Job":{
+      "type":"structure",
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The target device's ID.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        }
+      },
+      "documentation":"<p>A job for a device.</p>"
+    },
+    "JobId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "JobList":{
+      "type":"list",
+      "member":{"shape":"Job"}
+    },
+    "JobResourceTags":{
+      "type":"structure",
+      "required":[
+        "ResourceType",
+        "Tags"
+      ],
+      "members":{
+        "ResourceType":{
+          "shape":"JobResourceType",
+          "documentation":"<p>The job's type.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The job's tags.</p>"
+        }
+      },
+      "documentation":"<p>Tags for a job.</p>"
+    },
+    "JobResourceType":{
+      "type":"string",
+      "enum":["PACKAGE"]
+    },
+    "JobTagsList":{
+      "type":"list",
+      "member":{"shape":"JobResourceTags"}
+    },
+    "JobType":{
+      "type":"string",
+      "enum":[
+        "OTA",
+        "REBOOT"
+      ]
+    },
+    "LastUpdatedTime":{"type":"timestamp"},
+    "LatestAlternateSoftware":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "LatestDeviceJob":{
+      "type":"structure",
+      "members":{
+        "ImageVersion":{
+          "shape":"ImageVersion",
+          "documentation":"<p>The target version of the device software.</p>"
+        },
+        "JobType":{
+          "shape":"JobType",
+          "documentation":"<p>The job's type.</p>"
+        },
+        "Status":{
+          "shape":"UpdateProgress",
+          "documentation":"<p>Status of the latest device job.</p>"
+        }
+      },
+      "documentation":"<p>Returns information about the latest device job.</p>"
+    },
+    "LatestSoftware":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "LeaseExpirationTime":{"type":"timestamp"},
+    "ListApplicationInstanceDependenciesRequest":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The application instance's ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of application instance dependencies to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListApplicationInstanceDependenciesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "PackageObjects":{
+          "shape":"PackageObjects",
+          "documentation":"<p>A list of package objects.</p>"
+        }
+      }
+    },
+    "ListApplicationInstanceNodeInstancesRequest":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>The node instances' application instance ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of node instances to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListApplicationInstanceNodeInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "NodeInstances":{
+          "shape":"NodeInstances",
+          "documentation":"<p>A list of node instances.</p>"
+        }
+      }
+    },
+    "ListApplicationInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The application instances' device ID.</p>",
+          "location":"querystring",
+          "locationName":"deviceId"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of application instances to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "StatusFilter":{
+          "shape":"StatusFilter",
+          "documentation":"<p>Only include instances with a specific status.</p>",
+          "location":"querystring",
+          "locationName":"statusFilter"
+        }
+      }
+    },
+    "ListApplicationInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInstances":{
+          "shape":"ApplicationInstances",
+          "documentation":"<p>A list of application instances.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListDevicesJobsRequest":{
+      "type":"structure",
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>Filter results by the job's target device ID.</p>",
+          "location":"querystring",
+          "locationName":"DeviceId"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of device jobs to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListDevicesJobsResponse":{
+      "type":"structure",
+      "members":{
+        "DeviceJobs":{
+          "shape":"DeviceJobList",
+          "documentation":"<p>A list of jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListDevicesRequest":{
+      "type":"structure",
+      "members":{
+        "DeviceAggregatedStatusFilter":{
+          "shape":"DeviceAggregatedStatus",
+          "documentation":"<p>Filter based on a device's status.</p>",
+          "location":"querystring",
+          "locationName":"DeviceAggregatedStatusFilter"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of devices to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NameFilter":{
+          "shape":"NameFilter",
+          "documentation":"<p>Filter based on device's name. Prefixes supported.</p>",
+          "location":"querystring",
+          "locationName":"NameFilter"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "SortBy":{
+          "shape":"ListDevicesSortBy",
+          "documentation":"<p>The target column to be sorted on. Default column sort is CREATED_TIME.</p>",
+          "location":"querystring",
+          "locationName":"SortBy"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The sorting order for the returned list. SortOrder is DESCENDING by default based on CREATED_TIME. Otherwise, SortOrder is ASCENDING.</p>",
+          "location":"querystring",
+          "locationName":"SortOrder"
+        }
+      }
+    },
+    "ListDevicesResponse":{
+      "type":"structure",
+      "required":["Devices"],
+      "members":{
+        "Devices":{
+          "shape":"DeviceList",
+          "documentation":"<p>A list of devices.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListDevicesSortBy":{
+      "type":"string",
+      "enum":[
+        "DEVICE_ID",
+        "CREATED_TIME",
+        "NAME",
+        "DEVICE_AGGREGATED_STATUS"
+      ]
+    },
+    "ListNodeFromTemplateJobsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of node from template jobs to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListNodeFromTemplateJobsResponse":{
+      "type":"structure",
+      "required":["NodeFromTemplateJobs"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "NodeFromTemplateJobs":{
+          "shape":"NodeFromTemplateJobList",
+          "documentation":"<p>A list of jobs.</p>"
+        }
+      }
+    },
+    "ListNodesRequest":{
+      "type":"structure",
+      "members":{
+        "Category":{
+          "shape":"NodeCategory",
+          "documentation":"<p>Search for nodes by category.</p>",
+          "location":"querystring",
+          "locationName":"category"
+        },
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of nodes to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>Search for nodes by the account ID of the nodes' owner.</p>",
+          "location":"querystring",
+          "locationName":"ownerAccount"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>Search for nodes by name.</p>",
+          "location":"querystring",
+          "locationName":"packageName"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>Search for nodes by version.</p>",
+          "location":"querystring",
+          "locationName":"packageVersion"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>Search for nodes by patch version.</p>",
+          "location":"querystring",
+          "locationName":"patchVersion"
+        }
+      }
+    },
+    "ListNodesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "Nodes":{
+          "shape":"NodesList",
+          "documentation":"<p>A list of nodes.</p>"
+        }
+      }
+    },
+    "ListPackageImportJobsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of package import jobs to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListPackageImportJobsResponse":{
+      "type":"structure",
+      "required":["PackageImportJobs"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "PackageImportJobs":{
+          "shape":"PackageImportJobList",
+          "documentation":"<p>A list of package import jobs.</p>"
+        }
+      }
+    },
+    "ListPackagesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxSize25",
+          "documentation":"<p>The maximum number of packages to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>Specify the pagination token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListPackagesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's included if more results are available.</p>"
+        },
+        "Packages":{
+          "shape":"PackageList",
+          "documentation":"<p>A list of packages.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The resource's ARN.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags.</p>"
+        }
+      }
+    },
+    "ManifestOverridesPayload":{
+      "type":"structure",
+      "members":{
+        "PayloadData":{
+          "shape":"ManifestOverridesPayloadData",
+          "documentation":"<p>The overrides document.</p>"
+        }
+      },
+      "documentation":"<p>Parameter overrides for an application instance. This is a JSON document that has a single key (<code>PayloadData</code>) where the value is an escaped string representation of the overrides document.</p>",
+      "union":true
+    },
+    "ManifestOverridesPayloadData":{
+      "type":"string",
+      "max":51200,
+      "min":0,
+      "pattern":"^.*$"
+    },
+    "ManifestPayload":{
+      "type":"structure",
+      "members":{
+        "PayloadData":{
+          "shape":"ManifestPayloadData",
+          "documentation":"<p>The application manifest.</p>"
+        }
+      },
+      "documentation":"<p>A application verion's manifest file. This is a JSON document that has a single key (<code>PayloadData</code>) where the value is an escaped string representation of the application manifest (<code>graph.json</code>). This file is located in the <code>graphs</code> folder in your application source.</p>",
+      "union":true
+    },
+    "ManifestPayloadData":{
+      "type":"string",
+      "max":51200,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "MarkLatestPatch":{"type":"boolean"},
+    "Mask":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "MaxConnections":{"type":"integer"},
+    "MaxSize25":{
+      "type":"integer",
+      "max":25,
+      "min":0
+    },
+    "NameFilter":{"type":"string"},
+    "NetworkConnectionStatus":{
+      "type":"string",
+      "enum":[
+        "CONNECTED",
+        "NOT_CONNECTED",
+        "CONNECTING"
+      ]
+    },
+    "NetworkPayload":{
+      "type":"structure",
+      "members":{
+        "Ethernet0":{
+          "shape":"EthernetPayload",
+          "documentation":"<p>Settings for Ethernet port 0.</p>"
+        },
+        "Ethernet1":{
+          "shape":"EthernetPayload",
+          "documentation":"<p>Settings for Ethernet port 1.</p>"
+        },
+        "Ntp":{
+          "shape":"NtpPayload",
+          "documentation":"<p>Network time protocol (NTP) server settings.</p>"
+        }
+      },
+      "documentation":"<p>The network configuration for a device.</p>"
+    },
+    "NetworkStatus":{
+      "type":"structure",
+      "members":{
+        "Ethernet0Status":{
+          "shape":"EthernetStatus",
+          "documentation":"<p>The status of Ethernet port 0.</p>"
+        },
+        "Ethernet1Status":{
+          "shape":"EthernetStatus",
+          "documentation":"<p>The status of Ethernet port 1.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"LastUpdatedTime",
+          "documentation":"<p>When the network status changed.</p>"
+        },
+        "NtpStatus":{
+          "shape":"NtpStatus",
+          "documentation":"<p>Details about a network time protocol (NTP) server connection.</p>"
+        }
+      },
+      "documentation":"<p>The network status of a device.</p>"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "Node":{
+      "type":"structure",
+      "required":[
+        "Category",
+        "CreatedTime",
+        "Name",
+        "NodeId",
+        "PackageId",
+        "PackageName",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "Category":{
+          "shape":"NodeCategory",
+          "documentation":"<p>The node's category.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the node was created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The node's description.</p>"
+        },
+        "Name":{
+          "shape":"NodeName",
+          "documentation":"<p>The node's name.</p>"
+        },
+        "NodeId":{
+          "shape":"NodeId",
+          "documentation":"<p>The node's ID.</p>"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>The account ID of the node's owner.</p>"
+        },
+        "PackageArn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The node's ARN.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The node's package ID.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The node's package name.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The node's package version.</p>"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The node's patch version.</p>"
+        }
+      },
+      "documentation":"<p>An application node that represents a camera stream, a model, code, or output.</p>"
+    },
+    "NodeAssetName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "NodeCategory":{
+      "type":"string",
+      "enum":[
+        "BUSINESS_LOGIC",
+        "ML_MODEL",
+        "MEDIA_SOURCE",
+        "MEDIA_SINK"
+      ]
+    },
+    "NodeFromTemplateJob":{
+      "type":"structure",
+      "members":{
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "NodeName":{
+          "shape":"NodeName",
+          "documentation":"<p>The node's name.</p>"
+        },
+        "Status":{
+          "shape":"NodeFromTemplateJobStatus",
+          "documentation":"<p>The job's status.</p>"
+        },
+        "StatusMessage":{
+          "shape":"NodeFromTemplateJobStatusMessage",
+          "documentation":"<p>The job's status message.</p>"
+        },
+        "TemplateType":{
+          "shape":"TemplateType",
+          "documentation":"<p>The job's template type.</p>"
+        }
+      },
+      "documentation":"<p>A job to create a camera stream node.</p>"
+    },
+    "NodeFromTemplateJobList":{
+      "type":"list",
+      "member":{"shape":"NodeFromTemplateJob"}
+    },
+    "NodeFromTemplateJobStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "NodeFromTemplateJobStatusMessage":{"type":"string"},
+    "NodeId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_\\.]+$"
+    },
+    "NodeInputPort":{
+      "type":"structure",
+      "members":{
+        "DefaultValue":{
+          "shape":"PortDefaultValue",
+          "documentation":"<p>The input port's default value.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The input port's description.</p>"
+        },
+        "MaxConnections":{
+          "shape":"MaxConnections",
+          "documentation":"<p>The input port's max connections.</p>"
+        },
+        "Name":{
+          "shape":"PortName",
+          "documentation":"<p>The input port's name.</p>"
+        },
+        "Type":{
+          "shape":"PortType",
+          "documentation":"<p>The input port's type.</p>"
+        }
+      },
+      "documentation":"<p>A node input port.</p>"
+    },
+    "NodeInstance":{
+      "type":"structure",
+      "required":[
+        "CurrentStatus",
+        "NodeInstanceId"
+      ],
+      "members":{
+        "CurrentStatus":{
+          "shape":"NodeInstanceStatus",
+          "documentation":"<p>The instance's current status.</p>"
+        },
+        "NodeId":{
+          "shape":"NodeId",
+          "documentation":"<p>The node's ID.</p>"
+        },
+        "NodeInstanceId":{
+          "shape":"NodeInstanceId",
+          "documentation":"<p>The instance's ID.</p>"
+        },
+        "NodeName":{
+          "shape":"NodeName",
+          "documentation":"<p>The instance's name.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The instance's package name.</p>"
+        },
+        "PackagePatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The instance's package patch version.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The instance's package version.</p>"
+        }
+      },
+      "documentation":"<p>A node instance.</p>"
+    },
+    "NodeInstanceId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "NodeInstanceStatus":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "ERROR",
+        "NOT_AVAILABLE",
+        "PAUSED"
+      ]
+    },
+    "NodeInstances":{
+      "type":"list",
+      "member":{"shape":"NodeInstance"}
+    },
+    "NodeInterface":{
+      "type":"structure",
+      "required":[
+        "Inputs",
+        "Outputs"
+      ],
+      "members":{
+        "Inputs":{
+          "shape":"InputPortList",
+          "documentation":"<p>The node interface's inputs.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputPortList",
+          "documentation":"<p>The node interface's outputs.</p>"
+        }
+      },
+      "documentation":"<p>A node interface.</p>"
+    },
+    "NodeName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "NodeOutputPort":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The output port's description.</p>"
+        },
+        "Name":{
+          "shape":"PortName",
+          "documentation":"<p>The output port's name.</p>"
+        },
+        "Type":{
+          "shape":"PortType",
+          "documentation":"<p>The output port's type.</p>"
+        }
+      },
+      "documentation":"<p>A node output port.</p>"
+    },
+    "NodePackageArn":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "NodePackageId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_\\/]+$"
+    },
+    "NodePackageName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\-\\_]+$"
+    },
+    "NodePackagePatchVersion":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-z0-9]+$"
+    },
+    "NodePackageVersion":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^([0-9]+)\\.([0-9]+)$"
+    },
+    "NodeSignal":{
+      "type":"structure",
+      "required":[
+        "NodeInstanceId",
+        "Signal"
+      ],
+      "members":{
+        "NodeInstanceId":{
+          "shape":"NodeInstanceId",
+          "documentation":"<p>The camera node's name, from the application manifest.</p>"
+        },
+        "Signal":{
+          "shape":"NodeSignalValue",
+          "documentation":"<p>The signal value.</p>"
+        }
+      },
+      "documentation":"<p>A signal to a camera node to start or stop processing video.</p>"
+    },
+    "NodeSignalList":{
+      "type":"list",
+      "member":{"shape":"NodeSignal"},
+      "min":1
+    },
+    "NodeSignalValue":{
+      "type":"string",
+      "enum":[
+        "PAUSE",
+        "RESUME"
+      ]
+    },
+    "NodesList":{
+      "type":"list",
+      "member":{"shape":"Node"}
+    },
+    "NtpPayload":{
+      "type":"structure",
+      "required":["NtpServers"],
+      "members":{
+        "NtpServers":{
+          "shape":"NtpServerList",
+          "documentation":"<p>NTP servers to use, in order of preference.</p>"
+        }
+      },
+      "documentation":"<p>Network time protocol (NTP) server settings. Use this option to connect to local NTP servers instead of <code>pool.ntp.org</code>.</p>"
+    },
+    "NtpServerList":{
+      "type":"list",
+      "member":{"shape":"IpAddressOrServerName"},
+      "max":5,
+      "min":0
+    },
+    "NtpServerName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "NtpStatus":{
+      "type":"structure",
+      "members":{
+        "ConnectionStatus":{
+          "shape":"NetworkConnectionStatus",
+          "documentation":"<p>The connection's status.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>The IP address of the server.</p>"
+        },
+        "NtpServerName":{
+          "shape":"NtpServerName",
+          "documentation":"<p>The domain name of the server.</p>"
+        }
+      },
+      "documentation":"<p>Details about an NTP server connection.</p>"
+    },
+    "OTAJobConfig":{
+      "type":"structure",
+      "required":["ImageVersion"],
+      "members":{
+        "AllowMajorVersionUpdate":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to apply the update if it is a major version change.</p>"
+        },
+        "ImageVersion":{
+          "shape":"ImageVersion",
+          "documentation":"<p>The target version of the device software.</p>"
+        }
+      },
+      "documentation":"<p>An over-the-air update (OTA) job configuration.</p>"
+    },
+    "Object":{"type":"string"},
+    "ObjectKey":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "OutPutS3Location":{
+      "type":"structure",
+      "required":[
+        "BucketName",
+        "ObjectKey"
+      ],
+      "members":{
+        "BucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>The object's bucket.</p>"
+        },
+        "ObjectKey":{
+          "shape":"ObjectKey",
+          "documentation":"<p>The object's key.</p>"
+        }
+      },
+      "documentation":"<p>The location of an output object in Amazon S3.</p>"
+    },
+    "OutputPortList":{
+      "type":"list",
+      "member":{"shape":"NodeOutputPort"}
+    },
+    "PackageImportJob":{
+      "type":"structure",
+      "members":{
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>When the job was created.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The job's ID.</p>"
+        },
+        "JobType":{
+          "shape":"PackageImportJobType",
+          "documentation":"<p>The job's type.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"LastUpdatedTime",
+          "documentation":"<p>When the job was updated.</p>"
+        },
+        "Status":{
+          "shape":"PackageImportJobStatus",
+          "documentation":"<p>The job's status.</p>"
+        },
+        "StatusMessage":{
+          "shape":"PackageImportJobStatusMessage",
+          "documentation":"<p>The job's status message.</p>"
+        }
+      },
+      "documentation":"<p>A job to import a package version.</p>"
+    },
+    "PackageImportJobInputConfig":{
+      "type":"structure",
+      "members":{
+        "PackageVersionInputConfig":{
+          "shape":"PackageVersionInputConfig",
+          "documentation":"<p>The package version's input configuration.</p>"
+        }
+      },
+      "documentation":"<p>A configuration for a package import job.</p>"
+    },
+    "PackageImportJobList":{
+      "type":"list",
+      "member":{"shape":"PackageImportJob"}
+    },
+    "PackageImportJobOutput":{
+      "type":"structure",
+      "required":[
+        "OutputS3Location",
+        "PackageId",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "OutputS3Location":{
+          "shape":"OutPutS3Location",
+          "documentation":"<p>The package's output location.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The package's version.</p>"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The package's patch version.</p>"
+        }
+      },
+      "documentation":"<p>Results of a package import job.</p>"
+    },
+    "PackageImportJobOutputConfig":{
+      "type":"structure",
+      "members":{
+        "PackageVersionOutputConfig":{
+          "shape":"PackageVersionOutputConfig",
+          "documentation":"<p>The package version's output configuration.</p>"
+        }
+      },
+      "documentation":"<p>An output configuration for a package import job.</p>"
+    },
+    "PackageImportJobStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "PackageImportJobStatusMessage":{"type":"string"},
+    "PackageImportJobType":{
+      "type":"string",
+      "enum":[
+        "NODE_PACKAGE_VERSION",
+        "MARKETPLACE_NODE_PACKAGE_VERSION"
+      ]
+    },
+    "PackageList":{
+      "type":"list",
+      "member":{"shape":"PackageListItem"}
+    },
+    "PackageListItem":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"NodePackageArn",
+          "documentation":"<p>The package's ARN.</p>"
+        },
+        "CreatedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the package was created.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>The package's ID.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The package's name.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The package's tags.</p>"
+        }
+      },
+      "documentation":"<p>A package summary.</p>"
+    },
+    "PackageObject":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "Name":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The object's name.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The object's package version.</p>"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>The object's patch version.</p>"
+        }
+      },
+      "documentation":"<p>A package object.</p>"
+    },
+    "PackageObjects":{
+      "type":"list",
+      "member":{"shape":"PackageObject"}
+    },
+    "PackageOwnerAccount":{
+      "type":"string",
+      "max":12,
+      "min":1,
+      "pattern":"^[0-9a-z\\_]+$"
+    },
+    "PackageVersionInputConfig":{
+      "type":"structure",
+      "required":["S3Location"],
+      "members":{
+        "S3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>A location in Amazon S3.</p>"
+        }
+      },
+      "documentation":"<p>A package version input configuration.</p>"
+    },
+    "PackageVersionOutputConfig":{
+      "type":"structure",
+      "required":[
+        "PackageName",
+        "PackageVersion"
+      ],
+      "members":{
+        "MarkLatest":{
+          "shape":"MarkLatestPatch",
+          "documentation":"<p>Indicates that the version is recommended for all users.</p>"
+        },
+        "PackageName":{
+          "shape":"NodePackageName",
+          "documentation":"<p>The output's package name.</p>"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>The output's package version.</p>"
+        }
+      },
+      "documentation":"<p>A package version output configuration.</p>"
+    },
+    "PackageVersionStatus":{
+      "type":"string",
+      "enum":[
+        "REGISTER_PENDING",
+        "REGISTER_COMPLETED",
+        "FAILED",
+        "DELETING"
+      ]
+    },
+    "PackageVersionStatusDescription":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "PortDefaultValue":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "PortName":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\_]+$"
+    },
+    "PortType":{
+      "type":"string",
+      "enum":[
+        "BOOLEAN",
+        "STRING",
+        "INT32",
+        "FLOAT32",
+        "MEDIA"
+      ]
+    },
+    "PrincipalArn":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^arn:[a-z0-9][-.a-z0-9]{0,62}:iam::[0-9]{12}:[a-zA-Z0-9+=,.@\\-_/]+$"
+    },
+    "PrincipalArnsList":{
+      "type":"list",
+      "member":{"shape":"PrincipalArn"}
+    },
+    "ProvisionDeviceRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the device.</p>"
+        },
+        "Name":{
+          "shape":"DeviceName",
+          "documentation":"<p>A name for the device.</p>"
+        },
+        "NetworkingConfiguration":{
+          "shape":"NetworkPayload",
+          "documentation":"<p>A networking configuration for the device.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags for the device.</p>"
+        }
+      }
+    },
+    "ProvisionDeviceResponse":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Status"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"DeviceArn",
+          "documentation":"<p>The device's ARN.</p>"
+        },
+        "Certificates":{
+          "shape":"Certificates",
+          "documentation":"<p>The device's configuration bundle.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        },
+        "IotThingName":{
+          "shape":"IotThingName",
+          "documentation":"<p>The device's IoT thing name.</p>"
+        },
+        "Status":{
+          "shape":"DeviceStatus",
+          "documentation":"<p>The device's status.</p>"
+        }
+      }
+    },
+    "Region":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "RegisterPackageVersionRequest":{
+      "type":"structure",
+      "required":[
+        "PackageId",
+        "PackageVersion",
+        "PatchVersion"
+      ],
+      "members":{
+        "MarkLatest":{
+          "shape":"MarkLatestPatch",
+          "documentation":"<p>Whether to mark the new version as the latest version.</p>"
+        },
+        "OwnerAccount":{
+          "shape":"PackageOwnerAccount",
+          "documentation":"<p>An owner account.</p>"
+        },
+        "PackageId":{
+          "shape":"NodePackageId",
+          "documentation":"<p>A package ID.</p>",
+          "location":"uri",
+          "locationName":"PackageId"
+        },
+        "PackageVersion":{
+          "shape":"NodePackageVersion",
+          "documentation":"<p>A package version.</p>",
+          "location":"uri",
+          "locationName":"PackageVersion"
+        },
+        "PatchVersion":{
+          "shape":"NodePackagePatchVersion",
+          "documentation":"<p>A patch version.</p>",
+          "location":"uri",
+          "locationName":"PatchVersion"
+        }
+      }
+    },
+    "RegisterPackageVersionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "RemoveApplicationInstanceRequest":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>An application instance ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        }
+      }
+    },
+    "RemoveApplicationInstanceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ReportedRuntimeContextState":{
+      "type":"structure",
+      "required":[
+        "DesiredState",
+        "DeviceReportedStatus",
+        "DeviceReportedTime",
+        "RuntimeContextName"
+      ],
+      "members":{
+        "DesiredState":{
+          "shape":"DesiredState",
+          "documentation":"<p>The application's desired state.</p>"
+        },
+        "DeviceReportedStatus":{
+          "shape":"DeviceReportedStatus",
+          "documentation":"<p>The application's reported status.</p>"
+        },
+        "DeviceReportedTime":{
+          "shape":"TimeStamp",
+          "documentation":"<p>When the device reported the application's state.</p>"
+        },
+        "RuntimeContextName":{
+          "shape":"RuntimeContextName",
+          "documentation":"<p>The device's name.</p>"
+        }
+      },
+      "documentation":"<p>An application instance's state.</p>"
+    },
+    "ReportedRuntimeContextStates":{
+      "type":"list",
+      "member":{"shape":"ReportedRuntimeContextState"}
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource's ID.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource's type.</p>"
+        }
+      },
+      "documentation":"<p>The target resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RetryAfterSeconds":{"type":"integer"},
+    "RuntimeContextName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "RuntimeRoleArn":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^arn:[a-z0-9][-.a-z0-9]{0,62}:iam::[0-9]{12}:role/.+$"
+    },
+    "S3Location":{
+      "type":"structure",
+      "required":[
+        "BucketName",
+        "ObjectKey"
+      ],
+      "members":{
+        "BucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>A bucket name.</p>"
+        },
+        "ObjectKey":{
+          "shape":"ObjectKey",
+          "documentation":"<p>An object key.</p>"
+        },
+        "Region":{
+          "shape":"Region",
+          "documentation":"<p>The bucket's Region.</p>"
+        }
+      },
+      "documentation":"<p>A location in Amazon S3.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "QuotaCode",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>The name of the limit.</p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The target resource's ID.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The target resource's type.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>The name of the service.</p>"
+        }
+      },
+      "documentation":"<p>The request would cause a limit to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SignalApplicationInstanceNodeInstancesRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationInstanceId",
+        "NodeSignals"
+      ],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>An application instance ID.</p>",
+          "location":"uri",
+          "locationName":"ApplicationInstanceId"
+        },
+        "NodeSignals":{
+          "shape":"NodeSignalList",
+          "documentation":"<p>A list of signals.</p>"
+        }
+      }
+    },
+    "SignalApplicationInstanceNodeInstancesResponse":{
+      "type":"structure",
+      "required":["ApplicationInstanceId"],
+      "members":{
+        "ApplicationInstanceId":{
+          "shape":"ApplicationInstanceId",
+          "documentation":"<p>An application instance ID.</p>"
+        }
+      }
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "StaticIpConnectionInfo":{
+      "type":"structure",
+      "required":[
+        "DefaultGateway",
+        "Dns",
+        "IpAddress",
+        "Mask"
+      ],
+      "members":{
+        "DefaultGateway":{
+          "shape":"DefaultGateway",
+          "documentation":"<p>The connection's default gateway.</p>"
+        },
+        "Dns":{
+          "shape":"DnsList",
+          "documentation":"<p>The connection's DNS address.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>The connection's IP address.</p>"
+        },
+        "Mask":{
+          "shape":"Mask",
+          "documentation":"<p>The connection's DNS mask.</p>"
+        }
+      },
+      "documentation":"<p>A static IP configuration.</p>"
+    },
+    "StatusFilter":{
+      "type":"string",
+      "enum":[
+        "DEPLOYMENT_SUCCEEDED",
+        "DEPLOYMENT_ERROR",
+        "REMOVAL_SUCCEEDED",
+        "REMOVAL_FAILED",
+        "PROCESSING_DEPLOYMENT",
+        "PROCESSING_REMOVAL",
+        "DEPLOYMENT_FAILED"
+      ]
+    },
+    "StorageLocation":{
+      "type":"structure",
+      "required":[
+        "BinaryPrefixLocation",
+        "Bucket",
+        "GeneratedPrefixLocation",
+        "ManifestPrefixLocation",
+        "RepoPrefixLocation"
+      ],
+      "members":{
+        "BinaryPrefixLocation":{
+          "shape":"Object",
+          "documentation":"<p>The location's binary prefix.</p>"
+        },
+        "Bucket":{
+          "shape":"Bucket",
+          "documentation":"<p>The location's bucket.</p>"
+        },
+        "GeneratedPrefixLocation":{
+          "shape":"Object",
+          "documentation":"<p>The location's generated prefix.</p>"
+        },
+        "ManifestPrefixLocation":{
+          "shape":"Object",
+          "documentation":"<p>The location's manifest prefix.</p>"
+        },
+        "RepoPrefixLocation":{
+          "shape":"Object",
+          "documentation":"<p>The location's repo prefix.</p>"
+        }
+      },
+      "documentation":"<p>A storage location.</p>"
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The resource's ARN.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags for the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^.*$"
+    },
+    "TemplateKey":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "TemplateParametersMap":{
+      "type":"map",
+      "key":{"shape":"TemplateKey"},
+      "value":{"shape":"TemplateValue"}
+    },
+    "TemplateType":{
+      "type":"string",
+      "enum":["RTSP_CAMERA_STREAM"]
+    },
+    "TemplateValue":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.+$",
+      "sensitive":true
+    },
+    "TimeStamp":{"type":"timestamp"},
+    "Token":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The resource's ARN.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Tag keys to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateCreatedTime":{"type":"timestamp"},
+    "UpdateDeviceMetadataRequest":{
+      "type":"structure",
+      "required":["DeviceId"],
+      "members":{
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the device.</p>"
+        },
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>",
+          "location":"uri",
+          "locationName":"DeviceId"
+        }
+      }
+    },
+    "UpdateDeviceMetadataResponse":{
+      "type":"structure",
+      "members":{
+        "DeviceId":{
+          "shape":"DeviceId",
+          "documentation":"<p>The device's ID.</p>"
+        }
+      }
+    },
+    "UpdateProgress":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "IN_PROGRESS",
+        "VERIFYING",
+        "REBOOTING",
+        "DOWNLOADING",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "ErrorArguments":{
+          "shape":"ValidationExceptionErrorArgumentList",
+          "documentation":"<p>A list of attributes that led to the exception and their values.</p>"
+        },
+        "ErrorId":{
+          "shape":"String",
+          "documentation":"<p>A unique ID for the error.</p>"
+        },
+        "Fields":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>A list of request parameters that failed validation.</p>"
+        },
+        "Message":{"shape":"String"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason that validation failed.</p>"
+        }
+      },
+      "documentation":"<p>The request contains an invalid parameter value.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionErrorArgument":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Value"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The argument's name.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The argument's value.</p>"
+        }
+      },
+      "documentation":"<p>A validation exception error argument.</p>"
+    },
+    "ValidationExceptionErrorArgumentList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionErrorArgument"}
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "Name"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>The field's message.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The field's name.</p>"
+        }
+      },
+      "documentation":"<p>A validation exception field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "CANNOT_PARSE",
+        "FIELD_VALIDATION_FAILED",
+        "OTHER"
+      ]
+    },
+    "Version":{
+      "type":"string",
+      "max":255,
+      "min":1
+    }
+  },
+  "documentation":"<p><fullname>AWS Panorama</fullname> <p> <b>Overview</b> </p> <p>This is the <i>AWS Panorama API Reference</i>. For an introduction to the service, see <a href=\"https://docs.aws.amazon.com/panorama/latest/dev/panorama-welcome.html\">What is AWS Panorama?</a> in the <i>AWS Panorama Developer Guide</i>.</p></p>"
+}

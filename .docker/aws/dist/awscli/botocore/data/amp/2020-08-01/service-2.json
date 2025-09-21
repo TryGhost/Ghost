@@ -1,0 +1,3368 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-08-01",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"aps",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Prometheus Service",
+    "serviceId":"amp",
+    "signatureVersion":"v4",
+    "signingName":"aps",
+    "uid":"amp-2020-08-01"
+  },
+  "operations":{
+    "CreateAlertManagerDefinition":{
+      "name":"CreateAlertManagerDefinition",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/alertmanager/definition",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateAlertManagerDefinitionRequest"},
+      "output":{"shape":"CreateAlertManagerDefinitionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>The <code>CreateAlertManagerDefinition</code> operation creates the alert manager definition in a workspace. If a workspace already has an alert manager definition, don't use this operation to update it. Instead, use <code>PutAlertManagerDefinition</code>.</p>",
+      "idempotent":true
+    },
+    "CreateLoggingConfiguration":{
+      "name":"CreateLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/logging",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateLoggingConfigurationRequest"},
+      "output":{"shape":"CreateLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>CreateLoggingConfiguration</code> operation creates rules and alerting logging configuration for the workspace. Use this operation to set the CloudWatch log group to which the logs will be published to.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>",
+      "idempotent":true
+    },
+    "CreateQueryLoggingConfiguration":{
+      "name":"CreateQueryLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/logging/query",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateQueryLoggingConfigurationRequest"},
+      "output":{"shape":"CreateQueryLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a query logging configuration for the specified workspace. This operation enables logging of queries that exceed the specified QSP threshold.</p>",
+      "idempotent":true
+    },
+    "CreateRuleGroupsNamespace":{
+      "name":"CreateRuleGroupsNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/rulegroupsnamespaces",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateRuleGroupsNamespaceRequest"},
+      "output":{"shape":"CreateRuleGroupsNamespaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>The <code>CreateRuleGroupsNamespace</code> operation creates a rule groups namespace within a workspace. A rule groups namespace is associated with exactly one rules file. A workspace can have multiple rule groups namespaces.</p> <p>Use this operation only to create new rule groups namespaces. To update an existing rule groups namespace, use <code>PutRuleGroupsNamespace</code>.</p>",
+      "idempotent":true
+    },
+    "CreateScraper":{
+      "name":"CreateScraper",
+      "http":{
+        "method":"POST",
+        "requestUri":"/scrapers",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateScraperRequest"},
+      "output":{"shape":"CreateScraperResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>The <code>CreateScraper</code> operation creates a scraper to collect metrics. A scraper pulls metrics from Prometheus-compatible sources within an Amazon EKS cluster, and sends them to your Amazon Managed Service for Prometheus workspace. Scrapers are flexible, and can be configured to control what metrics are collected, the frequency of collection, what transformations are applied to the metrics, and more.</p> <p>An IAM role will be created for you that Amazon Managed Service for Prometheus uses to access the metrics in your cluster. You must configure this role with a policy that allows it to scrape metrics from your cluster. For more information, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#AMP-collector-eks-setup\">Configuring your Amazon EKS cluster</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p> <p>The <code>scrapeConfiguration</code> parameter contains the base-64 encoded YAML configuration for the scraper.</p> <p>When creating a scraper, the service creates a <code>Network Interface</code> in each <b>Availability Zone</b> that are passed into <code>CreateScraper</code> through subnets. These network interfaces are used to connect to the Amazon EKS cluster within the VPC for scraping metrics.</p> <note> <p>For more information about collectors, including what metrics are collected, and how to configure the scraper, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html\">Using an Amazon Web Services managed collector</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p> </note>",
+      "idempotent":true
+    },
+    "CreateWorkspace":{
+      "name":"CreateWorkspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateWorkspaceRequest"},
+      "output":{"shape":"CreateWorkspaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a Prometheus workspace. A workspace is a logical space dedicated to the storage and querying of Prometheus metrics. You can have one or more workspaces in each Region in your account.</p>",
+      "idempotent":true
+    },
+    "DeleteAlertManagerDefinition":{
+      "name":"DeleteAlertManagerDefinition",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/alertmanager/definition",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteAlertManagerDefinitionRequest"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the alert manager definition from a workspace.</p>",
+      "idempotent":true
+    },
+    "DeleteLoggingConfiguration":{
+      "name":"DeleteLoggingConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/logging",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteLoggingConfigurationRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the rules and alerting logging configuration for a workspace.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>",
+      "idempotent":true
+    },
+    "DeleteQueryLoggingConfiguration":{
+      "name":"DeleteQueryLoggingConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/logging/query",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteQueryLoggingConfigurationRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the query logging configuration for the specified workspace.</p>",
+      "idempotent":true
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/policy",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the resource-based policy attached to an Amazon Managed Service for Prometheus workspace.</p>",
+      "idempotent":true
+    },
+    "DeleteRuleGroupsNamespace":{
+      "name":"DeleteRuleGroupsNamespace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/rulegroupsnamespaces/{name}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteRuleGroupsNamespaceRequest"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes one rule groups namespace and its associated rule groups definition.</p>",
+      "idempotent":true
+    },
+    "DeleteScraper":{
+      "name":"DeleteScraper",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/scrapers/{scraperId}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteScraperRequest"},
+      "output":{"shape":"DeleteScraperResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>DeleteScraper</code> operation deletes one scraper, and stops any metrics collection that the scraper performs.</p>",
+      "idempotent":true
+    },
+    "DeleteScraperLoggingConfiguration":{
+      "name":"DeleteScraperLoggingConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/scrapers/{scraperId}/logging-configuration",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteScraperLoggingConfigurationRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the logging configuration for a Amazon Managed Service for Prometheus scraper.</p>",
+      "idempotent":true
+    },
+    "DeleteWorkspace":{
+      "name":"DeleteWorkspace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteWorkspaceRequest"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes an existing workspace. </p> <note> <p>When you delete a workspace, the data that has been ingested into it is not immediately deleted. It will be permanently deleted within one month.</p> </note>",
+      "idempotent":true
+    },
+    "DescribeAlertManagerDefinition":{
+      "name":"DescribeAlertManagerDefinition",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/alertmanager/definition",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeAlertManagerDefinitionRequest"},
+      "output":{"shape":"DescribeAlertManagerDefinitionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the full information about the alert manager definition for a workspace.</p>"
+    },
+    "DescribeLoggingConfiguration":{
+      "name":"DescribeLoggingConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/logging",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeLoggingConfigurationRequest"},
+      "output":{"shape":"DescribeLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns complete information about the current rules and alerting logging configuration of the workspace.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>"
+    },
+    "DescribeQueryLoggingConfiguration":{
+      "name":"DescribeQueryLoggingConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/logging/query",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeQueryLoggingConfigurationRequest"},
+      "output":{"shape":"DescribeQueryLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details of the query logging configuration for the specified workspace.</p>"
+    },
+    "DescribeResourcePolicy":{
+      "name":"DescribeResourcePolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/policy",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeResourcePolicyRequest"},
+      "output":{"shape":"DescribeResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about the resource-based policy attached to an Amazon Managed Service for Prometheus workspace.</p>"
+    },
+    "DescribeRuleGroupsNamespace":{
+      "name":"DescribeRuleGroupsNamespace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/rulegroupsnamespaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeRuleGroupsNamespaceRequest"},
+      "output":{"shape":"DescribeRuleGroupsNamespaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns complete information about one rule groups namespace. To retrieve a list of rule groups namespaces, use <code>ListRuleGroupsNamespaces</code>.</p>"
+    },
+    "DescribeScraper":{
+      "name":"DescribeScraper",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scrapers/{scraperId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeScraperRequest"},
+      "output":{"shape":"DescribeScraperResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>DescribeScraper</code> operation displays information about an existing scraper.</p>"
+    },
+    "DescribeScraperLoggingConfiguration":{
+      "name":"DescribeScraperLoggingConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scrapers/{scraperId}/logging-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeScraperLoggingConfigurationRequest"},
+      "output":{"shape":"DescribeScraperLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes the logging configuration for a Amazon Managed Service for Prometheus scraper.</p>"
+    },
+    "DescribeWorkspace":{
+      "name":"DescribeWorkspace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeWorkspaceRequest"},
+      "output":{"shape":"DescribeWorkspaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information about an existing workspace. </p>"
+    },
+    "DescribeWorkspaceConfiguration":{
+      "name":"DescribeWorkspaceConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeWorkspaceConfigurationRequest"},
+      "output":{"shape":"DescribeWorkspaceConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Use this operation to return information about the configuration of a workspace. The configuration details returned include workspace configuration status, label set limits, and retention period.</p>"
+    },
+    "GetDefaultScraperConfiguration":{
+      "name":"GetDefaultScraperConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scraperconfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDefaultScraperConfigurationRequest"},
+      "output":{"shape":"GetDefaultScraperConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>GetDefaultScraperConfiguration</code> operation returns the default scraper configuration used when Amazon EKS creates a scraper for you.</p>"
+    },
+    "ListRuleGroupsNamespaces":{
+      "name":"ListRuleGroupsNamespaces",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/rulegroupsnamespaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRuleGroupsNamespacesRequest"},
+      "output":{"shape":"ListRuleGroupsNamespacesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of rule groups namespaces in a workspace.</p>"
+    },
+    "ListScrapers":{
+      "name":"ListScrapers",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scrapers",
+        "responseCode":200
+      },
+      "input":{"shape":"ListScrapersRequest"},
+      "output":{"shape":"ListScrapersResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>ListScrapers</code> operation lists all of the scrapers in your account. This includes scrapers being created or deleted. You can optionally filter the returned list.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>ListTagsForResource</code> operation returns the tags that are associated with an Amazon Managed Service for Prometheus resource. Currently, the only resources that can be tagged are scrapers, workspaces, and rule groups namespaces. </p>"
+    },
+    "ListWorkspaces":{
+      "name":"ListWorkspaces",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkspacesRequest"},
+      "output":{"shape":"ListWorkspacesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all of the Amazon Managed Service for Prometheus workspaces in your account. This includes workspaces being created or deleted. </p>"
+    },
+    "PutAlertManagerDefinition":{
+      "name":"PutAlertManagerDefinition",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/alertmanager/definition",
+        "responseCode":202
+      },
+      "input":{"shape":"PutAlertManagerDefinitionRequest"},
+      "output":{"shape":"PutAlertManagerDefinitionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an existing alert manager definition in a workspace. If the workspace does not already have an alert manager definition, don't use this operation to create it. Instead, use <code>CreateAlertManagerDefinition</code>.</p>",
+      "idempotent":true
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/policy",
+        "responseCode":202
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates or updates a resource-based policy for an Amazon Managed Service for Prometheus workspace. Use resource-based policies to grant permissions to other AWS accounts or services to access your workspace.</p> <p>Only Prometheus-compatible APIs can be used for workspace sharing. You can add non-Prometheus-compatible APIs to the policy, but they will be ignored. For more information, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-APIReference-Prometheus-Compatible-Apis.html\">Prometheus-compatible APIs</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p> <p>If your workspace uses customer-managed KMS keys for encryption, you must grant the principals in your resource-based policy access to those KMS keys. You can do this by creating KMS grants. For more information, see <a href=\"https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateGrant.html\">CreateGrant</a> in the <i>AWS Key Management Service API Reference</i> and <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/encryption-at-rest-Amazon-Service-Prometheus.html\">Encryption at rest</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p> <p>For more information about working with IAM, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/security_iam_service-with-iam.html\">Using Amazon Managed Service for Prometheus with IAM</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "PutRuleGroupsNamespace":{
+      "name":"PutRuleGroupsNamespace",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/rulegroupsnamespaces/{name}",
+        "responseCode":202
+      },
+      "input":{"shape":"PutRuleGroupsNamespaceRequest"},
+      "output":{"shape":"PutRuleGroupsNamespaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an existing rule groups namespace within a workspace. A rule groups namespace is associated with exactly one rules file. A workspace can have multiple rule groups namespaces.</p> <p>Use this operation only to update existing rule groups namespaces. To create a new rule groups namespace, use <code>CreateRuleGroupsNamespace</code>.</p> <p>You can't use this operation to add tags to an existing rule groups namespace. Instead, use <code>TagResource</code>.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The <code>TagResource</code> operation associates tags with an Amazon Managed Service for Prometheus resource. The only resources that can be tagged are rule groups namespaces, scrapers, and workspaces.</p> <p>If you specify a new tag key for the resource, this tag is appended to the list of tags associated with the resource. If you specify a tag key that is already associated with the resource, the new tag value that you specify replaces the previous value for that tag. To remove a tag, use <code>UntagResource</code>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes the specified tags from an Amazon Managed Service for Prometheus resource. The only resources that can be tagged are rule groups namespaces, scrapers, and workspaces. </p>",
+      "idempotent":true
+    },
+    "UpdateLoggingConfiguration":{
+      "name":"UpdateLoggingConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/logging",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateLoggingConfigurationRequest"},
+      "output":{"shape":"UpdateLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the log group ARN or the workspace ID of the current rules and alerting logging configuration.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>",
+      "idempotent":true
+    },
+    "UpdateQueryLoggingConfiguration":{
+      "name":"UpdateQueryLoggingConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/logging/query",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateQueryLoggingConfigurationRequest"},
+      "output":{"shape":"UpdateQueryLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the query logging configuration for the specified workspace.</p>",
+      "idempotent":true
+    },
+    "UpdateScraper":{
+      "name":"UpdateScraper",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/scrapers/{scraperId}",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateScraperRequest"},
+      "output":{"shape":"UpdateScraperResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an existing scraper.</p> <p>You can't use this function to update the source from which the scraper is collecting metrics. To change the source, delete the scraper and create a new one.</p>",
+      "idempotent":true
+    },
+    "UpdateScraperLoggingConfiguration":{
+      "name":"UpdateScraperLoggingConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/scrapers/{scraperId}/logging-configuration",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateScraperLoggingConfigurationRequest"},
+      "output":{"shape":"UpdateScraperLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the logging configuration for a Amazon Managed Service for Prometheus scraper.</p>",
+      "idempotent":true
+    },
+    "UpdateWorkspaceAlias":{
+      "name":"UpdateWorkspaceAlias",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/alias",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateWorkspaceAliasRequest"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates the alias of an existing workspace. </p>",
+      "idempotent":true
+    },
+    "UpdateWorkspaceConfiguration":{
+      "name":"UpdateWorkspaceConfiguration",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/workspaces/{workspaceId}/configuration",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateWorkspaceConfigurationRequest"},
+      "output":{"shape":"UpdateWorkspaceConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Use this operation to create or update the label sets, label set limits, and retention period of a workspace.</p> <p>You must specify at least one of <code>limitsPerLabelSet</code> or <code>retentionPeriodInDays</code> for the request to be valid.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AlertManagerDefinitionData":{
+      "type":"blob",
+      "documentation":"<p>The base-64 encoded blob that is alert manager definition.</p> <p>For details about the alert manager definition, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html\">AlertManagedDefinitionData</a>.</p>"
+    },
+    "AlertManagerDefinitionDescription":{
+      "type":"structure",
+      "required":[
+        "status",
+        "data",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "status":{
+          "shape":"AlertManagerDefinitionStatus",
+          "documentation":"<p>A structure that displays the current status of the alert manager definition..</p>"
+        },
+        "data":{
+          "shape":"AlertManagerDefinitionData",
+          "documentation":"<p>The actual alert manager definition.</p> <p>For details about the alert manager definition, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html\">AlertManagedDefinitionData</a>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the alert manager definition was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the alert manager definition was most recently changed.</p>"
+        }
+      },
+      "documentation":"<p>The details of an alert manager definition. It is the configuration for the alert manager, including information about receivers for routing alerts.</p>"
+    },
+    "AlertManagerDefinitionStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"AlertManagerDefinitionStatusCode",
+          "documentation":"<p>The current status of the alert manager. </p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If there is a failure, the reason for the failure.</p>"
+        }
+      },
+      "documentation":"<p>The status of the alert manager. </p>"
+    },
+    "AlertManagerDefinitionStatusCode":{
+      "type":"string",
+      "documentation":"<p>State of an <code>AlertManagerDefinition</code>.</p>",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "AmpConfiguration":{
+      "type":"structure",
+      "required":["workspaceArn"],
+      "members":{
+        "workspaceArn":{
+          "shape":"WorkspaceArn",
+          "documentation":"<p>ARN of the Amazon Managed Service for Prometheus workspace.</p>"
+        }
+      },
+      "documentation":"<p>The <code>AmpConfiguration</code> structure defines the Amazon Managed Service for Prometheus instance a scraper should send metrics to.</p>"
+    },
+    "Blob":{"type":"blob"},
+    "CloudWatchLogDestination":{
+      "type":"structure",
+      "required":["logGroupArn"],
+      "members":{
+        "logGroupArn":{
+          "shape":"LogGroupArn",
+          "documentation":"<p>The ARN of the CloudWatch log group to which the vended log data will be published. This log group must exist prior to calling this operation.</p>"
+        }
+      },
+      "documentation":"<p>Configuration details for logging to CloudWatch Logs.</p>"
+    },
+    "ClusterArn":{
+      "type":"string",
+      "documentation":"<p>The ARN of an EKS cluster.</p>",
+      "pattern":"arn:aws[-a-z]*:eks:[-a-z0-9]+:[0-9]{12}:cluster/.+"
+    },
+    "ComponentConfig":{
+      "type":"structure",
+      "members":{
+        "options":{
+          "shape":"StringMap",
+          "documentation":"<p>Configuration options for the scraper component.</p>"
+        }
+      },
+      "documentation":"<p>Configuration settings for a scraper component.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>The request would cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateAlertManagerDefinitionRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "data"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to add the alert manager definition to.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "data":{
+          "shape":"AlertManagerDefinitionData",
+          "documentation":"<p>The alert manager definition to add. A base64-encoded version of the YAML alert manager definition file.</p> <p>For details about the alert manager definition, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html\">AlertManagedDefinitionData</a>.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>CreateAlertManagerDefinition</code> operation.</p>"
+    },
+    "CreateAlertManagerDefinitionResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"AlertManagerDefinitionStatus",
+          "documentation":"<p>A structure that displays the current status of the alert manager definition.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>CreateAlertManagerDefinition</code> operation.</p>"
+    },
+    "CreateLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "logGroupArn"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to create the logging configuration for.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "logGroupArn":{
+          "shape":"LogGroupArn",
+          "documentation":"<p>The ARN of the CloudWatch log group to which the vended log data will be published. This log group must exist prior to calling this operation.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>CreateLoggingConfiguration</code> operation.</p>"
+    },
+    "CreateLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"LoggingConfigurationStatus",
+          "documentation":"<p>A structure that displays the current status of the logging configuration.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>CreateLoggingConfiguration</code> operation.</p>"
+    },
+    "CreateQueryLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "destinations"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace for which to create the query logging configuration.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "destinations":{
+          "shape":"LoggingDestinations",
+          "documentation":"<p>The destinations where query logs will be sent. Only CloudWatch Logs destination is supported. The list must contain exactly one element.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>(Optional) A unique, case-sensitive identifier that you can provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateQueryLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"QueryLoggingConfigurationStatus",
+          "documentation":"<p>The current status of the query logging configuration.</p>"
+        }
+      }
+    },
+    "CreateRuleGroupsNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "name",
+        "data"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to add the rule groups namespace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name for the new rule groups namespace.</p>"
+        },
+        "data":{
+          "shape":"RuleGroupsNamespaceData",
+          "documentation":"<p>The rules file to use in the new namespace.</p> <p>Contains the base64-encoded version of the YAML rules file.</p> <p>For details about the rule groups namespace structure, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-RuleGroupsNamespaceData.html\">RuleGroupsNamespaceData</a>.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values to associate with the rule groups namespace.</p>"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>CreateRuleGroupsNamespace</code> operation.</p>"
+    },
+    "CreateRuleGroupsNamespaceResponse":{
+      "type":"structure",
+      "required":[
+        "name",
+        "arn",
+        "status"
+      ],
+      "members":{
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the new rule groups namespace.</p>"
+        },
+        "arn":{
+          "shape":"RuleGroupsNamespaceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the new rule groups namespace.</p>"
+        },
+        "status":{
+          "shape":"RuleGroupsNamespaceStatus",
+          "documentation":"<p>A structure that returns the current status of the rule groups namespace.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the namespace.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>CreateRuleGroupsNamespace</code> operation.</p>"
+    },
+    "CreateScraperRequest":{
+      "type":"structure",
+      "required":[
+        "scrapeConfiguration",
+        "source",
+        "destination"
+      ],
+      "members":{
+        "alias":{
+          "shape":"ScraperAlias",
+          "documentation":"<p>(optional) An alias to associate with the scraper. This is for your use, and does not need to be unique.</p>"
+        },
+        "scrapeConfiguration":{
+          "shape":"ScrapeConfiguration",
+          "documentation":"<p>The configuration file to use in the new scraper. For more information, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#AMP-collector-configuration\">Scraper configuration</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p>"
+        },
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>The Amazon EKS cluster from which the scraper will collect metrics.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The Amazon Managed Service for Prometheus workspace to send metrics to.</p>"
+        },
+        "roleConfiguration":{
+          "shape":"RoleConfiguration",
+          "documentation":"<p>Use this structure to enable cross-account access, so that you can use a target account to access Prometheus metrics from source accounts.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>(Optional) A unique, case-sensitive identifier that you can provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>(Optional) The list of tag keys and values to associate with the scraper.</p>"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>CreateScraper</code> operation.</p>"
+    },
+    "CreateScraperResponse":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "arn",
+        "status"
+      ],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the new scraper.</p>"
+        },
+        "arn":{
+          "shape":"ScraperArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the new scraper.</p>"
+        },
+        "status":{
+          "shape":"ScraperStatus",
+          "documentation":"<p>A structure that displays the current status of the scraper.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the scraper.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>CreateScraper</code> operation.</p>"
+    },
+    "CreateWorkspaceRequest":{
+      "type":"structure",
+      "members":{
+        "alias":{
+          "shape":"WorkspaceAlias",
+          "documentation":"<p>An alias that you assign to this workspace to help you identify it. It does not need to be unique.</p> <p>Blank spaces at the beginning or end of the alias that you specify will be trimmed from the value used.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values to associate with the workspace.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>(optional) The ARN for a customer managed KMS key to use for encrypting data within your workspace. For more information about using your own key in your workspace, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/encryption-at-rest-Amazon-Service-Prometheus.html\">Encryption at rest</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>CreateWorkspace</code> operation.</p>"
+    },
+    "CreateWorkspaceResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "status"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The unique ID for the new workspace.</p>"
+        },
+        "arn":{
+          "shape":"WorkspaceArn",
+          "documentation":"<p>The ARN for the new workspace.</p>"
+        },
+        "status":{
+          "shape":"WorkspaceStatus",
+          "documentation":"<p>The current status of the new workspace. Immediately after you create the workspace, the status is usually <code>CREATING</code>.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the workspace.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>(optional) If the workspace was created with a customer managed KMS key, the ARN for the key used.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>CreateWorkspace</code> operation.</p>"
+    },
+    "DeleteAlertManagerDefinitionRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to delete the alert manager definition from.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DeleteAlertManagerDefinition</code> operation.</p>"
+    },
+    "DeleteLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace containing the logging configuration to delete.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DeleteLoggingConfiguration</code> operation.</p>"
+    },
+    "DeleteQueryLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace from which to delete the query logging configuration.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>(Optional) A unique, case-sensitive identifier that you can provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      }
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace from which to delete the resource-based policy.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the request is safe to retry (idempotent).</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The revision ID of the policy to delete. Use this parameter to ensure that you are deleting the correct version of the policy.</p>",
+          "location":"querystring",
+          "locationName":"revisionId"
+        }
+      }
+    },
+    "DeleteRuleGroupsNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "name"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace containing the rule groups namespace and definition to delete.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace to delete.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DeleteRuleGroupsNamespace</code> operation.</p>"
+    },
+    "DeleteScraperLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["scraperId"],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper whose logging configuration will be deleted.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the request is processed exactly once.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      }
+    },
+    "DeleteScraperRequest":{
+      "type":"structure",
+      "required":["scraperId"],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper to delete.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>(Optional) A unique, case-sensitive identifier that you can provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DeleteScraper</code> operation.</p>"
+    },
+    "DeleteScraperResponse":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "status"
+      ],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper to delete.</p>"
+        },
+        "status":{
+          "shape":"ScraperStatus",
+          "documentation":"<p>The current status of the scraper.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DeleteScraper</code> operation.</p>"
+    },
+    "DeleteWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to delete.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DeleteWorkspace</code> operation.</p>"
+    },
+    "DescribeAlertManagerDefinitionRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to retrieve the alert manager definition from.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DescribeAlertManagerDefinition</code> operation.</p>"
+    },
+    "DescribeAlertManagerDefinitionResponse":{
+      "type":"structure",
+      "required":["alertManagerDefinition"],
+      "members":{
+        "alertManagerDefinition":{
+          "shape":"AlertManagerDefinitionDescription",
+          "documentation":"<p>The alert manager definition.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DescribeAlertManagerDefinition</code> operation.</p>"
+    },
+    "DescribeLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to describe the logging configuration for.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DescribeLoggingConfiguration</code> operation.</p>"
+    },
+    "DescribeLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["loggingConfiguration"],
+      "members":{
+        "loggingConfiguration":{
+          "shape":"LoggingConfigurationMetadata",
+          "documentation":"<p>A structure that displays the information about the logging configuration.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DescribeLoggingConfiguration</code> operation.</p>"
+    },
+    "DescribeQueryLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace for which to retrieve the query logging configuration.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      }
+    },
+    "DescribeQueryLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["queryLoggingConfiguration"],
+      "members":{
+        "queryLoggingConfiguration":{
+          "shape":"QueryLoggingConfigurationMetadata",
+          "documentation":"<p>The detailed information about the query logging configuration for the specified workspace.</p>"
+        }
+      }
+    },
+    "DescribeResourcePolicyRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to describe the resource-based policy for.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      }
+    },
+    "DescribeResourcePolicyResponse":{
+      "type":"structure",
+      "required":[
+        "policyDocument",
+        "policyStatus",
+        "revisionId"
+      ],
+      "members":{
+        "policyDocument":{
+          "shape":"String",
+          "documentation":"<p>The JSON policy document for the resource-based policy attached to the workspace.</p>"
+        },
+        "policyStatus":{
+          "shape":"WorkspacePolicyStatusCode",
+          "documentation":"<p>The current status of the resource-based policy.</p>"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The revision ID of the current resource-based policy.</p>"
+        }
+      }
+    },
+    "DescribeRuleGroupsNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "name"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace containing the rule groups namespace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace that you want information for.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DescribeRuleGroupsNamespace</code> operation.</p>"
+    },
+    "DescribeRuleGroupsNamespaceResponse":{
+      "type":"structure",
+      "required":["ruleGroupsNamespace"],
+      "members":{
+        "ruleGroupsNamespace":{
+          "shape":"RuleGroupsNamespaceDescription",
+          "documentation":"<p>The information about the rule groups namespace.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DescribeRuleGroupsNamespace</code> operation.</p>"
+    },
+    "DescribeScraperLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["scraperId"],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper whose logging configuration will be described.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        }
+      }
+    },
+    "DescribeScraperLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":[
+        "status",
+        "scraperId",
+        "loggingDestination",
+        "scraperComponents",
+        "modifiedAt"
+      ],
+      "members":{
+        "status":{
+          "shape":"ScraperLoggingConfigurationStatus",
+          "documentation":"<p>The status of the scraper logging configuration.</p>"
+        },
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper.</p>"
+        },
+        "loggingDestination":{
+          "shape":"ScraperLoggingDestination",
+          "documentation":"<p>The destination where scraper logs are sent.</p>"
+        },
+        "scraperComponents":{
+          "shape":"ScraperComponents",
+          "documentation":"<p>The list of scraper components configured for logging.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the logging configuration was last modified.</p>"
+        }
+      }
+    },
+    "DescribeScraperRequest":{
+      "type":"structure",
+      "required":["scraperId"],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper to describe.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DescribeScraper</code> operation.</p>"
+    },
+    "DescribeScraperResponse":{
+      "type":"structure",
+      "required":["scraper"],
+      "members":{
+        "scraper":{
+          "shape":"ScraperDescription",
+          "documentation":"<p>Contains details about the scraper.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DescribeScraper</code> operation.</p>"
+    },
+    "DescribeWorkspaceConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace that you want to retrieve information for. To find the IDs of your workspaces, use the <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/API_ListWorkspaces.htm\">ListWorkspaces</a> operation.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      }
+    },
+    "DescribeWorkspaceConfigurationResponse":{
+      "type":"structure",
+      "required":["workspaceConfiguration"],
+      "members":{
+        "workspaceConfiguration":{
+          "shape":"WorkspaceConfigurationDescription",
+          "documentation":"<p>This structure contains the information about the workspace configuration.</p>"
+        }
+      }
+    },
+    "DescribeWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to describe.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>DescribeWorkspace</code> operation.</p>"
+    },
+    "DescribeWorkspaceResponse":{
+      "type":"structure",
+      "required":["workspace"],
+      "members":{
+        "workspace":{
+          "shape":"WorkspaceDescription",
+          "documentation":"<p>A structure that contains details about the workspace.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>DescribeWorkspace</code> operation.</p>"
+    },
+    "Destination":{
+      "type":"structure",
+      "members":{
+        "ampConfiguration":{
+          "shape":"AmpConfiguration",
+          "documentation":"<p>The Amazon Managed Service for Prometheus workspace to send metrics to.</p>"
+        }
+      },
+      "documentation":"<p>Where to send the metrics from a scraper.</p>",
+      "union":true
+    },
+    "EksConfiguration":{
+      "type":"structure",
+      "required":[
+        "clusterArn",
+        "subnetIds"
+      ],
+      "members":{
+        "clusterArn":{
+          "shape":"ClusterArn",
+          "documentation":"<p>ARN of the Amazon EKS cluster.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>A list of the security group IDs for the Amazon EKS cluster VPC configuration.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>A list of subnet IDs for the Amazon EKS cluster VPC configuration.</p>"
+        }
+      },
+      "documentation":"<p>The <code>EksConfiguration</code> structure describes the connection to the Amazon EKS cluster from which a scraper collects metrics.</p>"
+    },
+    "FilterKey":{
+      "type":"string",
+      "documentation":"<p>The name of the key by which to filter.</p>",
+      "max":256,
+      "min":1
+    },
+    "FilterValue":{
+      "type":"string",
+      "documentation":"<p>The value for a given key by which to filter.</p>",
+      "max":256,
+      "min":1
+    },
+    "FilterValues":{
+      "type":"list",
+      "member":{"shape":"FilterValue"},
+      "documentation":"<p>A list of scraper filter values.</p>",
+      "max":20,
+      "min":1
+    },
+    "GetDefaultScraperConfigurationRequest":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Represents the input of a <code>GetDefaultScraperConfiguration</code> operation.</p>"
+    },
+    "GetDefaultScraperConfigurationResponse":{
+      "type":"structure",
+      "required":["configuration"],
+      "members":{
+        "configuration":{
+          "shape":"Blob",
+          "documentation":"<p>The configuration file. Base 64 encoded. For more information, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#AMP-collector-configuration\">Scraper configuration</a>in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>GetDefaultScraperConfiguration</code> operation.</p>"
+    },
+    "IamRoleArn":{
+      "type":"string",
+      "documentation":"<p>An ARN identifying an IAM role used by the scraper.</p>",
+      "pattern":"arn:aws[-a-z]*:iam::[0-9]{12}:role/.+"
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "documentation":"<p>An identifier used to ensure the idempotency of a write request.</p>",
+      "max":64,
+      "min":1,
+      "pattern":"[!-~]+"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Advice to clients on when the call can be safely retried.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An unexpected error occurred during the processing of the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "documentation":"<p>A KMS Key ARN.</p>",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws[-a-z]*:kms:[-a-z0-9]+:[0-9]{12}:key/[-a-f0-9]+"
+    },
+    "LabelName":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z_][a-zA-Z0-9_]*"
+    },
+    "LabelSet":{
+      "type":"map",
+      "key":{"shape":"LabelName"},
+      "value":{"shape":"LabelValue"}
+    },
+    "LabelValue":{
+      "type":"string",
+      "min":1
+    },
+    "LimitsPerLabelSet":{
+      "type":"structure",
+      "required":[
+        "limits",
+        "labelSet"
+      ],
+      "members":{
+        "limits":{
+          "shape":"LimitsPerLabelSetEntry",
+          "documentation":"<p>This structure contains the information about the limits that apply to time series that match this label set.</p>"
+        },
+        "labelSet":{
+          "shape":"LabelSet",
+          "documentation":"<p>This defines one label set that will have an enforced active time series limit. </p> <p>Label values accept ASCII characters and must contain at least one character that isn't whitespace. ASCII control characters are not accepted. If the label name is metric name label <code>__<i>name</i>__</code>, then the <i>metric</i> part of the name must conform to the following pattern: <code>[a-zA-Z_:][a-zA-Z0-9_:]*</code> </p>"
+        }
+      },
+      "documentation":"<p>This structure defines one label set used to enforce active time series limits for the workspace, and defines the limit for that label set.</p> <p>A label set is a unique combination of label-value pairs. Use them to control time series limits and to monitor usage by specific label groups. Example label sets might be <code>team:finance</code> or <code>env:prod</code> </p>"
+    },
+    "LimitsPerLabelSetEntry":{
+      "type":"structure",
+      "members":{
+        "maxSeries":{
+          "shape":"LimitsPerLabelSetEntryMaxSeriesLong",
+          "documentation":"<p>The maximum number of active series that can be ingested that match this label set. </p> <p>Setting this to 0 causes no label set limit to be enforced, but it does cause Amazon Managed Service for Prometheus to vend label set metrics to CloudWatch</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the information about the limits that apply to time series that match one label set.</p>"
+    },
+    "LimitsPerLabelSetEntryMaxSeriesLong":{
+      "type":"long",
+      "box":true,
+      "min":0
+    },
+    "LimitsPerLabelSetList":{
+      "type":"list",
+      "member":{"shape":"LimitsPerLabelSet"}
+    },
+    "ListRuleGroupsNamespacesRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace containing the rule groups namespaces.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>Use this parameter to filter the rule groups namespaces that are returned. Only the namespaces with names that begin with the value that you specify are returned.</p>",
+          "location":"querystring",
+          "locationName":"name"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. You receive this token from a previous call, and use it to get the next page of results. The other parameters must be the same as the initial call.</p> <p>For example, if your initial request has <code>maxResults</code> of 10, and there are 12 rule groups namespaces to return, then your initial request will return 10 and a <code>nextToken</code>. Using the next token in a subsequent call will return the remaining 2 namespaces.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListRuleGroupsNamespacesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return. The default is 100.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>ListRuleGroupsNamespaces</code> operation.</p>"
+    },
+    "ListRuleGroupsNamespacesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListRuleGroupsNamespacesResponse":{
+      "type":"structure",
+      "required":["ruleGroupsNamespaces"],
+      "members":{
+        "ruleGroupsNamespaces":{
+          "shape":"RuleGroupsNamespaceSummaryList",
+          "documentation":"<p>The returned list of rule groups namespaces.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token indicating that there are more results to retrieve. You can use this token as part of your next <code>ListRuleGroupsNamespaces</code> request to retrieve those results.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>ListRuleGroupsNamespaces</code> operation.</p>"
+    },
+    "ListScrapersRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"ScraperFilters",
+          "documentation":"<p>(Optional) A list of key-value pairs to filter the list of scrapers returned. Keys include <code>status</code>, <code>sourceArn</code>, <code>destinationArn</code>, and <code>alias</code>.</p> <p>Filters on the same key are <code>OR</code>'d together, and filters on different keys are <code>AND</code>'d together. For example, <code>status=ACTIVE&amp;status=CREATING&amp;alias=Test</code>, will return all scrapers that have the alias Test, and are either in status ACTIVE or CREATING.</p> <p>To find all active scrapers that are sending metrics to a specific Amazon Managed Service for Prometheus workspace, you would use the ARN of the workspace in a query:</p> <p> <code>status=ACTIVE&amp;destinationArn=arn:aws:aps:us-east-1:123456789012:workspace/ws-example1-1234-abcd-56ef-123456789012</code> </p> <p>If this is included, it filters the results to only the scrapers that match the filter.</p>",
+          "location":"querystring"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>(Optional) The token for the next set of items to return. (You received this token from a previous call.)</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListScrapersRequestMaxResultsInteger",
+          "documentation":"<p>Optional) The maximum number of scrapers to return in one <code>ListScrapers</code> operation. The range is 1-1000.</p> <p>If you omit this parameter, the default of 100 is used.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>ListScrapers</code> operation.</p>"
+    },
+    "ListScrapersRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListScrapersResponse":{
+      "type":"structure",
+      "required":["scrapers"],
+      "members":{
+        "scrapers":{
+          "shape":"ScraperSummaryList",
+          "documentation":"<p>A list of <code>ScraperSummary</code> structures giving information about scrapers in the account that match the filters provided.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token indicating that there are more results to retrieve. You can use this token as part of your next <code>ListScrapers</code> operation to retrieve those results.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>ListScrapers</code> operation.</p>"
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the resource to list tages for. Must be a workspace, scraper, or rule groups namespace resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with the resource.</p>"
+        }
+      }
+    },
+    "ListWorkspacesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. You receive this token from a previous call, and use it to get the next page of results. The other parameters must be the same as the initial call.</p> <p>For example, if your initial request has <code>maxResults</code> of 10, and there are 12 workspaces to return, then your initial request will return 10 and a <code>nextToken</code>. Using the next token in a subsequent call will return the remaining 2 workspaces.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "alias":{
+          "shape":"WorkspaceAlias",
+          "documentation":"<p>If this is included, it filters the results to only the workspaces with names that start with the value that you specify here.</p> <p>Amazon Managed Service for Prometheus will automatically strip any blank spaces from the beginning and end of the alias that you specify.</p>",
+          "location":"querystring",
+          "locationName":"alias"
+        },
+        "maxResults":{
+          "shape":"ListWorkspacesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of workspaces to return per request. The default is 100.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>ListWorkspaces</code> operation.</p>"
+    },
+    "ListWorkspacesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListWorkspacesResponse":{
+      "type":"structure",
+      "required":["workspaces"],
+      "members":{
+        "workspaces":{
+          "shape":"WorkspaceSummaryList",
+          "documentation":"<p>An array of <code>WorkspaceSummary</code> structures containing information about the workspaces requested.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token indicating that there are more results to retrieve. You can use this token as part of your next <code>ListWorkspaces</code> request to retrieve those results.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>ListWorkspaces</code> operation.</p>"
+    },
+    "LogGroupArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-z0-9-]*:logs:[a-z0-9-]+:[0-9]{12}:log-group:[A-Za-z0-9\\.\\-\\_\\#/]{1,512}\\:\\*"
+    },
+    "LoggingConfigurationMetadata":{
+      "type":"structure",
+      "required":[
+        "status",
+        "workspace",
+        "logGroupArn",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "status":{
+          "shape":"LoggingConfigurationStatus",
+          "documentation":"<p>The current status of the logging configuration.</p>"
+        },
+        "workspace":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace the logging configuration is for.</p>"
+        },
+        "logGroupArn":{
+          "shape":"LogGroupArn",
+          "documentation":"<p>The ARN of the CloudWatch log group to which the vended log data will be published.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the logging configuration was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the logging configuration was most recently changed.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the current rules and alerting logging configuration for the workspace.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>"
+    },
+    "LoggingConfigurationStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"LoggingConfigurationStatusCode",
+          "documentation":"<p>The current status of the current rules and alerting logging configuration.</p> <note> <p>These logging configurations are only for rules and alerting logs.</p> </note>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If failed, the reason for the failure.</p>"
+        }
+      },
+      "documentation":"<p>The status of the logging configuration. </p>"
+    },
+    "LoggingConfigurationStatusCode":{
+      "type":"string",
+      "documentation":"<p>State of a logging configuration.</p>",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "LoggingDestination":{
+      "type":"structure",
+      "required":[
+        "cloudWatchLogs",
+        "filters"
+      ],
+      "members":{
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogDestination",
+          "documentation":"<p>Configuration details for logging to CloudWatch Logs.</p>"
+        },
+        "filters":{
+          "shape":"LoggingFilter",
+          "documentation":"<p>Filtering criteria that determine which queries are logged.</p>"
+        }
+      },
+      "documentation":"<p>Defines a destination and its associated filtering criteria for query logging.</p>"
+    },
+    "LoggingDestinations":{
+      "type":"list",
+      "member":{"shape":"LoggingDestination"},
+      "documentation":"<p>A list structure that contains a single CloudWatch Logs destination.</p>",
+      "max":1,
+      "min":1
+    },
+    "LoggingFilter":{
+      "type":"structure",
+      "required":["qspThreshold"],
+      "members":{
+        "qspThreshold":{
+          "shape":"LoggingFilterQspThresholdLong",
+          "documentation":"<p>The Query Samples Processed (QSP) threshold above which queries will be logged. Queries processing more samples than this threshold will be captured in logs.</p>"
+        }
+      },
+      "documentation":"<p>Filtering criteria that determine which queries are logged.</p>"
+    },
+    "LoggingFilterQspThresholdLong":{
+      "type":"long",
+      "box":true,
+      "min":0
+    },
+    "PaginationToken":{
+      "type":"string",
+      "documentation":"<p>A token used to access the next page in a paginated result set.</p>",
+      "max":1000,
+      "min":0
+    },
+    "PutAlertManagerDefinitionRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "data"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to update the alert manager definition in.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "data":{
+          "shape":"AlertManagerDefinitionData",
+          "documentation":"<p>The alert manager definition to use. A base64-encoded version of the YAML alert manager definition file.</p> <p>For details about the alert manager definition, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html\">AlertManagedDefinitionData</a>.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>PutAlertManagerDefinition</code> operation.</p>"
+    },
+    "PutAlertManagerDefinitionResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"AlertManagerDefinitionStatus",
+          "documentation":"<p>A structure that returns the current status of the alert manager definition.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>PutAlertManagerDefinition</code> operation.</p>"
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "policyDocument"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to attach the resource-based policy to.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "policyDocument":{
+          "shape":"String",
+          "documentation":"<p>The JSON policy document to use as the resource-based policy. This policy defines the permissions that other AWS accounts or services have to access your workspace.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the request is safe to retry (idempotent).</p>",
+          "idempotencyToken":true
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The revision ID of the policy to update. Use this parameter to ensure that you are updating the correct version of the policy. If you don't specify a revision ID, the policy is updated regardless of its current revision.</p> <p>For the first <b>PUT</b> request on a workspace that doesn't have an existing resource policy, you can specify <code>NO_POLICY</code> as the revision ID.</p>"
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "required":[
+        "policyStatus",
+        "revisionId"
+      ],
+      "members":{
+        "policyStatus":{
+          "shape":"WorkspacePolicyStatusCode",
+          "documentation":"<p>The current status of the resource-based policy.</p>"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The revision ID of the newly created or updated resource-based policy.</p>"
+        }
+      }
+    },
+    "PutRuleGroupsNamespaceRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "name",
+        "data"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace where you are updating the rule groups namespace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace that you are updating.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "data":{
+          "shape":"RuleGroupsNamespaceData",
+          "documentation":"<p>The new rules file to use in the namespace. A base64-encoded version of the YAML rule groups file.</p> <p>For details about the rule groups namespace structure, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-RuleGroupsNamespaceData.html\">RuleGroupsNamespaceData</a>.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of a <code>PutRuleGroupsNamespace</code> operation.</p>"
+    },
+    "PutRuleGroupsNamespaceResponse":{
+      "type":"structure",
+      "required":[
+        "name",
+        "arn",
+        "status"
+      ],
+      "members":{
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace that was updated.</p>"
+        },
+        "arn":{
+          "shape":"RuleGroupsNamespaceArn",
+          "documentation":"<p>The ARN of the rule groups namespace.</p>"
+        },
+        "status":{
+          "shape":"RuleGroupsNamespaceStatus",
+          "documentation":"<p>A structure that includes the current status of the rule groups namespace.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the namespace.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>PutRuleGroupsNamespace</code> operation.</p>"
+    },
+    "QueryLoggingConfigurationMetadata":{
+      "type":"structure",
+      "required":[
+        "status",
+        "workspace",
+        "destinations",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "status":{
+          "shape":"QueryLoggingConfigurationStatus",
+          "documentation":"<p>The current status of the query logging configuration.</p>"
+        },
+        "workspace":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace associated with this query logging configuration.</p>"
+        },
+        "destinations":{
+          "shape":"LoggingDestinations",
+          "documentation":"<p>The configured destinations for the query logging configuration.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the query logging configuration was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the query logging configuration was last modified.</p>"
+        }
+      },
+      "documentation":"<p>The metadata for a query logging configuration.</p>"
+    },
+    "QueryLoggingConfigurationStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"QueryLoggingConfigurationStatusCode",
+          "documentation":"<p>The current status of the query logging configuration.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If there is a failure, the reason for the failure.</p>"
+        }
+      },
+      "documentation":"<p>The status information for a query logging configuration.</p>"
+    },
+    "QueryLoggingConfigurationStatusCode":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>The request references a resources that doesn't exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleConfiguration":{
+      "type":"structure",
+      "members":{
+        "sourceRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role used in the source account to enable cross-account scraping. For information about the contents of this policy, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#cross-account-remote-write\">Cross-account setup</a>.</p>"
+        },
+        "targetRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role used in the target account to enable cross-account scraping. For information about the contents of this policy, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#cross-account-remote-write\">Cross-account setup</a>.</p>"
+        }
+      },
+      "documentation":"<p>Use this structure to enable cross-account access, so that you can use a target account to access Prometheus metrics from source accounts.</p>"
+    },
+    "RuleGroupsNamespaceArn":{
+      "type":"string",
+      "documentation":"<p>An ARN identifying a rule groups namespace.</p>"
+    },
+    "RuleGroupsNamespaceData":{
+      "type":"blob",
+      "documentation":"<p>The rule groups namespace data.</p>"
+    },
+    "RuleGroupsNamespaceDescription":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "name",
+        "status",
+        "data",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "arn":{
+          "shape":"RuleGroupsNamespaceArn",
+          "documentation":"<p>The ARN of the rule groups namespace. For example, <code>arn:aws:aps:&lt;region&gt;:123456789012:rulegroupsnamespace/ws-example1-1234-abcd-5678-ef90abcd1234/rulesfile1</code>.</p>"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace.</p>"
+        },
+        "status":{
+          "shape":"RuleGroupsNamespaceStatus",
+          "documentation":"<p>The current status of the rule groups namespace.</p>"
+        },
+        "data":{
+          "shape":"RuleGroupsNamespaceData",
+          "documentation":"<p>The rule groups file used in the namespace.</p> <p>For details about the rule groups namespace structure, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-RuleGroupsNamespaceData.html\">RuleGroupsNamespaceData</a>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the rule groups namespace was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the rule groups namespace was most recently changed.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the rule groups namespace.</p>"
+        }
+      },
+      "documentation":"<p>The details about one rule groups namespace. </p>"
+    },
+    "RuleGroupsNamespaceName":{
+      "type":"string",
+      "documentation":"<p>The name of the namespace that the rule group belong to.</p>",
+      "max":128,
+      "min":1,
+      "pattern":".*[0-9A-Za-z][-.0-9A-Z_a-z]*.*"
+    },
+    "RuleGroupsNamespaceStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"RuleGroupsNamespaceStatusCode",
+          "documentation":"<p>The current status of the namespace.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the failure, if any.</p>"
+        }
+      },
+      "documentation":"<p>The status information about a rule groups namespace. </p>"
+    },
+    "RuleGroupsNamespaceStatusCode":{
+      "type":"string",
+      "documentation":"<p>State of a namespace.</p>",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "RuleGroupsNamespaceSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "name",
+        "status",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "arn":{
+          "shape":"RuleGroupsNamespaceArn",
+          "documentation":"<p>The ARN of the rule groups namespace.</p>"
+        },
+        "name":{
+          "shape":"RuleGroupsNamespaceName",
+          "documentation":"<p>The name of the rule groups namespace.</p>"
+        },
+        "status":{
+          "shape":"RuleGroupsNamespaceStatus",
+          "documentation":"<p>A structure that displays the current status of the rule groups namespace.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the rule groups namespace was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the rule groups namespace was most recently changed.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the rule groups namespace.</p>"
+        }
+      },
+      "documentation":"<p>The high-level information about a rule groups namespace. To retrieve more information, use <code>DescribeRuleGroupsNamespace</code>.</p>"
+    },
+    "RuleGroupsNamespaceSummaryList":{
+      "type":"list",
+      "member":{"shape":"RuleGroupsNamespaceSummary"},
+      "documentation":"<p>A list of rule groups namespace summary.</p>"
+    },
+    "ScrapeConfiguration":{
+      "type":"structure",
+      "members":{
+        "configurationBlob":{
+          "shape":"Blob",
+          "documentation":"<p>The base 64 encoded scrape configuration file.</p>"
+        }
+      },
+      "documentation":"<p>A scrape configuration for a scraper, base 64 encoded. For more information, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html#AMP-collector-configuration\">Scraper configuration</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p>",
+      "union":true
+    },
+    "ScraperAlias":{
+      "type":"string",
+      "documentation":"<p>An optional user-assigned scraper alias.</p>",
+      "max":100,
+      "min":1,
+      "pattern":"[0-9A-Za-z][-.0-9A-Z_a-z]*"
+    },
+    "ScraperArn":{
+      "type":"string",
+      "documentation":"<p>An ARN identifying a scrape configuration.</p>"
+    },
+    "ScraperComponent":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"ScraperComponentType",
+          "documentation":"<p>The type of the scraper component.</p>"
+        },
+        "config":{
+          "shape":"ComponentConfig",
+          "documentation":"<p>The configuration settings for the scraper component.</p>"
+        }
+      },
+      "documentation":"<p>A component of a Amazon Managed Service for Prometheus scraper that can be configured for logging.</p>"
+    },
+    "ScraperComponentType":{
+      "type":"string",
+      "enum":[
+        "SERVICE_DISCOVERY",
+        "COLLECTOR",
+        "EXPORTER"
+      ]
+    },
+    "ScraperComponents":{
+      "type":"list",
+      "member":{"shape":"ScraperComponent"},
+      "min":1
+    },
+    "ScraperDescription":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "arn",
+        "roleArn",
+        "status",
+        "createdAt",
+        "lastModifiedAt",
+        "scrapeConfiguration",
+        "source",
+        "destination"
+      ],
+      "members":{
+        "alias":{
+          "shape":"ScraperAlias",
+          "documentation":"<p>(Optional) A name associated with the scraper.</p>"
+        },
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper. For example, <code>s-example1-1234-abcd-5678-ef9012abcd34</code>.</p>"
+        },
+        "arn":{
+          "shape":"ScraperArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scraper. For example, <code>arn:aws:aps:&lt;region&gt;:123456798012:scraper/s-example1-1234-abcd-5678-ef9012abcd34</code>.</p>"
+        },
+        "roleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that provides permissions for the scraper to discover and collect metrics on your behalf.</p> <p>For example, <code>arn:aws:iam::123456789012:role/service-role/AmazonGrafanaServiceRole-12example</code>.</p>"
+        },
+        "status":{
+          "shape":"ScraperStatus",
+          "documentation":"<p>A structure that contains the current status of the scraper.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the scraper was created.</p>"
+        },
+        "lastModifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the scraper was last modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>(Optional) The list of tag keys and values associated with the scraper.</p>"
+        },
+        "statusReason":{
+          "shape":"StatusReason",
+          "documentation":"<p>If there is a failure, the reason for the failure.</p>"
+        },
+        "scrapeConfiguration":{
+          "shape":"ScrapeConfiguration",
+          "documentation":"<p>The configuration in use by the scraper.</p>"
+        },
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>The Amazon EKS cluster from which the scraper collects metrics.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The Amazon Managed Service for Prometheus workspace the scraper sends metrics to.</p>"
+        },
+        "roleConfiguration":{
+          "shape":"RoleConfiguration",
+          "documentation":"<p>This structure displays information about the IAM roles used for cross-account scraping configuration.</p>"
+        }
+      },
+      "documentation":"<p>The <code>ScraperDescription</code> structure contains the full details about one scraper in your account.</p>"
+    },
+    "ScraperFilters":{
+      "type":"map",
+      "key":{
+        "shape":"FilterKey",
+        "documentation":"<p>The name of the key to filter by. Currently supported filter keys are <code>status</code>, <code>sourceArn</code>, <code>destinationArn</code>, and <code>alias</code>.</p>"
+      },
+      "value":{
+        "shape":"FilterValues",
+        "documentation":"<p>The values of the given key by which to filter.</p>"
+      },
+      "documentation":"<p>A list of scraper filters.</p>",
+      "max":4,
+      "min":1
+    },
+    "ScraperId":{
+      "type":"string",
+      "documentation":"<p>A scraper ID.</p>",
+      "max":64,
+      "min":1,
+      "pattern":"[0-9A-Za-z][-.0-9A-Z_a-z]*"
+    },
+    "ScraperLoggingConfigurationStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"ScraperLoggingConfigurationStatusCode",
+          "documentation":"<p>The status code of the scraper logging configuration.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the current status of the scraper logging configuration.</p>"
+        }
+      },
+      "documentation":"<p>The status of a scraper logging configuration.</p>"
+    },
+    "ScraperLoggingConfigurationStatusCode":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "ScraperLoggingDestination":{
+      "type":"structure",
+      "members":{
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogDestination",
+          "documentation":"<p>The CloudWatch Logs configuration for the scraper logging destination.</p>"
+        }
+      },
+      "documentation":"<p>The destination where scraper logs are sent.</p>",
+      "union":true
+    },
+    "ScraperStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"ScraperStatusCode",
+          "documentation":"<p>The current status of the scraper.</p>"
+        }
+      },
+      "documentation":"<p>The <code>ScraperStatus</code> structure contains status information about the scraper.</p>"
+    },
+    "ScraperStatusCode":{
+      "type":"string",
+      "documentation":"<p>State of a scraper.</p>",
+      "enum":[
+        "CREATING",
+        "UPDATING",
+        "ACTIVE",
+        "DELETING",
+        "CREATION_FAILED",
+        "UPDATE_FAILED",
+        "DELETION_FAILED"
+      ]
+    },
+    "ScraperSummary":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "arn",
+        "roleArn",
+        "status",
+        "createdAt",
+        "lastModifiedAt",
+        "source",
+        "destination"
+      ],
+      "members":{
+        "alias":{
+          "shape":"ScraperAlias",
+          "documentation":"<p>(Optional) A name associated with the scraper.</p>"
+        },
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper.</p>"
+        },
+        "arn":{
+          "shape":"ScraperArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scraper.</p>"
+        },
+        "roleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that provides permissions for the scraper to discover and collect metrics on your behalf.</p>"
+        },
+        "status":{
+          "shape":"ScraperStatus",
+          "documentation":"<p>A structure that contains the current status of the scraper.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the scraper was created.</p>"
+        },
+        "lastModifiedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the scraper was last modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>(Optional) The list of tag keys and values associated with the scraper.</p>"
+        },
+        "statusReason":{
+          "shape":"StatusReason",
+          "documentation":"<p>If there is a failure, the reason for the failure.</p>"
+        },
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>The Amazon EKS cluster from which the scraper collects metrics.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The Amazon Managed Service for Prometheus workspace the scraper sends metrics to.</p>"
+        },
+        "roleConfiguration":{
+          "shape":"RoleConfiguration",
+          "documentation":"<p>This structure displays information about the IAM roles used for cross-account scraping configuration.</p>"
+        }
+      },
+      "documentation":"<p>The <code>ScraperSummary</code> structure contains a summary of the details about one scraper in your account.</p>"
+    },
+    "ScraperSummaryList":{
+      "type":"list",
+      "member":{"shape":"ScraperSummary"},
+      "documentation":"<p>A list of scraper summaries.</p>"
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "documentation":"<p>ID of a VPC security group.</p>",
+      "max":255,
+      "min":0,
+      "pattern":"sg-[0-9a-z]+"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "documentation":"<p>A list of security group IDs specified for VPC configuration.</p>",
+      "max":5,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource affected.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>Service quotas code for the originating service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service quotas code of the originating quota.</p>"
+        }
+      },
+      "documentation":"<p>Completing the request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Source":{
+      "type":"structure",
+      "members":{
+        "eksConfiguration":{
+          "shape":"EksConfiguration",
+          "documentation":"<p>The Amazon EKS cluster from which a scraper collects metrics.</p>"
+        }
+      },
+      "documentation":"<p>The source of collected metrics for a scraper.</p>",
+      "union":true
+    },
+    "StatusReason":{
+      "type":"string",
+      "documentation":"<p>The reason for the failure, if any.</p>",
+      "max":256,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "StringMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "SubnetId":{
+      "type":"string",
+      "documentation":"<p>ID of a VPC subnet.</p>",
+      "max":255,
+      "min":0,
+      "pattern":"subnet-[0-9a-z]+"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "documentation":"<p>A list of subnet IDs specified for VPC configuration.</p>",
+      "max":5,
+      "min":1
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)"
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{
+        "shape":"TagKey",
+        "documentation":"<p>The key of the tag. Must not begin with <code>aws:</code>.</p>"
+      },
+      "value":{
+        "shape":"TagValue",
+        "documentation":"<p>The value of the tag.</p>"
+      },
+      "documentation":"<p>A tag associated with a resource.</p>",
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the resource to apply tags to.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values to associate with the resource.</p> <p>Keys must not begin with <code>aws:</code>.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>Service quotas code for the originating service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service quotas code for the originating quota.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Advice to clients on when the call can be safely retried.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the resource from which to remove a tag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The keys of the tags to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "logGroupArn"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to update the logging configuration for.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "logGroupArn":{
+          "shape":"LogGroupArn",
+          "documentation":"<p>The ARN of the CloudWatch log group to which the vended log data will be published.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of an <code>UpdateLoggingConfiguration</code> operation.</p>"
+    },
+    "UpdateLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"LoggingConfigurationStatus",
+          "documentation":"<p>A structure that contains the current status of the logging configuration.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of an <code>UpdateLoggingConfiguration</code> operation.</p>"
+    },
+    "UpdateQueryLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "destinations"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace for which to update the query logging configuration.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "destinations":{
+          "shape":"LoggingDestinations",
+          "documentation":"<p>The destinations where query logs will be sent. Only CloudWatch Logs destination is supported. The list must contain exactly one element.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>(Optional) A unique, case-sensitive identifier that you can provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateQueryLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"QueryLoggingConfigurationStatus",
+          "documentation":"<p>The current status of the query logging configuration.</p>"
+        }
+      }
+    },
+    "UpdateScraperLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "loggingDestination"
+      ],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper whose logging configuration will be updated.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        },
+        "loggingDestination":{
+          "shape":"ScraperLoggingDestination",
+          "documentation":"<p>The destination where scraper logs will be sent.</p>"
+        },
+        "scraperComponents":{
+          "shape":"ScraperComponents",
+          "documentation":"<p>The list of scraper components to configure for logging.</p>"
+        }
+      }
+    },
+    "UpdateScraperLoggingConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"ScraperLoggingConfigurationStatus",
+          "documentation":"<p>The status of the updated scraper logging configuration.</p>"
+        }
+      }
+    },
+    "UpdateScraperRequest":{
+      "type":"structure",
+      "required":["scraperId"],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the scraper to update.</p>",
+          "location":"uri",
+          "locationName":"scraperId"
+        },
+        "alias":{
+          "shape":"ScraperAlias",
+          "documentation":"<p>The new alias of the scraper.</p>"
+        },
+        "scrapeConfiguration":{
+          "shape":"ScrapeConfiguration",
+          "documentation":"<p>Contains the base-64 encoded YAML configuration for the scraper.</p> <note> <p>For more information about configuring a scraper, see <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-collector-how-to.html\">Using an Amazon Web Services managed collector</a> in the <i>Amazon Managed Service for Prometheus User Guide</i>.</p> </note>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The new Amazon Managed Service for Prometheus workspace to send metrics to.</p>"
+        },
+        "roleConfiguration":{
+          "shape":"RoleConfiguration",
+          "documentation":"<p>Use this structure to enable cross-account access, so that you can use a target account to access Prometheus metrics from source accounts.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateScraperResponse":{
+      "type":"structure",
+      "required":[
+        "scraperId",
+        "arn",
+        "status"
+      ],
+      "members":{
+        "scraperId":{
+          "shape":"ScraperId",
+          "documentation":"<p>The ID of the updated scraper.</p>"
+        },
+        "arn":{
+          "shape":"ScraperArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the updated scraper.</p>"
+        },
+        "status":{
+          "shape":"ScraperStatus",
+          "documentation":"<p>A structure that displays the current status of the scraper.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the scraper.</p>"
+        }
+      }
+    },
+    "UpdateWorkspaceAliasRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace to update.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "alias":{
+          "shape":"WorkspaceAlias",
+          "documentation":"<p>The new alias for the workspace. It does not need to be unique.</p> <p>Amazon Managed Service for Prometheus will automatically strip any blank spaces from the beginning and end of the alias that you specify.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique identifier that you can provide to ensure the idempotency of the request. Case-sensitive.</p>",
+          "idempotencyToken":true
+        }
+      },
+      "documentation":"<p>Represents the input of an <code>UpdateWorkspaceAlias</code> operation.</p>"
+    },
+    "UpdateWorkspaceConfigurationRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The ID of the workspace that you want to update. To find the IDs of your workspaces, use the <a href=\"https://docs.aws.amazon.com/prometheus/latest/APIReference/API_ListWorkspaces.htm\">ListWorkspaces</a> operation.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>You can include a token in your operation to make it an idempotent opeartion. </p>",
+          "idempotencyToken":true
+        },
+        "limitsPerLabelSet":{
+          "shape":"LimitsPerLabelSetList",
+          "documentation":"<p>This is an array of structures, where each structure defines a label set for the workspace, and defines the active time series limit for each of those label sets. Each label name in a label set must be unique.</p>"
+        },
+        "retentionPeriodInDays":{
+          "shape":"UpdateWorkspaceConfigurationRequestRetentionPeriodInDaysInteger",
+          "documentation":"<p>Specifies how many days that metrics will be retained in the workspace.</p>"
+        }
+      }
+    },
+    "UpdateWorkspaceConfigurationRequestRetentionPeriodInDaysInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "UpdateWorkspaceConfigurationResponse":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"WorkspaceConfigurationStatus",
+          "documentation":"<p>The status of the workspace configuration.</p>"
+        }
+      }
+    },
+    "Uri":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Reason the request failed validation.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The field that caused the error, if applicable.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the field that caused an exception.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing why the field caused an exception.</p>"
+        }
+      },
+      "documentation":"<p>Information about a field passed into a request that resulted in an exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"},
+      "documentation":"<p>A list of fields.</p>"
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "documentation":"<p>Possible reasons a request failed validation.</p>",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "CANNOT_PARSE",
+        "FIELD_VALIDATION_FAILED",
+        "OTHER"
+      ]
+    },
+    "WorkspaceAlias":{
+      "type":"string",
+      "documentation":"<p>A user-assigned workspace alias.</p>",
+      "max":100,
+      "min":1
+    },
+    "WorkspaceArn":{
+      "type":"string",
+      "documentation":"<p>An ARN identifying a Workspace.</p>",
+      "pattern":"arn:aws[-a-z]*:aps:[-a-z0-9]+:[0-9]{12}:workspace/.+"
+    },
+    "WorkspaceConfigurationDescription":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"WorkspaceConfigurationStatus",
+          "documentation":"<p>This structure displays the current status of the workspace configuration, and might also contain a reason for that status.</p>"
+        },
+        "limitsPerLabelSet":{
+          "shape":"LimitsPerLabelSetList",
+          "documentation":"<p>This is an array of structures, where each structure displays one label sets for the workspace and the limits for that label set.</p>"
+        },
+        "retentionPeriodInDays":{
+          "shape":"WorkspaceConfigurationDescriptionRetentionPeriodInDaysInteger",
+          "documentation":"<p>This field displays how many days that metrics are retained in the workspace.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the description of the workspace configuration.</p>"
+    },
+    "WorkspaceConfigurationDescriptionRetentionPeriodInDaysInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "WorkspaceConfigurationStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"WorkspaceConfigurationStatusCode",
+          "documentation":"<p>The current status of the workspace configuration.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the current status, if a reason is available.</p>"
+        }
+      },
+      "documentation":"<p>This structure displays the current status of the workspace configuration, and might also contain a reason for that status.</p>"
+    },
+    "WorkspaceConfigurationStatusCode":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "UPDATING",
+        "UPDATE_FAILED"
+      ]
+    },
+    "WorkspaceDescription":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The unique ID for the workspace. For example, <code>ws-example1-1234-abcd-5678-ef90abcd1234</code>.</p>"
+        },
+        "alias":{
+          "shape":"WorkspaceAlias",
+          "documentation":"<p>The alias that is assigned to this workspace to help identify it. It does not need to be unique.</p>"
+        },
+        "arn":{
+          "shape":"WorkspaceArn",
+          "documentation":"<p>The ARN of the workspace. For example, <code>arn:aws:aps:&lt;region&gt;:123456789012:workspace/ws-example1-1234-abcd-5678-ef90abcd1234</code>.</p>"
+        },
+        "status":{
+          "shape":"WorkspaceStatus",
+          "documentation":"<p>The current status of the workspace.</p>"
+        },
+        "prometheusEndpoint":{
+          "shape":"Uri",
+          "documentation":"<p>The Prometheus endpoint available for this workspace. For example, <code>https://aps-workspaces.&lt;region&gt;.amazonaws.com/workspaces/ws-example1-1234-abcd-5678-ef90abcd1234/api/v1/</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the workspace was created.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the workspace.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>(optional) If the workspace was created with a customer managed KMS key, the ARN for the key used.</p>"
+        }
+      },
+      "documentation":"<p>The full details about one Amazon Managed Service for Prometheus workspace in your account.</p>"
+    },
+    "WorkspaceId":{
+      "type":"string",
+      "documentation":"<p>A workspace ID.</p>",
+      "max":64,
+      "min":1,
+      "pattern":".*[0-9A-Za-z][-.0-9A-Z_a-z]*.*"
+    },
+    "WorkspacePolicyStatusCode":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING"
+      ]
+    },
+    "WorkspaceStatus":{
+      "type":"structure",
+      "required":["statusCode"],
+      "members":{
+        "statusCode":{
+          "shape":"WorkspaceStatusCode",
+          "documentation":"<p>The current status of the workspace.</p>"
+        }
+      },
+      "documentation":"<p>The status of the workspace.</p>"
+    },
+    "WorkspaceStatusCode":{
+      "type":"string",
+      "documentation":"<p>State of a workspace.</p>",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATION_FAILED"
+      ]
+    },
+    "WorkspaceSummary":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"WorkspaceId",
+          "documentation":"<p>The unique ID for the workspace.</p>"
+        },
+        "alias":{
+          "shape":"WorkspaceAlias",
+          "documentation":"<p>The alias that is assigned to this workspace to help identify it. It does not need to be unique.</p>"
+        },
+        "arn":{
+          "shape":"WorkspaceArn",
+          "documentation":"<p>The ARN of the workspace.</p>"
+        },
+        "status":{
+          "shape":"WorkspaceStatus",
+          "documentation":"<p>The current status of the workspace.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the workspace was created.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values that are associated with the workspace.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>(optional) If the workspace was created with a customer managed KMS key, the ARN for the key used.</p>"
+        }
+      },
+      "documentation":"<p>The information about one Amazon Managed Service for Prometheus workspace in your account. </p>"
+    },
+    "WorkspaceSummaryList":{
+      "type":"list",
+      "member":{"shape":"WorkspaceSummary"},
+      "documentation":"<p>A list of workspace summaries.</p>"
+    }
+  },
+  "documentation":"<p>Amazon Managed Service for Prometheus is a serverless, Prometheus-compatible monitoring service for container metrics that makes it easier to securely monitor container environments at scale. With Amazon Managed Service for Prometheus, you can use the same open-source Prometheus data model and query language that you use today to monitor the performance of your containerized workloads, and also enjoy improved scalability, availability, and security without having to manage the underlying infrastructure.</p> <p>For more information about Amazon Managed Service for Prometheus, see the <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/what-is-Amazon-Managed-Service-Prometheus.html\">Amazon Managed Service for Prometheus</a> User Guide.</p> <p>Amazon Managed Service for Prometheus includes two APIs.</p> <ul> <li> <p>Use the Amazon Web Services API described in this guide to manage Amazon Managed Service for Prometheus resources, such as workspaces, rule groups, and alert managers.</p> </li> <li> <p>Use the <a href=\"https://docs.aws.amazon.com/prometheus/latest/userguide/AMP-APIReference.html#AMP-APIReference-Prometheus-Compatible-Apis\">Prometheus-compatible API</a> to work within your Prometheus workspace.</p> </li> </ul>"
+}

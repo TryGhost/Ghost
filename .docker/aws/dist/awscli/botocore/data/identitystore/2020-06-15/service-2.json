@@ -1,0 +1,1712 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-06-15",
+    "endpointPrefix":"identitystore",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "serviceAbbreviation":"IdentityStore",
+    "serviceFullName":"AWS SSO Identity Store",
+    "serviceId":"identitystore",
+    "signatureVersion":"v4",
+    "signingName":"identitystore",
+    "targetPrefix":"AWSIdentityStore",
+    "uid":"identitystore-2020-06-15"
+  },
+  "operations":{
+    "CreateGroup":{
+      "name":"CreateGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateGroupRequest"},
+      "output":{"shape":"CreateGroupResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a group within the specified identity store.</p>"
+    },
+    "CreateGroupMembership":{
+      "name":"CreateGroupMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateGroupMembershipRequest"},
+      "output":{"shape":"CreateGroupMembershipResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a relationship between a member and a group. The following identifiers must be specified: <code>GroupId</code>, <code>IdentityStoreId</code>, and <code>MemberId</code>.</p>"
+    },
+    "CreateUser":{
+      "name":"CreateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUserRequest"},
+      "output":{"shape":"CreateUserResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a user within the specified identity store.</p>"
+    },
+    "DeleteGroup":{
+      "name":"DeleteGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteGroupRequest"},
+      "output":{"shape":"DeleteGroupResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Delete a group within an identity store given <code>GroupId</code>.</p>",
+      "idempotent":true
+    },
+    "DeleteGroupMembership":{
+      "name":"DeleteGroupMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteGroupMembershipRequest"},
+      "output":{"shape":"DeleteGroupMembershipResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Delete a membership within a group given <code>MembershipId</code>.</p>",
+      "idempotent":true
+    },
+    "DeleteUser":{
+      "name":"DeleteUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUserRequest"},
+      "output":{"shape":"DeleteUserResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a user within an identity store given <code>UserId</code>.</p>",
+      "idempotent":true
+    },
+    "DescribeGroup":{
+      "name":"DescribeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeGroupRequest"},
+      "output":{"shape":"DescribeGroupResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the group metadata and attributes from <code>GroupId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "DescribeGroupMembership":{
+      "name":"DescribeGroupMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeGroupMembershipRequest"},
+      "output":{"shape":"DescribeGroupMembershipResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves membership metadata and attributes from <code>MembershipId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "DescribeUser":{
+      "name":"DescribeUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUserRequest"},
+      "output":{"shape":"DescribeUserResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the user metadata and attributes from the <code>UserId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "GetGroupId":{
+      "name":"GetGroupId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetGroupIdRequest"},
+      "output":{"shape":"GetGroupIdResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves <code>GroupId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "GetGroupMembershipId":{
+      "name":"GetGroupMembershipId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetGroupMembershipIdRequest"},
+      "output":{"shape":"GetGroupMembershipIdResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the <code>MembershipId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "GetUserId":{
+      "name":"GetUserId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetUserIdRequest"},
+      "output":{"shape":"GetUserIdResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the <code>UserId</code> in an identity store.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "IsMemberInGroups":{
+      "name":"IsMemberInGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"IsMemberInGroupsRequest"},
+      "output":{"shape":"IsMemberInGroupsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Checks the user's membership in all requested groups and returns if the member exists in all queried groups.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "ListGroupMemberships":{
+      "name":"ListGroupMemberships",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListGroupMembershipsRequest"},
+      "output":{"shape":"ListGroupMembershipsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>For the specified group in the specified identity store, returns the list of all <code>GroupMembership</code> objects and returns results in paginated form.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "ListGroupMembershipsForMember":{
+      "name":"ListGroupMembershipsForMember",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListGroupMembershipsForMemberRequest"},
+      "output":{"shape":"ListGroupMembershipsForMemberResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>For the specified member in the specified identity store, returns the list of all <code>GroupMembership</code> objects and returns results in paginated form.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "ListGroups":{
+      "name":"ListGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListGroupsRequest"},
+      "output":{"shape":"ListGroupsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all groups in the identity store. Returns a paginated list of complete <code>Group</code> objects. Filtering for a <code>Group</code> by the <code>DisplayName</code> attribute is deprecated. Instead, use the <code>GetGroupId</code> API action.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>. </p> </note>"
+    },
+    "ListUsers":{
+      "name":"ListUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListUsersRequest"},
+      "output":{"shape":"ListUsersResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all users in the identity store. Returns a paginated list of complete <code>User</code> objects. Filtering for a <code>User</code> by the <code>UserName</code> attribute is deprecated. Instead, use the <code>GetUserId</code> API action.</p> <note> <p>If you have administrator access to a member account, you can use this API from the member account. Read about <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html\">member accounts</a> in the <i>Organizations User Guide</i>.</p> </note>"
+    },
+    "UpdateGroup":{
+      "name":"UpdateGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateGroupRequest"},
+      "output":{"shape":"UpdateGroupResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>For the specified group in the specified identity store, updates the group metadata and attributes.</p>"
+    },
+    "UpdateUser":{
+      "name":"UpdateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateUserRequest"},
+      "output":{"shape":"UpdateUserResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>For the specified user in the specified identity store, updates the user metadata and attributes.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        }
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "Address":{
+      "type":"structure",
+      "members":{
+        "StreetAddress":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The street of the address.</p>"
+        },
+        "Locality":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string of the address locality.</p>"
+        },
+        "Region":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The region of the address.</p>"
+        },
+        "PostalCode":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The postal code of the address.</p>"
+        },
+        "Country":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The country of the address.</p>"
+        },
+        "Formatted":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a formatted version of the address for display.</p>"
+        },
+        "Type":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string representing the type of address. For example, \"Home.\"</p>"
+        },
+        "Primary":{
+          "shape":"SensitiveBooleanType",
+          "documentation":"<p>A Boolean value representing whether this is the primary address for the associated resource.</p>"
+        }
+      },
+      "documentation":"<p>The address associated with the specified user.</p>"
+    },
+    "Addresses":{
+      "type":"list",
+      "member":{"shape":"Address"},
+      "max":1,
+      "min":1
+    },
+    "AlternateIdentifier":{
+      "type":"structure",
+      "members":{
+        "ExternalId":{
+          "shape":"ExternalId",
+          "documentation":"<p>The identifier issued to this resource by an external identity provider.</p>"
+        },
+        "UniqueAttribute":{
+          "shape":"UniqueAttribute",
+          "documentation":"<p>An entity attribute that's unique to a specific entity.</p>"
+        }
+      },
+      "documentation":"<p>A unique identifier for a user or group that is not the primary identifier. This value can be an identifier from an external identity provider (IdP) that is associated with the user, the group, or a unique attribute.</p>",
+      "union":true
+    },
+    "AttributeOperation":{
+      "type":"structure",
+      "required":["AttributePath"],
+      "members":{
+        "AttributePath":{
+          "shape":"AttributePath",
+          "documentation":"<p>A string representation of the path to a given attribute or sub-attribute. Supports JMESPath.</p>"
+        },
+        "AttributeValue":{
+          "shape":"AttributeValue",
+          "documentation":"<p>The value of the attribute. This is a <code>Document</code> type. This type is not supported by Java V1, Go V1, and older versions of the CLI.</p>"
+        }
+      },
+      "documentation":"<p>An operation that applies to the requested group. This operation might add, replace, or remove an attribute.</p>"
+    },
+    "AttributeOperations":{
+      "type":"list",
+      "member":{"shape":"AttributeOperation"},
+      "max":100,
+      "min":1
+    },
+    "AttributePath":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"\\p{L}+(?:\\.\\p{L}+){0,2}"
+    },
+    "AttributeValue":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>The value of the attribute. This is a <code>Document</code> type. This type is not supported by Java V1, Go V1, and older versions of the CLI.</p>",
+      "document":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        },
+        "Reason":{
+          "shape":"ConflictExceptionReason",
+          "documentation":"<p>This request cannot be completed for one of the following reasons:</p> <ul> <li> <p>Performing the requested operation would violate an existing uniqueness claim in the identity store. Resolve the conflict before retrying this request.</p> </li> <li> <p>The requested resource was being concurrently modified by another request.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>This request cannot be completed for one of the following reasons:</p> <ul> <li> <p>Performing the requested operation would violate an existing uniqueness claim in the identity store. Resolve the conflict before retrying this request.</p> </li> <li> <p>The requested resource was being concurrently modified by another request.</p> </li> </ul>",
+      "exception":true
+    },
+    "ConflictExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNIQUENESS_CONSTRAINT_VIOLATION",
+        "CONCURRENT_MODIFICATION"
+      ]
+    },
+    "CreateGroupMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId",
+        "MemberId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object that contains the identifier of a group member. Setting the <code>UserID</code> field to the specific identifier for a user indicates that the user is a member of the group.</p>"
+        }
+      }
+    },
+    "CreateGroupMembershipResponse":{
+      "type":"structure",
+      "required":[
+        "MembershipId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a newly created <code>GroupMembership</code> in an identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "CreateGroupRequest":{
+      "type":"structure",
+      "required":["IdentityStoreId"],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "DisplayName":{
+          "shape":"GroupDisplayName",
+          "documentation":"<p>A string containing the name of the group. This value is commonly displayed when the group is referenced. <code>Administrator</code> and <code>AWSAdministrators</code> are reserved names and can't be used for users or groups.</p>"
+        },
+        "Description":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the description of the group.</p>"
+        }
+      }
+    },
+    "CreateGroupResponse":{
+      "type":"structure",
+      "required":[
+        "GroupId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier of the newly created group in the identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "CreateUserRequest":{
+      "type":"structure",
+      "required":["IdentityStoreId"],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>A unique string used to identify the user. The length limit is 128 characters. This value can consist of letters, accented characters, symbols, numbers, and punctuation. This value is specified at the time the user is created and stored as an attribute of the user object in the identity store. <code>Administrator</code> and <code>AWSAdministrators</code> are reserved names and can't be used for users or groups.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>An object containing the name of the user.</p>"
+        },
+        "DisplayName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the name of the user. This value is typically formatted for display when the user is referenced. For example, \"John Doe.\" </p>"
+        },
+        "NickName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing an alternate name for the user.</p>"
+        },
+        "ProfileUrl":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a URL that might be associated with the user.</p>"
+        },
+        "Emails":{
+          "shape":"Emails",
+          "documentation":"<p>A list of <code>Email</code> objects containing email addresses associated with the user.</p>"
+        },
+        "Addresses":{
+          "shape":"Addresses",
+          "documentation":"<p>A list of <code>Address</code> objects containing addresses associated with the user.</p>"
+        },
+        "PhoneNumbers":{
+          "shape":"PhoneNumbers",
+          "documentation":"<p>A list of <code>PhoneNumber</code> objects containing phone numbers associated with the user.</p>"
+        },
+        "UserType":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string indicating the type of user. Possible values are left unspecified. The value can vary based on your specific use case.</p>"
+        },
+        "Title":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the title of the user. Possible values are left unspecified. The value can vary based on your specific use case.</p>"
+        },
+        "PreferredLanguage":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the preferred language of the user. For example, \"American English\" or \"en-us.\"</p>"
+        },
+        "Locale":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the geographical region or location of the user.</p>"
+        },
+        "Timezone":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the time zone of the user.</p>"
+        }
+      }
+    },
+    "CreateUserResponse":{
+      "type":"structure",
+      "required":[
+        "UserId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier of the newly created user in the identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "DeleteGroupMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "MembershipId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a <code>GroupMembership</code> in an identity store.</p>"
+        }
+      }
+    },
+    "DeleteGroupMembershipResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteGroupRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        }
+      }
+    },
+    "DeleteGroupResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteUserRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "UserId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        }
+      }
+    },
+    "DeleteUserResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeGroupMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "MembershipId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a <code>GroupMembership</code> in an identity store.</p>"
+        }
+      }
+    },
+    "DescribeGroupMembershipResponse":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "MembershipId",
+        "GroupId",
+        "MemberId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a <code>GroupMembership</code> in an identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MemberId":{"shape":"MemberId"}
+      }
+    },
+    "DescribeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store, such as <code>d-1234567890</code>. In this example, <code>d-</code> is a fixed prefix, and <code>1234567890</code> is a randomly generated string that contains numbers and lower case letters. This value is generated at the time that a new identity store is created.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        }
+      }
+    },
+    "DescribeGroupResponse":{
+      "type":"structure",
+      "required":[
+        "GroupId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "DisplayName":{
+          "shape":"GroupDisplayName",
+          "documentation":"<p>The group’s display name value. The length limit is 1,024 characters. This value can consist of letters, accented characters, symbols, numbers, punctuation, tab, new line, carriage return, space, and nonbreaking space in this attribute. This value is specified at the time that the group is created and stored as an attribute of the group object in the identity store.</p>"
+        },
+        "ExternalIds":{
+          "shape":"ExternalIds",
+          "documentation":"<p>A list of <code>ExternalId</code> objects that contains the identifiers issued to this resource by an external identity provider.</p>"
+        },
+        "Description":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a description of the group.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "DescribeUserRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "UserId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store, such as <code>d-1234567890</code>. In this example, <code>d-</code> is a fixed prefix, and <code>1234567890</code> is a randomly generated string that contains numbers and lower case letters. This value is generated at the time that a new identity store is created.</p>"
+        },
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        }
+      }
+    },
+    "DescribeUserResponse":{
+      "type":"structure",
+      "required":[
+        "UserId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>A unique string used to identify the user. The length limit is 128 characters. This value can consist of letters, accented characters, symbols, numbers, and punctuation. This value is specified at the time the user is created and stored as an attribute of the user object in the identity store.</p>"
+        },
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        },
+        "ExternalIds":{
+          "shape":"ExternalIds",
+          "documentation":"<p>A list of <code>ExternalId</code> objects that contains the identifiers issued to this resource by an external identity provider.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the user.</p>"
+        },
+        "DisplayName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The display name of the user.</p>"
+        },
+        "NickName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>An alternative descriptive name for the user.</p>"
+        },
+        "ProfileUrl":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A URL link for the user's profile.</p>"
+        },
+        "Emails":{
+          "shape":"Emails",
+          "documentation":"<p>The email address of the user.</p>"
+        },
+        "Addresses":{
+          "shape":"Addresses",
+          "documentation":"<p>The physical address of the user.</p>"
+        },
+        "PhoneNumbers":{
+          "shape":"PhoneNumbers",
+          "documentation":"<p>A list of <code>PhoneNumber</code> objects associated with a user.</p>"
+        },
+        "UserType":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string indicating the type of user.</p>"
+        },
+        "Title":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the title of the user.</p>"
+        },
+        "PreferredLanguage":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The preferred language of the user.</p>"
+        },
+        "Locale":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the geographical region or location of the user.</p>"
+        },
+        "Timezone":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The time zone for a user.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "Email":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing an email address. For example, \"johndoe@amazon.com.\"</p>"
+        },
+        "Type":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string representing the type of address. For example, \"Work.\"</p>"
+        },
+        "Primary":{
+          "shape":"SensitiveBooleanType",
+          "documentation":"<p>A Boolean value representing whether this is the primary email address for the associated resource.</p>"
+        }
+      },
+      "documentation":"<p>The email address associated with the user.</p>"
+    },
+    "Emails":{
+      "type":"list",
+      "member":{"shape":"Email"},
+      "max":1,
+      "min":1
+    },
+    "ExceptionMessage":{"type":"string"},
+    "ExternalId":{
+      "type":"structure",
+      "required":[
+        "Issuer",
+        "Id"
+      ],
+      "members":{
+        "Issuer":{
+          "shape":"ExternalIdIssuer",
+          "documentation":"<p>The issuer for an external identifier.</p>"
+        },
+        "Id":{
+          "shape":"ExternalIdIdentifier",
+          "documentation":"<p>The identifier issued to this resource by an external identity provider.</p>"
+        }
+      },
+      "documentation":"<p>The identifier issued to this resource by an external identity provider.</p>"
+    },
+    "ExternalIdIdentifier":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}]+",
+      "sensitive":true
+    },
+    "ExternalIdIssuer":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"(?!(?i)(arn|aws):)[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}]+",
+      "sensitive":true
+    },
+    "ExternalIds":{
+      "type":"list",
+      "member":{"shape":"ExternalId"},
+      "max":10,
+      "min":1
+    },
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "AttributePath",
+        "AttributeValue"
+      ],
+      "members":{
+        "AttributePath":{
+          "shape":"AttributePath",
+          "documentation":"<p>The attribute path that is used to specify which attribute name to search. Length limit is 255 characters. For example, <code>UserName</code> is a valid attribute path for the <code>ListUsers</code> API, and <code>DisplayName</code> is a valid attribute path for the <code>ListGroups</code> API.</p>"
+        },
+        "AttributeValue":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>Represents the data for an attribute. Each attribute value is described as a name-value pair. </p>"
+        }
+      },
+      "documentation":"<p>A query filter used by <code>ListUsers</code> and <code>ListGroups</code>. This filter object provides the attribute name and attribute value to search users or groups.</p>"
+    },
+    "Filters":{
+      "type":"list",
+      "member":{"shape":"Filter"},
+      "max":1,
+      "min":0
+    },
+    "GetGroupIdRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "AlternateIdentifier"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "AlternateIdentifier":{
+          "shape":"AlternateIdentifier",
+          "documentation":"<p>A unique identifier for a user or group that is not the primary identifier. This value can be an identifier from an external identity provider (IdP) that is associated with the user, the group, or a unique attribute. For the unique attribute, the only valid path is <code>displayName</code>.</p>"
+        }
+      }
+    },
+    "GetGroupIdResponse":{
+      "type":"structure",
+      "required":[
+        "GroupId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "GetGroupMembershipIdRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId",
+        "MemberId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object that contains the identifier of a group member. Setting the <code>UserID</code> field to the specific identifier for a user indicates that the user is a member of the group.</p>"
+        }
+      }
+    },
+    "GetGroupMembershipIdResponse":{
+      "type":"structure",
+      "required":[
+        "MembershipId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a <code>GroupMembership</code> in an identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "GetUserIdRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "AlternateIdentifier"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "AlternateIdentifier":{
+          "shape":"AlternateIdentifier",
+          "documentation":"<p>A unique identifier for a user or group that is not the primary identifier. This value can be an identifier from an external identity provider (IdP) that is associated with the user, the group, or a unique attribute. For the unique attribute, the only valid paths are <code>userName</code> and <code>emails.value</code>.</p>"
+        }
+      }
+    },
+    "GetUserIdResponse":{
+      "type":"structure",
+      "required":[
+        "UserId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      }
+    },
+    "Group":{
+      "type":"structure",
+      "required":[
+        "GroupId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "DisplayName":{
+          "shape":"GroupDisplayName",
+          "documentation":"<p>The display name value for the group. The length limit is 1,024 characters. This value can consist of letters, accented characters, symbols, numbers, punctuation, tab, new line, carriage return, space, and nonbreaking space in this attribute. This value is specified at the time the group is created and stored as an attribute of the group object in the identity store.</p>"
+        },
+        "ExternalIds":{
+          "shape":"ExternalIds",
+          "documentation":"<p>A list of <code>ExternalId</code> objects that contains the identifiers issued to this resource by an external identity provider.</p>"
+        },
+        "Description":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a description of the specified group.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      },
+      "documentation":"<p>A group object that contains the metadata and attributes for a specified group.</p>"
+    },
+    "GroupDisplayName":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}\\t\\n\\r  ]+",
+      "sensitive":true
+    },
+    "GroupIds":{
+      "type":"list",
+      "member":{"shape":"ResourceId"},
+      "max":100,
+      "min":1
+    },
+    "GroupMembership":{
+      "type":"structure",
+      "required":["IdentityStoreId"],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MembershipId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a <code>GroupMembership</code> object in an identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object that contains the identifier of a group member. Setting the <code>UserID</code> field to the specific identifier for a user indicates that the user is a member of the group.</p>"
+        }
+      },
+      "documentation":"<p>Contains the identifiers for a group, a group member, and a <code>GroupMembership</code> object in the identity store.</p>"
+    },
+    "GroupMembershipExistenceResult":{
+      "type":"structure",
+      "members":{
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object that contains the identifier of a group member. Setting the <code>UserID</code> field to the specific identifier for a user indicates that the user is a member of the group.</p>"
+        },
+        "MembershipExists":{
+          "shape":"SensitiveBooleanType",
+          "documentation":"<p>Indicates whether a membership relation exists or not.</p>"
+        }
+      },
+      "documentation":"<p>Indicates whether a resource is a member of a group in the identity store.</p>"
+    },
+    "GroupMembershipExistenceResults":{
+      "type":"list",
+      "member":{"shape":"GroupMembershipExistenceResult"}
+    },
+    "GroupMemberships":{
+      "type":"list",
+      "member":{"shape":"GroupMembership"}
+    },
+    "Groups":{
+      "type":"list",
+      "member":{"shape":"Group"}
+    },
+    "IdentityStoreId":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"d-[0-9a-f]{10}$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds to wait before retrying the next request.</p>"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure with an internal server.</p>",
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "IsMemberInGroupsRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "MemberId",
+        "GroupIds"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object containing the identifier of a group member.</p>"
+        },
+        "GroupIds":{
+          "shape":"GroupIds",
+          "documentation":"<p>A list of identifiers for groups in the identity store.</p>"
+        }
+      }
+    },
+    "IsMemberInGroupsResponse":{
+      "type":"structure",
+      "required":["Results"],
+      "members":{
+        "Results":{
+          "shape":"GroupMembershipExistenceResults",
+          "documentation":"<p>A list containing the results of membership existence checks.</p>"
+        }
+      }
+    },
+    "ListGroupMembershipsForMemberRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "MemberId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "MemberId":{
+          "shape":"MemberId",
+          "documentation":"<p>An object that contains the identifier of a group member. Setting the <code>UserID</code> field to the specific identifier for a user indicates that the user is a member of the group.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned per request. This parameter is used in the <code>ListUsers</code> and <code>ListGroups</code> requests to specify how many results to return in one page. The length limit is 50 characters.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code>, <code>ListGroups</code>, and <code>ListGroupMemberships</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        }
+      }
+    },
+    "ListGroupMembershipsForMemberResponse":{
+      "type":"structure",
+      "required":["GroupMemberships"],
+      "members":{
+        "GroupMemberships":{
+          "shape":"GroupMemberships",
+          "documentation":"<p>A list of <code>GroupMembership</code> objects in the group for a specified member.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code>, <code>ListGroups</code>, and <code>ListGroupMemberships</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page. </p>"
+        }
+      }
+    },
+    "ListGroupMembershipsRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned per request. This parameter is used in all <code>List</code> requests to specify how many results to return in one page.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code>, <code>ListGroups</code> and <code>ListGroupMemberships</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        }
+      }
+    },
+    "ListGroupMembershipsResponse":{
+      "type":"structure",
+      "required":["GroupMemberships"],
+      "members":{
+        "GroupMemberships":{
+          "shape":"GroupMemberships",
+          "documentation":"<p>A list of <code>GroupMembership</code> objects in the group.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code>, <code>ListGroups</code>, and <code>ListGroupMemberships</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        }
+      }
+    },
+    "ListGroupsRequest":{
+      "type":"structure",
+      "required":["IdentityStoreId"],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store, such as <code>d-1234567890</code>. In this example, <code>d-</code> is a fixed prefix, and <code>1234567890</code> is a randomly generated string that contains numbers and lower case letters. This value is generated at the time that a new identity store is created.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned per request. This parameter is used in the <code>ListUsers</code> and <code>ListGroups</code> requests to specify how many results to return in one page. The length limit is 50 characters.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code> and <code>ListGroups</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p>A list of <code>Filter</code> objects, which is used in the <code>ListUsers</code> and <code>ListGroups</code> requests.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Using filters with ListGroups API is deprecated, please use GetGroupId API instead."
+        }
+      }
+    },
+    "ListGroupsResponse":{
+      "type":"structure",
+      "required":["Groups"],
+      "members":{
+        "Groups":{
+          "shape":"Groups",
+          "documentation":"<p>A list of <code>Group</code> objects in the identity store.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code> and <code>ListGroups</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it1 is used in the API request to search for the next page.</p>"
+        }
+      }
+    },
+    "ListUsersRequest":{
+      "type":"structure",
+      "required":["IdentityStoreId"],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store, such as <code>d-1234567890</code>. In this example, <code>d-</code> is a fixed prefix, and <code>1234567890</code> is a randomly generated string that contains numbers and lower case letters. This value is generated at the time that a new identity store is created.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned per request. This parameter is used in the <code>ListUsers</code> and <code>ListGroups</code> requests to specify how many results to return in one page. The length limit is 50 characters.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code> and <code>ListGroups</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p>A list of <code>Filter</code> objects, which is used in the <code>ListUsers</code> and <code>ListGroups</code> requests. </p>",
+          "deprecated":true,
+          "deprecatedMessage":"Using filters with ListUsers API is deprecated, please use GetGroupId API instead."
+        }
+      }
+    },
+    "ListUsersResponse":{
+      "type":"structure",
+      "required":["Users"],
+      "members":{
+        "Users":{
+          "shape":"Users",
+          "documentation":"<p>A list of <code>User</code> objects in the identity store.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used for the <code>ListUsers</code> and <code>ListGroups</code> API operations. This value is generated by the identity store service. It is returned in the API response if the total results are more than the size of one page. This token is also returned when it is used in the API request to search for the next page.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MemberId":{
+      "type":"structure",
+      "members":{
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>An object containing the identifiers of resources that can be members.</p>"
+        }
+      },
+      "documentation":"<p>An object containing the identifier of a group member.</p>",
+      "union":true
+    },
+    "Name":{
+      "type":"structure",
+      "members":{
+        "Formatted":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a formatted version of the name for display.</p>"
+        },
+        "FamilyName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The family name of the user.</p>"
+        },
+        "GivenName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The given name of the user.</p>"
+        },
+        "MiddleName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The middle name of the user.</p>"
+        },
+        "HonorificPrefix":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The honorific prefix of the user. For example, \"Dr.\"</p>"
+        },
+        "HonorificSuffix":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>The honorific suffix of the user. For example, \"M.D.\"</p>"
+        }
+      },
+      "documentation":"<p>The full name of the user.</p>"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":65535,
+      "min":1,
+      "pattern":"[-a-zA-Z0-9+=/:_]*"
+    },
+    "PhoneNumber":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a phone number. For example, \"8675309\" or \"+1 (800) 123-4567\".</p>"
+        },
+        "Type":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string representing the type of a phone number. For example, \"Mobile.\"</p>"
+        },
+        "Primary":{
+          "shape":"SensitiveBooleanType",
+          "documentation":"<p>A Boolean value representing whether this is the primary phone number for the associated resource.</p>"
+        }
+      },
+      "documentation":"<p>The phone number associated with the user.</p>"
+    },
+    "PhoneNumbers":{
+      "type":"list",
+      "member":{"shape":"PhoneNumber"},
+      "max":1,
+      "min":1
+    },
+    "RequestId":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"
+    },
+    "ResourceId":{
+      "type":"string",
+      "max":47,
+      "min":1,
+      "pattern":"([0-9a-f]{10}-|)[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>An enum object indicating the type of resource in the identity store service. Valid values include USER, GROUP, and IDENTITY_STORE.</p>"
+        },
+        "ResourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a resource in the identity store that can be used as <code>UserId</code> or <code>GroupId</code>. The format for <code>ResourceId</code> is either <code>UUID</code> or <code>1234567890-UUID</code>, where <code>UUID</code> is a randomly generated value for each resource when it is created and <code>1234567890</code> represents the <code>IdentityStoreId</code> string value. In the case that the identity store is migrated from a legacy SSO identity store, the <code>ResourceId</code> for that identity store will be in the format of <code>UUID</code>. Otherwise, it will be in the <code>1234567890-UUID</code> format.</p>"
+        },
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        }
+      },
+      "documentation":"<p>Indicates that a requested resource is not found.</p>",
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "GROUP",
+        "USER",
+        "IDENTITY_STORE",
+        "GROUP_MEMBERSHIP"
+      ]
+    },
+    "RetryAfterSeconds":{"type":"integer"},
+    "SensitiveBooleanType":{
+      "type":"boolean",
+      "sensitive":true
+    },
+    "SensitiveStringType":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}\\t\\n\\r  　]+",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        }
+      },
+      "documentation":"<p>The request would cause the number of users or groups in the identity store to exceed the maximum allowed.</p>",
+      "exception":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds to wait before retrying the next request.</p>"
+        }
+      },
+      "documentation":"<p>Indicates that the principal has crossed the throttling limits of the API operations.</p>",
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "UniqueAttribute":{
+      "type":"structure",
+      "required":[
+        "AttributePath",
+        "AttributeValue"
+      ],
+      "members":{
+        "AttributePath":{
+          "shape":"AttributePath",
+          "documentation":"<p>A string representation of the path to a given attribute or sub-attribute. Supports JMESPath.</p>"
+        },
+        "AttributeValue":{
+          "shape":"AttributeValue",
+          "documentation":"<p>The value of the attribute. This is a <code>Document</code> type. This type is not supported by Java V1, Go V1, and older versions of the CLI.</p>"
+        }
+      },
+      "documentation":"<p>An entity attribute that's unique to a specific entity.</p>"
+    },
+    "UpdateGroupRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "GroupId",
+        "Operations"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "GroupId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a group in the identity store.</p>"
+        },
+        "Operations":{
+          "shape":"AttributeOperations",
+          "documentation":"<p>A list of <code>AttributeOperation</code> objects to apply to the requested group. These operations might add, replace, or remove an attribute.</p>"
+        }
+      }
+    },
+    "UpdateGroupResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateUserRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityStoreId",
+        "UserId",
+        "Operations"
+      ],
+      "members":{
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        },
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        },
+        "Operations":{
+          "shape":"AttributeOperations",
+          "documentation":"<p>A list of <code>AttributeOperation</code> objects to apply to the requested user. These operations might add, replace, or remove an attribute.</p>"
+        }
+      }
+    },
+    "UpdateUserResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "User":{
+      "type":"structure",
+      "required":[
+        "UserId",
+        "IdentityStoreId"
+      ],
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>A unique string used to identify the user. The length limit is 128 characters. This value can consist of letters, accented characters, symbols, numbers, and punctuation. This value is specified at the time the user is created and stored as an attribute of the user object in the identity store.</p>"
+        },
+        "UserId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The identifier for a user in the identity store.</p>"
+        },
+        "ExternalIds":{
+          "shape":"ExternalIds",
+          "documentation":"<p>A list of <code>ExternalId</code> objects that contains the identifiers issued to this resource by an external identity provider.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>An object containing the name of the user.</p>"
+        },
+        "DisplayName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the name of the user that is formatted for display when the user is referenced. For example, \"John Doe.\"</p>"
+        },
+        "NickName":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing an alternate name for the user.</p>"
+        },
+        "ProfileUrl":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing a URL that might be associated with the user.</p>"
+        },
+        "Emails":{
+          "shape":"Emails",
+          "documentation":"<p>A list of <code>Email</code> objects containing email addresses associated with the user.</p>"
+        },
+        "Addresses":{
+          "shape":"Addresses",
+          "documentation":"<p>A list of <code>Address</code> objects containing addresses associated with the user.</p>"
+        },
+        "PhoneNumbers":{
+          "shape":"PhoneNumbers",
+          "documentation":"<p>A list of <code>PhoneNumber</code> objects containing phone numbers associated with the user.</p>"
+        },
+        "UserType":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string indicating the type of user. Possible values are left unspecified. The value can vary based on your specific use case.</p>"
+        },
+        "Title":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the title of the user. Possible values are left unspecified. The value can vary based on your specific use case.</p>"
+        },
+        "PreferredLanguage":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the preferred language of the user. For example, \"American English\" or \"en-us.\"</p>"
+        },
+        "Locale":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the geographical region or location of the user.</p>"
+        },
+        "Timezone":{
+          "shape":"SensitiveStringType",
+          "documentation":"<p>A string containing the time zone of the user.</p>"
+        },
+        "IdentityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p>The globally unique identifier for the identity store.</p>"
+        }
+      },
+      "documentation":"<p>A user object that contains the metadata and attributes for a specified user.</p>"
+    },
+    "UserName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}]+",
+      "sensitive":true
+    },
+    "Users":{
+      "type":"list",
+      "member":{"shape":"User"}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The identifier for each request. This value is a globally unique ID that is generated by the identity store service for each sent request, and is then returned inside the exception if the request fails.</p>"
+        }
+      },
+      "documentation":"<p>The request failed because it contains a syntax error.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>The Identity Store service used by IAM Identity Center provides a single place to retrieve all of your identities (users and groups). For more information, see the <a href=\"https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html\">IAM Identity Center User Guide</a>.</p> <p>This reference guide describes the identity store operations that you can call programmatically and includes detailed information about data types and errors.</p> <note> <p>IAM Identity Center uses the <code>sso</code> and <code>identitystore</code> API namespaces.</p> </note>"
+}

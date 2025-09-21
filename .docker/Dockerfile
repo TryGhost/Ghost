@@ -28,34 +28,14 @@ FROM base AS development-base
 WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
+COPY patches patches
 
-# Calculate a hash of the yarn.lock file
-## See development.entrypoint.sh for more info
 RUN mkdir -p .yarnhash && md5sum yarn.lock | awk '{print $1}' > .yarnhash/yarn.lock.md5
 
-# Copy all package.json files
-COPY apps/stats/package.json apps/stats/package.json
-COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
-COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/package.json
-COPY apps/admin-x-framework/package.json apps/admin-x-framework/package.json
-COPY apps/admin-x-settings/package.json apps/admin-x-settings/package.json
-COPY apps/announcement-bar/package.json apps/announcement-bar/package.json
-COPY apps/comments-ui/package.json apps/comments-ui/package.json
-COPY apps/portal/package.json apps/portal/package.json
-COPY apps/posts/package.json apps/posts/package.json
-COPY apps/shade/package.json apps/shade/package.json
-COPY apps/signup-form/package.json apps/signup-form/package.json
-COPY apps/sodo-search/package.json apps/sodo-search/package.json
-COPY e2e/package.json e2e/package.json
-COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/package.json
-COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
-COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
-COPY ghost/admin/package.json ghost/admin/package.json
-COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/i18n/package.json ghost/i18n/package.json
-
-# Copy patches directory so patch-package can apply patches during yarn install
-COPY patches patches
+# Copy everything for dependency graph (safer than per-file copies)
+COPY apps apps
+COPY ghost ghost
+COPY e2e e2e
 
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
     yarn install --frozen-lockfile --prefer-offline
@@ -65,7 +45,6 @@ RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
 # --------------------
 FROM development-base AS shade-builder
 WORKDIR /home/ghost
-COPY apps/shade apps/shade
 RUN cd apps/shade && yarn build
 
 # --------------------
@@ -73,7 +52,6 @@ RUN cd apps/shade && yarn build
 # --------------------
 FROM development-base AS admin-x-design-system-builder
 WORKDIR /home/ghost
-COPY apps/admin-x-design-system apps/admin-x-design-system
 RUN cd apps/admin-x-design-system && yarn build
 
 # --------------------
@@ -81,7 +59,6 @@ RUN cd apps/admin-x-design-system && yarn build
 # --------------------
 FROM development-base AS admin-x-framework-builder
 WORKDIR /home/ghost
-COPY apps/admin-x-framework apps/admin-x-framework
 COPY --from=shade-builder /home/ghost/apps/shade/es apps/shade/es
 COPY --from=shade-builder /home/ghost/apps/shade/types apps/shade/types
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
@@ -93,7 +70,6 @@ RUN cd apps/admin-x-framework && yarn build
 # --------------------
 FROM development-base AS stats-builder
 WORKDIR /home/ghost
-COPY apps/stats apps/stats
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
@@ -106,7 +82,6 @@ RUN cd apps/stats && yarn build
 # --------------------
 FROM development-base AS posts-builder
 WORKDIR /home/ghost
-COPY apps/posts apps/posts
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
@@ -119,7 +94,6 @@ RUN cd apps/posts && yarn build
 # --------------------
 FROM development-base AS admin-x-settings-builder
 WORKDIR /home/ghost
-COPY apps/admin-x-settings apps/admin-x-settings
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system apps/admin-x-design-system
 COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
@@ -131,7 +105,6 @@ RUN cd apps/admin-x-settings && yarn build
 # --------------------
 FROM development-base AS admin-x-activitypub-builder
 WORKDIR /home/ghost
-COPY apps/admin-x-activitypub apps/admin-x-activitypub
 COPY ghost/core/core/frontend/src/cards ghost/core/core/frontend/src/cards
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
@@ -145,10 +118,6 @@ RUN cd apps/admin-x-activitypub && yarn build
 # --------------------
 FROM development-base AS admin-ember-builder
 WORKDIR /home/ghost
-COPY ghost/admin ghost/admin
-# Admin's asset-delivery pipeline needs the ghost module to resolve
-COPY ghost/core/package.json ghost/core/package.json
-COPY ghost/core/index.js ghost/core/index.js
 COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
 COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
@@ -160,11 +129,10 @@ RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 # --------------------
 FROM development-base AS ghost-assets-builder
 WORKDIR /home/ghost
-COPY ghost/core ghost/core
 RUN cd ghost/core && yarn build:assets
 
 # --------------------
-# Development
+# Development Stage
 # --------------------
 FROM development-base AS development
 COPY . .
@@ -181,5 +149,14 @@ COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps
 COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
 COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
-
 CMD ["yarn", "dev"]
+
+# --------------------
+# Production Stage
+# --------------------
+FROM development AS production
+WORKDIR /home/ghost
+ENV NODE_ENV=production
+EXPOSE 2368
+CMD ["yarn", "start"]
+

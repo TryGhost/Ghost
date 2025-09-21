@@ -1,0 +1,925 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-09-07",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"billing",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Billing",
+    "serviceId":"Billing",
+    "signatureVersion":"v4",
+    "signingName":"billing",
+    "targetPrefix":"AWSBilling",
+    "uid":"billing-2023-09-07"
+  },
+  "operations":{
+    "CreateBillingView":{
+      "name":"CreateBillingView",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateBillingViewRequest"},
+      "output":{"shape":"CreateBillingViewResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Creates a billing view with the specified billing view attributes. </p>",
+      "idempotent":true
+    },
+    "DeleteBillingView":{
+      "name":"DeleteBillingView",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteBillingViewRequest"},
+      "output":{"shape":"DeleteBillingViewResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified billing view.</p>",
+      "idempotent":true
+    },
+    "GetBillingView":{
+      "name":"GetBillingView",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetBillingViewRequest"},
+      "output":{"shape":"GetBillingViewResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the metadata associated to the specified billing view ARN. </p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the resource-based policy document attached to the resource in <code>JSON</code> format. </p>"
+    },
+    "ListBillingViews":{
+      "name":"ListBillingViews",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillingViewsRequest"},
+      "output":{"shape":"ListBillingViewsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the billing views available for a given time period. </p> <p>Every Amazon Web Services account has a unique <code>PRIMARY</code> billing view that represents the billing data available by default. Accounts that use Billing Conductor also have <code>BILLING_GROUP</code> billing views representing pro forma costs associated with each created billing group.</p>"
+    },
+    "ListSourceViewsForBillingView":{
+      "name":"ListSourceViewsForBillingView",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSourceViewsForBillingViewRequest"},
+      "output":{"shape":"ListSourceViewsForBillingViewResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the source views (managed Amazon Web Services billing views) associated with the billing view. </p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists tags associated with the billing view resource. </p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> An API operation for adding one or more tags (key-value pairs) to a resource. </p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Removes one or more tags from a resource. Specify only tag keys in your request. Don't specify the value. </p>"
+    },
+    "UpdateBillingView":{
+      "name":"UpdateBillingView",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateBillingViewRequest"},
+      "output":{"shape":"UpdateBillingViewResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>An API to update the attributes of the billing view. </p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You don't have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "pattern":"[0-9]{12}"
+    },
+    "ActiveTimeRange":{
+      "type":"structure",
+      "required":[
+        "activeAfterInclusive",
+        "activeBeforeInclusive"
+      ],
+      "members":{
+        "activeAfterInclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p>The inclusive time range start date.</p>"
+        },
+        "activeBeforeInclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p> The inclusive time range end date. </p>"
+        }
+      },
+      "documentation":"<p>A time range with a start and end time.</p>"
+    },
+    "BillingViewArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-z-]*:(billing)::[0-9]{12}:billingview/[a-zA-Z0-9/:_\\+=\\.\\-@]{0,59}[a-zA-Z0-9]"
+    },
+    "BillingViewArnList":{
+      "type":"list",
+      "member":{"shape":"BillingViewArn"},
+      "max":10,
+      "min":0
+    },
+    "BillingViewDescription":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"([ a-zA-Z0-9_\\+=\\.\\-@]+)?",
+      "sensitive":true
+    },
+    "BillingViewElement":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "name":{
+          "shape":"BillingViewName",
+          "documentation":"<p> The account name of the billing view. </p>"
+        },
+        "description":{
+          "shape":"BillingViewDescription",
+          "documentation":"<p> The description of the billing view. </p>"
+        },
+        "billingViewType":{
+          "shape":"BillingViewType",
+          "documentation":"<p>The type of billing group. </p>"
+        },
+        "ownerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account owner of the billing view. </p>"
+        },
+        "dataFilterExpression":{
+          "shape":"Expression",
+          "documentation":"<p> See <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_billing_Expression.html\">Expression</a>. Billing view only supports <code>LINKED_ACCOUNT</code> and <code>Tags</code>. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the billing view was created. </p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the billing view was last updated. </p>"
+        }
+      },
+      "documentation":"<p>The metadata associated to the billing view. </p>"
+    },
+    "BillingViewList":{
+      "type":"list",
+      "member":{"shape":"BillingViewListElement"}
+    },
+    "BillingViewListElement":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "name":{
+          "shape":"BillingViewName",
+          "documentation":"<p> A list of names of the Billing view. </p>"
+        },
+        "description":{
+          "shape":"BillingViewDescription",
+          "documentation":"<p> The description of the billing view. </p>"
+        },
+        "ownerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The list of owners of the Billing view. </p>"
+        },
+        "billingViewType":{
+          "shape":"BillingViewType",
+          "documentation":"<p>The type of billing view.</p>"
+        }
+      },
+      "documentation":"<p>A representation of a billing view.</p>"
+    },
+    "BillingViewName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[ a-zA-Z0-9_\\+=\\.\\-@]+",
+      "sensitive":true
+    },
+    "BillingViewSourceViewsList":{
+      "type":"list",
+      "member":{"shape":"BillingViewArn"},
+      "max":1,
+      "min":1
+    },
+    "BillingViewType":{
+      "type":"string",
+      "enum":[
+        "PRIMARY",
+        "BILLING_GROUP",
+        "CUSTOM"
+      ]
+    },
+    "BillingViewTypeList":{
+      "type":"list",
+      "member":{"shape":"BillingViewType"}
+    },
+    "BillingViewsMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ClientToken":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The identifier for the service resource associated with the request. </p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p> The type of resource associated with the request. </p>"
+        }
+      },
+      "documentation":"<p> The requested operation would cause a conflict with the current state of a service resource associated with the request. Resolve the conflict before retrying this request. </p>",
+      "exception":true
+    },
+    "CreateBillingViewRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "sourceViews"
+      ],
+      "members":{
+        "name":{
+          "shape":"BillingViewName",
+          "documentation":"<p> The name of the billing view. </p>"
+        },
+        "description":{
+          "shape":"BillingViewDescription",
+          "documentation":"<p> The description of the billing view. </p>"
+        },
+        "sourceViews":{
+          "shape":"BillingViewSourceViewsList",
+          "documentation":"<p>A list of billing views used as the data source for the custom billing view.</p>"
+        },
+        "dataFilterExpression":{
+          "shape":"Expression",
+          "documentation":"<p> See <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_billing_Expression.html\">Expression</a>. Billing view only supports <code>LINKED_ACCOUNT</code> and <code>Tags</code>. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier you specify to ensure idempotency of the request. Idempotency ensures that an API request completes no more than one time. If the original request completes successfully, any subsequent retries complete successfully without performing any further actions with an idempotent request. </p>",
+          "idempotencyToken":true
+        },
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>A list of key value map specifying tags associated to the billing view being created. </p>"
+        }
+      }
+    },
+    "CreateBillingViewResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time when the billing view was created. </p>"
+        }
+      }
+    },
+    "DeleteBillingViewRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        }
+      }
+    },
+    "DeleteBillingViewResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        }
+      }
+    },
+    "Dimension":{
+      "type":"string",
+      "enum":["LINKED_ACCOUNT"]
+    },
+    "DimensionValues":{
+      "type":"structure",
+      "required":[
+        "key",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"Dimension",
+          "documentation":"<p> The names of the metadata types that you can use to filter and group your results. </p>"
+        },
+        "values":{
+          "shape":"Values",
+          "documentation":"<p> The metadata values that you can use to filter and group your results. </p>"
+        }
+      },
+      "documentation":"<p> The metadata that you can use to filter and group your results. </p>"
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "Expression":{
+      "type":"structure",
+      "members":{
+        "dimensions":{
+          "shape":"DimensionValues",
+          "documentation":"<p> The specific <code>Dimension</code> to use for <code>Expression</code>. </p>"
+        },
+        "tags":{
+          "shape":"TagValues",
+          "documentation":"<p> The specific <code>Tag</code> to use for <code>Expression</code>. </p>"
+        }
+      },
+      "documentation":"<p> See <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_billing_Expression.html\">Expression</a>. Billing view only supports <code>LINKED_ACCOUNT</code> and <code>Tags</code>. </p>"
+    },
+    "FieldName":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "GetBillingViewRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        }
+      }
+    },
+    "GetBillingViewResponse":{
+      "type":"structure",
+      "required":["billingView"],
+      "members":{
+        "billingView":{
+          "shape":"BillingViewElement",
+          "documentation":"<p>The billing view element associated with the specified ARN. </p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the billing view resource to which the policy is attached to. </p>"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the billing view resource to which the policy is attached to. </p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy document attached to the resource in <code>JSON</code> format. </p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request processing failed because of an unknown error, exception, or failure. </p>",
+      "exception":true,
+      "fault":true
+    },
+    "ListBillingViewsRequest":{
+      "type":"structure",
+      "members":{
+        "activeTimeRange":{
+          "shape":"ActiveTimeRange",
+          "documentation":"<p> The time range for the billing views listed. <code>PRIMARY</code> billing view is always listed. <code>BILLING_GROUP</code> billing views are listed for time ranges when the associated billing group resource in Billing Conductor is active. The time range must be within one calendar month. </p>"
+        },
+        "arns":{
+          "shape":"BillingViewArnList",
+          "documentation":"<p>The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "billingViewTypes":{
+          "shape":"BillingViewTypeList",
+          "documentation":"<p>The type of billing view.</p>"
+        },
+        "ownerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The list of owners of the billing view. </p>"
+        },
+        "maxResults":{
+          "shape":"BillingViewsMaxResults",
+          "documentation":"<p>The maximum number of billing views to retrieve. Default is 100. </p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>The pagination token that is used on subsequent calls to list billing views.</p>"
+        }
+      }
+    },
+    "ListBillingViewsResponse":{
+      "type":"structure",
+      "required":["billingViews"],
+      "members":{
+        "billingViews":{
+          "shape":"BillingViewList",
+          "documentation":"<p>A list of <code>BillingViewListElement</code> retrieved.</p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p>The pagination token to use on subsequent calls to list billing views. </p>"
+        }
+      }
+    },
+    "ListSourceViewsForBillingViewRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "maxResults":{
+          "shape":"BillingViewsMaxResults",
+          "documentation":"<p> The number of entries a paginated response contains. </p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p> The pagination token that is used on subsequent calls to list billing views. </p>"
+        }
+      }
+    },
+    "ListSourceViewsForBillingViewResponse":{
+      "type":"structure",
+      "required":["sourceViews"],
+      "members":{
+        "sourceViews":{
+          "shape":"BillingViewSourceViewsList",
+          "documentation":"<p>A list of billing views used as the data source for the custom billing view. </p>"
+        },
+        "nextToken":{
+          "shape":"PageToken",
+          "documentation":"<p> The pagination token that is used on subsequent calls to list billing views. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p> A list of tag key value pairs that are associated with the resource. </p>"
+        }
+      }
+    },
+    "PageToken":{
+      "type":"string",
+      "max":2047,
+      "min":1
+    },
+    "PolicyDocument":{"type":"string"},
+    "QuotaCode":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ResourceArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-z-]*:(billing)::[0-9]{12}:[a-zA-Z0-9/:_\\+=\\.\\@-]{0,70}[a-zA-Z0-9]"
+    },
+    "ResourceId":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p> Value is a list of resource IDs that were not found. </p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p> Value is the type of resource that was not found. </p>"
+        }
+      },
+      "documentation":"<p> The specified ARN in the request doesn't exist. </p>",
+      "exception":true
+    },
+    "ResourceTag":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"ResourceTagKey",
+          "documentation":"<p> The key that's associated with the tag. </p>"
+        },
+        "value":{
+          "shape":"ResourceTagValue",
+          "documentation":"<p> The value that's associated with the tag. </p>"
+        }
+      },
+      "documentation":"<p> The tag structure that contains a tag key and value. </p>"
+    },
+    "ResourceTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ResourceTagKeyList":{
+      "type":"list",
+      "member":{"shape":"ResourceTagKey"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagList":{
+      "type":"list",
+      "member":{"shape":"ResourceTag"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ResourceType":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ServiceCode":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the resource. </p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p> The type of Amazon Web Services resource. </p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The container for the <code>serviceCode</code>. </p>"
+        },
+        "quotaCode":{
+          "shape":"QuotaCode",
+          "documentation":"<p> The container for the <code>quotaCode</code>. </p>"
+        }
+      },
+      "documentation":"<p> You've reached the limit of resources you can create, or exceeded the size of an individual resource. </p>",
+      "exception":true
+    },
+    "TagKey":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "resourceTags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource. </p>"
+        },
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p> A list of tag key value pairs that are associated with the resource. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValues":{
+      "type":"structure",
+      "required":[
+        "key",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p> The key for the tag. </p>"
+        },
+        "values":{
+          "shape":"Values",
+          "documentation":"<p> The specific value of the tag. </p>"
+        }
+      },
+      "documentation":"<p> The values that are available for a tag. </p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. </p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "resourceTagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource. </p>"
+        },
+        "resourceTagKeys":{
+          "shape":"ResourceTagKeyList",
+          "documentation":"<p> A list of tag key value pairs that are associated with the resource. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateBillingViewRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "name":{
+          "shape":"BillingViewName",
+          "documentation":"<p> The name of the billing view. </p>"
+        },
+        "description":{
+          "shape":"BillingViewDescription",
+          "documentation":"<p> The description of the billing view. </p>"
+        },
+        "dataFilterExpression":{
+          "shape":"Expression",
+          "documentation":"<p>See <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_billing_Expression.html\">Expression</a>. Billing view only supports <code>LINKED_ACCOUNT</code> and <code>Tags</code>. </p>"
+        }
+      }
+    },
+    "UpdateBillingViewResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that can be used to uniquely identify the billing view. </p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time when the billing view was last updated. </p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"FieldName",
+          "documentation":"<p>The name of the field.</p>"
+        },
+        "message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The message describing why the field failed validation.</p>"
+        }
+      },
+      "documentation":"<p>The field's information of a request that resulted in an exception. </p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "Value":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "Values":{
+      "type":"list",
+      "member":{"shape":"Value"},
+      "max":200,
+      "min":1
+    }
+  },
+  "documentation":"<p> You can use the Billing API to programatically list the billing views available to you for a given time period. A billing view represents a set of billing data. </p> <p>The Billing API provides the following endpoint:</p> <p> <code>https://billing.us-east-1.api.aws</code> </p>"
+}

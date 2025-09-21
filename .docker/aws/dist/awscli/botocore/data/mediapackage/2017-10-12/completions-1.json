@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Channel": {
+      "operation": "ListChannels",
+      "resourceIdentifier": {
+        "Description": "Channels[].Description",
+        "Id": "Channels[].Id"
+      }
+    }
+  },
+  "operations": {
+    "DeleteChannel": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "DeleteOriginEndpoint": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "DescribeChannel": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "DescribeOriginEndpoint": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "RotateChannelCredentials": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "RotateIngestEndpointCredentials": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "UpdateChannel": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "UpdateOriginEndpoint": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Channel",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    }
+  }
+}

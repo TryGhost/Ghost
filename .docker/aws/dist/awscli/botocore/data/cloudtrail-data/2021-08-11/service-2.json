@@ -1,0 +1,236 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-08-11",
+    "endpointPrefix":"cloudtrail-data",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"AWS CloudTrail Data Service",
+    "serviceId":"CloudTrail Data",
+    "signatureVersion":"v4",
+    "signingName":"cloudtrail-data",
+    "uid":"cloudtrail-data-2021-08-11"
+  },
+  "operations":{
+    "PutAuditEvents":{
+      "name":"PutAuditEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutAuditEvents",
+        "responseCode":200
+      },
+      "input":{"shape":"PutAuditEventsRequest"},
+      "output":{"shape":"PutAuditEventsResponse"},
+      "errors":[
+        {"shape":"ChannelInsufficientPermission"},
+        {"shape":"ChannelNotFound"},
+        {"shape":"InvalidChannelARN"},
+        {"shape":"ChannelUnsupportedSchema"},
+        {"shape":"DuplicatedAuditEventId"},
+        {"shape":"UnsupportedOperationException"}
+      ],
+      "documentation":"<p>Ingests your application events into CloudTrail Lake. A required parameter, <code>auditEvents</code>, accepts the JSON records (also called <i>payload</i>) of events that you want CloudTrail to ingest. You can add up to 100 of these events (or up to 1 MB) per <code>PutAuditEvents</code> request.</p>"
+    }
+  },
+  "shapes":{
+    "AuditEvent":{
+      "type":"structure",
+      "required":[
+        "eventData",
+        "id"
+      ],
+      "members":{
+        "eventData":{
+          "shape":"String",
+          "documentation":"<p>The content of an audit event that comes from the event, such as <code>userIdentity</code>, <code>userAgent</code>, and <code>eventSource</code>.</p>"
+        },
+        "eventDataChecksum":{
+          "shape":"String",
+          "documentation":"<p>A checksum is a base64-SHA256 algorithm that helps you verify that CloudTrail receives the event that matches with the checksum. Calculate the checksum by running a command like the following:</p> <p> <code>printf %s <i>$eventdata</i> | openssl dgst -binary -sha256 | base64</code> </p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The original event ID from the source event.</p>"
+        }
+      },
+      "documentation":"<p>An event from a source outside of Amazon Web Services that you want CloudTrail to log.</p>"
+    },
+    "AuditEventResultEntries":{
+      "type":"list",
+      "member":{"shape":"AuditEventResultEntry"},
+      "max":100,
+      "min":0
+    },
+    "AuditEventResultEntry":{
+      "type":"structure",
+      "required":[
+        "eventID",
+        "id"
+      ],
+      "members":{
+        "eventID":{
+          "shape":"Uuid",
+          "documentation":"<p>The event ID assigned by CloudTrail.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The original event ID from the source event.</p>"
+        }
+      },
+      "documentation":"<p>A response that includes successful and failed event results.</p>"
+    },
+    "AuditEvents":{
+      "type":"list",
+      "member":{"shape":"AuditEvent"},
+      "max":100,
+      "min":1
+    },
+    "ChannelArn":{
+      "type":"string",
+      "pattern":"^arn:.*$"
+    },
+    "ChannelInsufficientPermission":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The caller's account ID must be the same as the channel owner's account ID.</p>",
+      "exception":true
+    },
+    "ChannelNotFound":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The channel could not be found.</p>",
+      "exception":true
+    },
+    "ChannelUnsupportedSchema":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The schema type of the event is not supported.</p>",
+      "exception":true
+    },
+    "DuplicatedAuditEventId":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Two or more entries in the request have the same event ID.</p>",
+      "exception":true
+    },
+    "ErrorCode":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ExternalId":{
+      "type":"string",
+      "max":1224,
+      "min":2,
+      "pattern":"^[\\w+=,.@:\\/-]*$"
+    },
+    "InvalidChannelARN":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The specified channel ARN is not a valid channel ARN.</p>",
+      "exception":true
+    },
+    "PutAuditEventsRequest":{
+      "type":"structure",
+      "required":[
+        "auditEvents",
+        "channelArn"
+      ],
+      "members":{
+        "auditEvents":{
+          "shape":"AuditEvents",
+          "documentation":"<p>The JSON payload of events that you want to ingest. You can also point to the JSON event payload in a file.</p>"
+        },
+        "channelArn":{
+          "shape":"ChannelArn",
+          "documentation":"<p>The ARN or ID (the ARN suffix) of a channel.</p>",
+          "location":"querystring",
+          "locationName":"channelArn"
+        },
+        "externalId":{
+          "shape":"ExternalId",
+          "documentation":"<p>A unique identifier that is conditionally required when the channel's resource policy includes an external ID. This value can be any string, such as a passphrase or account number.</p>",
+          "location":"querystring",
+          "locationName":"externalId"
+        }
+      }
+    },
+    "PutAuditEventsResponse":{
+      "type":"structure",
+      "required":[
+        "failed",
+        "successful"
+      ],
+      "members":{
+        "failed":{
+          "shape":"ResultErrorEntries",
+          "documentation":"<p>Lists events in the provided event payload that could not be ingested into CloudTrail, and includes the error code and error message returned for events that could not be ingested.</p>"
+        },
+        "successful":{
+          "shape":"AuditEventResultEntries",
+          "documentation":"<p>Lists events in the provided event payload that were successfully ingested into CloudTrail.</p>"
+        }
+      }
+    },
+    "ResultErrorEntries":{
+      "type":"list",
+      "member":{"shape":"ResultErrorEntry"},
+      "max":100,
+      "min":0
+    },
+    "ResultErrorEntry":{
+      "type":"structure",
+      "required":[
+        "errorCode",
+        "errorMessage",
+        "id"
+      ],
+      "members":{
+        "errorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code for events that could not be ingested by CloudTrail. Possible error codes include: <code>FieldTooLong</code>, <code>FieldNotFound</code>, <code>InvalidChecksum</code>, <code>InvalidData</code>, <code>InvalidRecipient</code>, <code>InvalidEventSource</code>, <code>AccountNotSubscribed</code>, <code>Throttling</code>, and <code>InternalFailure</code>.</p>"
+        },
+        "errorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The message that describes the error for events that could not be ingested by CloudTrail.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The original event ID from the source event that could not be ingested by CloudTrail.</p>"
+        }
+      },
+      "documentation":"<p>Includes the error code and error message for events that could not be ingested by CloudTrail.</p>"
+    },
+    "String":{"type":"string"},
+    "UnsupportedOperationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The operation requested is not supported in this region or account.</p>",
+      "exception":true
+    },
+    "Uuid":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[-_A-Za-z0-9]+$"
+    }
+  },
+  "documentation":"<p>The CloudTrail Data Service lets you ingest events into CloudTrail from any source in your hybrid environments, such as in-house or SaaS applications hosted on-premises or in the cloud, virtual machines, or containers. You can store, access, analyze, troubleshoot and take action on this data without maintaining multiple log aggregators and reporting tools. After you run <code>PutAuditEvents</code> to ingest your application activity into CloudTrail, you can use CloudTrail Lake to search, query, and analyze the data that is logged from your applications.</p>"
+}

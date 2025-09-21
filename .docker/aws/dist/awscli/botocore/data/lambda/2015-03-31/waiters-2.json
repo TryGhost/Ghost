@@ -1,0 +1,129 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "FunctionActive" : {
+      "description" : "Waits for the function's State to be Active. This waiter uses GetFunctionConfiguration API. This should be used after new function creation.",
+      "delay" : 5,
+      "maxAttempts" : 60,
+      "operation" : "GetFunctionConfiguration",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "success",
+        "expected" : "Active"
+      }, {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "failure",
+        "expected" : "Failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "retry",
+        "expected" : "Pending"
+      } ]
+    },
+    "FunctionActiveV2" : {
+      "description" : "Waits for the function's State to be Active. This waiter uses GetFunction API. This should be used after new function creation.",
+      "delay" : 1,
+      "maxAttempts" : 300,
+      "operation" : "GetFunction",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Configuration.State",
+        "state" : "success",
+        "expected" : "Active"
+      }, {
+        "matcher" : "path",
+        "argument" : "Configuration.State",
+        "state" : "failure",
+        "expected" : "Failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "Configuration.State",
+        "state" : "retry",
+        "expected" : "Pending"
+      } ]
+    },
+    "FunctionExists" : {
+      "delay" : 1,
+      "maxAttempts" : 20,
+      "operation" : "GetFunction",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : false
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "ResourceNotFoundException"
+      } ]
+    },
+    "FunctionUpdated" : {
+      "description" : "Waits for the function's LastUpdateStatus to be Successful. This waiter uses GetFunctionConfiguration API. This should be used after function updates.",
+      "delay" : 5,
+      "maxAttempts" : 60,
+      "operation" : "GetFunctionConfiguration",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "LastUpdateStatus",
+        "state" : "success",
+        "expected" : "Successful"
+      }, {
+        "matcher" : "path",
+        "argument" : "LastUpdateStatus",
+        "state" : "failure",
+        "expected" : "Failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "LastUpdateStatus",
+        "state" : "retry",
+        "expected" : "InProgress"
+      } ]
+    },
+    "FunctionUpdatedV2" : {
+      "description" : "Waits for the function's LastUpdateStatus to be Successful. This waiter uses GetFunction API. This should be used after function updates.",
+      "delay" : 1,
+      "maxAttempts" : 300,
+      "operation" : "GetFunction",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Configuration.LastUpdateStatus",
+        "state" : "success",
+        "expected" : "Successful"
+      }, {
+        "matcher" : "path",
+        "argument" : "Configuration.LastUpdateStatus",
+        "state" : "failure",
+        "expected" : "Failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "Configuration.LastUpdateStatus",
+        "state" : "retry",
+        "expected" : "InProgress"
+      } ]
+    },
+    "PublishedVersionActive" : {
+      "description" : "Waits for the published version's State to be Active. This waiter uses GetFunctionConfiguration API. This should be used after new version is published.",
+      "delay" : 5,
+      "maxAttempts" : 312,
+      "operation" : "GetFunctionConfiguration",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "success",
+        "expected" : "Active"
+      }, {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "failure",
+        "expected" : "Failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "State",
+        "state" : "retry",
+        "expected" : "Pending"
+      } ]
+    }
+  }
+}

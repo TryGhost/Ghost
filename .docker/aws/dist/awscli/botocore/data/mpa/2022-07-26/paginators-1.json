@@ -1,0 +1,40 @@
+{
+  "pagination": {
+    "ListApprovalTeams": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ApprovalTeams"
+    },
+    "ListIdentitySources": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "IdentitySources"
+    },
+    "ListPolicies": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Policies"
+    },
+    "ListPolicyVersions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PolicyVersions"
+    },
+    "ListResourcePolicies": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "ResourcePolicies"
+    },
+    "ListSessions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Sessions"
+    }
+  }
+}

@@ -1,0 +1,4425 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-12-15",
+    "endpointPrefix":"lookoutequipment",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"LookoutEquipment",
+    "serviceFullName":"Amazon Lookout for Equipment",
+    "serviceId":"LookoutEquipment",
+    "signatureVersion":"v4",
+    "targetPrefix":"AWSLookoutEquipmentFrontendService",
+    "uid":"lookoutequipment-2020-12-15",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateDataset":{
+      "name":"CreateDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateDatasetRequest"},
+      "output":{"shape":"CreateDatasetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a container for a collection of data being ingested for analysis. The dataset contains the metadata describing where the data is and what the data actually looks like. For example, it contains the location of the data source, the data schema, and other information. A dataset also contains any tags associated with the ingested data. </p>"
+    },
+    "CreateInferenceScheduler":{
+      "name":"CreateInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateInferenceSchedulerRequest"},
+      "output":{"shape":"CreateInferenceSchedulerResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Creates a scheduled inference. Scheduling an inference is setting up a continuous real-time inference plan to analyze new measurement data. When setting up the schedule, you provide an S3 bucket location for the input data, assign it a delimiter between separate entries in the data, set an offset delay if desired, and set the frequency of inferencing. You must also provide an S3 bucket location for the output data. </p>"
+    },
+    "CreateLabel":{
+      "name":"CreateLabel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLabelRequest"},
+      "output":{"shape":"CreateLabelResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Creates a label for an event. </p>"
+    },
+    "CreateLabelGroup":{
+      "name":"CreateLabelGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLabelGroupRequest"},
+      "output":{"shape":"CreateLabelGroupResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Creates a group of labels. </p>"
+    },
+    "CreateModel":{
+      "name":"CreateModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateModelRequest"},
+      "output":{"shape":"CreateModelResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a machine learning model for data inference. </p> <p>A machine-learning (ML) model is a mathematical model that finds patterns in your data. In Amazon Lookout for Equipment, the model learns the patterns of normal behavior and detects abnormal behavior that could be potential equipment failure (or maintenance events). The models are made by analyzing normal data and abnormalities in machine behavior that have already occurred.</p> <p>Your model is trained using a portion of the data from your dataset and uses that data to learn patterns of normal behavior and abnormal patterns that lead to equipment failure. Another portion of the data is used to evaluate the model's accuracy. </p>"
+    },
+    "CreateRetrainingScheduler":{
+      "name":"CreateRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRetrainingSchedulerRequest"},
+      "output":{"shape":"CreateRetrainingSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a retraining scheduler on the specified model. </p>"
+    },
+    "DeleteDataset":{
+      "name":"DeleteDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteDatasetRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p> Deletes a dataset and associated artifacts. The operation will check to see if any inference scheduler or data ingestion job is currently using the dataset, and if there isn't, the dataset, its metadata, and any associated data stored in S3 will be deleted. This does not affect any models that used this dataset for training and evaluation, but does prevent it from being used in the future. </p>"
+    },
+    "DeleteInferenceScheduler":{
+      "name":"DeleteInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteInferenceSchedulerRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes an inference scheduler that has been set up. Prior inference results will not be deleted.</p>"
+    },
+    "DeleteLabel":{
+      "name":"DeleteLabel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLabelRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p> Deletes a label. </p>"
+    },
+    "DeleteLabelGroup":{
+      "name":"DeleteLabelGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLabelGroupRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p> Deletes a group of labels. </p>"
+    },
+    "DeleteModel":{
+      "name":"DeleteModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteModelRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a machine learning model currently available for Amazon Lookout for Equipment. This will prevent it from being used with an inference scheduler, even one that is already set up. </p>"
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the resource policy attached to the resource.</p>"
+    },
+    "DeleteRetrainingScheduler":{
+      "name":"DeleteRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRetrainingSchedulerRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a retraining scheduler from a model. The retraining scheduler must be in the <code>STOPPED</code> status. </p>"
+    },
+    "DescribeDataIngestionJob":{
+      "name":"DescribeDataIngestionJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeDataIngestionJobRequest"},
+      "output":{"shape":"DescribeDataIngestionJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides information on a specific data ingestion job such as creation time, dataset ARN, and status.</p>"
+    },
+    "DescribeDataset":{
+      "name":"DescribeDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeDatasetRequest"},
+      "output":{"shape":"DescribeDatasetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides a JSON description of the data in each time series dataset, including names, column names, and data types.</p>"
+    },
+    "DescribeInferenceScheduler":{
+      "name":"DescribeInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeInferenceSchedulerRequest"},
+      "output":{"shape":"DescribeInferenceSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Specifies information about the inference scheduler being used, including name, model, status, and associated metadata </p>"
+    },
+    "DescribeLabel":{
+      "name":"DescribeLabel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeLabelRequest"},
+      "output":{"shape":"DescribeLabelResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Returns the name of the label. </p>"
+    },
+    "DescribeLabelGroup":{
+      "name":"DescribeLabelGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeLabelGroupRequest"},
+      "output":{"shape":"DescribeLabelGroupResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Returns information about the label group. </p>"
+    },
+    "DescribeModel":{
+      "name":"DescribeModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeModelRequest"},
+      "output":{"shape":"DescribeModelResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides a JSON containing the overall information about a specific machine learning model, including model name and ARN, dataset, training and evaluation information, status, and so on. </p>"
+    },
+    "DescribeModelVersion":{
+      "name":"DescribeModelVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeModelVersionRequest"},
+      "output":{"shape":"DescribeModelVersionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves information about a specific machine learning model version.</p>"
+    },
+    "DescribeResourcePolicy":{
+      "name":"DescribeResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeResourcePolicyRequest"},
+      "output":{"shape":"DescribeResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides the details of a resource policy attached to a resource.</p>"
+    },
+    "DescribeRetrainingScheduler":{
+      "name":"DescribeRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeRetrainingSchedulerRequest"},
+      "output":{"shape":"DescribeRetrainingSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides a description of the retraining scheduler, including information such as the model name and retraining parameters. </p>"
+    },
+    "ImportDataset":{
+      "name":"ImportDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ImportDatasetRequest"},
+      "output":{"shape":"ImportDatasetResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Imports a dataset.</p>"
+    },
+    "ImportModelVersion":{
+      "name":"ImportModelVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ImportModelVersionRequest"},
+      "output":{"shape":"ImportModelVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Imports a model that has been trained successfully.</p>"
+    },
+    "ListDataIngestionJobs":{
+      "name":"ListDataIngestionJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListDataIngestionJobsRequest"},
+      "output":{"shape":"ListDataIngestionJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Provides a list of all data ingestion jobs, including dataset name and ARN, S3 location of the input data, status, and so on. </p>"
+    },
+    "ListDatasets":{
+      "name":"ListDatasets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListDatasetsRequest"},
+      "output":{"shape":"ListDatasetsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all datasets currently available in your account, filtering on the dataset name. </p>"
+    },
+    "ListInferenceEvents":{
+      "name":"ListInferenceEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInferenceEventsRequest"},
+      "output":{"shape":"ListInferenceEventsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Lists all inference events that have been found for the specified inference scheduler. </p>"
+    },
+    "ListInferenceExecutions":{
+      "name":"ListInferenceExecutions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInferenceExecutionsRequest"},
+      "output":{"shape":"ListInferenceExecutionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Lists all inference executions that have been performed by the specified inference scheduler. </p>"
+    },
+    "ListInferenceSchedulers":{
+      "name":"ListInferenceSchedulers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInferenceSchedulersRequest"},
+      "output":{"shape":"ListInferenceSchedulersResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of all inference schedulers currently available for your account. </p>"
+    },
+    "ListLabelGroups":{
+      "name":"ListLabelGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLabelGroupsRequest"},
+      "output":{"shape":"ListLabelGroupsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Returns a list of the label groups. </p>"
+    },
+    "ListLabels":{
+      "name":"ListLabels",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLabelsRequest"},
+      "output":{"shape":"ListLabelsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Provides a list of labels. </p>"
+    },
+    "ListModelVersions":{
+      "name":"ListModelVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListModelVersionsRequest"},
+      "output":{"shape":"ListModelVersionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Generates a list of all model versions for a given model, including the model version, model version ARN, and status. To list a subset of versions, use the <code>MaxModelVersion</code> and <code>MinModelVersion</code> fields.</p>"
+    },
+    "ListModels":{
+      "name":"ListModels",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListModelsRequest"},
+      "output":{"shape":"ListModelsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Generates a list of all models in the account, including model name and ARN, dataset, and status. </p>"
+    },
+    "ListRetrainingSchedulers":{
+      "name":"ListRetrainingSchedulers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRetrainingSchedulersRequest"},
+      "output":{"shape":"ListRetrainingSchedulersResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all retraining schedulers in your account, filtering by model name prefix and status. </p>"
+    },
+    "ListSensorStatistics":{
+      "name":"ListSensorStatistics",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSensorStatisticsRequest"},
+      "output":{"shape":"ListSensorStatisticsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Lists statistics about the data collected for each of the sensors that have been successfully ingested in the particular dataset. Can also be used to retreive Sensor Statistics for a previous ingestion job. </p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all the tags for a specified resource, including key and value. </p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a resource control policy for a given resource.</p>"
+    },
+    "StartDataIngestionJob":{
+      "name":"StartDataIngestionJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartDataIngestionJobRequest"},
+      "output":{"shape":"StartDataIngestionJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a data ingestion job. Amazon Lookout for Equipment returns the job status. </p>"
+    },
+    "StartInferenceScheduler":{
+      "name":"StartInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartInferenceSchedulerRequest"},
+      "output":{"shape":"StartInferenceSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts an inference scheduler. </p>"
+    },
+    "StartRetrainingScheduler":{
+      "name":"StartRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartRetrainingSchedulerRequest"},
+      "output":{"shape":"StartRetrainingSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a retraining scheduler. </p>"
+    },
+    "StopInferenceScheduler":{
+      "name":"StopInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopInferenceSchedulerRequest"},
+      "output":{"shape":"StopInferenceSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stops an inference scheduler. </p>"
+    },
+    "StopRetrainingScheduler":{
+      "name":"StopRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopRetrainingSchedulerRequest"},
+      "output":{"shape":"StopRetrainingSchedulerResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stops a retraining scheduler. </p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Associates a given tag to a resource in your account. A tag is a key-value pair which can be added to an Amazon Lookout for Equipment resource as metadata. Tags can be used for organizing your resources as well as helping you to search and filter by tag. Multiple tags can be added to a resource, either when you create it, or later. Up to 50 tags can be associated with each resource. </p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a specific tag from a given resource. The tag is specified by its key. </p>"
+    },
+    "UpdateActiveModelVersion":{
+      "name":"UpdateActiveModelVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateActiveModelVersionRequest"},
+      "output":{"shape":"UpdateActiveModelVersionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Sets the active model version for a given machine learning model.</p>"
+    },
+    "UpdateInferenceScheduler":{
+      "name":"UpdateInferenceScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateInferenceSchedulerRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates an inference scheduler. </p>"
+    },
+    "UpdateLabelGroup":{
+      "name":"UpdateLabelGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLabelGroupRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Updates the label group. </p>"
+    },
+    "UpdateModel":{
+      "name":"UpdateModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateModelRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a model in the account.</p>"
+    },
+    "UpdateRetrainingScheduler":{
+      "name":"UpdateRetrainingScheduler",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRetrainingSchedulerRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a retraining scheduler. </p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p>The request could not be completed because you do not have access to the resource. </p>",
+      "exception":true
+    },
+    "AmazonResourceArn":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "AutoPromotionResult":{
+      "type":"string",
+      "enum":[
+        "MODEL_PROMOTED",
+        "MODEL_NOT_PROMOTED",
+        "RETRAINING_INTERNAL_ERROR",
+        "RETRAINING_CUSTOMER_ERROR",
+        "RETRAINING_CANCELLED"
+      ]
+    },
+    "AutoPromotionResultReason":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Boolean":{"type":"boolean"},
+    "BoundedLengthString":{
+      "type":"string",
+      "max":5000,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,5000}"
+    },
+    "CategoricalValues":{
+      "type":"structure",
+      "required":["Status"],
+      "members":{
+        "Status":{
+          "shape":"StatisticalIssueStatus",
+          "documentation":"<p> Indicates whether there is a potential data issue related to categorical values. </p>"
+        },
+        "NumberOfCategory":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of categories in the data. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on categorical values in data. </p>"
+    },
+    "Comments":{
+      "type":"string",
+      "max":2560,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,2560}"
+    },
+    "ComponentName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z._\\-]{1,200}$"
+    },
+    "ComponentTimestampDelimiter":{
+      "type":"string",
+      "max":1,
+      "min":0,
+      "pattern":"^(\\-|\\_|\\s)?$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p> The request could not be completed due to a conflict with the current state of the target resource. </p>",
+      "exception":true
+    },
+    "CountPercent":{
+      "type":"structure",
+      "required":[
+        "Count",
+        "Percentage"
+      ],
+      "members":{
+        "Count":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the count of occurences of the given statistic. </p>"
+        },
+        "Percentage":{
+          "shape":"Float",
+          "documentation":"<p> Indicates the percentage of occurances of the given statistic. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information of count and percentage. </p>"
+    },
+    "CreateDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "DatasetName",
+        "ClientToken"
+      ],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being created. </p>"
+        },
+        "DatasetSchema":{
+          "shape":"DatasetSchema",
+          "documentation":"<p>A JSON description of the data that is in each time series dataset, including names, column names, and data types. </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt dataset data by Amazon Lookout for Equipment. </p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p> A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Any tags associated with the ingested data described in the dataset. </p>"
+        }
+      }
+    },
+    "CreateDatasetResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being created. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the dataset being created. </p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>Indicates the status of the <code>CreateDataset</code> operation. </p>"
+        }
+      }
+    },
+    "CreateInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":[
+        "ModelName",
+        "InferenceSchedulerName",
+        "DataUploadFrequency",
+        "DataInputConfiguration",
+        "DataOutputConfiguration",
+        "RoleArn",
+        "ClientToken"
+      ],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the previously trained machine learning model being used to create the inference scheduler. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being created. </p>"
+        },
+        "DataDelayOffsetInMinutes":{
+          "shape":"DataDelayOffsetInMinutes",
+          "documentation":"<p>The interval (in minutes) of planned delay at the start of each inference segment. For example, if inference is set to run every ten minutes, the delay is set to five minutes and the time is 09:08. The inference scheduler will wake up at the configured interval (which, without a delay configured, would be 09:10) plus the additional five minute delay time (so 09:15) to check your Amazon S3 bucket. The delay provides a buffer for you to upload data at the same frequency, so that you don't have to stop and restart the scheduler when uploading new data.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-inference-process.html\">Understanding the inference process</a>.</p>"
+        },
+        "DataUploadFrequency":{
+          "shape":"DataUploadFrequency",
+          "documentation":"<p> How often data is uploaded to the source Amazon S3 bucket for the input data. The value chosen is the length of time between data uploads. For instance, if you select 5 minutes, Amazon Lookout for Equipment will upload the real-time data to the source bucket once every 5 minutes. This frequency also determines how often Amazon Lookout for Equipment runs inference on your data.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-inference-process.html\">Understanding the inference process</a>.</p>"
+        },
+        "DataInputConfiguration":{
+          "shape":"InferenceInputConfiguration",
+          "documentation":"<p>Specifies configuration information for the input data for the inference scheduler, including delimiter, format, and dataset location. </p>"
+        },
+        "DataOutputConfiguration":{
+          "shape":"InferenceOutputConfiguration",
+          "documentation":"<p>Specifies configuration information for the output results for the inference scheduler, including the S3 location for the output. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a role with permission to access the data source being used for the inference. </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt inference scheduler data by Amazon Lookout for Equipment. </p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p> A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Any tags associated with the inference scheduler. </p>"
+        }
+      }
+    },
+    "CreateInferenceSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the inference scheduler being created. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of inference scheduler being created. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Indicates the status of the <code>CreateInferenceScheduler</code> operation. </p>"
+        },
+        "ModelQuality":{
+          "shape":"ModelQuality",
+          "documentation":"<p>Provides a quality assessment for a model that uses labels. If Lookout for Equipment determines that the model quality is poor based on training metrics, the value is <code>POOR_QUALITY_DETECTED</code>. Otherwise, the value is <code>QUALITY_THRESHOLD_MET</code>. </p> <p>If the model is unlabeled, the model quality can't be assessed and the value of <code>ModelQuality</code> is <code>CANNOT_DETERMINE_QUALITY</code>. In this situation, you can get a model quality assessment by adding labels to the input dataset and retraining the model.</p> <p>For information about using labels with your models, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-labeling.html\">Understanding labeling</a>.</p> <p>For information about improving the quality of a model, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/best-practices.html\">Best practices with Amazon Lookout for Equipment</a>.</p>"
+        }
+      }
+    },
+    "CreateLabelGroupRequest":{
+      "type":"structure",
+      "required":[
+        "LabelGroupName",
+        "ClientToken"
+      ],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> Names a group of labels.</p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        },
+        "FaultCodes":{
+          "shape":"FaultCodes",
+          "documentation":"<p> The acceptable fault codes (indicating the type of anomaly associated with the label) that can be used with this label group.</p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p> A unique identifier for the request to create a label group. If you do not set the client request token, Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p> Tags that provide metadata about the label group you are creating. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        }
+      }
+    },
+    "CreateLabelGroupResponse":{
+      "type":"structure",
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group that you have created. Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        },
+        "LabelGroupArn":{
+          "shape":"LabelGroupArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the label group that you have created. </p>"
+        }
+      }
+    },
+    "CreateLabelRequest":{
+      "type":"structure",
+      "required":[
+        "LabelGroupName",
+        "StartTime",
+        "EndTime",
+        "Rating",
+        "ClientToken"
+      ],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of a group of labels. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        },
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The start time of the labeled event. </p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The end time of the labeled event. </p>"
+        },
+        "Rating":{
+          "shape":"LabelRating",
+          "documentation":"<p> Indicates whether a labeled event represents an anomaly. </p>"
+        },
+        "FaultCode":{
+          "shape":"FaultCode",
+          "documentation":"<p> Provides additional information about the label. The fault code must be defined in the FaultCodes attribute of the label group.</p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        },
+        "Notes":{
+          "shape":"Comments",
+          "documentation":"<p> Metadata providing additional information about the label. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "Equipment":{
+          "shape":"Equipment",
+          "documentation":"<p> Indicates that a label pertains to a particular piece of equipment. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p> A unique identifier for the request to create a label. If you do not set the client request token, Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateLabelResponse":{
+      "type":"structure",
+      "members":{
+        "LabelId":{
+          "shape":"LabelId",
+          "documentation":"<p> The ID of the label that you have created. </p>"
+        }
+      }
+    },
+    "CreateModelRequest":{
+      "type":"structure",
+      "required":[
+        "ModelName",
+        "DatasetName",
+        "ClientToken"
+      ],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name for the machine learning model to be created.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The name of the dataset for the machine learning model being created. </p>"
+        },
+        "DatasetSchema":{
+          "shape":"DatasetSchema",
+          "documentation":"<p>The data schema for the machine learning model being created. </p>"
+        },
+        "LabelsInputConfiguration":{
+          "shape":"LabelsInputConfiguration",
+          "documentation":"<p>The input configuration for the labels being used for the machine learning model that's being created. </p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p>A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "TrainingDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time reference in the dataset that should be used to begin the subset of training data for the machine learning model. </p>"
+        },
+        "TrainingDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time reference in the dataset that should be used to end the subset of training data for the machine learning model. </p>"
+        },
+        "EvaluationDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time reference in the dataset that should be used to begin the subset of evaluation data for the machine learning model. </p>"
+        },
+        "EvaluationDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference in the dataset that should be used to end the subset of evaluation data for the machine learning model. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of a role with permission to access the data source being used to create the machine learning model. </p>"
+        },
+        "DataPreProcessingConfiguration":{
+          "shape":"DataPreProcessingConfiguration",
+          "documentation":"<p>The configuration is the <code>TargetSamplingRate</code>, which is the sampling rate of the data after post processing by Amazon Lookout for Equipment. For example, if you provide data that has been collected at a 1 second level and you want the system to resample the data at a 1 minute rate before training, the <code>TargetSamplingRate</code> is 1 minute.</p> <p>When providing a value for the <code>TargetSamplingRate</code>, you must attach the prefix \"PT\" to the rate you want. The value for a 1 second rate is therefore <i>PT1S</i>, the value for a 15 minute rate is <i>PT15M</i>, and the value for a 1 hour rate is <i>PT1H</i> </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt model data by Amazon Lookout for Equipment. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p> Any tags associated with the machine learning model being created. </p>"
+        },
+        "OffCondition":{
+          "shape":"OffCondition",
+          "documentation":"<p>Indicates that the asset associated with this sensor has been shut off. As long as this condition is met, Lookout for Equipment will not use data from this asset for training, evaluation, or inference.</p>"
+        },
+        "ModelDiagnosticsOutputConfiguration":{
+          "shape":"ModelDiagnosticsOutputConfiguration",
+          "documentation":"<p>The Amazon S3 location where you want Amazon Lookout for Equipment to save the pointwise model diagnostics. You must also specify the <code>RoleArn</code> request parameter.</p>"
+        }
+      }
+    },
+    "CreateModelResponse":{
+      "type":"structure",
+      "members":{
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model being created. </p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>Indicates the status of the <code>CreateModel</code> operation. </p>"
+        }
+      }
+    },
+    "CreateRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":[
+        "ModelName",
+        "RetrainingFrequency",
+        "LookbackWindow",
+        "ClientToken"
+      ],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model to add the retraining scheduler to. </p>"
+        },
+        "RetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start date for the retraining scheduler. Lookout for Equipment truncates the time you provide to the nearest UTC day.</p>"
+        },
+        "RetrainingFrequency":{
+          "shape":"RetrainingFrequency",
+          "documentation":"<p>This parameter uses the <a href=\"https://en.wikipedia.org/wiki/ISO_8601#Durations\">ISO 8601</a> standard to set the frequency at which you want retraining to occur in terms of Years, Months, and/or Days (note: other parameters like Time are not currently supported). The minimum value is 30 days (P30D) and the maximum value is 1 year (P1Y). For example, the following values are valid:</p> <ul> <li> <p>P3M15D – Every 3 months and 15 days</p> </li> <li> <p>P2M – Every 2 months</p> </li> <li> <p>P150D – Every 150 days</p> </li> </ul>"
+        },
+        "LookbackWindow":{
+          "shape":"LookbackWindow",
+          "documentation":"<p>The number of past days of data that will be used for retraining.</p>"
+        },
+        "PromoteMode":{
+          "shape":"ModelPromoteMode",
+          "documentation":"<p>Indicates how the service will use new models. In <code>MANAGED</code> mode, new models will automatically be used for inference if they have better performance than the current model. In <code>MANUAL</code> mode, the new models will not be used <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/versioning-model.html#model-activation\">until they are manually activated</a>.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p>A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateRetrainingSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model that you added the retraining scheduler to. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model that you added the retraining scheduler to. </p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>The status of the retraining scheduler. </p>"
+        }
+      }
+    },
+    "DataDelayOffsetInMinutes":{
+      "type":"long",
+      "max":60,
+      "min":0
+    },
+    "DataIngestionJobSummaries":{
+      "type":"list",
+      "member":{"shape":"DataIngestionJobSummary"}
+    },
+    "DataIngestionJobSummary":{
+      "type":"structure",
+      "members":{
+        "JobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p>Indicates the job ID of the data ingestion job. </p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset used for the data ingestion job. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset used in the data ingestion job. </p>"
+        },
+        "IngestionInputConfiguration":{
+          "shape":"IngestionInputConfiguration",
+          "documentation":"<p> Specifies information for the input data for the data inference job, including data Amazon S3 location parameters. </p>"
+        },
+        "Status":{
+          "shape":"IngestionJobStatus",
+          "documentation":"<p>Indicates the status of the data ingestion job. </p>"
+        }
+      },
+      "documentation":"<p>Provides information about a specified data ingestion job, including dataset information, data ingestion configuration, and status. </p>"
+    },
+    "DataPreProcessingConfiguration":{
+      "type":"structure",
+      "members":{
+        "TargetSamplingRate":{
+          "shape":"TargetSamplingRate",
+          "documentation":"<p>The sampling rate of the data after post processing by Amazon Lookout for Equipment. For example, if you provide data that has been collected at a 1 second level and you want the system to resample the data at a 1 minute rate before training, the <code>TargetSamplingRate</code> is 1 minute.</p> <p>When providing a value for the <code>TargetSamplingRate</code>, you must attach the prefix \"PT\" to the rate you want. The value for a 1 second rate is therefore <i>PT1S</i>, the value for a 15 minute rate is <i>PT15M</i>, and the value for a 1 hour rate is <i>PT1H</i> </p>"
+        }
+      },
+      "documentation":"<p>The configuration is the <code>TargetSamplingRate</code>, which is the sampling rate of the data after post processing by Amazon Lookout for Equipment. For example, if you provide data that has been collected at a 1 second level and you want the system to resample the data at a 1 minute rate before training, the <code>TargetSamplingRate</code> is 1 minute.</p> <p>When providing a value for the <code>TargetSamplingRate</code>, you must attach the prefix \"PT\" to the rate you want. The value for a 1 second rate is therefore <i>PT1S</i>, the value for a 15 minute rate is <i>PT15M</i>, and the value for a 1 hour rate is <i>PT1H</i> </p>"
+    },
+    "DataQualitySummary":{
+      "type":"structure",
+      "required":[
+        "InsufficientSensorData",
+        "MissingSensorData",
+        "InvalidSensorData",
+        "UnsupportedTimestamps",
+        "DuplicateTimestamps"
+      ],
+      "members":{
+        "InsufficientSensorData":{
+          "shape":"InsufficientSensorData",
+          "documentation":"<p> Parameter that gives information about insufficient data for sensors in the dataset. This includes information about those sensors that have complete data missing and those with a short date range. </p>"
+        },
+        "MissingSensorData":{
+          "shape":"MissingSensorData",
+          "documentation":"<p> Parameter that gives information about data that is missing over all the sensors in the input data. </p>"
+        },
+        "InvalidSensorData":{
+          "shape":"InvalidSensorData",
+          "documentation":"<p> Parameter that gives information about data that is invalid over all the sensors in the input data. </p>"
+        },
+        "UnsupportedTimestamps":{
+          "shape":"UnsupportedTimestamps",
+          "documentation":"<p> Parameter that gives information about unsupported timestamps in the input data. </p>"
+        },
+        "DuplicateTimestamps":{
+          "shape":"DuplicateTimestamps",
+          "documentation":"<p> Parameter that gives information about duplicate timestamps in the input data. </p>"
+        }
+      },
+      "documentation":"<p> DataQualitySummary gives aggregated statistics over all the sensors about a completed ingestion job. It primarily gives more information about statistics over different incorrect data like MissingCompleteSensorData, MissingSensorData, UnsupportedDateFormats, InsufficientSensorData, DuplicateTimeStamps. </p>"
+    },
+    "DataSizeInBytes":{
+      "type":"long",
+      "min":0
+    },
+    "DataUploadFrequency":{
+      "type":"string",
+      "enum":[
+        "PT5M",
+        "PT10M",
+        "PT15M",
+        "PT30M",
+        "PT1H"
+      ]
+    },
+    "DatasetArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:dataset\\/[0-9a-zA-Z_-]{1,200}\\/.+"
+    },
+    "DatasetIdentifier":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "DatasetName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "DatasetSchema":{
+      "type":"structure",
+      "members":{
+        "InlineDataSchema":{
+          "shape":"InlineDataSchema",
+          "documentation":"<p>The data schema used within the given dataset.</p>",
+          "jsonvalue":true
+        }
+      },
+      "documentation":"<p>Provides information about the data schema used with the given dataset. </p>"
+    },
+    "DatasetStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "INGESTION_IN_PROGRESS",
+        "ACTIVE",
+        "IMPORT_IN_PROGRESS"
+      ]
+    },
+    "DatasetSummaries":{
+      "type":"list",
+      "member":{"shape":"DatasetSummary"}
+    },
+    "DatasetSummary":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the specified dataset. </p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>Indicates the status of the dataset. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the dataset was created in Amazon Lookout for Equipment. </p>"
+        }
+      },
+      "documentation":"<p>Contains information about the specific data set, including name, ARN, and status. </p>"
+    },
+    "DeleteDatasetRequest":{
+      "type":"structure",
+      "required":["DatasetName"],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The name of the dataset to be deleted. </p>"
+        }
+      }
+    },
+    "DeleteInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler to be deleted. </p>"
+        }
+      }
+    },
+    "DeleteLabelGroupRequest":{
+      "type":"structure",
+      "required":["LabelGroupName"],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group that you want to delete. Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        }
+      }
+    },
+    "DeleteLabelRequest":{
+      "type":"structure",
+      "required":[
+        "LabelGroupName",
+        "LabelId"
+      ],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group that contains the label that you want to delete. Data in this field will be retained for service usage. Follow best practices for the security of your data. </p>"
+        },
+        "LabelId":{
+          "shape":"LabelId",
+          "documentation":"<p> The ID of the label that you want to delete. </p>"
+        }
+      }
+    },
+    "DeleteModelRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model to be deleted. </p>"
+        }
+      }
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which the resource policy should be deleted.</p>"
+        }
+      }
+    },
+    "DeleteRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler you want to delete. </p>"
+        }
+      }
+    },
+    "DescribeDataIngestionJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p>The job ID of the data ingestion job. </p>"
+        }
+      }
+    },
+    "DescribeDataIngestionJobResponse":{
+      "type":"structure",
+      "members":{
+        "JobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p>Indicates the job ID of the data ingestion job. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset being used in the data ingestion job. </p>"
+        },
+        "IngestionInputConfiguration":{
+          "shape":"IngestionInputConfiguration",
+          "documentation":"<p>Specifies the S3 location configuration for the data input for the data ingestion job. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role with permission to access the data source being ingested. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the data ingestion job was created. </p>"
+        },
+        "Status":{
+          "shape":"IngestionJobStatus",
+          "documentation":"<p>Indicates the status of the <code>DataIngestionJob</code> operation. </p>"
+        },
+        "FailedReason":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>Specifies the reason for failure when a data ingestion job has failed. </p>"
+        },
+        "DataQualitySummary":{
+          "shape":"DataQualitySummary",
+          "documentation":"<p> Gives statistics about a completed ingestion job. These statistics primarily relate to quantifying incorrect data such as MissingCompleteSensorData, MissingSensorData, UnsupportedDateFormats, InsufficientSensorData, and DuplicateTimeStamps. </p>"
+        },
+        "IngestedFilesSummary":{"shape":"IngestedFilesSummary"},
+        "StatusDetail":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p> Provides details about status of the ingestion job that is currently in progress. </p>"
+        },
+        "IngestedDataSize":{
+          "shape":"DataSizeInBytes",
+          "documentation":"<p> Indicates the size of the ingested dataset. </p>"
+        },
+        "DataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the earliest timestamp corresponding to data that was successfully ingested during this specific ingestion job. </p>"
+        },
+        "DataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the latest timestamp corresponding to data that was successfully ingested during this specific ingestion job. </p>"
+        },
+        "SourceDatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the source dataset from which the data used for the data ingestion job was imported from.</p>"
+        }
+      }
+    },
+    "DescribeDatasetRequest":{
+      "type":"structure",
+      "required":["DatasetName"],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The name of the dataset to be described. </p>"
+        }
+      }
+    },
+    "DescribeDatasetResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being described. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset being described. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Specifies the time the dataset was created in Lookout for Equipment. </p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Specifies the time the dataset was last updated, if it was. </p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>Indicates the status of the dataset. </p>"
+        },
+        "Schema":{
+          "shape":"InlineDataSchema",
+          "documentation":"<p>A JSON description of the data that is in each time series dataset, including names, column names, and data types. </p>",
+          "jsonvalue":true
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt dataset data by Amazon Lookout for Equipment. </p>"
+        },
+        "IngestionInputConfiguration":{
+          "shape":"IngestionInputConfiguration",
+          "documentation":"<p>Specifies the S3 location configuration for the data input for the data ingestion job. </p>"
+        },
+        "DataQualitySummary":{
+          "shape":"DataQualitySummary",
+          "documentation":"<p> Gives statistics associated with the given dataset for the latest successful associated ingestion job id. These statistics primarily relate to quantifying incorrect data such as MissingCompleteSensorData, MissingSensorData, UnsupportedDateFormats, InsufficientSensorData, and DuplicateTimeStamps. </p>"
+        },
+        "IngestedFilesSummary":{
+          "shape":"IngestedFilesSummary",
+          "documentation":"<p>IngestedFilesSummary associated with the given dataset for the latest successful associated ingestion job id. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the IAM role that you are using for this the data ingestion job. </p>"
+        },
+        "DataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the earliest timestamp corresponding to data that was successfully ingested during the most recent ingestion of this particular dataset. </p>"
+        },
+        "DataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the latest timestamp corresponding to data that was successfully ingested during the most recent ingestion of this particular dataset. </p>"
+        },
+        "SourceDatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the source dataset from which the current data being described was imported from.</p>"
+        }
+      }
+    },
+    "DescribeInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler being described. </p>"
+        }
+      }
+    },
+    "DescribeInferenceSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model of the inference scheduler being described. </p>"
+        },
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model of the inference scheduler being described. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being described. </p>"
+        },
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the inference scheduler being described. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Indicates the status of the inference scheduler. </p>"
+        },
+        "DataDelayOffsetInMinutes":{
+          "shape":"DataDelayOffsetInMinutes",
+          "documentation":"<p> A period of time (in minutes) by which inference on the data is delayed after the data starts. For instance, if you select an offset delay time of five minutes, inference will not begin on the data until the first data measurement after the five minute mark. For example, if five minutes is selected, the inference scheduler will wake up at the configured frequency with the additional five minute delay time to check the customer S3 bucket. The customer can upload data at the same frequency and they don't need to stop and restart the scheduler when uploading new data.</p>"
+        },
+        "DataUploadFrequency":{
+          "shape":"DataUploadFrequency",
+          "documentation":"<p>Specifies how often data is uploaded to the source S3 bucket for the input data. This value is the length of time between data uploads. For instance, if you select 5 minutes, Amazon Lookout for Equipment will upload the real-time data to the source bucket once every 5 minutes. This frequency also determines how often Amazon Lookout for Equipment starts a scheduled inference on your data. In this example, it starts once every 5 minutes. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Specifies the time at which the inference scheduler was created. </p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Specifies the time at which the inference scheduler was last updated, if it was. </p>"
+        },
+        "DataInputConfiguration":{
+          "shape":"InferenceInputConfiguration",
+          "documentation":"<p> Specifies configuration information for the input data for the inference scheduler, including delimiter, format, and dataset location. </p>"
+        },
+        "DataOutputConfiguration":{
+          "shape":"InferenceOutputConfiguration",
+          "documentation":"<p> Specifies information for the output results for the inference scheduler, including the output S3 location. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of a role with permission to access the data source for the inference scheduler being described. </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt inference scheduler data by Amazon Lookout for Equipment. </p>"
+        },
+        "LatestInferenceResult":{
+          "shape":"LatestInferenceResult",
+          "documentation":"<p>Indicates whether the latest execution for the inference scheduler was Anomalous (anomalous events found) or Normal (no anomalous events found).</p>"
+        }
+      }
+    },
+    "DescribeLabelGroupRequest":{
+      "type":"structure",
+      "required":["LabelGroupName"],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> Returns the name of the label group. </p>"
+        }
+      }
+    },
+    "DescribeLabelGroupResponse":{
+      "type":"structure",
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group. </p>"
+        },
+        "LabelGroupArn":{
+          "shape":"LabelGroupArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the label group. </p>"
+        },
+        "FaultCodes":{
+          "shape":"FaultCodes",
+          "documentation":"<p> Codes indicating the type of anomaly associated with the labels in the lagbel group. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label group was created. </p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label group was updated. </p>"
+        }
+      }
+    },
+    "DescribeLabelRequest":{
+      "type":"structure",
+      "required":[
+        "LabelGroupName",
+        "LabelId"
+      ],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> Returns the name of the group containing the label. </p>"
+        },
+        "LabelId":{
+          "shape":"LabelId",
+          "documentation":"<p> Returns the ID of the label. </p>"
+        }
+      }
+    },
+    "DescribeLabelResponse":{
+      "type":"structure",
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the requested label group. </p>"
+        },
+        "LabelGroupArn":{
+          "shape":"LabelGroupArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the requested label group. </p>"
+        },
+        "LabelId":{
+          "shape":"LabelId",
+          "documentation":"<p> The ID of the requested label. </p>"
+        },
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The start time of the requested label. </p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The end time of the requested label. </p>"
+        },
+        "Rating":{
+          "shape":"LabelRating",
+          "documentation":"<p> Indicates whether a labeled event represents an anomaly. </p>"
+        },
+        "FaultCode":{
+          "shape":"FaultCode",
+          "documentation":"<p> Indicates the type of anomaly associated with the label. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "Notes":{
+          "shape":"Comments",
+          "documentation":"<p>Metadata providing additional information about the label.</p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "Equipment":{
+          "shape":"Equipment",
+          "documentation":"<p> Indicates that a label pertains to a particular piece of equipment. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label was created. </p>"
+        }
+      }
+    },
+    "DescribeModelRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model to be described. </p>"
+        }
+      }
+    },
+    "DescribeModelResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model being described. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model being described. </p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being used by the machine learning being described. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resouce Name (ARN) of the dataset used to create the machine learning model being described. </p>"
+        },
+        "Schema":{
+          "shape":"InlineDataSchema",
+          "documentation":"<p>A JSON description of the data that is in each time series dataset, including names, column names, and data types. </p>",
+          "jsonvalue":true
+        },
+        "LabelsInputConfiguration":{
+          "shape":"LabelsInputConfiguration",
+          "documentation":"<p>Specifies configuration information about the labels input, including its S3 location. </p>"
+        },
+        "TrainingDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference in the dataset that was used to begin the subset of training data for the machine learning model. </p>"
+        },
+        "TrainingDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference in the dataset that was used to end the subset of training data for the machine learning model. </p>"
+        },
+        "EvaluationDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference in the dataset that was used to begin the subset of evaluation data for the machine learning model. </p>"
+        },
+        "EvaluationDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference in the dataset that was used to end the subset of evaluation data for the machine learning model. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of a role with permission to access the data source for the machine learning model being described. </p>"
+        },
+        "DataPreProcessingConfiguration":{
+          "shape":"DataPreProcessingConfiguration",
+          "documentation":"<p>The configuration is the <code>TargetSamplingRate</code>, which is the sampling rate of the data after post processing by Amazon Lookout for Equipment. For example, if you provide data that has been collected at a 1 second level and you want the system to resample the data at a 1 minute rate before training, the <code>TargetSamplingRate</code> is 1 minute.</p> <p>When providing a value for the <code>TargetSamplingRate</code>, you must attach the prefix \"PT\" to the rate you want. The value for a 1 second rate is therefore <i>PT1S</i>, the value for a 15 minute rate is <i>PT15M</i>, and the value for a 1 hour rate is <i>PT1H</i> </p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>Specifies the current status of the model being described. Status describes the status of the most recent action of the model. </p>"
+        },
+        "TrainingExecutionStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time at which the training of the machine learning model began. </p>"
+        },
+        "TrainingExecutionEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time at which the training of the machine learning model was completed. </p>"
+        },
+        "FailedReason":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>If the training of the machine learning model failed, this indicates the reason for that failure. </p>"
+        },
+        "ModelMetrics":{
+          "shape":"ModelMetrics",
+          "documentation":"<p>The Model Metrics show an aggregated summary of the model's performance within the evaluation time range. This is the JSON content of the metrics created when evaluating the model. </p>",
+          "jsonvalue":true
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the last time the machine learning model was updated. The type of update is not specified. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time and date at which the machine learning model was created. </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Provides the identifier of the KMS key used to encrypt model data by Amazon Lookout for Equipment. </p>"
+        },
+        "OffCondition":{
+          "shape":"OffCondition",
+          "documentation":"<p>Indicates that the asset associated with this sensor has been shut off. As long as this condition is met, Lookout for Equipment will not use data from this asset for training, evaluation, or inference.</p>"
+        },
+        "SourceModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the source model version. This field appears if the active model version was imported.</p>"
+        },
+        "ImportJobStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the import job was started. This field appears if the active model version was imported.</p>"
+        },
+        "ImportJobEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the import job was completed. This field appears if the active model version was imported.</p>"
+        },
+        "ActiveModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The name of the model version used by the inference schedular when running a scheduled inference execution.</p>"
+        },
+        "ActiveModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version used by the inference scheduler when running a scheduled inference execution.</p>"
+        },
+        "ModelVersionActivatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date the active model version was activated.</p>"
+        },
+        "PreviousActiveModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The model version that was set as the active model version prior to the current active model version.</p>"
+        },
+        "PreviousActiveModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The ARN of the model version that was set as the active model version prior to the current active model version.</p>"
+        },
+        "PreviousModelVersionActivatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the previous active model version was activated.</p>"
+        },
+        "PriorModelMetrics":{
+          "shape":"ModelMetrics",
+          "documentation":"<p>If the model version was retrained, this field shows a summary of the performance of the prior model on the new training range. You can use the information in this JSON-formatted object to compare the new model version and the prior model version.</p>",
+          "jsonvalue":true
+        },
+        "LatestScheduledRetrainingFailedReason":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>If the model version was generated by retraining and the training failed, this indicates the reason for that failure. </p>"
+        },
+        "LatestScheduledRetrainingStatus":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>Indicates the status of the most recent scheduled retraining run. </p>"
+        },
+        "LatestScheduledRetrainingModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>Indicates the most recent model version that was generated by retraining. </p>"
+        },
+        "LatestScheduledRetrainingStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the start time of the most recent scheduled retraining run. </p>"
+        },
+        "LatestScheduledRetrainingAvailableDataInDays":{
+          "shape":"Integer",
+          "documentation":"<p>Indicates the number of days of data used in the most recent scheduled retraining run. </p>"
+        },
+        "NextScheduledRetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the date and time that the next scheduled retraining run will start on. Lookout for Equipment truncates the time you provide to the nearest UTC day.</p>"
+        },
+        "AccumulatedInferenceDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the start time of the inference data that has been accumulated. </p>"
+        },
+        "AccumulatedInferenceDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the end time of the inference data that has been accumulated. </p>"
+        },
+        "RetrainingSchedulerStatus":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>Indicates the status of the retraining scheduler. </p>"
+        },
+        "ModelDiagnosticsOutputConfiguration":{
+          "shape":"ModelDiagnosticsOutputConfiguration",
+          "documentation":"<p>Configuration information for the model's pointwise model diagnostics.</p>"
+        },
+        "ModelQuality":{
+          "shape":"ModelQuality",
+          "documentation":"<p>Provides a quality assessment for a model that uses labels. If Lookout for Equipment determines that the model quality is poor based on training metrics, the value is <code>POOR_QUALITY_DETECTED</code>. Otherwise, the value is <code>QUALITY_THRESHOLD_MET</code>.</p> <p>If the model is unlabeled, the model quality can't be assessed and the value of <code>ModelQuality</code> is <code>CANNOT_DETERMINE_QUALITY</code>. In this situation, you can get a model quality assessment by adding labels to the input dataset and retraining the model.</p> <p>For information about using labels with your models, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-labeling.html\">Understanding labeling</a>.</p> <p>For information about improving the quality of a model, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/best-practices.html\">Best practices with Amazon Lookout for Equipment</a>.</p>"
+        }
+      }
+    },
+    "DescribeModelVersionRequest":{
+      "type":"structure",
+      "required":[
+        "ModelName",
+        "ModelVersion"
+      ],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model that this version belongs to.</p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the machine learning model.</p>"
+        }
+      }
+    },
+    "DescribeModelVersionResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model that this version belongs to.</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the parent machine learning model that this version belong to.</p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the machine learning model.</p>"
+        },
+        "ModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version.</p>"
+        },
+        "Status":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>The current status of the model version.</p>"
+        },
+        "SourceType":{
+          "shape":"ModelVersionSourceType",
+          "documentation":"<p>Indicates whether this model version was created by training or by importing.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset used to train the model version.</p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset used to train the model version.</p>"
+        },
+        "Schema":{
+          "shape":"InlineDataSchema",
+          "documentation":"<p>The schema of the data used to train the model version.</p>"
+        },
+        "LabelsInputConfiguration":{"shape":"LabelsInputConfiguration"},
+        "TrainingDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date on which the training data began being gathered. If you imported the version, this is the date that the training data in the source version began being gathered.</p>"
+        },
+        "TrainingDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date on which the training data finished being gathered. If you imported the version, this is the date that the training data in the source version finished being gathered.</p>"
+        },
+        "EvaluationDataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date on which the data in the evaluation set began being gathered. If you imported the version, this is the date that the evaluation set data in the source version began being gathered.</p>"
+        },
+        "EvaluationDataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date on which the data in the evaluation set began being gathered. If you imported the version, this is the date that the evaluation set data in the source version finished being gathered.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role that was used to train the model version.</p>"
+        },
+        "DataPreProcessingConfiguration":{"shape":"DataPreProcessingConfiguration"},
+        "TrainingExecutionStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the training of the version began.</p>"
+        },
+        "TrainingExecutionEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the training of the version completed.</p>"
+        },
+        "FailedReason":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>The failure message if the training of the model version failed.</p>"
+        },
+        "ModelMetrics":{
+          "shape":"ModelMetrics",
+          "documentation":"<p>Shows an aggregated summary, in JSON format, of the model's performance within the evaluation time range. These metrics are created when evaluating the model.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the last time the machine learning model version was updated.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time and date at which the machine learning model version was created.</p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The identifier of the KMS key key used to encrypt model version data by Amazon Lookout for Equipment.</p>"
+        },
+        "OffCondition":{
+          "shape":"OffCondition",
+          "documentation":"<p>Indicates that the asset associated with this sensor has been shut off. As long as this condition is met, Lookout for Equipment will not use data from this asset for training, evaluation, or inference.</p>"
+        },
+        "SourceModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>If model version was imported, then this field is the arn of the source model version.</p>"
+        },
+        "ImportJobStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the import job began. This field appears if the model version was imported.</p>"
+        },
+        "ImportJobEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the import job completed. This field appears if the model version was imported.</p>"
+        },
+        "ImportedDataSizeInBytes":{
+          "shape":"DataSizeInBytes",
+          "documentation":"<p>The size in bytes of the imported data. This field appears if the model version was imported.</p>"
+        },
+        "PriorModelMetrics":{
+          "shape":"ModelMetrics",
+          "documentation":"<p>If the model version was retrained, this field shows a summary of the performance of the prior model on the new training range. You can use the information in this JSON-formatted object to compare the new model version and the prior model version.</p>"
+        },
+        "RetrainingAvailableDataInDays":{
+          "shape":"Integer",
+          "documentation":"<p>Indicates the number of days of data used in the most recent scheduled retraining run. </p>"
+        },
+        "AutoPromotionResult":{
+          "shape":"AutoPromotionResult",
+          "documentation":"<p>Indicates whether the model version was promoted to be the active version after retraining or if there was an error with or cancellation of the retraining. </p>"
+        },
+        "AutoPromotionResultReason":{
+          "shape":"AutoPromotionResultReason",
+          "documentation":"<p>Indicates the reason for the <code>AutoPromotionResult</code>. For example, a model might not be promoted if its performance was worse than the active version, if there was an error during training, or if the retraining scheduler was using <code>MANUAL</code> promote mode. The model will be promoted in <code>MANAGED</code> promote mode if the performance is better than the previous model. </p>"
+        },
+        "ModelDiagnosticsOutputConfiguration":{
+          "shape":"ModelDiagnosticsOutputConfiguration",
+          "documentation":"<p>The Amazon S3 location where Amazon Lookout for Equipment saves the pointwise model diagnostics for the model version.</p>"
+        },
+        "ModelDiagnosticsResultsObject":{
+          "shape":"S3Object",
+          "documentation":"<p>The Amazon S3 output prefix for where Lookout for Equipment saves the pointwise model diagnostics for the model version.</p>"
+        },
+        "ModelQuality":{
+          "shape":"ModelQuality",
+          "documentation":"<p>Provides a quality assessment for a model that uses labels. If Lookout for Equipment determines that the model quality is poor based on training metrics, the value is <code>POOR_QUALITY_DETECTED</code>. Otherwise, the value is <code>QUALITY_THRESHOLD_MET</code>.</p> <p>If the model is unlabeled, the model quality can't be assessed and the value of <code>ModelQuality</code> is <code>CANNOT_DETERMINE_QUALITY</code>. In this situation, you can get a model quality assessment by adding labels to the input dataset and retraining the model.</p> <p>For information about using labels with your models, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-labeling.html\">Understanding labeling</a>.</p> <p>For information about improving the quality of a model, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/best-practices.html\">Best practices with Amazon Lookout for Equipment</a>.</p>"
+        }
+      }
+    },
+    "DescribeResourcePolicyRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that is associated with the resource policy.</p>"
+        }
+      }
+    },
+    "DescribeResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "PolicyRevisionId":{
+          "shape":"PolicyRevisionId",
+          "documentation":"<p>A unique identifier for a revision of the resource policy.</p>"
+        },
+        "ResourcePolicy":{
+          "shape":"Policy",
+          "documentation":"<p>The resource policy in a JSON-formatted string.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the resource policy was created.</p>"
+        },
+        "LastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the resource policy was last modified.</p>"
+        }
+      }
+    },
+    "DescribeRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model that the retraining scheduler is attached to. </p>"
+        }
+      }
+    },
+    "DescribeRetrainingSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model that the retraining scheduler is attached to. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model that the retraining scheduler is attached to. </p>"
+        },
+        "RetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start date for the retraining scheduler. Lookout for Equipment truncates the time you provide to the nearest UTC day.</p>"
+        },
+        "RetrainingFrequency":{
+          "shape":"RetrainingFrequency",
+          "documentation":"<p>The frequency at which the model retraining is set. This follows the <a href=\"https://en.wikipedia.org/wiki/ISO_8601#Durations\">ISO 8601</a> guidelines.</p>"
+        },
+        "LookbackWindow":{
+          "shape":"LookbackWindow",
+          "documentation":"<p>The number of past days of data used for retraining.</p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>The status of the retraining scheduler. </p>"
+        },
+        "PromoteMode":{
+          "shape":"ModelPromoteMode",
+          "documentation":"<p>Indicates how the service uses new models. In <code>MANAGED</code> mode, new models are used for inference if they have better performance than the current model. In <code>MANUAL</code> mode, the new models are not used until they are <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/versioning-model.html#model-activation\">manually activated</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time and date at which the retraining scheduler was created. </p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time and date at which the retraining scheduler was updated. </p>"
+        }
+      }
+    },
+    "DuplicateTimestamps":{
+      "type":"structure",
+      "required":["TotalNumberOfDuplicateTimestamps"],
+      "members":{
+        "TotalNumberOfDuplicateTimestamps":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the total number of duplicate timestamps. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information abount duplicate timestamps in the dataset. </p>"
+    },
+    "Equipment":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,200}"
+    },
+    "EventDurationInSeconds":{
+      "type":"long",
+      "min":0
+    },
+    "FaultCode":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,100}"
+    },
+    "FaultCodes":{
+      "type":"list",
+      "member":{"shape":"FaultCode"},
+      "max":50,
+      "min":0
+    },
+    "FileNameTimestampFormat":{
+      "type":"string",
+      "pattern":"^EPOCH|yyyy-MM-dd-HH-mm-ss|yyyyMMddHHmmss$"
+    },
+    "Float":{"type":"float"},
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:iam::[0-9]{12}:role/.+"
+    },
+    "IdempotenceToken":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"\\p{ASCII}{1,256}"
+    },
+    "ImportDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "SourceDatasetArn",
+        "ClientToken"
+      ],
+      "members":{
+        "SourceDatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset to import.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the machine learning dataset to be created. If the dataset already exists, Amazon Lookout for Equipment overwrites the existing dataset. If you don't specify this field, it is filled with the name of the source dataset.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p>A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>Provides the identifier of the KMS key key used to encrypt model data by Amazon Lookout for Equipment. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Any tags associated with the dataset to be created.</p>"
+        }
+      }
+    },
+    "ImportDatasetResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the created machine learning dataset.</p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset that was imported.</p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>The status of the <code>ImportDataset</code> operation.</p>"
+        },
+        "JobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p>A unique identifier for the job of importing the dataset.</p>"
+        }
+      }
+    },
+    "ImportModelVersionRequest":{
+      "type":"structure",
+      "required":[
+        "SourceModelVersionArn",
+        "DatasetName",
+        "ClientToken"
+      ],
+      "members":{
+        "SourceModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version to import.</p>"
+        },
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name for the machine learning model to be created. If the model already exists, Amazon Lookout for Equipment creates a new version. If you do not specify this field, it is filled with the name of the source model.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The name of the dataset for the machine learning model being imported. </p>"
+        },
+        "LabelsInputConfiguration":{"shape":"LabelsInputConfiguration"},
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p>A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a role with permission to access the data source being used to create the machine learning model. </p>"
+        },
+        "ServerSideKmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>Provides the identifier of the KMS key key used to encrypt model data by Amazon Lookout for Equipment. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags associated with the machine learning model to be created. </p>"
+        },
+        "InferenceDataImportStrategy":{
+          "shape":"InferenceDataImportStrategy",
+          "documentation":"<p>Indicates how to import the accumulated inference data when a model version is imported. The possible values are as follows:</p> <ul> <li> <p>NO_IMPORT – Don't import the data.</p> </li> <li> <p>ADD_WHEN_EMPTY – Only import the data from the source model if there is no existing data in the target model.</p> </li> <li> <p>OVERWRITE – Import the data from the source model and overwrite the existing data in the target model.</p> </li> </ul>"
+        }
+      }
+    },
+    "ImportModelVersionResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name for the machine learning model.</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model being created. </p>"
+        },
+        "ModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version being created. </p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model being created.</p>"
+        },
+        "Status":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>The status of the <code>ImportModelVersion</code> operation. </p>"
+        }
+      }
+    },
+    "InferenceDataImportStrategy":{
+      "type":"string",
+      "enum":[
+        "NO_IMPORT",
+        "ADD_WHEN_EMPTY",
+        "OVERWRITE"
+      ]
+    },
+    "InferenceEventSummaries":{
+      "type":"list",
+      "member":{"shape":"InferenceEventSummary"}
+    },
+    "InferenceEventSummary":{
+      "type":"structure",
+      "members":{
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the inference scheduler being used for the inference event. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being used for the inference events. </p>"
+        },
+        "EventStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the starting time of an inference event. </p>"
+        },
+        "EventEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the ending time of an inference event. </p>"
+        },
+        "Diagnostics":{
+          "shape":"ModelMetrics",
+          "documentation":"<p> An array which specifies the names and values of all sensors contributing to an inference event.</p>"
+        },
+        "EventDurationInSeconds":{
+          "shape":"EventDurationInSeconds",
+          "documentation":"<p> Indicates the size of an inference event in seconds. </p>"
+        }
+      },
+      "documentation":"<p>Contains information about the specific inference event, including start and end time, diagnostics information, event duration and so on.</p>"
+    },
+    "InferenceExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAILED"
+      ]
+    },
+    "InferenceExecutionSummaries":{
+      "type":"list",
+      "member":{"shape":"InferenceExecutionSummary"}
+    },
+    "InferenceExecutionSummary":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model being used for the inference execution. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model used for the inference execution. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being used for the inference execution. </p>"
+        },
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the inference scheduler being used for the inference execution. </p>"
+        },
+        "ScheduledStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the start time at which the inference scheduler began the specific inference execution. </p>"
+        },
+        "DataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time reference in the dataset at which the inference execution began. </p>"
+        },
+        "DataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the time reference in the dataset at which the inference execution stopped. </p>"
+        },
+        "DataInputConfiguration":{
+          "shape":"InferenceInputConfiguration",
+          "documentation":"<p> Specifies configuration information for the input data for the inference scheduler, including delimiter, format, and dataset location. </p>"
+        },
+        "DataOutputConfiguration":{
+          "shape":"InferenceOutputConfiguration",
+          "documentation":"<p> Specifies configuration information for the output results from for the inference execution, including the output Amazon S3 location. </p>"
+        },
+        "CustomerResultObject":{
+          "shape":"S3Object",
+          "documentation":"<p>The S3 object that the inference execution results were uploaded to.</p>"
+        },
+        "Status":{
+          "shape":"InferenceExecutionStatus",
+          "documentation":"<p>Indicates the status of the inference execution. </p>"
+        },
+        "FailedReason":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p> Specifies the reason for failure when an inference execution has failed. </p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The model version used for the inference execution.</p>"
+        },
+        "ModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Number (ARN) of the model version used for the inference execution.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the specific inference execution, including input and output data configuration, inference scheduling information, status, and so on. </p>"
+    },
+    "InferenceInputConfiguration":{
+      "type":"structure",
+      "members":{
+        "S3InputConfiguration":{
+          "shape":"InferenceS3InputConfiguration",
+          "documentation":"<p> Specifies configuration information for the input data for the inference, including Amazon S3 location of input data.</p>"
+        },
+        "InputTimeZoneOffset":{
+          "shape":"TimeZoneOffset",
+          "documentation":"<p>Indicates the difference between your time zone and Coordinated Universal Time (UTC).</p>"
+        },
+        "InferenceInputNameConfiguration":{
+          "shape":"InferenceInputNameConfiguration",
+          "documentation":"<p>Specifies configuration information for the input data for the inference, including timestamp format and delimiter. </p>"
+        }
+      },
+      "documentation":"<p>Specifies configuration information for the input data for the inference, including Amazon S3 location of input data.. </p>"
+    },
+    "InferenceInputNameConfiguration":{
+      "type":"structure",
+      "members":{
+        "TimestampFormat":{
+          "shape":"FileNameTimestampFormat",
+          "documentation":"<p>The format of the timestamp, whether Epoch time, or standard, with or without hyphens (-). </p>"
+        },
+        "ComponentTimestampDelimiter":{
+          "shape":"ComponentTimestampDelimiter",
+          "documentation":"<p>Indicates the delimiter character used between items in the data. </p>"
+        }
+      },
+      "documentation":"<p>Specifies configuration information for the input data for the inference, including timestamp format and delimiter. </p>"
+    },
+    "InferenceOutputConfiguration":{
+      "type":"structure",
+      "required":["S3OutputConfiguration"],
+      "members":{
+        "S3OutputConfiguration":{
+          "shape":"InferenceS3OutputConfiguration",
+          "documentation":"<p> Specifies configuration information for the output results from for the inference, output S3 location. </p>"
+        },
+        "KmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>The ID number for the KMS key key used to encrypt the inference output. </p>"
+        }
+      },
+      "documentation":"<p> Specifies configuration information for the output results from for the inference, including KMS key ID and output S3 location. </p>"
+    },
+    "InferenceS3InputConfiguration":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The bucket containing the input dataset for the inference. </p>"
+        },
+        "Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p>The prefix for the S3 bucket used for the input data for the inference. </p>"
+        }
+      },
+      "documentation":"<p> Specifies configuration information for the input data for the inference, including input data S3 location. </p>"
+    },
+    "InferenceS3OutputConfiguration":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p> The bucket containing the output results from the inference </p>"
+        },
+        "Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p> The prefix for the S3 bucket used for the output results from the inference. </p>"
+        }
+      },
+      "documentation":"<p> Specifies configuration information for the output results from the inference, including output S3 location. </p>"
+    },
+    "InferenceSchedulerArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:inference-scheduler\\/.+"
+    },
+    "InferenceSchedulerIdentifier":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "InferenceSchedulerName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "InferenceSchedulerStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED"
+      ]
+    },
+    "InferenceSchedulerSummaries":{
+      "type":"list",
+      "member":{"shape":"InferenceSchedulerSummary"}
+    },
+    "InferenceSchedulerSummary":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model used for the inference scheduler. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the machine learning model used by the inference scheduler. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler. </p>"
+        },
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the inference scheduler. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Indicates the status of the inference scheduler. </p>"
+        },
+        "DataDelayOffsetInMinutes":{
+          "shape":"DataDelayOffsetInMinutes",
+          "documentation":"<p>A period of time (in minutes) by which inference on the data is delayed after the data starts. For instance, if an offset delay time of five minutes was selected, inference will not begin on the data until the first data measurement after the five minute mark. For example, if five minutes is selected, the inference scheduler will wake up at the configured frequency with the additional five minute delay time to check the customer S3 bucket. The customer can upload data at the same frequency and they don't need to stop and restart the scheduler when uploading new data. </p>"
+        },
+        "DataUploadFrequency":{
+          "shape":"DataUploadFrequency",
+          "documentation":"<p>How often data is uploaded to the source S3 bucket for the input data. This value is the length of time between data uploads. For instance, if you select 5 minutes, Amazon Lookout for Equipment will upload the real-time data to the source bucket once every 5 minutes. This frequency also determines how often Amazon Lookout for Equipment starts a scheduled inference on your data. In this example, it starts once every 5 minutes. </p>"
+        },
+        "LatestInferenceResult":{
+          "shape":"LatestInferenceResult",
+          "documentation":"<p>Indicates whether the latest execution for the inference scheduler was Anomalous (anomalous events found) or Normal (no anomalous events found).</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the specific inference scheduler, including data delay offset, model name and ARN, status, and so on. </p>"
+    },
+    "IngestedFilesSummary":{
+      "type":"structure",
+      "required":[
+        "TotalNumberOfFiles",
+        "IngestedNumberOfFiles"
+      ],
+      "members":{
+        "TotalNumberOfFiles":{
+          "shape":"Integer",
+          "documentation":"<p>Indicates the total number of files that were submitted for ingestion.</p>"
+        },
+        "IngestedNumberOfFiles":{
+          "shape":"Integer",
+          "documentation":"<p>Indicates the number of files that were successfully ingested.</p>"
+        },
+        "DiscardedFiles":{
+          "shape":"ListOfDiscardedFiles",
+          "documentation":"<p>Indicates the number of files that were discarded. A file could be discarded because its format is invalid (for example, a jpg or pdf) or not readable.</p>"
+        }
+      },
+      "documentation":"<p>Gives statistics about how many files have been ingested, and which files have not been ingested, for a particular ingestion job.</p>"
+    },
+    "IngestionInputConfiguration":{
+      "type":"structure",
+      "required":["S3InputConfiguration"],
+      "members":{
+        "S3InputConfiguration":{
+          "shape":"IngestionS3InputConfiguration",
+          "documentation":"<p>The location information for the S3 bucket used for input data for the data ingestion. </p>"
+        }
+      },
+      "documentation":"<p> Specifies configuration information for the input data for the data ingestion job, including input data S3 location. </p>"
+    },
+    "IngestionJobId":{
+      "type":"string",
+      "max":32,
+      "pattern":"[A-Fa-f0-9]{0,32}"
+    },
+    "IngestionJobStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAILED",
+        "IMPORT_IN_PROGRESS"
+      ]
+    },
+    "IngestionS3InputConfiguration":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The name of the S3 bucket used for the input data for the data ingestion. </p>"
+        },
+        "Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p>The prefix for the S3 location being used for the input data for the data ingestion. </p>"
+        },
+        "KeyPattern":{
+          "shape":"KeyPattern",
+          "documentation":"<p> The pattern for matching the Amazon S3 files that will be used for ingestion. If the schema was created previously without any KeyPattern, then the default KeyPattern {prefix}/{component_name}/* is used to download files from Amazon S3 according to the schema. This field is required when ingestion is being done for the first time.</p> <p>Valid Values: {prefix}/{component_name}_* | {prefix}/{component_name}/* | {prefix}/{component_name}[DELIMITER]* (Allowed delimiters : space, dot, underscore, hyphen)</p>"
+        }
+      },
+      "documentation":"<p> Specifies S3 configuration information for the input data for the data ingestion job. </p>"
+    },
+    "InlineDataSchema":{
+      "type":"string",
+      "max":1000000,
+      "min":1
+    },
+    "InsufficientSensorData":{
+      "type":"structure",
+      "required":[
+        "MissingCompleteSensorData",
+        "SensorsWithShortDateRange"
+      ],
+      "members":{
+        "MissingCompleteSensorData":{
+          "shape":"MissingCompleteSensorData",
+          "documentation":"<p> Parameter that describes the total number of sensors that have data completely missing for it. </p>"
+        },
+        "SensorsWithShortDateRange":{
+          "shape":"SensorsWithShortDateRange",
+          "documentation":"<p> Parameter that describes the total number of sensors that have a short date range of less than 14 days of data overall. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises aggregated information on sensors having insufficient data. </p>"
+    },
+    "Integer":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p> Processing of the request has failed because of an unknown error, exception or failure. </p>",
+      "exception":true,
+      "fault":true
+    },
+    "InvalidSensorData":{
+      "type":"structure",
+      "required":[
+        "AffectedSensorCount",
+        "TotalNumberOfInvalidValues"
+      ],
+      "members":{
+        "AffectedSensorCount":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of sensors that have at least some invalid values. </p>"
+        },
+        "TotalNumberOfInvalidValues":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the total number of invalid values across all the sensors. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises aggregated information on sensors having insufficient data. </p>"
+    },
+    "KeyPattern":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"arn:aws[a-z\\-]*:kms:[a-z0-9\\-]*:\\d{12}:[\\w\\-\\/]+"
+    },
+    "LabelGroupArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:label-group\\/.+"
+    },
+    "LabelGroupName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "LabelGroupSummaries":{
+      "type":"list",
+      "member":{"shape":"LabelGroupSummary"}
+    },
+    "LabelGroupSummary":{
+      "type":"structure",
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group. </p>"
+        },
+        "LabelGroupArn":{
+          "shape":"LabelGroupArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the label group. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label group was created. </p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label group was updated. </p>"
+        }
+      },
+      "documentation":"<p> Contains information about the label group. </p>"
+    },
+    "LabelId":{
+      "type":"string",
+      "max":32,
+      "pattern":"[A-Fa-f0-9]{0,32}"
+    },
+    "LabelRating":{
+      "type":"string",
+      "enum":[
+        "ANOMALY",
+        "NO_ANOMALY",
+        "NEUTRAL"
+      ]
+    },
+    "LabelSummaries":{
+      "type":"list",
+      "member":{"shape":"LabelSummary"}
+    },
+    "LabelSummary":{
+      "type":"structure",
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group. </p>"
+        },
+        "LabelId":{
+          "shape":"LabelId",
+          "documentation":"<p> The ID of the label. </p>"
+        },
+        "LabelGroupArn":{
+          "shape":"LabelGroupArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the label group. </p>"
+        },
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp indicating the start of the label. </p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp indicating the end of the label. </p>"
+        },
+        "Rating":{
+          "shape":"LabelRating",
+          "documentation":"<p> Indicates whether a labeled event represents an anomaly. </p>"
+        },
+        "FaultCode":{
+          "shape":"FaultCode",
+          "documentation":"<p> Indicates the type of anomaly associated with the label. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        },
+        "Equipment":{
+          "shape":"Equipment",
+          "documentation":"<p> Indicates that a label pertains to a particular piece of equipment. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The time at which the label was created. </p>"
+        }
+      },
+      "documentation":"<p> Information about the label. </p>"
+    },
+    "LabelsInputConfiguration":{
+      "type":"structure",
+      "members":{
+        "S3InputConfiguration":{
+          "shape":"LabelsS3InputConfiguration",
+          "documentation":"<p>Contains location information for the S3 location being used for label data. </p>"
+        },
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group to be used for label data. </p>"
+        }
+      },
+      "documentation":"<p>Contains the configuration information for the S3 location being used to hold label data. </p>"
+    },
+    "LabelsS3InputConfiguration":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The name of the S3 bucket holding the label data. </p>"
+        },
+        "Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p> The prefix for the S3 bucket used for the label data. </p>"
+        }
+      },
+      "documentation":"<p>The location information (prefix and bucket name) for the s3 location being used for label data. </p>"
+    },
+    "LargeTimestampGaps":{
+      "type":"structure",
+      "required":["Status"],
+      "members":{
+        "Status":{
+          "shape":"StatisticalIssueStatus",
+          "documentation":"<p> Indicates whether there is a potential data issue related to large gaps in timestamps. </p>"
+        },
+        "NumberOfLargeTimestampGaps":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of large timestamp gaps, if there are any. </p>"
+        },
+        "MaxTimestampGapInDays":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the size of the largest timestamp gap, in days. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on large gaps between consecutive timestamps in data. </p>"
+    },
+    "LatestInferenceResult":{
+      "type":"string",
+      "enum":[
+        "ANOMALOUS",
+        "NORMAL"
+      ]
+    },
+    "ListDataIngestionJobsRequest":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being used for the data ingestion job. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of data ingestion jobs. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of data ingestion jobs to list. </p>"
+        },
+        "Status":{
+          "shape":"IngestionJobStatus",
+          "documentation":"<p>Indicates the status of the data ingestion job. </p>"
+        }
+      }
+    },
+    "ListDataIngestionJobsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of data ingestion jobs. </p>"
+        },
+        "DataIngestionJobSummaries":{
+          "shape":"DataIngestionJobSummaries",
+          "documentation":"<p>Specifies information about the specific data ingestion job, including dataset name and status. </p>"
+        }
+      }
+    },
+    "ListDatasetsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of datasets. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of datasets to list. </p>"
+        },
+        "DatasetNameBeginsWith":{
+          "shape":"DatasetName",
+          "documentation":"<p>The beginning of the name of the datasets to be listed. </p>"
+        }
+      }
+    },
+    "ListDatasetsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of datasets. </p>"
+        },
+        "DatasetSummaries":{
+          "shape":"DatasetSummaries",
+          "documentation":"<p>Provides information about the specified dataset, including creation time, dataset ARN, and status. </p>"
+        }
+      }
+    },
+    "ListInferenceEventsRequest":{
+      "type":"structure",
+      "required":[
+        "InferenceSchedulerName",
+        "IntervalStartTime",
+        "IntervalEndTime"
+      ],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of inference events.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of inference events to list. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler for the inference events listed. </p>"
+        },
+        "IntervalStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Lookout for Equipment will return all the inference events with an end time equal to or greater than the start time given.</p>"
+        },
+        "IntervalEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Returns all the inference events with an end start time equal to or greater than less than the end time given.</p>"
+        }
+      }
+    },
+    "ListInferenceEventsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of inference executions. </p>"
+        },
+        "InferenceEventSummaries":{
+          "shape":"InferenceEventSummaries",
+          "documentation":"<p>Provides an array of information about the individual inference events returned from the <code>ListInferenceEvents</code> operation, including scheduler used, event start time, event end time, diagnostics, and so on. </p>"
+        }
+      }
+    },
+    "ListInferenceExecutionsRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of inference executions.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of inference executions to list. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler for the inference execution listed. </p>"
+        },
+        "DataStartTimeAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time reference in the inferenced dataset after which Amazon Lookout for Equipment started the inference execution. </p>"
+        },
+        "DataEndTimeBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time reference in the inferenced dataset before which Amazon Lookout for Equipment stopped the inference execution. </p>"
+        },
+        "Status":{
+          "shape":"InferenceExecutionStatus",
+          "documentation":"<p>The status of the inference execution. </p>"
+        }
+      }
+    },
+    "ListInferenceExecutionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of inference executions. </p>"
+        },
+        "InferenceExecutionSummaries":{
+          "shape":"InferenceExecutionSummaries",
+          "documentation":"<p>Provides an array of information about the individual inference executions returned from the <code>ListInferenceExecutions</code> operation, including model used, inference scheduler, data configuration, and so on. </p> <note> <p>If you don't supply the <code>InferenceSchedulerName</code> request parameter, or if you supply the name of an inference scheduler that doesn't exist, <code>ListInferenceExecutions</code> returns an empty array in <code>InferenceExecutionSummaries</code>.</p> </note>"
+        }
+      }
+    },
+    "ListInferenceSchedulersRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of inference schedulers. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of inference schedulers to list. </p>"
+        },
+        "InferenceSchedulerNameBeginsWith":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The beginning of the name of the inference schedulers to be listed. </p>"
+        },
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model used by the inference scheduler to be listed. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Specifies the current status of the inference schedulers.</p>"
+        }
+      }
+    },
+    "ListInferenceSchedulersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of inference schedulers. </p>"
+        },
+        "InferenceSchedulerSummaries":{
+          "shape":"InferenceSchedulerSummaries",
+          "documentation":"<p>Provides information about the specified inference scheduler, including data upload frequency, model name and ARN, and status. </p>"
+        }
+      }
+    },
+    "ListLabelGroupsRequest":{
+      "type":"structure",
+      "members":{
+        "LabelGroupNameBeginsWith":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The beginning of the name of the label groups to be listed. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of label groups. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of label groups to list. </p>"
+        }
+      }
+    },
+    "ListLabelGroupsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of label groups. </p>"
+        },
+        "LabelGroupSummaries":{
+          "shape":"LabelGroupSummaries",
+          "documentation":"<p> A summary of the label groups. </p>"
+        }
+      }
+    },
+    "ListLabelsRequest":{
+      "type":"structure",
+      "required":["LabelGroupName"],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> Returns the name of the label group. </p>"
+        },
+        "IntervalStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Returns all the labels with a end time equal to or later than the start time given. </p>"
+        },
+        "IntervalEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Returns all labels with a start time earlier than the end time given. </p>"
+        },
+        "FaultCode":{
+          "shape":"FaultCode",
+          "documentation":"<p> Returns labels with a particular fault code. </p>"
+        },
+        "Equipment":{
+          "shape":"Equipment",
+          "documentation":"<p> Lists the labels that pertain to a particular piece of equipment. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of label groups. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of labels to list. </p>"
+        }
+      }
+    },
+    "ListLabelsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of datasets. </p>"
+        },
+        "LabelSummaries":{
+          "shape":"LabelSummaries",
+          "documentation":"<p> A summary of the items in the label group. </p> <note> <p>If you don't supply the <code>LabelGroupName</code> request parameter, or if you supply the name of a label group that doesn't exist, <code>ListLabels</code> returns an empty array in <code>LabelSummaries</code>.</p> </note>"
+        }
+      }
+    },
+    "ListModelVersionsRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>Then name of the machine learning model for which the model versions are to be listed.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the total number of results exceeds the limit that the response can display, the response returns an opaque pagination token indicating where to continue the listing of machine learning model versions. Use this token in the <code>NextToken</code> field in the request to list the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of machine learning model versions to list.</p>"
+        },
+        "Status":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>Filter the results based on the current status of the model version.</p>"
+        },
+        "SourceType":{
+          "shape":"ModelVersionSourceType",
+          "documentation":"<p>Filter the results based on the way the model version was generated.</p>"
+        },
+        "CreatedAtEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filter results to return all the model versions created before this time.</p>"
+        },
+        "CreatedAtStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filter results to return all the model versions created after this time.</p>"
+        },
+        "MaxModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>Specifies the highest version of the model to return in the list.</p>"
+        },
+        "MinModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>Specifies the lowest version of the model to return in the list.</p>"
+        }
+      }
+    },
+    "ListModelVersionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the total number of results exceeds the limit that the response can display, the response returns an opaque pagination token indicating where to continue the listing of machine learning model versions. Use this token in the <code>NextToken</code> field in the request to list the next page of results.</p>"
+        },
+        "ModelVersionSummaries":{
+          "shape":"ModelVersionSummaries",
+          "documentation":"<p>Provides information on the specified model version, including the created time, model and dataset ARNs, and status.</p> <note> <p>If you don't supply the <code>ModelName</code> request parameter, or if you supply the name of a model that doesn't exist, <code>ListModelVersions</code> returns an empty array in <code>ModelVersionSummaries</code>. </p> </note>"
+        }
+      }
+    },
+    "ListModelsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of machine learning models. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> Specifies the maximum number of machine learning models to list. </p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>The status of the machine learning model. </p>"
+        },
+        "ModelNameBeginsWith":{
+          "shape":"ModelName",
+          "documentation":"<p>The beginning of the name of the machine learning models being listed. </p>"
+        },
+        "DatasetNameBeginsWith":{
+          "shape":"DatasetName",
+          "documentation":"<p>The beginning of the name of the dataset of the machine learning models to be listed. </p>"
+        }
+      }
+    },
+    "ListModelsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> An opaque pagination token indicating where to continue the listing of machine learning models. </p>"
+        },
+        "ModelSummaries":{
+          "shape":"ModelSummaries",
+          "documentation":"<p>Provides information on the specified model, including created time, model and dataset ARNs, and status. </p>"
+        }
+      }
+    },
+    "ListOfDiscardedFiles":{
+      "type":"list",
+      "member":{"shape":"S3Object"},
+      "min":0
+    },
+    "ListRetrainingSchedulersRequest":{
+      "type":"structure",
+      "members":{
+        "ModelNameBeginsWith":{
+          "shape":"ModelName",
+          "documentation":"<p>Specify this field to only list retraining schedulers whose machine learning models begin with the value you specify. </p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>Specify this field to only list retraining schedulers whose status matches the value you specify. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the number of results exceeds the maximum, a pagination token is returned. Use the token in the request to show the next page of retraining schedulers.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of retraining schedulers to list. </p>"
+        }
+      }
+    },
+    "ListRetrainingSchedulersResponse":{
+      "type":"structure",
+      "members":{
+        "RetrainingSchedulerSummaries":{
+          "shape":"RetrainingSchedulerSummaries",
+          "documentation":"<p>Provides information on the specified retraining scheduler, including the model name, model ARN, status, and start date. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the number of results exceeds the maximum, this pagination token is returned. Use this token in the request to show the next page of retraining schedulers.</p>"
+        }
+      }
+    },
+    "ListSensorStatisticsRequest":{
+      "type":"structure",
+      "required":["DatasetName"],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p> The name of the dataset associated with the list of Sensor Statistics. </p>"
+        },
+        "IngestionJobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p> The ingestion job id associated with the list of Sensor Statistics. To get sensor statistics for a particular ingestion job id, both dataset name and ingestion job id must be submitted as inputs. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of sensors for which to retrieve statistics. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of sensor statistics. </p>"
+        }
+      }
+    },
+    "ListSensorStatisticsResponse":{
+      "type":"structure",
+      "members":{
+        "SensorStatisticsSummaries":{
+          "shape":"SensorStatisticsSummaries",
+          "documentation":"<p>Provides ingestion-based statistics regarding the specified sensor with respect to various validation types, such as whether data exists, the number and percentage of missing values, and the number and percentage of duplicate timestamps. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>An opaque pagination token indicating where to continue the listing of sensor statistics. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource (such as the dataset or model) that is the focus of the <code>ListTagsForResource</code> operation. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p> Any tags associated with the resource. </p>"
+        }
+      }
+    },
+    "LookbackWindow":{
+      "type":"string",
+      "pattern":"^P180D$|^P360D$|^P540D$|^P720D$"
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":500,
+      "min":1
+    },
+    "MissingCompleteSensorData":{
+      "type":"structure",
+      "required":["AffectedSensorCount"],
+      "members":{
+        "AffectedSensorCount":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of sensors that have data missing completely. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on sensors that have sensor data completely missing. </p>"
+    },
+    "MissingSensorData":{
+      "type":"structure",
+      "required":[
+        "AffectedSensorCount",
+        "TotalNumberOfMissingValues"
+      ],
+      "members":{
+        "AffectedSensorCount":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of sensors that have atleast some data missing. </p>"
+        },
+        "TotalNumberOfMissingValues":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the total number of missing values across all the sensors. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises aggregated information on sensors having missing data. </p>"
+    },
+    "ModelArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:model\\/.+"
+    },
+    "ModelDiagnosticsOutputConfiguration":{
+      "type":"structure",
+      "required":["S3OutputConfiguration"],
+      "members":{
+        "S3OutputConfiguration":{
+          "shape":"ModelDiagnosticsS3OutputConfiguration",
+          "documentation":"<p>The Amazon S3 location for the pointwise model diagnostics. </p>"
+        },
+        "KmsKeyId":{
+          "shape":"NameOrArn",
+          "documentation":"<p>The Amazon Web Services Key Management Service (KMS) key identifier to encrypt the pointwise model diagnostics files.</p>"
+        }
+      },
+      "documentation":"<p>Output configuration information for the pointwise model diagnostics for an Amazon Lookout for Equipment model.</p>"
+    },
+    "ModelDiagnosticsS3OutputConfiguration":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The name of the Amazon S3 bucket where the pointwise model diagnostics are located. You must be the owner of the Amazon S3 bucket. </p>"
+        },
+        "Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p>The Amazon S3 prefix for the location of the pointwise model diagnostics. The prefix specifies the folder and evaluation result file name. (<code>bucket</code>).</p> <p>When you call <code>CreateModel</code> or <code>UpdateModel</code>, specify the path within the bucket that you want Lookout for Equipment to save the model to. During training, Lookout for Equipment creates the model evaluation model as a compressed JSON file with the name <code>model_diagnostics_results.json.gz</code>.</p> <p>When you call <code>DescribeModel</code> or <code>DescribeModelVersion</code>, <code>prefix</code> contains the file path and filename of the model evaluation file. </p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 location for the pointwise model diagnostics for an Amazon Lookout for Equipment model. </p>"
+    },
+    "ModelMetrics":{
+      "type":"string",
+      "max":50000,
+      "min":1
+    },
+    "ModelName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z_-]{1,200}$"
+    },
+    "ModelPromoteMode":{
+      "type":"string",
+      "enum":[
+        "MANAGED",
+        "MANUAL"
+      ]
+    },
+    "ModelQuality":{
+      "type":"string",
+      "enum":[
+        "QUALITY_THRESHOLD_MET",
+        "CANNOT_DETERMINE_QUALITY",
+        "POOR_QUALITY_DETECTED"
+      ]
+    },
+    "ModelStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAILED",
+        "IMPORT_IN_PROGRESS"
+      ]
+    },
+    "ModelSummaries":{
+      "type":"list",
+      "member":{"shape":"ModelSummary"}
+    },
+    "ModelSummary":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the machine learning model. </p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset being used for the machine learning model. </p>"
+        },
+        "DatasetArn":{
+          "shape":"DatasetArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the dataset used to create the model. </p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>Indicates the status of the machine learning model. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the specific model was created. </p>"
+        },
+        "ActiveModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The model version that the inference scheduler uses to run an inference execution.</p>"
+        },
+        "ActiveModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version that is set as active. The active model version is the model version that the inference scheduler uses to run an inference execution.</p>"
+        },
+        "LatestScheduledRetrainingStatus":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>Indicates the status of the most recent scheduled retraining run. </p>"
+        },
+        "LatestScheduledRetrainingModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>Indicates the most recent model version that was generated by retraining. </p>"
+        },
+        "LatestScheduledRetrainingStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the start time of the most recent scheduled retraining run. </p>"
+        },
+        "NextScheduledRetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>Indicates the date that the next scheduled retraining run will start on. Lookout for Equipment truncates the time you provide to <a href=\"https://docs.aws.amazon.com/https:/docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-types.html#parameter-type-timestamp\">the nearest UTC day</a>.</p>"
+        },
+        "RetrainingSchedulerStatus":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>Indicates the status of the retraining scheduler. </p>"
+        },
+        "ModelDiagnosticsOutputConfiguration":{"shape":"ModelDiagnosticsOutputConfiguration"},
+        "ModelQuality":{
+          "shape":"ModelQuality",
+          "documentation":"<p>Provides a quality assessment for a model that uses labels. If Lookout for Equipment determines that the model quality is poor based on training metrics, the value is <code>POOR_QUALITY_DETECTED</code>. Otherwise, the value is <code>QUALITY_THRESHOLD_MET</code>.</p> <p>If the model is unlabeled, the model quality can't be assessed and the value of <code>ModelQuality</code> is <code>CANNOT_DETERMINE_QUALITY</code>. In this situation, you can get a model quality assessment by adding labels to the input dataset and retraining the model.</p> <p>For information about using labels with your models, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/understanding-labeling.html\">Understanding labeling</a>.</p> <p>For information about improving the quality of a model, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/best-practices.html\">Best practices with Amazon Lookout for Equipment</a>.</p>"
+        }
+      },
+      "documentation":"<p>Provides information about the specified machine learning model, including dataset and model names and ARNs, as well as status. </p>"
+    },
+    "ModelVersion":{
+      "type":"long",
+      "min":1
+    },
+    "ModelVersionArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:model\\/[0-9a-zA-Z_-]{1,200}\\/.+\\/model-version\\/[0-9]{1,}$"
+    },
+    "ModelVersionSourceType":{
+      "type":"string",
+      "enum":[
+        "TRAINING",
+        "RETRAINING",
+        "IMPORT"
+      ]
+    },
+    "ModelVersionStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAILED",
+        "IMPORT_IN_PROGRESS",
+        "CANCELED"
+      ]
+    },
+    "ModelVersionSummaries":{
+      "type":"list",
+      "member":{"shape":"ModelVersionSummary"}
+    },
+    "ModelVersionSummary":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model that this model version is a version of.</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model that this model version is a version of.</p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model.</p>"
+        },
+        "ModelVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model version.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when this model version was created.</p>"
+        },
+        "Status":{
+          "shape":"ModelVersionStatus",
+          "documentation":"<p>The current status of the model version.</p>"
+        },
+        "SourceType":{
+          "shape":"ModelVersionSourceType",
+          "documentation":"<p>Indicates how this model version was generated.</p>"
+        },
+        "ModelQuality":{
+          "shape":"ModelQuality",
+          "documentation":"<p>Provides a quality assessment for a model that uses labels. If Lookout for Equipment determines that the model quality is poor based on training metrics, the value is <code>POOR_QUALITY_DETECTED</code>. Otherwise, the value is <code>QUALITY_THRESHOLD_MET</code>. </p> <p>If the model is unlabeled, the model quality can't be assessed and the value of <code>ModelQuality</code> is <code>CANNOT_DETERMINE_QUALITY</code>. In this situation, you can get a model quality assessment by adding labels to the input dataset and retraining the model.</p> <p>For information about improving the quality of a model, see <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/best-practices.html\">Best practices with Amazon Lookout for Equipment</a>.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the specific model version.</p>"
+    },
+    "MonotonicValues":{
+      "type":"structure",
+      "required":["Status"],
+      "members":{
+        "Status":{
+          "shape":"StatisticalIssueStatus",
+          "documentation":"<p> Indicates whether there is a potential data issue related to having monotonic values. </p>"
+        },
+        "Monotonicity":{
+          "shape":"Monotonicity",
+          "documentation":"<p> Indicates the monotonicity of values. Can be INCREASING, DECREASING, or STATIC. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on monotonic values in the data. </p>"
+    },
+    "Monotonicity":{
+      "type":"string",
+      "enum":[
+        "DECREASING",
+        "INCREASING",
+        "STATIC"
+      ]
+    },
+    "MultipleOperatingModes":{
+      "type":"structure",
+      "required":["Status"],
+      "members":{
+        "Status":{
+          "shape":"StatisticalIssueStatus",
+          "documentation":"<p> Indicates whether there is a potential data issue related to having multiple operating modes. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on operating modes in data. </p>"
+    },
+    "NameOrArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,2048}$"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "pattern":"\\p{ASCII}{0,8192}"
+    },
+    "OffCondition":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "Policy":{
+      "type":"string",
+      "max":20000,
+      "min":1,
+      "pattern":"[\\u0009\\u000A\\u000D\\u0020-\\u00FF]+"
+    },
+    "PolicyRevisionId":{
+      "type":"string",
+      "max":50,
+      "pattern":"[0-9A-Fa-f]+"
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "ResourcePolicy",
+        "ClientToken"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which the policy is being created.</p>"
+        },
+        "ResourcePolicy":{
+          "shape":"Policy",
+          "documentation":"<p>The JSON-formatted resource policy to create.</p>"
+        },
+        "PolicyRevisionId":{
+          "shape":"PolicyRevisionId",
+          "documentation":"<p>A unique identifier for a revision of the resource policy.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p>A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which the policy was created.</p>"
+        },
+        "PolicyRevisionId":{
+          "shape":"PolicyRevisionId",
+          "documentation":"<p>A unique identifier for a revision of the resource policy.</p>"
+        }
+      }
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:lookoutequipment:[a-zA-Z0-9\\-]*:[0-9]{12}:.+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p> The resource requested could not be found. Verify the resource ID and retry your request. </p>",
+      "exception":true
+    },
+    "RetrainingFrequency":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "pattern":"^P(\\dY)?(\\d{1,2}M)?(\\d{1,3}D)?$"
+    },
+    "RetrainingSchedulerStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED"
+      ]
+    },
+    "RetrainingSchedulerSummaries":{
+      "type":"list",
+      "member":{"shape":"RetrainingSchedulerSummary"}
+    },
+    "RetrainingSchedulerSummary":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model that the retraining scheduler is attached to. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model that the retraining scheduler is attached to. </p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>The status of the retraining scheduler. </p>"
+        },
+        "RetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start date for the retraining scheduler. Lookout for Equipment truncates the time you provide to the nearest UTC day.</p>"
+        },
+        "RetrainingFrequency":{
+          "shape":"RetrainingFrequency",
+          "documentation":"<p>The frequency at which the model retraining is set. This follows the <a href=\"https://en.wikipedia.org/wiki/ISO_8601#Durations\">ISO 8601</a> guidelines.</p>"
+        },
+        "LookbackWindow":{
+          "shape":"LookbackWindow",
+          "documentation":"<p>The number of past days of data used for retraining.</p>"
+        }
+      },
+      "documentation":"<p>Provides information about the specified retraining scheduler, including model name, status, start date, frequency, and lookback window. </p>"
+    },
+    "S3Bucket":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9]$"
+    },
+    "S3Key":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,1024}[^/]$"
+    },
+    "S3Object":{
+      "type":"structure",
+      "required":[
+        "Bucket",
+        "Key"
+      ],
+      "members":{
+        "Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The name of the specific S3 bucket. </p>"
+        },
+        "Key":{
+          "shape":"S3Key",
+          "documentation":"<p>The Amazon Web Services Key Management Service (KMS key) key being used to encrypt the S3 object. Without this key, data in the bucket is not accessible. </p>"
+        }
+      },
+      "documentation":"<p>Contains information about an S3 bucket. </p>"
+    },
+    "S3Prefix":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"(^$)|([\\u0009\\u000A\\u000D\\u0020-\\u00FF]{1,1023}/$)"
+    },
+    "SensorName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z:#$.\\-_]{1,200}$"
+    },
+    "SensorStatisticsSummaries":{
+      "type":"list",
+      "member":{"shape":"SensorStatisticsSummary"}
+    },
+    "SensorStatisticsSummary":{
+      "type":"structure",
+      "members":{
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p> Name of the component to which the particular sensor belongs for which the statistics belong to. </p>"
+        },
+        "SensorName":{
+          "shape":"SensorName",
+          "documentation":"<p> Name of the sensor that the statistics belong to. </p>"
+        },
+        "DataExists":{
+          "shape":"Boolean",
+          "documentation":"<p> Parameter that indicates whether data exists for the sensor that the statistics belong to. </p>"
+        },
+        "MissingValues":{
+          "shape":"CountPercent",
+          "documentation":"<p> Parameter that describes the total number of, and percentage of, values that are missing for the sensor that the statistics belong to. </p>"
+        },
+        "InvalidValues":{
+          "shape":"CountPercent",
+          "documentation":"<p> Parameter that describes the total number of, and percentage of, values that are invalid for the sensor that the statistics belong to. </p>"
+        },
+        "InvalidDateEntries":{
+          "shape":"CountPercent",
+          "documentation":"<p> Parameter that describes the total number of invalid date entries associated with the sensor that the statistics belong to. </p>"
+        },
+        "DuplicateTimestamps":{
+          "shape":"CountPercent",
+          "documentation":"<p> Parameter that describes the total number of duplicate timestamp records associated with the sensor that the statistics belong to. </p>"
+        },
+        "CategoricalValues":{
+          "shape":"CategoricalValues",
+          "documentation":"<p> Parameter that describes potential risk about whether data associated with the sensor is categorical. </p>"
+        },
+        "MultipleOperatingModes":{
+          "shape":"MultipleOperatingModes",
+          "documentation":"<p> Parameter that describes potential risk about whether data associated with the sensor has more than one operating mode. </p>"
+        },
+        "LargeTimestampGaps":{
+          "shape":"LargeTimestampGaps",
+          "documentation":"<p> Parameter that describes potential risk about whether data associated with the sensor contains one or more large gaps between consecutive timestamps. </p>"
+        },
+        "MonotonicValues":{
+          "shape":"MonotonicValues",
+          "documentation":"<p> Parameter that describes potential risk about whether data associated with the sensor is mostly monotonic. </p>"
+        },
+        "DataStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference to indicate the beginning of valid data associated with the sensor that the statistics belong to. </p>"
+        },
+        "DataEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> Indicates the time reference to indicate the end of valid data associated with the sensor that the statistics belong to. </p>"
+        }
+      },
+      "documentation":"<p> Summary of ingestion statistics like whether data exists, number of missing values, number of invalid values and so on related to the particular sensor. </p>"
+    },
+    "SensorsWithShortDateRange":{
+      "type":"structure",
+      "required":["AffectedSensorCount"],
+      "members":{
+        "AffectedSensorCount":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the number of sensors that have less than 14 days of data. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information on sensors that have shorter date range. </p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p> Resource limitations have been exceeded. </p>",
+      "exception":true
+    },
+    "StartDataIngestionJobRequest":{
+      "type":"structure",
+      "required":[
+        "DatasetName",
+        "IngestionInputConfiguration",
+        "RoleArn",
+        "ClientToken"
+      ],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetIdentifier",
+          "documentation":"<p>The name of the dataset being used by the data ingestion job. </p>"
+        },
+        "IngestionInputConfiguration":{
+          "shape":"IngestionInputConfiguration",
+          "documentation":"<p> Specifies information for the input data for the data ingestion job, including dataset S3 location. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of a role with permission to access the data source for the data ingestion job. </p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotenceToken",
+          "documentation":"<p> A unique identifier for the request. If you do not set the client request token, Amazon Lookout for Equipment generates one. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartDataIngestionJobResponse":{
+      "type":"structure",
+      "members":{
+        "JobId":{
+          "shape":"IngestionJobId",
+          "documentation":"<p>Indicates the job ID of the data ingestion job. </p>"
+        },
+        "Status":{
+          "shape":"IngestionJobStatus",
+          "documentation":"<p>Indicates the status of the <code>StartDataIngestionJob</code> operation. </p>"
+        }
+      }
+    },
+    "StartInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler to be started. </p>"
+        }
+      }
+    },
+    "StartInferenceSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model being used by the inference scheduler. </p>"
+        },
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model being used by the inference scheduler. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being started. </p>"
+        },
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the inference scheduler being started. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Indicates the status of the inference scheduler. </p>"
+        }
+      }
+    },
+    "StartRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler you want to start.</p>"
+        }
+      }
+    },
+    "StartRetrainingSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler is being started. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model whose retraining scheduler is being started. </p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>The status of the retraining scheduler. </p>"
+        }
+      }
+    },
+    "StatisticalIssueStatus":{
+      "type":"string",
+      "enum":[
+        "POTENTIAL_ISSUE_DETECTED",
+        "NO_ISSUE_DETECTED"
+      ]
+    },
+    "StopInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler to be stopped. </p>"
+        }
+      }
+    },
+    "StopInferenceSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model used by the inference scheduler being stopped. </p>"
+        },
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model used by the inference scheduler being stopped. </p>"
+        },
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerName",
+          "documentation":"<p>The name of the inference scheduler being stopped. </p>"
+        },
+        "InferenceSchedulerArn":{
+          "shape":"InferenceSchedulerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the inference schedule being stopped. </p>"
+        },
+        "Status":{
+          "shape":"InferenceSchedulerStatus",
+          "documentation":"<p>Indicates the status of the inference scheduler. </p>"
+        }
+      }
+    },
+    "StopRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler you want to stop.</p>"
+        }
+      }
+    },
+    "StopRetrainingSchedulerResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler is being stopped. </p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The ARN of the model whose retraining scheduler is being stopped. </p>"
+        },
+        "Status":{
+          "shape":"RetrainingSchedulerStatus",
+          "documentation":"<p>The status of the retraining scheduler. </p>"
+        }
+      }
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key for the specified tag. </p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value for the specified tag. </p>"
+        }
+      },
+      "documentation":"<p>A tag is a key-value pair that can be added to a resource as metadata. </p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the specific resource to which the tag should be associated. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tag or tags to be associated with a specific resource. Both the tag key and value are specified. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[\\s\\w+-=\\.:/@]*"
+    },
+    "TargetSamplingRate":{
+      "type":"string",
+      "enum":[
+        "PT1S",
+        "PT5S",
+        "PT10S",
+        "PT15S",
+        "PT30S",
+        "PT1M",
+        "PT5M",
+        "PT10M",
+        "PT15M",
+        "PT30M",
+        "PT1H"
+      ]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "TimeZoneOffset":{
+      "type":"string",
+      "pattern":"^(\\+|\\-)[0-9]{2}\\:[0-9]{2}$"
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UnsupportedTimestamps":{
+      "type":"structure",
+      "required":["TotalNumberOfUnsupportedTimestamps"],
+      "members":{
+        "TotalNumberOfUnsupportedTimestamps":{
+          "shape":"Integer",
+          "documentation":"<p> Indicates the total number of unsupported timestamps across the ingested data. </p>"
+        }
+      },
+      "documentation":"<p> Entity that comprises information abount unsupported timestamps in the dataset. </p>"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to which the tag is currently associated. </p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Specifies the key of the tag to be removed from a specified resource. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateActiveModelVersionRequest":{
+      "type":"structure",
+      "required":[
+        "ModelName",
+        "ModelVersion"
+      ],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model for which the active model version is being set.</p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the machine learning model for which the active model version is being set.</p>"
+        }
+      }
+    },
+    "UpdateActiveModelVersionResponse":{
+      "type":"structure",
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the machine learning model for which the active model version was set.</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model for which the active model version was set.</p>"
+        },
+        "CurrentActiveVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version that is currently active of the machine learning model for which the active model version was set.</p>"
+        },
+        "PreviousActiveVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The previous version that was active of the machine learning model for which the active model version was set.</p>"
+        },
+        "CurrentActiveVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model version that is the current active model version.</p>"
+        },
+        "PreviousActiveVersionArn":{
+          "shape":"ModelVersionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the machine learning model version that was the previous active model version.</p>"
+        }
+      }
+    },
+    "UpdateInferenceSchedulerRequest":{
+      "type":"structure",
+      "required":["InferenceSchedulerName"],
+      "members":{
+        "InferenceSchedulerName":{
+          "shape":"InferenceSchedulerIdentifier",
+          "documentation":"<p>The name of the inference scheduler to be updated. </p>"
+        },
+        "DataDelayOffsetInMinutes":{
+          "shape":"DataDelayOffsetInMinutes",
+          "documentation":"<p> A period of time (in minutes) by which inference on the data is delayed after the data starts. For instance, if you select an offset delay time of five minutes, inference will not begin on the data until the first data measurement after the five minute mark. For example, if five minutes is selected, the inference scheduler will wake up at the configured frequency with the additional five minute delay time to check the customer S3 bucket. The customer can upload data at the same frequency and they don't need to stop and restart the scheduler when uploading new data.</p>"
+        },
+        "DataUploadFrequency":{
+          "shape":"DataUploadFrequency",
+          "documentation":"<p>How often data is uploaded to the source S3 bucket for the input data. The value chosen is the length of time between data uploads. For instance, if you select 5 minutes, Amazon Lookout for Equipment will upload the real-time data to the source bucket once every 5 minutes. This frequency also determines how often Amazon Lookout for Equipment starts a scheduled inference on your data. In this example, it starts once every 5 minutes. </p>"
+        },
+        "DataInputConfiguration":{
+          "shape":"InferenceInputConfiguration",
+          "documentation":"<p> Specifies information for the input data for the inference scheduler, including delimiter, format, and dataset location. </p>"
+        },
+        "DataOutputConfiguration":{
+          "shape":"InferenceOutputConfiguration",
+          "documentation":"<p> Specifies information for the output results from the inference scheduler, including the output S3 location. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of a role with permission to access the data source for the inference scheduler. </p>"
+        }
+      }
+    },
+    "UpdateLabelGroupRequest":{
+      "type":"structure",
+      "required":["LabelGroupName"],
+      "members":{
+        "LabelGroupName":{
+          "shape":"LabelGroupName",
+          "documentation":"<p> The name of the label group to be updated. </p>"
+        },
+        "FaultCodes":{
+          "shape":"FaultCodes",
+          "documentation":"<p> Updates the code indicating the type of anomaly associated with the label. </p> <p>Data in this field will be retained for service usage. Follow best practices for the security of your data.</p>"
+        }
+      }
+    },
+    "UpdateModelRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model to update.</p>"
+        },
+        "LabelsInputConfiguration":{"shape":"LabelsInputConfiguration"},
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the model to update.</p>"
+        },
+        "ModelDiagnosticsOutputConfiguration":{
+          "shape":"ModelDiagnosticsOutputConfiguration",
+          "documentation":"<p>The Amazon S3 location where you want Amazon Lookout for Equipment to save the pointwise model diagnostics for the model. You must also specify the <code>RoleArn</code> request parameter.</p>"
+        }
+      }
+    },
+    "UpdateRetrainingSchedulerRequest":{
+      "type":"structure",
+      "required":["ModelName"],
+      "members":{
+        "ModelName":{
+          "shape":"ModelName",
+          "documentation":"<p>The name of the model whose retraining scheduler you want to update. </p>"
+        },
+        "RetrainingStartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start date for the retraining scheduler. Lookout for Equipment truncates the time you provide to the nearest UTC day.</p>"
+        },
+        "RetrainingFrequency":{
+          "shape":"RetrainingFrequency",
+          "documentation":"<p>This parameter uses the <a href=\"https://en.wikipedia.org/wiki/ISO_8601#Durations\">ISO 8601</a> standard to set the frequency at which you want retraining to occur in terms of Years, Months, and/or Days (note: other parameters like Time are not currently supported). The minimum value is 30 days (P30D) and the maximum value is 1 year (P1Y). For example, the following values are valid:</p> <ul> <li> <p>P3M15D – Every 3 months and 15 days</p> </li> <li> <p>P2M – Every 2 months</p> </li> <li> <p>P150D – Every 150 days</p> </li> </ul>"
+        },
+        "LookbackWindow":{
+          "shape":"LookbackWindow",
+          "documentation":"<p>The number of past days of data that will be used for retraining.</p>"
+        },
+        "PromoteMode":{
+          "shape":"ModelPromoteMode",
+          "documentation":"<p>Indicates how the service will use new models. In <code>MANAGED</code> mode, new models will automatically be used for inference if they have better performance than the current model. In <code>MANUAL</code> mode, the new models will not be used <a href=\"https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/versioning-model.html#model-activation\">until they are manually activated</a>.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"BoundedLengthString"}
+      },
+      "documentation":"<p> The input fails to satisfy constraints specified by Amazon Lookout for Equipment or a related Amazon Web Services service that's being utilized. </p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>Amazon Lookout for Equipment is a machine learning service that uses advanced analytics to identify anomalies in machines from sensor data for use in predictive maintenance. </p>"
+}

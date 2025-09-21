@@ -1,0 +1,20 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+      "ListAccountsWithInvalidEffectivePolicy": {
+        "non_aggregate_keys": [
+          "PolicyType"
+        ]
+      },
+      "ListEffectivePolicyValidationErrors": {
+        "non_aggregate_keys": [
+          "PolicyType",
+          "AccountId",
+          "EvaluationTimestamp",
+          "Path"
+        ]
+      }
+    }
+  }
+}

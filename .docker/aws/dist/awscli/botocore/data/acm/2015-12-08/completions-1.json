@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Certificate": {
+      "operation": "ListCertificates",
+      "resourceIdentifier": {
+        "CertificateArn": "CertificateSummaryList[].CertificateArn",
+        "DomainName": "CertificateSummaryList[].DomainName"
+      }
+    }
+  },
+  "operations": {
+    "AddTagsToCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "DeleteCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "DescribeCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "ExportCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "GetCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "ImportCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "ListTagsForCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "RemoveTagsFromCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "RequestCertificate": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "ResendValidationEmail": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "UpdateCertificateOptions": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    }
+  }
+}

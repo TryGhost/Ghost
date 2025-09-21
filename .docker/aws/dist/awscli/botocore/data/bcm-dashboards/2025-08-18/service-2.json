@@ -1,0 +1,1111 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2025-08-18",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"bcm-dashboards",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Billing and Cost Management Dashboards",
+    "serviceId":"BCM Dashboards",
+    "signatureVersion":"v4",
+    "signingName":"bcm-dashboards",
+    "targetPrefix":"AWSBCMDashboardsService",
+    "uid":"bcm-dashboards-2025-08-18"
+  },
+  "operations":{
+    "CreateDashboard":{
+      "name":"CreateDashboard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateDashboardRequest"},
+      "output":{"shape":"CreateDashboardResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new dashboard that can contain multiple widgets displaying cost and usage data. You can add custom widgets or use predefined widgets, arranging them in your preferred layout.</p>"
+    },
+    "DeleteDashboard":{
+      "name":"DeleteDashboard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteDashboardRequest"},
+      "output":{"shape":"DeleteDashboardResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a specified dashboard. This action cannot be undone.</p>"
+    },
+    "GetDashboard":{
+      "name":"GetDashboard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetDashboardRequest"},
+      "output":{"shape":"GetDashboardResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves the configuration and metadata of a specified dashboard, including its widgets and layout settings.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves the resource-based policy attached to a dashboard, showing sharing configurations and permissions.</p>"
+    },
+    "ListDashboards":{
+      "name":"ListDashboards",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListDashboardsRequest"},
+      "output":{"shape":"ListDashboardsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all dashboards in your account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of all tags associated with a specified dashboard resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds or updates tags for a specified dashboard resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes specified tags from a dashboard resource.</p>"
+    },
+    "UpdateDashboard":{
+      "name":"UpdateDashboard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateDashboardRequest"},
+      "output":{"shape":"UpdateDashboardResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates an existing dashboard's properties, including its name, description, and widget configurations.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>You do not have sufficient permissions to perform this action. Verify your IAM permissions and any resource policies.</p>",
+      "exception":true
+    },
+    "CostAndUsageQuery":{
+      "type":"structure",
+      "required":[
+        "metrics",
+        "timeRange",
+        "granularity"
+      ],
+      "members":{
+        "metrics":{
+          "shape":"MetricNames",
+          "documentation":"<p>The specific cost and usage metrics to retrieve.</p> <note> <p>Valid values for CostAndUsageQuery metrics are <code>AmortizedCost</code>, <code>BlendedCost</code>, <code>NetAmortizedCost</code>, <code>NetUnblendedCost</code>, <code>NormalizedUsageAmount</code>, <code>UnblendedCost</code>, and <code>UsageQuantity</code>.</p> </note>"
+        },
+        "timeRange":{
+          "shape":"DateTimeRange",
+          "documentation":"<p>The time period for which to retrieve data. Can be specified as absolute dates or relative time periods.</p>"
+        },
+        "granularity":{
+          "shape":"Granularity",
+          "documentation":"<p>The granularity of the retrieved data: <code>HOURLY</code>, <code>DAILY</code>, or <code>MONTHLY</code>.</p>"
+        },
+        "groupBy":{
+          "shape":"GroupDefinitions",
+          "documentation":"<p>Specifies how to group the retrieved data, such as by <code>SERVICE</code>, <code>ACCOUNT</code>, or <code>TAG</code>.</p>"
+        },
+        "filter":{
+          "shape":"Expression",
+          "documentation":"<p>The filter expression to be applied to the cost and usage data.</p>"
+        }
+      },
+      "documentation":"<p>Defines the parameters for retrieving Amazon Web Services cost and usage data. Includes specifications for metrics, time periods, granularity, grouping dimensions, and filtering conditions.</p>"
+    },
+    "CostCategoryValues":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"String",
+          "documentation":"<p>The key of the cost category to filter on.</p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p>The values to match for the specified cost category key.</p>"
+        },
+        "matchOptions":{
+          "shape":"MatchOptions",
+          "documentation":"<p>The match options for cost category values, such as <code>EQUALS</code>, <code>CONTAINS</code>, <code>STARTS_WITH</code>, or <code>ENDS_WITH</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the values and match options for cost category-based filtering in cost and usage queries.</p>"
+    },
+    "CreateDashboardRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "widgets"
+      ],
+      "members":{
+        "name":{
+          "shape":"DashboardName",
+          "documentation":"<p>The name of the dashboard. The name must be unique within your account.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the dashboard's purpose or contents.</p>"
+        },
+        "widgets":{
+          "shape":"WidgetList",
+          "documentation":"<p>An array of widget configurations that define the visualizations to be displayed in the dashboard. Each dashboard can contain up to 20 widgets.</p>"
+        },
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>The tags to apply to the dashboard resource for organization and management.</p>"
+        }
+      }
+    },
+    "CreateDashboardResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the newly created dashboard.</p>"
+        }
+      }
+    },
+    "DashboardArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws[-a-z0-9]*:bcm-dashboards::[0-9]{12}:dashboard/(\\*|[-a-z0-9]+)"
+    },
+    "DashboardName":{
+      "type":"string",
+      "max":50,
+      "min":2,
+      "pattern":"(?!.* {2})[a-zA-Z][a-zA-Z0-9 _-]{0,48}[a-zA-Z0-9_-]"
+    },
+    "DashboardReference":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "name",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the referenced dashboard.</p>"
+        },
+        "name":{
+          "shape":"DashboardName",
+          "documentation":"<p>The name of the referenced dashboard.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the referenced dashboard.</p>"
+        },
+        "type":{
+          "shape":"DashboardType",
+          "documentation":"<p>The dashboard type.</p>"
+        },
+        "createdAt":{
+          "shape":"GenericTimeStamp",
+          "documentation":"<p>The timestamp when the dashboard was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"GenericTimeStamp",
+          "documentation":"<p>The timestamp when the dashboard was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Contains basic information about a dashboard, including its ARN, name, type, and timestamps.</p>"
+    },
+    "DashboardReferenceList":{
+      "type":"list",
+      "member":{"shape":"DashboardReference"}
+    },
+    "DashboardType":{
+      "type":"string",
+      "enum":["CUSTOM"]
+    },
+    "DateTimeRange":{
+      "type":"structure",
+      "required":[
+        "startTime",
+        "endTime"
+      ],
+      "members":{
+        "startTime":{
+          "shape":"DateTimeValue",
+          "documentation":"<p>The start time of the date range for querying data.</p>"
+        },
+        "endTime":{
+          "shape":"DateTimeValue",
+          "documentation":"<p>The end time of the date range for querying data.</p>"
+        }
+      },
+      "documentation":"<p>Defines a time period with explicit start and end times for data queries.</p>"
+    },
+    "DateTimeType":{
+      "type":"string",
+      "enum":[
+        "ABSOLUTE",
+        "RELATIVE"
+      ]
+    },
+    "DateTimeValue":{
+      "type":"structure",
+      "required":[
+        "type",
+        "value"
+      ],
+      "members":{
+        "type":{
+          "shape":"DateTimeType",
+          "documentation":"<p>The type of date/time value: <code>ABSOLUTE</code> for specific dates or <code>RELATIVE</code> for dynamic time periods.</p>"
+        },
+        "value":{
+          "shape":"GenericString",
+          "documentation":"<p>The actual date/time value.</p>"
+        }
+      },
+      "documentation":"<p>Represents a point in time that can be specified as either an absolute date (for example, \"2025-07-01\") or a relative time period using ISO 8601 duration format (for example, \"-P3M\" for three months ago).</p>"
+    },
+    "DeleteDashboardRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteDashboardResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard that was deleted.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"(?!.* {2})[ a-zA-Z0-9.,!?;:@#$%&\\-_/\\\\]*"
+    },
+    "Dimension":{
+      "type":"string",
+      "enum":[
+        "AZ",
+        "INSTANCE_TYPE",
+        "LINKED_ACCOUNT",
+        "OPERATION",
+        "PURCHASE_TYPE",
+        "REGION",
+        "SERVICE",
+        "USAGE_TYPE",
+        "USAGE_TYPE_GROUP",
+        "RECORD_TYPE",
+        "RESOURCE_ID",
+        "SUBSCRIPTION_ID",
+        "TAG_KEY",
+        "OPERATING_SYSTEM",
+        "TENANCY",
+        "BILLING_ENTITY",
+        "RESERVATION_ID",
+        "COST_CATEGORY_NAME",
+        "DATABASE_ENGINE",
+        "LEGAL_ENTITY_NAME",
+        "SAVINGS_PLANS_TYPE",
+        "INSTANCE_TYPE_FAMILY",
+        "CACHE_ENGINE",
+        "DEPLOYMENT_OPTION",
+        "SCOPE",
+        "PLATFORM"
+      ]
+    },
+    "DimensionValues":{
+      "type":"structure",
+      "required":[
+        "key",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"Dimension",
+          "documentation":"<p>The key of the dimension to filter on (for example, <code>SERVICE</code>, <code>USAGE_TYPE</code>, or <code>OPERATION</code>).</p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p>The values to match for the specified dimension key.</p>"
+        },
+        "matchOptions":{
+          "shape":"MatchOptions",
+          "documentation":"<p>The match options for dimension values, such as <code>EQUALS</code>, <code>CONTAINS</code>, <code>STARTS_WITH</code>, or <code>ENDS_WITH</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the values and match options for dimension-based filtering in cost and usage queries.</p>"
+    },
+    "DisplayConfig":{
+      "type":"structure",
+      "members":{
+        "graph":{
+          "shape":"GraphDisplayConfigMap",
+          "documentation":"<p>The configuration for graphical display of the widget data, including chart type and visual options.</p>"
+        },
+        "table":{
+          "shape":"TableDisplayConfigStruct",
+          "documentation":"<p>The configuration for tabular display of the widget data.</p>"
+        }
+      },
+      "documentation":"<p>Defines how the widget's data should be visualized, including chart type, color schemes, axis configurations, and other display preferences.</p>",
+      "union":true
+    },
+    "Expression":{
+      "type":"structure",
+      "members":{
+        "or":{
+          "shape":"Expressions",
+          "documentation":"<p>A list of expressions to combine with OR logic.</p>"
+        },
+        "and":{
+          "shape":"Expressions",
+          "documentation":"<p>A list of expressions to combine with AND logic.</p>"
+        },
+        "not":{
+          "shape":"Expression",
+          "documentation":"<p>An expression to negate with NOT logic.</p>"
+        },
+        "dimensions":{
+          "shape":"DimensionValues",
+          "documentation":"<p>The dimension values to include in the filter expression.</p>"
+        },
+        "tags":{
+          "shape":"TagValues",
+          "documentation":"<p>The tag values to include in the filter expression.</p>"
+        },
+        "costCategories":{
+          "shape":"CostCategoryValues",
+          "documentation":"<p>The cost category values to include in the filter expression.</p>"
+        }
+      },
+      "documentation":"<p>Defines complex filtering conditions using logical operators (<code>AND</code>, <code>OR</code>, <code>NOT</code>) and various filter types.</p>"
+    },
+    "Expressions":{
+      "type":"list",
+      "member":{"shape":"Expression"}
+    },
+    "GenericString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "GenericTimeStamp":{"type":"timestamp"},
+    "GetDashboardRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard to retrieve. This is required to uniquely identify the dashboard.</p>"
+        }
+      }
+    },
+    "GetDashboardResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "name",
+        "type",
+        "widgets",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the retrieved dashboard.</p>"
+        },
+        "name":{
+          "shape":"DashboardName",
+          "documentation":"<p>The name of the retrieved dashboard.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the retrieved dashboard.</p>"
+        },
+        "type":{
+          "shape":"DashboardType",
+          "documentation":"<p>Indicates the dashboard type.</p>"
+        },
+        "widgets":{
+          "shape":"WidgetList",
+          "documentation":"<p>An array of widget configurations that make up the dashboard.</p>"
+        },
+        "createdAt":{
+          "shape":"GenericTimeStamp",
+          "documentation":"<p>The timestamp when the dashboard was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"GenericTimeStamp",
+          "documentation":"<p>The timestamp when the dashboard was last modified.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard whose resource-based policy you want to retrieve.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "policyDocument"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard for which the resource-based policy was retrieved.</p>"
+        },
+        "policyDocument":{
+          "shape":"GenericString",
+          "documentation":"<p>The JSON policy document that represents the dashboard's resource-based policy.</p>"
+        }
+      }
+    },
+    "Granularity":{
+      "type":"string",
+      "enum":[
+        "HOURLY",
+        "DAILY",
+        "MONTHLY"
+      ]
+    },
+    "GraphDisplayConfig":{
+      "type":"structure",
+      "required":["visualType"],
+      "members":{
+        "visualType":{
+          "shape":"VisualType",
+          "documentation":"<p>The type of visualization to use for the data.</p>"
+        }
+      },
+      "documentation":"<p>Defines the visual representation settings for widget data, including the visualization type, styling options, and display preferences for different metric types.</p>"
+    },
+    "GraphDisplayConfigMap":{
+      "type":"map",
+      "key":{"shape":"GenericString"},
+      "value":{"shape":"GraphDisplayConfig"}
+    },
+    "GroupDefinition":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"GroupDefinitionKeyString",
+          "documentation":"<p>The key to use for grouping cost and usage data.</p>"
+        },
+        "type":{
+          "shape":"GroupDefinitionType",
+          "documentation":"<p>The type of grouping to apply.</p>"
+        }
+      },
+      "documentation":"<p>Specifies how to group cost and usage data.</p>"
+    },
+    "GroupDefinitionKeyString":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "GroupDefinitionType":{
+      "type":"string",
+      "enum":[
+        "DIMENSION",
+        "TAG",
+        "COST_CATEGORY"
+      ]
+    },
+    "GroupDefinitions":{
+      "type":"list",
+      "member":{"shape":"GroupDefinition"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>An internal error occurred while processing the request. Retry your request. If the problem persists, contact Amazon Web Services Support.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ListDashboardsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. The default value is 20.</p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token for the next page of results. Use the value returned in the previous response.</p>"
+        }
+      }
+    },
+    "ListDashboardsResponse":{
+      "type":"structure",
+      "required":["dashboards"],
+      "members":{
+        "dashboards":{
+          "shape":"DashboardReferenceList",
+          "documentation":"<p>An array of dashboard references, containing basic information about each dashboard.</p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. Not returned if there are no more results to retrieve.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>The list of tags associated with the specified dashboard resource.</p>"
+        }
+      }
+    },
+    "MatchOption":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "ABSENT",
+        "STARTS_WITH",
+        "ENDS_WITH",
+        "CONTAINS",
+        "GREATER_THAN_OR_EQUAL",
+        "CASE_SENSITIVE",
+        "CASE_INSENSITIVE"
+      ]
+    },
+    "MatchOptions":{
+      "type":"list",
+      "member":{"shape":"MatchOption"}
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MetricName":{
+      "type":"string",
+      "enum":[
+        "AmortizedCost",
+        "BlendedCost",
+        "NetAmortizedCost",
+        "NetUnblendedCost",
+        "NormalizedUsageAmount",
+        "UnblendedCost",
+        "UsageQuantity",
+        "SpendCoveredBySavingsPlans",
+        "Hour",
+        "Unit",
+        "Cost"
+      ]
+    },
+    "MetricNames":{
+      "type":"list",
+      "member":{"shape":"MetricName"}
+    },
+    "NextPageToken":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "QueryParameters":{
+      "type":"structure",
+      "members":{
+        "costAndUsage":{
+          "shape":"CostAndUsageQuery",
+          "documentation":"<p>The parameters for querying cost and usage data, including metrics, time range, granularity, grouping dimensions, and filters.</p>"
+        },
+        "savingsPlansCoverage":{
+          "shape":"SavingsPlansCoverageQuery",
+          "documentation":"<p>The parameters for querying Savings Plans coverage data, showing how much of your eligible compute usage is covered by Savings Plans.</p>"
+        },
+        "savingsPlansUtilization":{
+          "shape":"SavingsPlansUtilizationQuery",
+          "documentation":"<p>The parameters for querying Savings Plans utilization data, showing how effectively your Savings Plans are being used.</p>"
+        },
+        "reservationCoverage":{
+          "shape":"ReservationCoverageQuery",
+          "documentation":"<p>The parameters for querying Reserved Instance coverage data, showing how much of your eligible instance usage is covered by Reserved Instances.</p>"
+        },
+        "reservationUtilization":{
+          "shape":"ReservationUtilizationQuery",
+          "documentation":"<p>The parameters for querying Reserved Instance utilization data, showing how effectively your Reserved Instances are being used.</p>"
+        }
+      },
+      "documentation":"<p>Defines the data retrieval parameters for a widget.</p>",
+      "union":true
+    },
+    "ReservationCoverageQuery":{
+      "type":"structure",
+      "required":["timeRange"],
+      "members":{
+        "timeRange":{"shape":"DateTimeRange"},
+        "groupBy":{
+          "shape":"GroupDefinitions",
+          "documentation":"<p>Specifies how to group the Reserved Instance coverage data, such as by service, Region, or instance type.</p>"
+        },
+        "granularity":{
+          "shape":"Granularity",
+          "documentation":"<p>The time granularity of the retrieved data: <code>HOURLY</code>, <code>DAILY</code>, or <code>MONTHLY</code>.</p>"
+        },
+        "filter":{"shape":"Expression"},
+        "metrics":{
+          "shape":"MetricNames",
+          "documentation":"<p>The coverage metrics to include in the results.</p> <note> <p>Valid values for ReservationCoverageQuery metrics are <code>Hour</code>, <code>Unit</code>, and <code>Cost</code>.</p> </note>"
+        }
+      },
+      "documentation":"<p>Defines the parameters for querying Reserved Instance coverage data, including grouping options, metrics, and sorting preferences.</p>"
+    },
+    "ReservationUtilizationQuery":{
+      "type":"structure",
+      "required":["timeRange"],
+      "members":{
+        "timeRange":{"shape":"DateTimeRange"},
+        "groupBy":{
+          "shape":"GroupDefinitions",
+          "documentation":"<p>Specifies how to group the Reserved Instance utilization data, such as by service, Region, or instance type.</p>"
+        },
+        "granularity":{
+          "shape":"Granularity",
+          "documentation":"<p>The time granularity of the retrieved data: <code>HOURLY</code>, <code>DAILY</code>, or <code>MONTHLY</code>.</p>"
+        },
+        "filter":{"shape":"Expression"}
+      },
+      "documentation":"<p>Defines the parameters for querying Reserved Instance utilization data, including grouping options and time granularity.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The specified resource (dashboard, policy, or widget) was not found. Verify the ARN and try again.</p>",
+      "exception":true
+    },
+    "ResourceTag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"ResourceTagKey",
+          "documentation":"<p>The key of the tag to be attached to the dashboard resource.</p>"
+        },
+        "value":{
+          "shape":"ResourceTagValue",
+          "documentation":"<p>The value of the tag to be attached to the dashboard resource.</p>"
+        }
+      },
+      "documentation":"<p>A key-value pair that can be attached to a dashboard for organization and management purposes.</p>"
+    },
+    "ResourceTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "ResourceTagKeyList":{
+      "type":"list",
+      "member":{"shape":"ResourceTagKey"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagList":{
+      "type":"list",
+      "member":{"shape":"ResourceTag"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "SavingsPlansCoverageQuery":{
+      "type":"structure",
+      "required":["timeRange"],
+      "members":{
+        "timeRange":{"shape":"DateTimeRange"},
+        "metrics":{
+          "shape":"MetricNames",
+          "documentation":"<p>The coverage metrics to include in the results.</p> <note> <p>Valid value for SavingsPlansCoverageQuery metrics is <code>SpendCoveredBySavingsPlans</code>.</p> </note>"
+        },
+        "granularity":{
+          "shape":"Granularity",
+          "documentation":"<p>The time granularity of the retrieved data: <code>HOURLY</code>, <code>DAILY</code>, or <code>MONTHLY</code>.</p>"
+        },
+        "groupBy":{
+          "shape":"GroupDefinitions",
+          "documentation":"<p>Specifies how to group the Savings Plans coverage data, such as by service or instance family.</p>"
+        },
+        "filter":{"shape":"Expression"}
+      },
+      "documentation":"<p>Defines the parameters for querying Savings Plans coverage data, including metrics, grouping options, and time granularity.</p>"
+    },
+    "SavingsPlansUtilizationQuery":{
+      "type":"structure",
+      "required":["timeRange"],
+      "members":{
+        "timeRange":{"shape":"DateTimeRange"},
+        "granularity":{
+          "shape":"Granularity",
+          "documentation":"<p>The time granularity of the retrieved data: HOURLY, DAILY, or MONTHLY.</p>"
+        },
+        "filter":{"shape":"Expression"}
+      },
+      "documentation":"<p>Defines the parameters for querying Savings Plans utilization data, including time granularity and sorting preferences.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The request would exceed service quotas. For example, attempting to create more than 20 widgets in a dashboard or exceeding the maximum number of dashboards per account.</p>",
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TableDisplayConfigStruct":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Configuration structure for customizing the tabular display of widget data.</p>"
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "resourceTags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        },
+        "resourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>The tags to add to the dashboard resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValues":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"String",
+          "documentation":"<p>The key of the tag to filter on.</p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p>The values to match for the specified tag key.</p>"
+        },
+        "matchOptions":{
+          "shape":"MatchOptions",
+          "documentation":"<p>The match options for tag values, such as <code>EQUALS</code>, <code>CONTAINS</code>, <code>STARTS_WITH</code>, or <code>ENDS_WITH</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies tag-based filtering options for cost and usage queries.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. Reduce the frequency of requests and use exponential backoff.</p>",
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "resourceTagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        },
+        "resourceTagKeys":{
+          "shape":"ResourceTagKeyList",
+          "documentation":"<p>The keys of the tags to remove from the dashboard resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDashboardRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the dashboard to update.</p>"
+        },
+        "name":{
+          "shape":"DashboardName",
+          "documentation":"<p>The new name for the dashboard. If not specified, the existing name is retained.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The new description for the dashboard. If not specified, the existing description is retained.</p>"
+        },
+        "widgets":{
+          "shape":"WidgetList",
+          "documentation":"<p>The updated array of widget configurations for the dashboard. Replaces all existing widgets.</p>"
+        }
+      }
+    },
+    "UpdateDashboardResponse":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"DashboardArn",
+          "documentation":"<p>The ARN of the updated dashboard.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>The input parameters do not satisfy the requirements. Check the error message for specific validation details.</p>",
+      "exception":true
+    },
+    "VisualType":{
+      "type":"string",
+      "enum":[
+        "LINE",
+        "BAR",
+        "STACK"
+      ]
+    },
+    "Widget":{
+      "type":"structure",
+      "required":[
+        "title",
+        "configs"
+      ],
+      "members":{
+        "title":{
+          "shape":"WidgetTitle",
+          "documentation":"<p>The title of the widget.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the widget's purpose or the data it displays.</p>"
+        },
+        "width":{
+          "shape":"WidgetWidth",
+          "documentation":"<p>The width of the widget in column spans. The dashboard layout consists of a grid system.</p>"
+        },
+        "height":{
+          "shape":"WidgetHeight",
+          "documentation":"<p>The height of the widget in row spans. The dashboard layout consists of a grid system.</p>"
+        },
+        "horizontalOffset":{
+          "shape":"Integer",
+          "documentation":"<p>Specifies the starting column position of the widget in the dashboard's grid layout. Used to control widget placement.</p>"
+        },
+        "configs":{
+          "shape":"WidgetConfigList",
+          "documentation":"<p>An array of configurations that define the data queries and display settings for the widget.</p>"
+        }
+      },
+      "documentation":"<p>A configurable visualization component within a dashboard that displays specific cost and usage metrics. Each widget can show data as charts or tables and includes settings for data querying, filtering, and visual presentation.</p>"
+    },
+    "WidgetConfig":{
+      "type":"structure",
+      "required":[
+        "queryParameters",
+        "displayConfig"
+      ],
+      "members":{
+        "queryParameters":{
+          "shape":"QueryParameters",
+          "documentation":"<p>The parameters that define what data the widget should retrieve and how it should be filtered or grouped.</p>"
+        },
+        "displayConfig":{
+          "shape":"DisplayConfig",
+          "documentation":"<p>The configuration that determines how the retrieved data should be visualized in the widget.</p>"
+        }
+      },
+      "documentation":"<p>Defines the complete configuration for a widget, including data retrieval settings and visualization preferences.</p>"
+    },
+    "WidgetConfigList":{
+      "type":"list",
+      "member":{"shape":"WidgetConfig"},
+      "max":2,
+      "min":1
+    },
+    "WidgetHeight":{
+      "type":"integer",
+      "box":true,
+      "max":10,
+      "min":4
+    },
+    "WidgetList":{
+      "type":"list",
+      "member":{"shape":"Widget"},
+      "max":20,
+      "min":0
+    },
+    "WidgetTitle":{
+      "type":"string",
+      "max":50,
+      "min":2,
+      "pattern":"(?!.* {2})[a-zA-Z0-9_-][ a-zA-Z0-9_-]*[a-zA-Z0-9_-]"
+    },
+    "WidgetWidth":{
+      "type":"integer",
+      "box":true,
+      "max":6,
+      "min":2
+    }
+  },
+  "documentation":"<p>Amazon Web Services Billing and Cost Management Dashboards is a service that enables you to create, manage, and share dashboards that combine multiple visualizations of your Amazon Web Services cost and usage data. You can combine multiple data sources including Cost Explorer, Savings Plans, and Reserved Instance metrics into unified dashboards, helping you analyze spending patterns and share cost insights across your organization.</p> <p>You can use the Amazon Web Services Billing and Cost Management Dashboards API to programmatically create, manage, and share dashboards. This includes creating custom dashboards, configuring widgets, managing dashboard permissions, and sharing dashboards across accounts in your organization.</p>"
+}

@@ -1,0 +1,4098 @@
+{
+  "metadata": {
+    "apiVersion": "2017-11-27",
+    "endpointPrefix": "mq",
+    "signingName": "mq",
+    "serviceFullName": "AmazonMQ",
+    "serviceId": "mq",
+    "protocol": "rest-json",
+    "jsonVersion": "1.1",
+    "uid": "mq-2017-11-27",
+    "signatureVersion": "v4",
+    "auth": [
+      "aws.auth#sigv4"
+    ]
+  },
+  "operations": {
+    "CreateBroker": {
+      "name": "CreateBroker",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/brokers",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "CreateBrokerRequest"
+      },
+      "output": {
+        "shape": "CreateBrokerResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "UnauthorizedException",
+          "documentation": "<p>HTTP Status Code 401: Unauthorized request. The provided credentials couldn't be validated.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Creates a broker. Note: This API is asynchronous.</p> <p>To create a broker, you must either use the AmazonMQFullAccess IAM policy or include the following EC2 permissions in your IAM policy.</p> <ul><li><p>ec2:CreateNetworkInterface</p> <p>This permission is required to allow Amazon MQ to create an elastic network interface (ENI) on behalf of your account.</p></li> <li><p>ec2:CreateNetworkInterfacePermission</p> <p>This permission is required to attach the ENI to the broker instance.</p></li> <li><p>ec2:DeleteNetworkInterface</p></li> <li><p>ec2:DeleteNetworkInterfacePermission</p></li> <li><p>ec2:DetachNetworkInterface</p></li> <li><p>ec2:DescribeInternetGateways</p></li> <li><p>ec2:DescribeNetworkInterfaces</p></li> <li><p>ec2:DescribeNetworkInterfacePermissions</p></li> <li><p>ec2:DescribeRouteTables</p></li> <li><p>ec2:DescribeSecurityGroups</p></li> <li><p>ec2:DescribeSubnets</p></li> <li><p>ec2:DescribeVpcs</p></li></ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/amazon-mq-setting-up.html#create-iam-user\">Create an IAM User and Get Your Amazon Web Services Credentials</a> and <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/connecting-to-amazon-mq.html#never-modify-delete-elastic-network-interface\">Never Modify or Delete the Amazon MQ Elastic Network Interface</a> in the <i>Amazon MQ Developer Guide</i>.</p>"
+    },
+    "CreateConfiguration": {
+      "name": "CreateConfiguration",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/configurations",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "CreateConfigurationRequest"
+      },
+      "output": {
+        "shape": "CreateConfigurationResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Creates a new configuration for the specified configuration name. Amazon MQ uses the default configuration (the engine type and version).</p>"
+    },
+    "CreateTags": {
+      "name": "CreateTags",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/tags/{resource-arn}",
+        "responseCode": 204
+      },
+      "input": {
+        "shape": "CreateTagsRequest"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Add a tag to a resource.</p>"
+    },
+    "CreateUser": {
+      "name": "CreateUser",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/brokers/{broker-id}/users/{username}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "CreateUserRequest"
+      },
+      "output": {
+        "shape": "CreateUserResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Creates an ActiveMQ user.</p> <important><p>Do not add personally identifiable information (PII) or other confidential or sensitive information in broker usernames. Broker usernames are accessible to other Amazon Web Services services, including CloudWatch Logs. Broker usernames are not intended to be used for private or sensitive data.</p></important>"
+    },
+    "DeleteBroker": {
+      "name": "DeleteBroker",
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/v1/brokers/{broker-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DeleteBrokerRequest"
+      },
+      "output": {
+        "shape": "DeleteBrokerResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Deletes a broker. Note: This API is asynchronous.</p>"
+    },
+    "DeleteConfiguration": {
+      "name": "DeleteConfiguration",
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/v1/configurations/{configuration-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DeleteConfigurationRequest"
+      },
+      "output": {
+        "shape": "DeleteConfigurationResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Deletes the specified configuration.</p>"
+    },
+    "DeleteTags": {
+      "name": "DeleteTags",
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/v1/tags/{resource-arn}",
+        "responseCode": 204
+      },
+      "input": {
+        "shape": "DeleteTagsRequest"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Removes a tag from a resource.</p>"
+    },
+    "DeleteUser": {
+      "name": "DeleteUser",
+      "http": {
+        "method": "DELETE",
+        "requestUri": "/v1/brokers/{broker-id}/users/{username}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DeleteUserRequest"
+      },
+      "output": {
+        "shape": "DeleteUserResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Deletes an ActiveMQ user.</p>"
+    },
+    "DescribeBroker": {
+      "name": "DescribeBroker",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/brokers/{broker-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeBrokerRequest"
+      },
+      "output": {
+        "shape": "DescribeBrokerResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns information about the specified broker.</p>"
+    },
+    "DescribeBrokerEngineTypes": {
+      "name": "DescribeBrokerEngineTypes",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/broker-engine-types",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeBrokerEngineTypesRequest"
+      },
+      "output": {
+        "shape": "DescribeBrokerEngineTypesResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Describe available engine types and versions.</p>"
+    },
+    "DescribeBrokerInstanceOptions": {
+      "name": "DescribeBrokerInstanceOptions",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/broker-instance-options",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeBrokerInstanceOptionsRequest"
+      },
+      "output": {
+        "shape": "DescribeBrokerInstanceOptionsResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Describe available broker instance options.</p>"
+    },
+    "DescribeConfiguration": {
+      "name": "DescribeConfiguration",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/configurations/{configuration-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeConfigurationRequest"
+      },
+      "output": {
+        "shape": "DescribeConfigurationResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns information about the specified configuration.</p>"
+    },
+    "DescribeConfigurationRevision": {
+      "name": "DescribeConfigurationRevision",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/configurations/{configuration-id}/revisions/{configuration-revision}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeConfigurationRevisionRequest"
+      },
+      "output": {
+        "shape": "DescribeConfigurationRevisionResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns the specified configuration revision for the specified configuration.</p>"
+    },
+    "DescribeUser": {
+      "name": "DescribeUser",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/brokers/{broker-id}/users/{username}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "DescribeUserRequest"
+      },
+      "output": {
+        "shape": "DescribeUserResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns information about an ActiveMQ user.</p>"
+    },
+    "ListBrokers": {
+      "name": "ListBrokers",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/brokers",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListBrokersRequest"
+      },
+      "output": {
+        "shape": "ListBrokersResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns a list of all brokers.</p>"
+    },
+    "ListConfigurationRevisions": {
+      "name": "ListConfigurationRevisions",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/configurations/{configuration-id}/revisions",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListConfigurationRevisionsRequest"
+      },
+      "output": {
+        "shape": "ListConfigurationRevisionsResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns a list of all revisions for the specified configuration.</p>"
+    },
+    "ListConfigurations": {
+      "name": "ListConfigurations",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/configurations",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListConfigurationsRequest"
+      },
+      "output": {
+        "shape": "ListConfigurationsResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns a list of all configurations.</p>"
+    },
+    "ListTags": {
+      "name": "ListTags",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/tags/{resource-arn}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListTagsRequest"
+      },
+      "output": {
+        "shape": "ListTagsResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Lists tags for a resource.</p>"
+    },
+    "ListUsers": {
+      "name": "ListUsers",
+      "http": {
+        "method": "GET",
+        "requestUri": "/v1/brokers/{broker-id}/users",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "ListUsersRequest"
+      },
+      "output": {
+        "shape": "ListUsersResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Returns a list of all ActiveMQ users.</p>"
+    },
+    "Promote": {
+      "name": "Promote",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/brokers/{broker-id}/promote",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "PromoteRequest"
+      },
+      "output": {
+        "shape": "PromoteResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Promotes a data replication replica broker to the primary broker role.</p>"
+    },
+    "RebootBroker": {
+      "name": "RebootBroker",
+      "http": {
+        "method": "POST",
+        "requestUri": "/v1/brokers/{broker-id}/reboot",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "RebootBrokerRequest"
+      },
+      "output": {
+        "shape": "RebootBrokerResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Reboots a broker. Note: This API is asynchronous.</p>"
+    },
+    "UpdateBroker": {
+      "name": "UpdateBroker",
+      "http": {
+        "method": "PUT",
+        "requestUri": "/v1/brokers/{broker-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "UpdateBrokerRequest"
+      },
+      "output": {
+        "shape": "UpdateBrokerResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Adds a pending configuration change to a broker.</p>"
+    },
+    "UpdateConfiguration": {
+      "name": "UpdateConfiguration",
+      "http": {
+        "method": "PUT",
+        "requestUri": "/v1/configurations/{configuration-id}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "UpdateConfigurationRequest"
+      },
+      "output": {
+        "shape": "UpdateConfigurationResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Updates the specified configuration.</p>"
+    },
+    "UpdateUser": {
+      "name": "UpdateUser",
+      "http": {
+        "method": "PUT",
+        "requestUri": "/v1/brokers/{broker-id}/users/{username}",
+        "responseCode": 200
+      },
+      "input": {
+        "shape": "UpdateUserRequest"
+      },
+      "output": {
+        "shape": "UpdateUserResponse",
+        "documentation": "<p>HTTP Status Code 200: OK.</p>"
+      },
+      "errors": [
+        {
+          "shape": "NotFoundException",
+          "documentation": "<p>HTTP Status Code 404: Resource not found due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "BadRequestException",
+          "documentation": "<p>HTTP Status Code 400: Bad request due to incorrect input. Correct your request and then retry it.</p>"
+        },
+        {
+          "shape": "InternalServerErrorException",
+          "documentation": "<p>HTTP Status Code 500: Unexpected internal server error. Retrying your request might resolve the issue.</p>"
+        },
+        {
+          "shape": "ConflictException",
+          "documentation": "<p>HTTP Status Code 409: Conflict. This broker name already exists. Retry your request with another name.</p>"
+        },
+        {
+          "shape": "ForbiddenException",
+          "documentation": "<p>HTTP Status Code 403: Access forbidden. Correct your credentials and then retry your request.</p>"
+        }
+      ],
+      "documentation": "<p>Updates the information for an ActiveMQ user.</p>"
+    }
+  },
+  "shapes": {
+    "ActionRequired": {
+      "type": "structure",
+      "members": {
+        "ActionRequiredCode": {
+          "shape": "__string",
+          "locationName": "actionRequiredCode",
+          "documentation": "<p>The code you can use to find instructions on the action required to resolve your broker issue.</p>"
+        },
+        "ActionRequiredInfo": {
+          "shape": "__string",
+          "locationName": "actionRequiredInfo",
+          "documentation": "<p>Information about the action required to resolve your broker issue.</p>"
+        }
+      },
+      "documentation": "<p>Action required for a broker.</p>"
+    },
+    "AuthenticationStrategy": {
+      "type": "string",
+      "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>",
+      "enum": [
+        "SIMPLE",
+        "LDAP",
+        "CONFIG_MANAGED"
+      ]
+    },
+    "AvailabilityZone": {
+      "type": "structure",
+      "members": {
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Id for the availability zone.</p>"
+        }
+      },
+      "documentation": "<p>Name of the availability zone.</p>"
+    },
+    "BadRequestException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 400
+      }
+    },
+    "BrokerEngineType": {
+      "type": "structure",
+      "members": {
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>The broker's engine type.</p>"
+        },
+        "EngineVersions": {
+          "shape": "__listOfEngineVersion",
+          "locationName": "engineVersions",
+          "documentation": "<p>The list of engine versions.</p>"
+        }
+      },
+      "documentation": "<p>Types of broker engines.</p>"
+    },
+    "BrokerEngineTypeOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerEngineTypes": {
+          "shape": "__listOfBrokerEngineType",
+          "locationName": "brokerEngineTypes",
+          "documentation": "<p>List of available engine types and versions.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of engine types that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of broker engine type.</p>",
+      "required": [
+        "MaxResults"
+      ]
+    },
+    "BrokerInstance": {
+      "type": "structure",
+      "members": {
+        "ConsoleURL": {
+          "shape": "__string",
+          "locationName": "consoleURL",
+          "documentation": "<p>The brokers web console URL.</p>"
+        },
+        "Endpoints": {
+          "shape": "__listOf__string",
+          "locationName": "endpoints",
+          "documentation": "<p>The broker's wire-level protocol endpoints.</p>"
+        },
+        "IpAddress": {
+          "shape": "__string",
+          "locationName": "ipAddress",
+          "documentation": "<p>The IP address of the Elastic Network Interface (ENI) attached to the broker. Does not apply to RabbitMQ brokers.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about all brokers.</p>"
+    },
+    "BrokerInstanceOption": {
+      "type": "structure",
+      "members": {
+        "AvailabilityZones": {
+          "shape": "__listOfAvailabilityZone",
+          "locationName": "availabilityZones",
+          "documentation": "<p>The list of available az.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>The broker's engine type.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's instance type.</p>"
+        },
+        "StorageType": {
+          "shape": "BrokerStorageType",
+          "locationName": "storageType",
+          "documentation": "<p>The broker's storage type.</p>"
+        },
+        "SupportedDeploymentModes": {
+          "shape": "__listOfDeploymentMode",
+          "locationName": "supportedDeploymentModes",
+          "documentation": "<p>The list of supported deployment modes.</p>"
+        },
+        "SupportedEngineVersions": {
+          "shape": "__listOf__string",
+          "locationName": "supportedEngineVersions",
+          "documentation": "<p>The list of supported engine versions.</p>"
+        }
+      },
+      "documentation": "<p>Option for host instance type.</p>"
+    },
+    "BrokerInstanceOptionsOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerInstanceOptions": {
+          "shape": "__listOfBrokerInstanceOption",
+          "locationName": "brokerInstanceOptions",
+          "documentation": "<p>List of available broker instance options.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of instance options that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of broker instance options.</p>",
+      "required": [
+        "MaxResults"
+      ]
+    },
+    "BrokerState": {
+      "type": "string",
+      "documentation": "<p>The broker's status.</p>",
+      "enum": [
+        "CREATION_IN_PROGRESS",
+        "CREATION_FAILED",
+        "DELETION_IN_PROGRESS",
+        "RUNNING",
+        "REBOOT_IN_PROGRESS",
+        "CRITICAL_ACTION_REQUIRED",
+        "REPLICA"
+      ]
+    },
+    "BrokerStorageType": {
+      "type": "string",
+      "documentation": "<p>The broker's storage type.</p> <important><p>EFS is not supported for RabbitMQ engine type.</p></important>",
+      "enum": [
+        "EBS",
+        "EFS"
+      ]
+    },
+    "BrokerSummary": {
+      "type": "structure",
+      "members": {
+        "BrokerArn": {
+          "shape": "__string",
+          "locationName": "brokerArn",
+          "documentation": "<p>The broker's Amazon Resource Name (ARN).</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "BrokerName": {
+          "shape": "__string",
+          "locationName": "brokerName",
+          "documentation": "<p>The broker's name. This value is unique in your Amazon Web Services account, 1-50 characters long, and containing only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters.</p>"
+        },
+        "BrokerState": {
+          "shape": "BrokerState",
+          "locationName": "brokerState",
+          "documentation": "<p>The broker's status.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>The time when the broker was created.</p>"
+        },
+        "DeploymentMode": {
+          "shape": "DeploymentMode",
+          "locationName": "deploymentMode",
+          "documentation": "<p>The broker's deployment mode.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>The type of broker engine.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's instance type.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about all brokers.</p>",
+      "required": [
+        "DeploymentMode",
+        "EngineType"
+      ]
+    },
+    "ChangeType": {
+      "type": "string",
+      "documentation": "<p>The type of change pending for the ActiveMQ user.</p>",
+      "enum": [
+        "CREATE",
+        "UPDATE",
+        "DELETE"
+      ]
+    },
+    "Configuration": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>Required. The ARN of the configuration.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration revision.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>Required. The description of the configuration.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For a list of supported engine versions, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>Required. The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The list of all tags associated with this configuration.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about all configurations.</p>",
+      "required": [
+        "Description",
+        "EngineVersion",
+        "LatestRevision",
+        "AuthenticationStrategy",
+        "EngineType",
+        "Id",
+        "Arn",
+        "Name",
+        "Created"
+      ]
+    },
+    "ConfigurationId": {
+      "type": "structure",
+      "members": {
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "Revision": {
+          "shape": "__integer",
+          "locationName": "revision",
+          "documentation": "<p>The revision number of the configuration.</p>"
+        }
+      },
+      "documentation": "<p>A list of information about the configuration.</p>",
+      "required": [
+        "Id"
+      ]
+    },
+    "ConfigurationRevision": {
+      "type": "structure",
+      "members": {
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration revision.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>The description of the configuration revision.</p>"
+        },
+        "Revision": {
+          "shape": "__integer",
+          "locationName": "revision",
+          "documentation": "<p>Required. The revision number of the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the specified configuration revision.</p>",
+      "required": [
+        "Revision",
+        "Created"
+      ]
+    },
+    "Configurations": {
+      "type": "structure",
+      "members": {
+        "Current": {
+          "shape": "ConfigurationId",
+          "locationName": "current",
+          "documentation": "<p>The broker's current configuration.</p>"
+        },
+        "History": {
+          "shape": "__listOfConfigurationId",
+          "locationName": "history",
+          "documentation": "<p>The history of configurations applied to the broker.</p>"
+        },
+        "Pending": {
+          "shape": "ConfigurationId",
+          "locationName": "pending",
+          "documentation": "<p>The broker's pending configuration.</p>"
+        }
+      },
+      "documentation": "<p>Broker configuration information</p>"
+    },
+    "ConflictException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 409
+      }
+    },
+    "CreateBrokerInput": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot. Set to true by default, if no value is specified.</p> <note><p>Must be set to true for ActiveMQ brokers version 5.18 and above and for RabbitMQ brokers version 3.13 and above.</p></note>"
+        },
+        "BrokerName": {
+          "shape": "__string",
+          "locationName": "brokerName",
+          "documentation": "<p>Required. The broker's name. This value must be unique in your Amazon Web Services account, 1-50 characters long, must contain only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters.</p> <important><p>Do not add personally identifiable information (PII) or other confidential or sensitive information in broker names. Broker names are accessible to other Amazon Web Services services, including CloudWatch Logs. Broker names are not intended to be used for private or sensitive data.</p></important>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>A list of information about the configuration.</p>"
+        },
+        "CreatorRequestId": {
+          "shape": "__string",
+          "locationName": "creatorRequestId",
+          "documentation": "<p>The unique ID that the requester receives for the created broker. Amazon MQ passes your ID with the API action.</p> <note><p>We recommend using a Universally Unique Identifier (UUID) for the creatorRequestId. You may omit the creatorRequestId if your application doesn't require idempotency.</p></note>",
+          "idempotencyToken": true
+        },
+        "DeploymentMode": {
+          "shape": "DeploymentMode",
+          "locationName": "deploymentMode",
+          "documentation": "<p>Required. The broker's deployment mode.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Defines whether this broker is a part of a data replication pair.</p>"
+        },
+        "DataReplicationPrimaryBrokerArn": {
+          "shape": "__string",
+          "locationName": "dataReplicationPrimaryBrokerArn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the primary broker that is used to replicate data from in a data replication pair, and is applied to the replica broker. Must be set when dataReplicationMode is set to CRDR.</p>"
+        },
+        "EncryptionOptions": {
+          "shape": "EncryptionOptions",
+          "locationName": "encryptionOptions",
+          "documentation": "<p>Encryption options for the broker.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>Required. The broker's instance type.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataInput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>Enables Amazon CloudWatch logging for brokers.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "PubliclyAccessible": {
+          "shape": "__boolean",
+          "locationName": "publiclyAccessible",
+          "documentation": "<p>Enables connections from applications outside of the VPC that hosts the broker's subnets. Set to false by default, if no value is provided.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of rules (1 minimum, 125 maximum) that authorize connections to brokers.</p>"
+        },
+        "StorageType": {
+          "shape": "BrokerStorageType",
+          "locationName": "storageType",
+          "documentation": "<p>The broker's storage type.</p>"
+        },
+        "SubnetIds": {
+          "shape": "__listOf__string",
+          "locationName": "subnetIds",
+          "documentation": "<p>The list of groups that define which subnets and IP ranges the broker can use from different Availability Zones. If you specify more than one subnet, the subnets must be in different Availability Zones. Amazon MQ will not be able to create VPC endpoints for your broker with multiple subnets in the same Availability Zone. A SINGLE_INSTANCE deployment requires one subnet (for example, the default subnet). An ACTIVE_STANDBY_MULTI_AZ Amazon MQ for ActiveMQ deployment requires two subnets. A CLUSTER_MULTI_AZ Amazon MQ for RabbitMQ deployment has no subnet requirements when deployed with public accessibility. Deployment without public accessibility requires at least one subnet.</p> <important><p>If you specify subnets in a <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html\">shared VPC</a> for a RabbitMQ broker, the associated VPC to which the specified subnets belong must be owned by your Amazon Web Services account. Amazon MQ will not be able to create VPC endpoints in VPCs that are not owned by your Amazon Web Services account.</p></important>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>Create tags when creating the broker.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUser",
+          "locationName": "users",
+          "documentation": "<p>The list of broker users (persons or applications) who can access queues and topics. For Amazon MQ for RabbitMQ brokers, an administrative user is required if using simple authentication and authorization. For brokers using OAuth2, this user is optional. When provided, one and only one administrative user is accepted and created when a broker is first provisioned. All subsequent broker users are created by making RabbitMQ API calls directly to brokers or via the RabbitMQ web console.</p>"
+        }
+      },
+      "documentation": "<p>Creates a broker.</p>",
+      "required": [
+        "HostInstanceType",
+        "BrokerName",
+        "DeploymentMode",
+        "EngineType",
+        "PubliclyAccessible"
+      ]
+    },
+    "CreateBrokerOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerArn": {
+          "shape": "__string",
+          "locationName": "brokerArn",
+          "documentation": "<p>The broker's Amazon Resource Name (ARN).</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the created broker.</p>"
+    },
+    "CreateBrokerRequest": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot. Set to true by default, if no value is specified.</p> <note><p>Must be set to true for ActiveMQ brokers version 5.18 and above and for RabbitMQ brokers version 3.13 and above.</p></note>"
+        },
+        "BrokerName": {
+          "shape": "__string",
+          "locationName": "brokerName",
+          "documentation": "<p>Required. The broker's name. This value must be unique in your Amazon Web Services account, 1-50 characters long, must contain only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters.</p> <important><p>Do not add personally identifiable information (PII) or other confidential or sensitive information in broker names. Broker names are accessible to other Amazon Web Services services, including CloudWatch Logs. Broker names are not intended to be used for private or sensitive data.</p></important>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>A list of information about the configuration.</p>"
+        },
+        "CreatorRequestId": {
+          "shape": "__string",
+          "locationName": "creatorRequestId",
+          "documentation": "<p>The unique ID that the requester receives for the created broker. Amazon MQ passes your ID with the API action.</p> <note><p>We recommend using a Universally Unique Identifier (UUID) for the creatorRequestId. You may omit the creatorRequestId if your application doesn't require idempotency.</p></note>",
+          "idempotencyToken": true
+        },
+        "DeploymentMode": {
+          "shape": "DeploymentMode",
+          "locationName": "deploymentMode",
+          "documentation": "<p>Required. The broker's deployment mode.</p>"
+        },
+        "EncryptionOptions": {
+          "shape": "EncryptionOptions",
+          "locationName": "encryptionOptions",
+          "documentation": "<p>Encryption options for the broker.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>Required. The broker's instance type.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataInput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>Enables Amazon CloudWatch logging for brokers.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "PubliclyAccessible": {
+          "shape": "__boolean",
+          "locationName": "publiclyAccessible",
+          "documentation": "<p>Enables connections from applications outside of the VPC that hosts the broker's subnets. Set to false by default, if no value is provided.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of rules (1 minimum, 125 maximum) that authorize connections to brokers.</p>"
+        },
+        "StorageType": {
+          "shape": "BrokerStorageType",
+          "locationName": "storageType",
+          "documentation": "<p>The broker's storage type.</p>"
+        },
+        "SubnetIds": {
+          "shape": "__listOf__string",
+          "locationName": "subnetIds",
+          "documentation": "<p>The list of groups that define which subnets and IP ranges the broker can use from different Availability Zones. If you specify more than one subnet, the subnets must be in different Availability Zones. Amazon MQ will not be able to create VPC endpoints for your broker with multiple subnets in the same Availability Zone. A SINGLE_INSTANCE deployment requires one subnet (for example, the default subnet). An ACTIVE_STANDBY_MULTI_AZ Amazon MQ for ActiveMQ deployment requires two subnets. A CLUSTER_MULTI_AZ Amazon MQ for RabbitMQ deployment has no subnet requirements when deployed with public accessibility. Deployment without public accessibility requires at least one subnet.</p> <important><p>If you specify subnets in a <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html\">shared VPC</a> for a RabbitMQ broker, the associated VPC to which the specified subnets belong must be owned by your Amazon Web Services account. Amazon MQ will not be able to create VPC endpoints in VPCs that are not owned by your Amazon Web Services account.</p></important>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>Create tags when creating the broker.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUser",
+          "locationName": "users",
+          "documentation": "<p>The list of broker users (persons or applications) who can access queues and topics. For Amazon MQ for RabbitMQ brokers, an administrative user is required if using simple authentication and authorization. For brokers using OAuth2, this user is optional. When provided, one and only one administrative user is accepted and created when a broker is first provisioned. All subsequent broker users are created by making RabbitMQ API calls directly to brokers or via the RabbitMQ web console.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Defines whether this broker is a part of a data replication pair.</p>"
+        },
+        "DataReplicationPrimaryBrokerArn": {
+          "shape": "__string",
+          "locationName": "dataReplicationPrimaryBrokerArn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the primary broker that is used to replicate data from in a data replication pair, and is applied to the replica broker. Must be set when dataReplicationMode is set to CRDR.</p>"
+        }
+      },
+      "documentation": "<p>Creates a broker using the specified properties.</p>",
+      "required": [
+        "HostInstanceType",
+        "BrokerName",
+        "DeploymentMode",
+        "EngineType",
+        "PubliclyAccessible"
+      ]
+    },
+    "CreateBrokerResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerArn": {
+          "shape": "__string",
+          "locationName": "brokerArn",
+          "documentation": "<p>The broker's Amazon Resource Name (ARN).</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      }
+    },
+    "CreateConfigurationInput": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>Create tags when creating the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Creates a new configuration for the specified configuration name. Amazon MQ uses the default configuration (the engine type and version).</p>",
+      "required": [
+        "EngineType",
+        "Name"
+      ]
+    },
+    "CreateConfigurationOutput": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>Required. The Amazon Resource Name (ARN) of the configuration.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the created configuration.</p>",
+      "required": [
+        "AuthenticationStrategy",
+        "Id",
+        "Arn",
+        "Name",
+        "Created"
+      ]
+    },
+    "CreateConfigurationRequest": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>Create tags when creating the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Creates a new configuration for the specified configuration name. Amazon MQ uses the default configuration (the engine type and version).</p>",
+      "required": [
+        "EngineType",
+        "Name"
+      ]
+    },
+    "CreateConfigurationResponse": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>Required. The Amazon Resource Name (ARN) of the configuration.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        }
+      }
+    },
+    "CreateTagsRequest": {
+      "type": "structure",
+      "members": {
+        "ResourceArn": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "resource-arn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the resource tag.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The key-value pair for the resource tag.</p>"
+        }
+      },
+      "documentation": "<p>A map of the key-value pairs for the resource tag.</p>",
+      "required": [
+        "ResourceArn"
+      ]
+    },
+    "CreateUserInput": {
+      "type": "structure",
+      "members": {
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Password": {
+          "shape": "__string",
+          "locationName": "password",
+          "documentation": "<p>Required. The password of the user. This value must be at least 12 characters long, must contain at least 4 unique characters, and must not contain commas, colons, or equal signs (,:=).</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Defines if this user is intended for CRDR replication purposes.</p>"
+        }
+      },
+      "documentation": "<p>Creates a new ActiveMQ user.</p>",
+      "required": [
+        "Password"
+      ]
+    },
+    "CreateUserRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Password": {
+          "shape": "__string",
+          "locationName": "password",
+          "documentation": "<p>Required. The password of the user. This value must be at least 12 characters long, must contain at least 4 unique characters, and must not contain commas, colons, or equal signs (,:=).</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "username",
+          "documentation": "<p>The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Defines if this user is intended for CRDR replication purposes.</p>"
+        }
+      },
+      "documentation": "<p>Creates a new ActiveMQ user.</p>",
+      "required": [
+        "Username",
+        "BrokerId",
+        "Password"
+      ]
+    },
+    "CreateUserResponse": {
+      "type": "structure",
+      "members": {}
+    },
+    "DataReplicationCounterpart": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique broker id generated by Amazon MQ.</p>"
+        },
+        "Region": {
+          "shape": "__string",
+          "locationName": "region",
+          "documentation": "<p>Required. The region of the broker.</p>"
+        }
+      },
+      "documentation": "<p>Specifies a broker in a data replication pair.</p>",
+      "required": [
+        "BrokerId",
+        "Region"
+      ]
+    },
+    "DataReplicationMetadataOutput": {
+      "type": "structure",
+      "members": {
+        "DataReplicationCounterpart": {
+          "shape": "DataReplicationCounterpart",
+          "locationName": "dataReplicationCounterpart",
+          "documentation": "<p>Describes the replica/primary broker. Only returned if this broker is currently set as a primary or replica in the broker's dataReplicationRole property.</p>"
+        },
+        "DataReplicationRole": {
+          "shape": "__string",
+          "locationName": "dataReplicationRole",
+          "documentation": "<p>Defines the role of this broker in a data replication pair. When a replica broker is promoted to primary, this role is interchanged.</p>"
+        }
+      },
+      "documentation": "<p>The replication details of the data replication-enabled broker. Only returned if dataReplicationMode or pendingDataReplicationMode is set to CRDR.</p>",
+      "required": [
+        "DataReplicationRole"
+      ]
+    },
+    "DataReplicationMode": {
+      "type": "string",
+      "documentation": "<p>Specifies whether a broker is a part of a data replication pair.</p>",
+      "enum": [
+        "NONE",
+        "CRDR"
+      ]
+    },
+    "DayOfWeek": {
+      "type": "string",
+      "enum": [
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY"
+      ]
+    },
+    "DeleteBrokerOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the deleted broker.</p>"
+    },
+    "DeleteBrokerRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "DeleteBrokerResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      }
+    },
+    "DeleteConfigurationOutput": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the deleted configuration.</p>"
+    },
+    "DeleteConfigurationRequest": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        }
+      },
+      "required": [
+        "ConfigurationId"
+      ]
+    },
+    "DeleteConfigurationResponse": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        }
+      }
+    },
+    "DeleteTagsRequest": {
+      "type": "structure",
+      "members": {
+        "ResourceArn": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "resource-arn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the resource tag.</p>"
+        },
+        "TagKeys": {
+          "shape": "__listOf__string",
+          "location": "querystring",
+          "locationName": "tagKeys",
+          "documentation": "<p>An array of tag keys to delete</p>"
+        }
+      },
+      "required": [
+        "TagKeys",
+        "ResourceArn"
+      ]
+    },
+    "DeleteUserRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "username",
+          "documentation": "<p>The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        }
+      },
+      "required": [
+        "Username",
+        "BrokerId"
+      ]
+    },
+    "DeleteUserResponse": {
+      "type": "structure",
+      "members": {}
+    },
+    "DeploymentMode": {
+      "type": "string",
+      "documentation": "<p>The broker's deployment mode.</p>",
+      "enum": [
+        "SINGLE_INSTANCE",
+        "ACTIVE_STANDBY_MULTI_AZ",
+        "CLUSTER_MULTI_AZ"
+      ]
+    },
+    "DescribeBrokerEngineTypesRequest": {
+      "type": "structure",
+      "members": {
+        "EngineType": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "engineType",
+          "documentation": "<p>Filter response by engine type.</p>"
+        },
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "DescribeBrokerEngineTypesResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerEngineTypes": {
+          "shape": "__listOfBrokerEngineType",
+          "locationName": "brokerEngineTypes",
+          "documentation": "<p>List of available engine types and versions.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of engine types that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "DescribeBrokerInstanceOptionsRequest": {
+      "type": "structure",
+      "members": {
+        "EngineType": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "engineType",
+          "documentation": "<p>Filter response by engine type.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>Filter response by host instance type.</p>"
+        },
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        },
+        "StorageType": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "storageType",
+          "documentation": "<p>Filter response by storage type.</p>"
+        }
+      }
+    },
+    "DescribeBrokerInstanceOptionsResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerInstanceOptions": {
+          "shape": "__listOfBrokerInstanceOption",
+          "locationName": "brokerInstanceOptions",
+          "documentation": "<p>List of available broker instance options.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of instance options that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "DescribeBrokerOutput": {
+      "type": "structure",
+      "members": {
+        "ActionsRequired": {
+          "shape": "__listOfActionRequired",
+          "locationName": "actionsRequired",
+          "documentation": "<p>Actions required for a broker.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p>"
+        },
+        "BrokerArn": {
+          "shape": "__string",
+          "locationName": "brokerArn",
+          "documentation": "<p>The broker's Amazon Resource Name (ARN).</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "BrokerInstances": {
+          "shape": "__listOfBrokerInstance",
+          "locationName": "brokerInstances",
+          "documentation": "<p>A list of information about allocated brokers.</p>"
+        },
+        "BrokerName": {
+          "shape": "__string",
+          "locationName": "brokerName",
+          "documentation": "<p>The broker's name. This value must be unique in your Amazon Web Services account account, 1-50 characters long, must contain only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters.</p>"
+        },
+        "BrokerState": {
+          "shape": "BrokerState",
+          "locationName": "brokerState",
+          "documentation": "<p>The broker's status.</p>"
+        },
+        "Configurations": {
+          "shape": "Configurations",
+          "locationName": "configurations",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>The time when the broker was created.</p>"
+        },
+        "DeploymentMode": {
+          "shape": "DeploymentMode",
+          "locationName": "deploymentMode",
+          "documentation": "<p>The broker's deployment mode.</p>"
+        },
+        "DataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "dataReplicationMetadata",
+          "documentation": "<p>The replication details of the data replication-enabled broker. Only returned if dataReplicationMode is set to CRDR.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Describes whether this broker is a part of a data replication pair.</p>"
+        },
+        "EncryptionOptions": {
+          "shape": "EncryptionOptions",
+          "locationName": "encryptionOptions",
+          "documentation": "<p>Encryption options for the broker.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's instance type.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>The metadata of the LDAP server used to authenticate and authorize connections to the broker.</p>"
+        },
+        "Logs": {
+          "shape": "LogsSummary",
+          "locationName": "logs",
+          "documentation": "<p>The list of information about logs currently enabled and pending to be deployed for the specified broker.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "PendingAuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "pendingAuthenticationStrategy",
+          "documentation": "<p>The authentication strategy that will be applied when the broker is rebooted. The default is SIMPLE.</p>"
+        },
+        "PendingDataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "pendingDataReplicationMetadata",
+          "documentation": "<p>The pending replication details of the data replication-enabled broker. Only returned if pendingDataReplicationMode is set to CRDR.</p>"
+        },
+        "PendingDataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "pendingDataReplicationMode",
+          "documentation": "<p>Describes whether this broker will be a part of a data replication pair after reboot.</p>"
+        },
+        "PendingEngineVersion": {
+          "shape": "__string",
+          "locationName": "pendingEngineVersion",
+          "documentation": "<p>The broker engine version to upgrade to. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "PendingHostInstanceType": {
+          "shape": "__string",
+          "locationName": "pendingHostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "PendingLdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "pendingLdapServerMetadata",
+          "documentation": "<p>The metadata of the LDAP server that will be used to authenticate and authorize connections to the broker after it is rebooted.</p>"
+        },
+        "PendingSecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "pendingSecurityGroups",
+          "documentation": "<p>The list of pending security groups to authorize connections to brokers.</p>"
+        },
+        "PubliclyAccessible": {
+          "shape": "__boolean",
+          "locationName": "publiclyAccessible",
+          "documentation": "<p>Enables connections from applications outside of the VPC that hosts the broker's subnets.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of rules (1 minimum, 125 maximum) that authorize connections to brokers.</p>"
+        },
+        "StorageType": {
+          "shape": "BrokerStorageType",
+          "locationName": "storageType",
+          "documentation": "<p>The broker's storage type.</p>"
+        },
+        "SubnetIds": {
+          "shape": "__listOf__string",
+          "locationName": "subnetIds",
+          "documentation": "<p>The list of groups that define which subnets and IP ranges the broker can use from different Availability Zones.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The list of all tags associated with this broker.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUserSummary",
+          "locationName": "users",
+          "documentation": "<p>The list of all broker usernames for the specified broker.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the specified broker.</p>",
+      "required": [
+        "DeploymentMode",
+        "EngineType",
+        "AutoMinorVersionUpgrade",
+        "PubliclyAccessible"
+      ]
+    },
+    "DescribeBrokerRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "DescribeBrokerResponse": {
+      "type": "structure",
+      "members": {
+        "ActionsRequired": {
+          "shape": "__listOfActionRequired",
+          "locationName": "actionsRequired",
+          "documentation": "<p>Actions required for a broker.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p>"
+        },
+        "BrokerArn": {
+          "shape": "__string",
+          "locationName": "brokerArn",
+          "documentation": "<p>The broker's Amazon Resource Name (ARN).</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "BrokerInstances": {
+          "shape": "__listOfBrokerInstance",
+          "locationName": "brokerInstances",
+          "documentation": "<p>A list of information about allocated brokers.</p>"
+        },
+        "BrokerName": {
+          "shape": "__string",
+          "locationName": "brokerName",
+          "documentation": "<p>The broker's name. This value must be unique in your Amazon Web Services account account, 1-50 characters long, must contain only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters.</p>"
+        },
+        "BrokerState": {
+          "shape": "BrokerState",
+          "locationName": "brokerState",
+          "documentation": "<p>The broker's status.</p>"
+        },
+        "Configurations": {
+          "shape": "Configurations",
+          "locationName": "configurations",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>The time when the broker was created.</p>"
+        },
+        "DeploymentMode": {
+          "shape": "DeploymentMode",
+          "locationName": "deploymentMode",
+          "documentation": "<p>The broker's deployment mode.</p>"
+        },
+        "EncryptionOptions": {
+          "shape": "EncryptionOptions",
+          "locationName": "encryptionOptions",
+          "documentation": "<p>Encryption options for the broker.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's instance type.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>The metadata of the LDAP server used to authenticate and authorize connections to the broker.</p>"
+        },
+        "Logs": {
+          "shape": "LogsSummary",
+          "locationName": "logs",
+          "documentation": "<p>The list of information about logs currently enabled and pending to be deployed for the specified broker.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "PendingAuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "pendingAuthenticationStrategy",
+          "documentation": "<p>The authentication strategy that will be applied when the broker is rebooted. The default is SIMPLE.</p>"
+        },
+        "PendingEngineVersion": {
+          "shape": "__string",
+          "locationName": "pendingEngineVersion",
+          "documentation": "<p>The broker engine version to upgrade to. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "PendingHostInstanceType": {
+          "shape": "__string",
+          "locationName": "pendingHostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "PendingLdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "pendingLdapServerMetadata",
+          "documentation": "<p>The metadata of the LDAP server that will be used to authenticate and authorize connections to the broker after it is rebooted.</p>"
+        },
+        "PendingSecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "pendingSecurityGroups",
+          "documentation": "<p>The list of pending security groups to authorize connections to brokers.</p>"
+        },
+        "PubliclyAccessible": {
+          "shape": "__boolean",
+          "locationName": "publiclyAccessible",
+          "documentation": "<p>Enables connections from applications outside of the VPC that hosts the broker's subnets.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of rules (1 minimum, 125 maximum) that authorize connections to brokers.</p>"
+        },
+        "StorageType": {
+          "shape": "BrokerStorageType",
+          "locationName": "storageType",
+          "documentation": "<p>The broker's storage type.</p>"
+        },
+        "SubnetIds": {
+          "shape": "__listOf__string",
+          "locationName": "subnetIds",
+          "documentation": "<p>The list of groups that define which subnets and IP ranges the broker can use from different Availability Zones.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The list of all tags associated with this broker.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUserSummary",
+          "locationName": "users",
+          "documentation": "<p>The list of all broker usernames for the specified broker.</p>"
+        },
+        "DataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "dataReplicationMetadata",
+          "documentation": "<p>The replication details of the data replication-enabled broker. Only returned if dataReplicationMode is set to CRDR.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Describes whether this broker is a part of a data replication pair.</p>"
+        },
+        "PendingDataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "pendingDataReplicationMetadata",
+          "documentation": "<p>The pending replication details of the data replication-enabled broker. Only returned if pendingDataReplicationMode is set to CRDR.</p>"
+        },
+        "PendingDataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "pendingDataReplicationMode",
+          "documentation": "<p>Describes whether this broker will be a part of a data replication pair after reboot.</p>"
+        }
+      }
+    },
+    "DescribeConfigurationRequest": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        }
+      },
+      "required": [
+        "ConfigurationId"
+      ]
+    },
+    "DescribeConfigurationResponse": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>Required. The ARN of the configuration.</p>"
+        },
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy associated with the configuration. The default is SIMPLE.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration revision.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>Required. The description of the configuration.</p>"
+        },
+        "EngineType": {
+          "shape": "EngineType",
+          "locationName": "engineType",
+          "documentation": "<p>Required. The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. Defaults to the latest available version for the specified broker engine type. For a list of supported engine versions, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>Required. The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Required. The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The list of all tags associated with this configuration.</p>"
+        }
+      }
+    },
+    "DescribeConfigurationRevisionOutput": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Data": {
+          "shape": "__string",
+          "locationName": "data",
+          "documentation": "<p>Amazon MQ for ActiveMQ: the base64-encoded XML configuration. Amazon MQ for RabbitMQ: base64-encoded Cuttlefish.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>The description of the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Returns the specified configuration revision for the specified configuration.</p>",
+      "required": [
+        "Data",
+        "ConfigurationId",
+        "Created"
+      ]
+    },
+    "DescribeConfigurationRevisionRequest": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "ConfigurationRevision": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-revision",
+          "documentation": "<p>The revision of the configuration.</p>"
+        }
+      },
+      "required": [
+        "ConfigurationRevision",
+        "ConfigurationId"
+      ]
+    },
+    "DescribeConfigurationRevisionResponse": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Data": {
+          "shape": "__string",
+          "locationName": "data",
+          "documentation": "<p>Amazon MQ for ActiveMQ: the base64-encoded XML configuration. Amazon MQ for RabbitMQ: base64-encoded Cuttlefish.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>The description of the configuration.</p>"
+        }
+      }
+    },
+    "DescribeUserOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Pending": {
+          "shape": "UserPendingChanges",
+          "locationName": "pending",
+          "documentation": "<p>The status of the changes pending for the ActiveMQ user.</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Describes whether the user is intended for data replication</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "locationName": "username",
+          "documentation": "<p>Required. The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an ActiveMQ user.</p>",
+      "required": [
+        "Username",
+        "BrokerId"
+      ]
+    },
+    "DescribeUserRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "username",
+          "documentation": "<p>The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        }
+      },
+      "required": [
+        "Username",
+        "BrokerId"
+      ]
+    },
+    "DescribeUserResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Pending": {
+          "shape": "UserPendingChanges",
+          "locationName": "pending",
+          "documentation": "<p>The status of the changes pending for the ActiveMQ user.</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "locationName": "username",
+          "documentation": "<p>Required. The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Describes whether the user is intended for data replication</p>"
+        }
+      }
+    },
+    "EncryptionOptions": {
+      "type": "structure",
+      "members": {
+        "KmsKeyId": {
+          "shape": "__string",
+          "locationName": "kmsKeyId",
+          "documentation": "<p>The customer master key (CMK) to use for the A KMS (KMS). This key is used to encrypt your data at rest. If not provided, Amazon MQ will use a default CMK to encrypt your data.</p>"
+        },
+        "UseAwsOwnedKey": {
+          "shape": "__boolean",
+          "locationName": "useAwsOwnedKey",
+          "documentation": "<p>Enables the use of an Amazon Web Services owned CMK using KMS (KMS). Set to true by default, if no value is provided, for example, for RabbitMQ brokers.</p>"
+        }
+      },
+      "documentation": "<p>Encryption options for the broker.</p>",
+      "required": [
+        "UseAwsOwnedKey"
+      ]
+    },
+    "EngineType": {
+      "type": "string",
+      "documentation": "<p>The type of broker engine. Amazon MQ supports ActiveMQ and RabbitMQ.</p>",
+      "enum": [
+        "ACTIVEMQ",
+        "RABBITMQ"
+      ]
+    },
+    "EngineVersion": {
+      "type": "structure",
+      "members": {
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>Id for the version.</p>"
+        }
+      },
+      "documentation": "<p>Id of the engine version.</p>"
+    },
+    "Error": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>"
+    },
+    "ForbiddenException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 403
+      }
+    },
+    "InternalServerErrorException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 500
+      }
+    },
+    "LdapServerMetadataInput": {
+      "type": "structure",
+      "members": {
+        "Hosts": {
+          "shape": "__listOf__string",
+          "locationName": "hosts",
+          "documentation": "<p>Specifies the location of the LDAP server such as Directory Service for Microsoft Active Directory. Optional failover server.</p>"
+        },
+        "RoleBase": {
+          "shape": "__string",
+          "locationName": "roleBase",
+          "documentation": "<p>The distinguished name of the node in the directory information tree (DIT) to search for roles or groups. For example, ou=group, ou=corp, dc=corp,\n                  dc=example, dc=com.</p>"
+        },
+        "RoleName": {
+          "shape": "__string",
+          "locationName": "roleName",
+          "documentation": "<p>Specifies the LDAP attribute that identifies the group name attribute in the object returned from the group membership query.</p>"
+        },
+        "RoleSearchMatching": {
+          "shape": "__string",
+          "locationName": "roleSearchMatching",
+          "documentation": "<p>The LDAP search filter used to find roles within the roleBase. The distinguished name of the user matched by userSearchMatching is substituted into the {0} placeholder in the search filter. The client's username is substituted into the {1} placeholder. For example, if you set this option to (member=uid={1})for the user janedoe, the search filter becomes (member=uid=janedoe) after string substitution. It matches all role entries that have a member attribute equal to uid=janedoe under the subtree selected by the roleBase.</p>"
+        },
+        "RoleSearchSubtree": {
+          "shape": "__boolean",
+          "locationName": "roleSearchSubtree",
+          "documentation": "<p>The directory search scope for the role. If set to true, scope is to search the entire subtree.</p>"
+        },
+        "ServiceAccountPassword": {
+          "shape": "__string",
+          "locationName": "serviceAccountPassword",
+          "documentation": "<p>Service account password. A service account is an account in your LDAP server that has access to initiate a connection. For example, cn=admin,dc=corp, dc=example,\n                  dc=com.</p>"
+        },
+        "ServiceAccountUsername": {
+          "shape": "__string",
+          "locationName": "serviceAccountUsername",
+          "documentation": "<p>Service account username. A service account is an account in your LDAP server that has access to initiate a connection. For example, cn=admin,dc=corp, dc=example,\n                  dc=com.</p>"
+        },
+        "UserBase": {
+          "shape": "__string",
+          "locationName": "userBase",
+          "documentation": "<p>Select a particular subtree of the directory information tree (DIT) to search for user entries. The subtree is specified by a DN, which specifies the base node of the subtree. For example, by setting this option to ou=Users,ou=corp, dc=corp,\n                  dc=example, dc=com, the search for user entries is restricted to the subtree beneath ou=Users, ou=corp, dc=corp, dc=example, dc=com.</p>"
+        },
+        "UserRoleName": {
+          "shape": "__string",
+          "locationName": "userRoleName",
+          "documentation": "<p>Specifies the name of the LDAP attribute for the user group membership.</p>"
+        },
+        "UserSearchMatching": {
+          "shape": "__string",
+          "locationName": "userSearchMatching",
+          "documentation": "<p>The LDAP search filter used to find users within the userBase. The client's username is substituted into the {0} placeholder in the search filter. For example, if this option is set to (uid={0}) and the received username is janedoe, the search filter becomes (uid=janedoe) after string substitution. It will result in matching an entry like uid=janedoe, ou=Users,ou=corp, dc=corp, dc=example,\n                  dc=com.</p>"
+        },
+        "UserSearchSubtree": {
+          "shape": "__boolean",
+          "locationName": "userSearchSubtree",
+          "documentation": "<p>The directory search scope for the user. If set to true, scope is to search the entire subtree.</p>"
+        }
+      },
+      "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker.</p> <important><p>Does not apply to RabbitMQ brokers.</p></important>",
+      "required": [
+        "Hosts",
+        "UserSearchMatching",
+        "UserBase",
+        "RoleSearchMatching",
+        "ServiceAccountUsername",
+        "RoleBase",
+        "ServiceAccountPassword"
+      ]
+    },
+    "LdapServerMetadataOutput": {
+      "type": "structure",
+      "members": {
+        "Hosts": {
+          "shape": "__listOf__string",
+          "locationName": "hosts",
+          "documentation": "<p>Specifies the location of the LDAP server such as Directory Service for Microsoft Active Directory. Optional failover server.</p>"
+        },
+        "RoleBase": {
+          "shape": "__string",
+          "locationName": "roleBase",
+          "documentation": "<p>The distinguished name of the node in the directory information tree (DIT) to search for roles or groups. For example, ou=group, ou=corp, dc=corp,\n                  dc=example, dc=com.</p>"
+        },
+        "RoleName": {
+          "shape": "__string",
+          "locationName": "roleName",
+          "documentation": "<p>Specifies the LDAP attribute that identifies the group name attribute in the object returned from the group membership query.</p>"
+        },
+        "RoleSearchMatching": {
+          "shape": "__string",
+          "locationName": "roleSearchMatching",
+          "documentation": "<p>The LDAP search filter used to find roles within the roleBase. The distinguished name of the user matched by userSearchMatching is substituted into the {0} placeholder in the search filter. The client's username is substituted into the {1} placeholder. For example, if you set this option to (member=uid={1})for the user janedoe, the search filter becomes (member=uid=janedoe) after string substitution. It matches all role entries that have a member attribute equal to uid=janedoe under the subtree selected by the roleBase.</p>"
+        },
+        "RoleSearchSubtree": {
+          "shape": "__boolean",
+          "locationName": "roleSearchSubtree",
+          "documentation": "<p>The directory search scope for the role. If set to true, scope is to search the entire subtree.</p>"
+        },
+        "ServiceAccountUsername": {
+          "shape": "__string",
+          "locationName": "serviceAccountUsername",
+          "documentation": "<p>Service account username. A service account is an account in your LDAP server that has access to initiate a connection. For example, cn=admin,dc=corp, dc=example,\n                  dc=com.</p>"
+        },
+        "UserBase": {
+          "shape": "__string",
+          "locationName": "userBase",
+          "documentation": "<p>Select a particular subtree of the directory information tree (DIT) to search for user entries. The subtree is specified by a DN, which specifies the base node of the subtree. For example, by setting this option to ou=Users,ou=corp, dc=corp,\n                  dc=example, dc=com, the search for user entries is restricted to the subtree beneath ou=Users, ou=corp, dc=corp, dc=example, dc=com.</p>"
+        },
+        "UserRoleName": {
+          "shape": "__string",
+          "locationName": "userRoleName",
+          "documentation": "<p>Specifies the name of the LDAP attribute for the user group membership.</p>"
+        },
+        "UserSearchMatching": {
+          "shape": "__string",
+          "locationName": "userSearchMatching",
+          "documentation": "<p>The LDAP search filter used to find users within the userBase. The client's username is substituted into the {0} placeholder in the search filter. For example, if this option is set to (uid={0}) and the received username is janedoe, the search filter becomes (uid=janedoe) after string substitution. It will result in matching an entry like uid=janedoe, ou=Users,ou=corp, dc=corp, dc=example,\n               dc=com.</p>"
+        },
+        "UserSearchSubtree": {
+          "shape": "__boolean",
+          "locationName": "userSearchSubtree",
+          "documentation": "<p>The directory search scope for the user. If set to true, scope is to search the entire subtree.</p>"
+        }
+      },
+      "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker.</p>",
+      "required": [
+        "Hosts",
+        "UserSearchMatching",
+        "UserBase",
+        "RoleSearchMatching",
+        "ServiceAccountUsername",
+        "RoleBase"
+      ]
+    },
+    "ListBrokersOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerSummaries": {
+          "shape": "__listOfBrokerSummary",
+          "locationName": "brokerSummaries",
+          "documentation": "<p>A list of information about all brokers.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "documentation": "<p>A list of information about all brokers.</p>"
+    },
+    "ListBrokersRequest": {
+      "type": "structure",
+      "members": {
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "ListBrokersResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerSummaries": {
+          "shape": "__listOfBrokerSummary",
+          "locationName": "brokerSummaries",
+          "documentation": "<p>A list of information about all brokers.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "ListConfigurationRevisionsOutput": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integer",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of configuration revisions that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        },
+        "Revisions": {
+          "shape": "__listOfConfigurationRevision",
+          "locationName": "revisions",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of all revisions for the specified configuration.</p>"
+    },
+    "ListConfigurationRevisionsRequest": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "required": [
+        "ConfigurationId"
+      ]
+    },
+    "ListConfigurationRevisionsResponse": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "locationName": "configurationId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integer",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of configuration revisions that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        },
+        "Revisions": {
+          "shape": "__listOfConfigurationRevision",
+          "locationName": "revisions",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        }
+      }
+    },
+    "ListConfigurationsOutput": {
+      "type": "structure",
+      "members": {
+        "Configurations": {
+          "shape": "__listOfConfiguration",
+          "locationName": "configurations",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integer",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of configurations that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of all configurations.</p>"
+    },
+    "ListConfigurationsRequest": {
+      "type": "structure",
+      "members": {
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "ListConfigurationsResponse": {
+      "type": "structure",
+      "members": {
+        "Configurations": {
+          "shape": "__listOfConfiguration",
+          "locationName": "configurations",
+          "documentation": "<p>The list of all revisions for the specified configuration.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integer",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of configurations that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      }
+    },
+    "ListTagsRequest": {
+      "type": "structure",
+      "members": {
+        "ResourceArn": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "resource-arn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the resource tag.</p>"
+        }
+      },
+      "required": [
+        "ResourceArn"
+      ]
+    },
+    "ListTagsResponse": {
+      "type": "structure",
+      "members": {
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The key-value pair for the resource tag.</p>"
+        }
+      }
+    },
+    "ListUsersOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of ActiveMQ users that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUserSummary",
+          "locationName": "users",
+          "documentation": "<p>Required. The list of all ActiveMQ usernames for the specified broker. Does not apply to RabbitMQ brokers.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of all ActiveMQ users.</p>",
+      "required": [
+        "BrokerId",
+        "MaxResults",
+        "Users"
+      ]
+    },
+    "ListUsersRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "MaxResults": {
+          "shape": "MaxResults",
+          "location": "querystring",
+          "locationName": "maxResults",
+          "documentation": "<p>The maximum number of brokers that Amazon MQ can return per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "location": "querystring",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        }
+      },
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "ListUsersResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "MaxResults": {
+          "shape": "__integerMin5Max100",
+          "locationName": "maxResults",
+          "documentation": "<p>Required. The maximum number of ActiveMQ users that can be returned per page (20 by default). This value must be an integer from 5 to 100.</p>"
+        },
+        "NextToken": {
+          "shape": "__string",
+          "locationName": "nextToken",
+          "documentation": "<p>The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty.</p>"
+        },
+        "Users": {
+          "shape": "__listOfUserSummary",
+          "locationName": "users",
+          "documentation": "<p>Required. The list of all ActiveMQ usernames for the specified broker. Does not apply to RabbitMQ brokers.</p>"
+        }
+      }
+    },
+    "Logs": {
+      "type": "structure",
+      "members": {
+        "Audit": {
+          "shape": "__boolean",
+          "locationName": "audit",
+          "documentation": "<p>Enables audit logging. Every user management action made using JMX or the ActiveMQ Web Console is logged. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "General": {
+          "shape": "__boolean",
+          "locationName": "general",
+          "documentation": "<p>Enables general logging.</p>"
+        }
+      },
+      "documentation": "<p>The list of information about logs to be enabled for the specified broker.</p>"
+    },
+    "LogsSummary": {
+      "type": "structure",
+      "members": {
+        "Audit": {
+          "shape": "__boolean",
+          "locationName": "audit",
+          "documentation": "<p>Enables audit logging. Every user management action made using JMX or the ActiveMQ Web Console is logged.</p>"
+        },
+        "AuditLogGroup": {
+          "shape": "__string",
+          "locationName": "auditLogGroup",
+          "documentation": "<p>The location of the CloudWatch Logs log group where audit logs are sent.</p>"
+        },
+        "General": {
+          "shape": "__boolean",
+          "locationName": "general",
+          "documentation": "<p>Enables general logging.</p>"
+        },
+        "GeneralLogGroup": {
+          "shape": "__string",
+          "locationName": "generalLogGroup",
+          "documentation": "<p>The location of the CloudWatch Logs log group where general logs are sent.</p>"
+        },
+        "Pending": {
+          "shape": "PendingLogs",
+          "locationName": "pending",
+          "documentation": "<p>The list of information about logs pending to be deployed for the specified broker.</p>"
+        }
+      },
+      "documentation": "<p>The list of information about logs currently enabled and pending to be deployed for the specified broker.</p>",
+      "required": [
+        "GeneralLogGroup",
+        "General"
+      ]
+    },
+    "MaxResults": {
+      "type": "integer",
+      "min": 1,
+      "max": 100
+    },
+    "NotFoundException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 404
+      }
+    },
+    "PendingLogs": {
+      "type": "structure",
+      "members": {
+        "Audit": {
+          "shape": "__boolean",
+          "locationName": "audit",
+          "documentation": "<p>Enables audit logging. Every user management action made using JMX or the ActiveMQ Web Console is logged.</p>"
+        },
+        "General": {
+          "shape": "__boolean",
+          "locationName": "general",
+          "documentation": "<p>Enables general logging.</p>"
+        }
+      },
+      "documentation": "<p>The list of information about logs to be enabled for the specified broker.</p>"
+    },
+    "PromoteInput": {
+      "type": "structure",
+      "members": {
+        "Mode": {
+          "shape": "PromoteMode",
+          "locationName": "mode",
+          "documentation": "<p>The Promote mode requested. Note: Valid values for the parameter are SWITCHOVER, FAILOVER.</p>"
+        }
+      },
+      "documentation": "<p>Creates a Promote request with the properties specified.</p>",
+      "required": [
+        "Mode"
+      ]
+    },
+    "PromoteMode": {
+      "type": "string",
+      "documentation": "<p>The Promote mode requested.</p>",
+      "enum": [
+        "SWITCHOVER",
+        "FAILOVER"
+      ]
+    },
+    "PromoteOutput": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the updated broker.</p>"
+    },
+    "PromoteRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Mode": {
+          "shape": "PromoteMode",
+          "locationName": "mode",
+          "documentation": "<p>The Promote mode requested. Note: Valid values for the parameter are SWITCHOVER, FAILOVER.</p>"
+        }
+      },
+      "documentation": "<p>Promotes a data replication replica broker to the primary broker role.</p>",
+      "required": [
+        "BrokerId",
+        "Mode"
+      ]
+    },
+    "PromoteResponse": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      }
+    },
+    "RebootBrokerRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        }
+      },
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "RebootBrokerResponse": {
+      "type": "structure",
+      "members": {}
+    },
+    "SanitizationWarning": {
+      "type": "structure",
+      "members": {
+        "AttributeName": {
+          "shape": "__string",
+          "locationName": "attributeName",
+          "documentation": "<p>The name of the configuration attribute that has been sanitized.</p>"
+        },
+        "ElementName": {
+          "shape": "__string",
+          "locationName": "elementName",
+          "documentation": "<p>The name of the configuration element that has been sanitized.</p>"
+        },
+        "Reason": {
+          "shape": "SanitizationWarningReason",
+          "locationName": "reason",
+          "documentation": "<p>The reason for which the configuration elements or attributes were sanitized.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the configuration element or attribute that was sanitized in the configuration.</p>",
+      "required": [
+        "Reason"
+      ]
+    },
+    "SanitizationWarningReason": {
+      "type": "string",
+      "documentation": "<p>The reason for which the configuration elements or attributes were sanitized.</p>",
+      "enum": [
+        "DISALLOWED_ELEMENT_REMOVED",
+        "DISALLOWED_ATTRIBUTE_REMOVED",
+        "INVALID_ATTRIBUTE_VALUE_REMOVED"
+      ]
+    },
+    "Tags": {
+      "type": "structure",
+      "members": {
+        "Tags": {
+          "shape": "__mapOf__string",
+          "locationName": "tags",
+          "documentation": "<p>The key-value pair for the resource tag.</p>"
+        }
+      },
+      "documentation": "<p>A map of the key-value pairs for the resource tag.</p>"
+    },
+    "UnauthorizedException": {
+      "type": "structure",
+      "members": {
+        "ErrorAttribute": {
+          "shape": "__string",
+          "locationName": "errorAttribute",
+          "documentation": "<p>The attribute which caused the error.</p>"
+        },
+        "Message": {
+          "shape": "__string",
+          "locationName": "message",
+          "documentation": "<p>The explanation of the error.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about an error.</p>",
+      "exception": true,
+      "error": {
+        "httpStatusCode": 401
+      }
+    },
+    "UpdateBrokerInput": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p> <note><p>Must be set to true for ActiveMQ brokers version 5.18 and above and for RabbitMQ brokers version 3.13 and above.</p></note>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>A list of information about the configuration.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Defines whether this broker is a part of a data replication pair.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p> <note><p>When upgrading to ActiveMQ version 5.18 and above or RabbitMQ version 3.13 and above, you must have autoMinorVersionUpgrade set to true for the broker.</p></note>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataInput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>Enables Amazon CloudWatch logging for brokers.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of security groups (1 minimum, 5 maximum) that authorizes connections to brokers.</p>"
+        }
+      },
+      "documentation": "<p>Updates the broker using the specified properties.</p>"
+    },
+    "UpdateBrokerOutput": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>The ID of the updated configuration.</p>"
+        },
+        "DataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "dataReplicationMetadata",
+          "documentation": "<p>The replication details of the data replication-enabled broker. Only returned if dataReplicationMode is set to CRDR.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Describes whether this broker is a part of a data replication pair.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version to upgrade to. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>The list of information about logs to be enabled for the specified broker.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "PendingDataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "pendingDataReplicationMetadata",
+          "documentation": "<p>The pending replication details of the data replication-enabled broker. Only returned if pendingDataReplicationMode is set to CRDR.</p>"
+        },
+        "PendingDataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "pendingDataReplicationMode",
+          "documentation": "<p>Describes whether this broker will be a part of a data replication pair after reboot.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of security groups (1 minimum, 5 maximum) that authorizes connections to brokers.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the updated broker.</p>",
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "UpdateBrokerRequest": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p> <note><p>Must be set to true for ActiveMQ brokers version 5.18 and above and for RabbitMQ brokers version 3.13 and above.</p></note>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>A list of information about the configuration.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p> <note><p>When upgrading to ActiveMQ version 5.18 and above or RabbitMQ version 3.13 and above, you must have autoMinorVersionUpgrade set to true for the broker.</p></note>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataInput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>Enables Amazon CloudWatch logging for brokers.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of security groups (1 minimum, 5 maximum) that authorizes connections to brokers.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Defines whether this broker is a part of a data replication pair.</p>"
+        }
+      },
+      "documentation": "<p>Updates the broker using the specified properties.</p>",
+      "required": [
+        "BrokerId"
+      ]
+    },
+    "UpdateBrokerResponse": {
+      "type": "structure",
+      "members": {
+        "AuthenticationStrategy": {
+          "shape": "AuthenticationStrategy",
+          "locationName": "authenticationStrategy",
+          "documentation": "<p>Optional. The authentication strategy used to secure the broker. The default is SIMPLE.</p>"
+        },
+        "AutoMinorVersionUpgrade": {
+          "shape": "__boolean",
+          "locationName": "autoMinorVersionUpgrade",
+          "documentation": "<p>Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot.</p>"
+        },
+        "BrokerId": {
+          "shape": "__string",
+          "locationName": "brokerId",
+          "documentation": "<p>Required. The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "Configuration": {
+          "shape": "ConfigurationId",
+          "locationName": "configuration",
+          "documentation": "<p>The ID of the updated configuration.</p>"
+        },
+        "EngineVersion": {
+          "shape": "__string",
+          "locationName": "engineVersion",
+          "documentation": "<p>The broker engine version to upgrade to. For more information, see the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/activemq-version-management.html\">ActiveMQ version management</a> and the <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/rabbitmq-version-management.html\">RabbitMQ version management</a> sections in the Amazon MQ Developer Guide.</p>"
+        },
+        "HostInstanceType": {
+          "shape": "__string",
+          "locationName": "hostInstanceType",
+          "documentation": "<p>The broker's host instance type to upgrade to. For a list of supported instance types, see <a href=\"https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/broker.html#broker-instance-types\">Broker instance types</a>.</p>"
+        },
+        "LdapServerMetadata": {
+          "shape": "LdapServerMetadataOutput",
+          "locationName": "ldapServerMetadata",
+          "documentation": "<p>Optional. The metadata of the LDAP server used to authenticate and authorize connections to the broker. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Logs": {
+          "shape": "Logs",
+          "locationName": "logs",
+          "documentation": "<p>The list of information about logs to be enabled for the specified broker.</p>"
+        },
+        "MaintenanceWindowStartTime": {
+          "shape": "WeeklyStartTime",
+          "locationName": "maintenanceWindowStartTime",
+          "documentation": "<p>The parameters that determine the WeeklyStartTime.</p>"
+        },
+        "SecurityGroups": {
+          "shape": "__listOf__string",
+          "locationName": "securityGroups",
+          "documentation": "<p>The list of security groups (1 minimum, 5 maximum) that authorizes connections to brokers.</p>"
+        },
+        "DataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "dataReplicationMetadata",
+          "documentation": "<p>The replication details of the data replication-enabled broker. Only returned if dataReplicationMode is set to CRDR.</p>"
+        },
+        "DataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "dataReplicationMode",
+          "documentation": "<p>Describes whether this broker is a part of a data replication pair.</p>"
+        },
+        "PendingDataReplicationMetadata": {
+          "shape": "DataReplicationMetadataOutput",
+          "locationName": "pendingDataReplicationMetadata",
+          "documentation": "<p>The pending replication details of the data replication-enabled broker. Only returned if pendingDataReplicationMode is set to CRDR.</p>"
+        },
+        "PendingDataReplicationMode": {
+          "shape": "DataReplicationMode",
+          "locationName": "pendingDataReplicationMode",
+          "documentation": "<p>Describes whether this broker will be a part of a data replication pair after reboot.</p>"
+        }
+      }
+    },
+    "UpdateConfigurationInput": {
+      "type": "structure",
+      "members": {
+        "Data": {
+          "shape": "__string",
+          "locationName": "data",
+          "documentation": "<p>Amazon MQ for Active MQ: The base64-encoded XML configuration. Amazon MQ for RabbitMQ: the base64-encoded Cuttlefish configuration.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>The description of the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Updates the specified configuration.</p>",
+      "required": [
+        "Data"
+      ]
+    },
+    "UpdateConfigurationOutput": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Warnings": {
+          "shape": "__listOfSanitizationWarning",
+          "locationName": "warnings",
+          "documentation": "<p>The list of the first 20 warnings about the configuration elements or attributes that were sanitized.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the updated configuration.</p>",
+      "required": [
+        "Id",
+        "Arn",
+        "Name",
+        "Created"
+      ]
+    },
+    "UpdateConfigurationRequest": {
+      "type": "structure",
+      "members": {
+        "ConfigurationId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "configuration-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "Data": {
+          "shape": "__string",
+          "locationName": "data",
+          "documentation": "<p>Amazon MQ for Active MQ: The base64-encoded XML configuration. Amazon MQ for RabbitMQ: the base64-encoded Cuttlefish configuration.</p>"
+        },
+        "Description": {
+          "shape": "__string",
+          "locationName": "description",
+          "documentation": "<p>The description of the configuration.</p>"
+        }
+      },
+      "documentation": "<p>Updates the specified configuration.</p>",
+      "required": [
+        "ConfigurationId",
+        "Data"
+      ]
+    },
+    "UpdateConfigurationResponse": {
+      "type": "structure",
+      "members": {
+        "Arn": {
+          "shape": "__string",
+          "locationName": "arn",
+          "documentation": "<p>The Amazon Resource Name (ARN) of the configuration.</p>"
+        },
+        "Created": {
+          "shape": "__timestampIso8601",
+          "locationName": "created",
+          "documentation": "<p>Required. The date and time of the configuration.</p>"
+        },
+        "Id": {
+          "shape": "__string",
+          "locationName": "id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the configuration.</p>"
+        },
+        "LatestRevision": {
+          "shape": "ConfigurationRevision",
+          "locationName": "latestRevision",
+          "documentation": "<p>The latest revision of the configuration.</p>"
+        },
+        "Name": {
+          "shape": "__string",
+          "locationName": "name",
+          "documentation": "<p>The name of the configuration. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 1-150 characters long.</p>"
+        },
+        "Warnings": {
+          "shape": "__listOfSanitizationWarning",
+          "locationName": "warnings",
+          "documentation": "<p>The list of the first 20 warnings about the configuration elements or attributes that were sanitized.</p>"
+        }
+      }
+    },
+    "UpdateUserInput": {
+      "type": "structure",
+      "members": {
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Password": {
+          "shape": "__string",
+          "locationName": "password",
+          "documentation": "<p>The password of the user. This value must be at least 12 characters long, must contain at least 4 unique characters, and must not contain commas, colons, or equal signs (,:=).</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Defines whether the user is intended for data replication.</p>"
+        }
+      },
+      "documentation": "<p>Updates the information for an ActiveMQ user.</p>"
+    },
+    "UpdateUserRequest": {
+      "type": "structure",
+      "members": {
+        "BrokerId": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "broker-id",
+          "documentation": "<p>The unique ID that Amazon MQ generates for the broker.</p>"
+        },
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "Password": {
+          "shape": "__string",
+          "locationName": "password",
+          "documentation": "<p>The password of the user. This value must be at least 12 characters long, must contain at least 4 unique characters, and must not contain commas, colons, or equal signs (,:=).</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "location": "uri",
+          "locationName": "username",
+          "documentation": "<p>The username of the ActiveMQ user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Defines whether the user is intended for data replication.</p>"
+        }
+      },
+      "documentation": "<p>Updates the information for an ActiveMQ user.</p>",
+      "required": [
+        "Username",
+        "BrokerId"
+      ]
+    },
+    "UpdateUserResponse": {
+      "type": "structure",
+      "members": {}
+    },
+    "User": {
+      "type": "structure",
+      "members": {
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the ActiveMQ Web Console for the ActiveMQ user. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long. Does not apply to RabbitMQ brokers.</p>"
+        },
+        "Password": {
+          "shape": "__string",
+          "locationName": "password",
+          "documentation": "<p>Required. The password of the user. This value must be at least 12 characters long, must contain at least 4 unique characters, and must not contain commas, colons, or equal signs (,:=).</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "locationName": "username",
+          "documentation": "<p>The username of the broker user. The following restrictions apply to broker usernames:</p> <ul><li><p>For Amazon MQ for ActiveMQ brokers, this value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p></li> <li><p>para>For Amazon MQ for RabbitMQ brokers, this value can contain only alphanumeric characters, dashes, periods, underscores (- . _). This value must not contain a tilde (~) character. Amazon MQ prohibts using guest as a valid usename. This value must be 2-100 characters long.</p></para></li></ul> <important><p>Do not add personally identifiable information (PII) or other confidential or sensitive information in broker usernames. Broker usernames are accessible to other Amazon Web Services services, including CloudWatch Logs. Broker usernames are not intended to be used for private or sensitive data.</p></important>"
+        },
+        "ReplicationUser": {
+          "shape": "__boolean",
+          "locationName": "replicationUser",
+          "documentation": "<p>Defines if this user is intended for CRDR replication purposes.</p>"
+        }
+      },
+      "documentation": "<p>A user associated with the broker. For Amazon MQ for RabbitMQ brokers, one and only one administrative user is accepted and created when a broker is first provisioned. All subsequent broker users are created by making RabbitMQ API calls directly to brokers or via the RabbitMQ web console.</p>",
+      "required": [
+        "Username",
+        "Password"
+      ]
+    },
+    "UserPendingChanges": {
+      "type": "structure",
+      "members": {
+        "ConsoleAccess": {
+          "shape": "__boolean",
+          "locationName": "consoleAccess",
+          "documentation": "<p>Enables access to the the ActiveMQ Web Console for the ActiveMQ user.</p>"
+        },
+        "Groups": {
+          "shape": "__listOf__string",
+          "locationName": "groups",
+          "documentation": "<p>The list of groups (20 maximum) to which the ActiveMQ user belongs. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        },
+        "PendingChange": {
+          "shape": "ChangeType",
+          "locationName": "pendingChange",
+          "documentation": "<p>Required. The type of change pending for the ActiveMQ user.</p>"
+        }
+      },
+      "documentation": "<p>Returns information about the status of the changes pending for the ActiveMQ user.</p>",
+      "required": [
+        "PendingChange"
+      ]
+    },
+    "UserSummary": {
+      "type": "structure",
+      "members": {
+        "PendingChange": {
+          "shape": "ChangeType",
+          "locationName": "pendingChange",
+          "documentation": "<p>The type of change pending for the broker user.</p>"
+        },
+        "Username": {
+          "shape": "__string",
+          "locationName": "username",
+          "documentation": "<p>Required. The username of the broker user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.</p>"
+        }
+      },
+      "documentation": "<p>Returns a list of all broker users. Does not apply to RabbitMQ brokers.</p>",
+      "required": [
+        "Username"
+      ]
+    },
+    "WeeklyStartTime": {
+      "type": "structure",
+      "members": {
+        "DayOfWeek": {
+          "shape": "DayOfWeek",
+          "locationName": "dayOfWeek",
+          "documentation": "<p>Required. The day of the week.</p>"
+        },
+        "TimeOfDay": {
+          "shape": "__string",
+          "locationName": "timeOfDay",
+          "documentation": "<p>Required. The time, in 24-hour format.</p>"
+        },
+        "TimeZone": {
+          "shape": "__string",
+          "locationName": "timeZone",
+          "documentation": "<p>The time zone, UTC by default, in either the Country/City format, or the UTC offset format.</p>"
+        }
+      },
+      "documentation": "<p>The scheduled time period relative to UTC during which Amazon MQ begins to apply pending updates or patches to the broker.</p>",
+      "required": [
+        "TimeOfDay",
+        "DayOfWeek"
+      ]
+    },
+    "__boolean": {
+      "type": "boolean"
+    },
+    "__double": {
+      "type": "double"
+    },
+    "__integer": {
+      "type": "integer"
+    },
+    "__integerMin5Max100": {
+      "type": "integer",
+      "min": 5,
+      "max": 100
+    },
+    "__listOfActionRequired": {
+      "type": "list",
+      "member": {
+        "shape": "ActionRequired"
+      }
+    },
+    "__listOfAvailabilityZone": {
+      "type": "list",
+      "member": {
+        "shape": "AvailabilityZone"
+      }
+    },
+    "__listOfBrokerEngineType": {
+      "type": "list",
+      "member": {
+        "shape": "BrokerEngineType"
+      }
+    },
+    "__listOfBrokerInstance": {
+      "type": "list",
+      "member": {
+        "shape": "BrokerInstance"
+      }
+    },
+    "__listOfBrokerInstanceOption": {
+      "type": "list",
+      "member": {
+        "shape": "BrokerInstanceOption"
+      }
+    },
+    "__listOfBrokerSummary": {
+      "type": "list",
+      "member": {
+        "shape": "BrokerSummary"
+      }
+    },
+    "__listOfConfiguration": {
+      "type": "list",
+      "member": {
+        "shape": "Configuration"
+      }
+    },
+    "__listOfConfigurationId": {
+      "type": "list",
+      "member": {
+        "shape": "ConfigurationId"
+      }
+    },
+    "__listOfConfigurationRevision": {
+      "type": "list",
+      "member": {
+        "shape": "ConfigurationRevision"
+      }
+    },
+    "__listOfDeploymentMode": {
+      "type": "list",
+      "member": {
+        "shape": "DeploymentMode"
+      }
+    },
+    "__listOfEngineVersion": {
+      "type": "list",
+      "member": {
+        "shape": "EngineVersion"
+      }
+    },
+    "__listOfSanitizationWarning": {
+      "type": "list",
+      "member": {
+        "shape": "SanitizationWarning"
+      }
+    },
+    "__listOfUser": {
+      "type": "list",
+      "member": {
+        "shape": "User"
+      }
+    },
+    "__listOfUserSummary": {
+      "type": "list",
+      "member": {
+        "shape": "UserSummary"
+      }
+    },
+    "__listOf__string": {
+      "type": "list",
+      "member": {
+        "shape": "__string"
+      }
+    },
+    "__long": {
+      "type": "long"
+    },
+    "__mapOf__string": {
+      "type": "map",
+      "key": {
+        "shape": "__string"
+      },
+      "value": {
+        "shape": "__string"
+      }
+    },
+    "__string": {
+      "type": "string"
+    },
+    "__timestampIso8601": {
+      "type": "timestamp",
+      "timestampFormat": "iso8601"
+    },
+    "__timestampUnix": {
+      "type": "timestamp",
+      "timestampFormat": "unixTimestamp"
+    }
+  },
+  "documentation": "<p>Amazon MQ is a managed message broker service for Apache ActiveMQ and RabbitMQ that makes it easy to set up and operate message brokers in the cloud. A message broker allows software applications and components to communicate using various programming languages, operating systems, and formal messaging protocols.</p>"
+}

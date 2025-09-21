@@ -1,0 +1,2120 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-10-26",
+    "endpointPrefix":"api.detective",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Detective",
+    "serviceId":"Detective",
+    "signatureVersion":"v4",
+    "signingName":"detective",
+    "uid":"detective-2018-10-26",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AcceptInvitation":{
+      "name":"AcceptInvitation",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/invitation"
+      },
+      "input":{"shape":"AcceptInvitationRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Accepts an invitation for the member account to contribute data to a behavior graph. This operation can only be called by an invited member account. </p> <p>The request provides the ARN of behavior graph.</p> <p>The member account status in the graph must be <code>INVITED</code>.</p>"
+    },
+    "BatchGetGraphMemberDatasources":{
+      "name":"BatchGetGraphMemberDatasources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/datasources/get"
+      },
+      "input":{"shape":"BatchGetGraphMemberDatasourcesRequest"},
+      "output":{"shape":"BatchGetGraphMemberDatasourcesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets data source package information for the behavior graph.</p>"
+    },
+    "BatchGetMembershipDatasources":{
+      "name":"BatchGetMembershipDatasources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/membership/datasources/get"
+      },
+      "input":{"shape":"BatchGetMembershipDatasourcesRequest"},
+      "output":{"shape":"BatchGetMembershipDatasourcesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets information on the data source package history for an account.</p>"
+    },
+    "CreateGraph":{
+      "name":"CreateGraph",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph"
+      },
+      "input":{"shape":"CreateGraphRequest"},
+      "output":{"shape":"CreateGraphResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new behavior graph for the calling account, and sets that account as the administrator account. This operation is called by the account that is enabling Detective.</p> <p>The operation also enables Detective for the calling account in the currently selected Region. It returns the ARN of the new behavior graph.</p> <p> <code>CreateGraph</code> triggers a process to create the corresponding data tables for the new behavior graph.</p> <p>An account can only be the administrator account for one behavior graph within a Region. If the same account calls <code>CreateGraph</code> with the same administrator account, it always returns the same behavior graph ARN. It does not create a new behavior graph.</p>"
+    },
+    "CreateMembers":{
+      "name":"CreateMembers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/members"
+      },
+      "input":{"shape":"CreateMembersRequest"},
+      "output":{"shape":"CreateMembersResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p> <code>CreateMembers</code> is used to send invitations to accounts. For the organization behavior graph, the Detective administrator account uses <code>CreateMembers</code> to enable organization accounts as member accounts.</p> <p>For invited accounts, <code>CreateMembers</code> sends a request to invite the specified Amazon Web Services accounts to be member accounts in the behavior graph. This operation can only be called by the administrator account for a behavior graph. </p> <p> <code>CreateMembers</code> verifies the accounts and then invites the verified accounts. The administrator can optionally specify to not send invitation emails to the member accounts. This would be used when the administrator manages their member accounts centrally.</p> <p>For organization accounts in the organization behavior graph, <code>CreateMembers</code> attempts to enable the accounts. The organization accounts do not receive invitations.</p> <p>The request provides the behavior graph ARN and the list of accounts to invite or to enable.</p> <p>The response separates the requested accounts into two lists:</p> <ul> <li> <p>The accounts that <code>CreateMembers</code> was able to process. For invited accounts, includes member accounts that are being verified, that have passed verification and are to be invited, and that have failed verification. For organization accounts in the organization behavior graph, includes accounts that can be enabled and that cannot be enabled.</p> </li> <li> <p>The accounts that <code>CreateMembers</code> was unable to process. This list includes accounts that were already invited to be member accounts in the behavior graph.</p> </li> </ul>"
+    },
+    "DeleteGraph":{
+      "name":"DeleteGraph",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/removal"
+      },
+      "input":{"shape":"DeleteGraphRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Disables the specified behavior graph and queues it to be deleted. This operation removes the behavior graph from each member account's list of behavior graphs.</p> <p> <code>DeleteGraph</code> can only be called by the administrator account for a behavior graph.</p>"
+    },
+    "DeleteMembers":{
+      "name":"DeleteMembers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/members/removal"
+      },
+      "input":{"shape":"DeleteMembersRequest"},
+      "output":{"shape":"DeleteMembersResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes the specified member accounts from the behavior graph. The removed accounts no longer contribute data to the behavior graph. This operation can only be called by the administrator account for the behavior graph.</p> <p>For invited accounts, the removed accounts are deleted from the list of accounts in the behavior graph. To restore the account, the administrator account must send another invitation.</p> <p>For organization accounts in the organization behavior graph, the Detective administrator account can always enable the organization account again. Organization accounts that are not enabled as member accounts are not included in the <code>ListMembers</code> results for the organization behavior graph.</p> <p>An administrator account cannot use <code>DeleteMembers</code> to remove their own account from the behavior graph. To disable a behavior graph, the administrator account uses the <code>DeleteGraph</code> API method.</p>"
+    },
+    "DescribeOrganizationConfiguration":{
+      "name":"DescribeOrganizationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/orgs/describeOrganizationConfiguration"
+      },
+      "input":{"shape":"DescribeOrganizationConfigurationRequest"},
+      "output":{"shape":"DescribeOrganizationConfigurationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Returns information about the configuration for the organization behavior graph. Currently indicates whether to automatically enable new organization accounts as member accounts.</p> <p>Can only be called by the Detective administrator account for the organization. </p>"
+    },
+    "DisableOrganizationAdminAccount":{
+      "name":"DisableOrganizationAdminAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/orgs/disableAdminAccount"
+      },
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Removes the Detective administrator account in the current Region. Deletes the organization behavior graph.</p> <p>Can only be called by the organization management account.</p> <p>Removing the Detective administrator account does not affect the delegated administrator account for Detective in Organizations.</p> <p>To remove the delegated administrator account in Organizations, use the Organizations API. Removing the delegated administrator account also removes the Detective administrator account in all Regions, except for Regions where the Detective administrator account is the organization management account.</p>"
+    },
+    "DisassociateMembership":{
+      "name":"DisassociateMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/membership/removal"
+      },
+      "input":{"shape":"DisassociateMembershipRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes the member account from the specified behavior graph. This operation can only be called by an invited member account that has the <code>ENABLED</code> status.</p> <p> <code>DisassociateMembership</code> cannot be called by an organization account in the organization behavior graph. For the organization behavior graph, the Detective administrator account determines which organization accounts to enable or disable as member accounts.</p>"
+    },
+    "EnableOrganizationAdminAccount":{
+      "name":"EnableOrganizationAdminAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/orgs/enableAdminAccount"
+      },
+      "input":{"shape":"EnableOrganizationAdminAccountRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Designates the Detective administrator account for the organization in the current Region.</p> <p>If the account does not have Detective enabled, then enables Detective for that account and creates a new behavior graph.</p> <p>Can only be called by the organization management account.</p> <p>If the organization has a delegated administrator account in Organizations, then the Detective administrator account must be either the delegated administrator account or the organization management account.</p> <p>If the organization does not have a delegated administrator account in Organizations, then you can choose any account in the organization. If you choose an account other than the organization management account, Detective calls Organizations to make that account the delegated administrator account for Detective. The organization management account cannot be the delegated administrator account.</p>"
+    },
+    "GetInvestigation":{
+      "name":"GetInvestigation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/investigations/getInvestigation"
+      },
+      "input":{"shape":"GetInvestigationRequest"},
+      "output":{"shape":"GetInvestigationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Detective investigations lets you investigate IAM users and IAM roles using indicators of compromise. An indicator of compromise (IOC) is an artifact observed in or on a network, system, or environment that can (with a high level of confidence) identify malicious activity or a security incident. <code>GetInvestigation</code> returns the investigation results of an investigation for a behavior graph. </p>"
+    },
+    "GetMembers":{
+      "name":"GetMembers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/members/get"
+      },
+      "input":{"shape":"GetMembersRequest"},
+      "output":{"shape":"GetMembersResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the membership details for specified member accounts for a behavior graph.</p>"
+    },
+    "ListDatasourcePackages":{
+      "name":"ListDatasourcePackages",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/datasources/list"
+      },
+      "input":{"shape":"ListDatasourcePackagesRequest"},
+      "output":{"shape":"ListDatasourcePackagesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists data source packages in the behavior graph.</p>"
+    },
+    "ListGraphs":{
+      "name":"ListGraphs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs/list"
+      },
+      "input":{"shape":"ListGraphsRequest"},
+      "output":{"shape":"ListGraphsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the list of behavior graphs that the calling account is an administrator account of. This operation can only be called by an administrator account.</p> <p>Because an account can currently only be the administrator of one behavior graph within a Region, the results always contain a single behavior graph.</p>"
+    },
+    "ListIndicators":{
+      "name":"ListIndicators",
+      "http":{
+        "method":"POST",
+        "requestUri":"/investigations/listIndicators"
+      },
+      "input":{"shape":"ListIndicatorsRequest"},
+      "output":{"shape":"ListIndicatorsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Gets the indicators from an investigation. You can use the information from the indicators to determine if an IAM user and/or IAM role is involved in an unusual activity that could indicate malicious behavior and its impact.</p>"
+    },
+    "ListInvestigations":{
+      "name":"ListInvestigations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/investigations/listInvestigations"
+      },
+      "input":{"shape":"ListInvestigationsRequest"},
+      "output":{"shape":"ListInvestigationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Detective investigations lets you investigate IAM users and IAM roles using indicators of compromise. An indicator of compromise (IOC) is an artifact observed in or on a network, system, or environment that can (with a high level of confidence) identify malicious activity or a security incident. <code>ListInvestigations</code> lists all active Detective investigations.</p>"
+    },
+    "ListInvitations":{
+      "name":"ListInvitations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/invitations/list"
+      },
+      "input":{"shape":"ListInvitationsRequest"},
+      "output":{"shape":"ListInvitationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the list of open and accepted behavior graph invitations for the member account. This operation can only be called by an invited member account.</p> <p>Open invitations are invitations that the member account has not responded to.</p> <p>The results do not include behavior graphs for which the member account declined the invitation. The results also do not include behavior graphs that the member account resigned from or was removed from.</p>"
+    },
+    "ListMembers":{
+      "name":"ListMembers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/members/list"
+      },
+      "input":{"shape":"ListMembersRequest"},
+      "output":{"shape":"ListMembersResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the list of member accounts for a behavior graph.</p> <p>For invited accounts, the results do not include member accounts that were removed from the behavior graph.</p> <p>For the organization behavior graph, the results do not include organization accounts that the Detective administrator account has not enabled as member accounts.</p>"
+    },
+    "ListOrganizationAdminAccounts":{
+      "name":"ListOrganizationAdminAccounts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/orgs/adminAccountslist"
+      },
+      "input":{"shape":"ListOrganizationAdminAccountsRequest"},
+      "output":{"shape":"ListOrganizationAdminAccountsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Returns information about the Detective administrator account for an organization. Can only be called by the organization management account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the tag values that are assigned to a behavior graph.</p>"
+    },
+    "RejectInvitation":{
+      "name":"RejectInvitation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/invitation/removal"
+      },
+      "input":{"shape":"RejectInvitationRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Rejects an invitation to contribute the account data to a behavior graph. This operation must be called by an invited member account that has the <code>INVITED</code> status.</p> <p> <code>RejectInvitation</code> cannot be called by an organization account in the organization behavior graph. In the organization behavior graph, organization accounts do not receive an invitation.</p>"
+    },
+    "StartInvestigation":{
+      "name":"StartInvestigation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/investigations/startInvestigation"
+      },
+      "input":{"shape":"StartInvestigationRequest"},
+      "output":{"shape":"StartInvestigationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Detective investigations lets you investigate IAM users and IAM roles using indicators of compromise. An indicator of compromise (IOC) is an artifact observed in or on a network, system, or environment that can (with a high level of confidence) identify malicious activity or a security incident. <code>StartInvestigation</code> initiates an investigation on an entity in a behavior graph. </p>"
+    },
+    "StartMonitoringMember":{
+      "name":"StartMonitoringMember",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/member/monitoringstate"
+      },
+      "input":{"shape":"StartMonitoringMemberRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Sends a request to enable data ingest for a member account that has a status of <code>ACCEPTED_BUT_DISABLED</code>.</p> <p>For valid member accounts, the status is updated as follows.</p> <ul> <li> <p>If Detective enabled the member account, then the new status is <code>ENABLED</code>.</p> </li> <li> <p>If Detective cannot enable the member account, the status remains <code>ACCEPTED_BUT_DISABLED</code>. </p> </li> </ul>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Applies tag values to a behavior graph.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from a behavior graph.</p>"
+    },
+    "UpdateDatasourcePackages":{
+      "name":"UpdateDatasourcePackages",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graph/datasources/update"
+      },
+      "input":{"shape":"UpdateDatasourcePackagesRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Starts a data source package for the Detective behavior graph.</p>"
+    },
+    "UpdateInvestigationState":{
+      "name":"UpdateInvestigationState",
+      "http":{
+        "method":"POST",
+        "requestUri":"/investigations/updateInvestigationState"
+      },
+      "input":{"shape":"UpdateInvestigationStateRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Updates the state of an investigation.</p>"
+    },
+    "UpdateOrganizationConfiguration":{
+      "name":"UpdateOrganizationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/orgs/updateOrganizationConfiguration"
+      },
+      "input":{"shape":"UpdateOrganizationConfigurationRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Updates the configuration for the Organizations integration in the current Region. Can only be called by the Detective administrator account for the organization.</p>"
+    }
+  },
+  "shapes":{
+    "APIFailureCount":{"type":"long"},
+    "APIName":{"type":"string"},
+    "APISuccessCount":{"type":"long"},
+    "AcceptInvitationRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph that the member account is accepting the invitation for.</p> <p>The member account status in the behavior graph must be <code>INVITED</code>.</p>"
+        }
+      }
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The SDK default error code associated with the access denied exception.</p>"
+        },
+        "ErrorCodeReason":{
+          "shape":"ErrorCodeReason",
+          "documentation":"<p>The SDK default explanation of why access was denied.</p>"
+        },
+        "SubErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code associated with the access denied exception.</p>"
+        },
+        "SubErrorCodeReason":{
+          "shape":"ErrorCodeReason",
+          "documentation":"<p> An explanation of why access was denied.</p>"
+        }
+      },
+      "documentation":"<p>The request issuer does not have permission to access this resource or perform this operation.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "Account":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "EmailAddress"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account identifier of the Amazon Web Services account.</p>"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The Amazon Web Services account root user email address for the Amazon Web Services account.</p>"
+        }
+      },
+      "documentation":"<p>An Amazon Web Services account that is the administrator account of or a member of a behavior graph.</p>"
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^[0-9]+$"
+    },
+    "AccountIdExtendedList":{
+      "type":"list",
+      "member":{"shape":"AccountId"},
+      "max":200,
+      "min":1
+    },
+    "AccountIdList":{
+      "type":"list",
+      "member":{"shape":"AccountId"},
+      "max":50,
+      "min":1
+    },
+    "AccountList":{
+      "type":"list",
+      "member":{"shape":"Account"},
+      "max":50,
+      "min":1
+    },
+    "Administrator":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier of the Detective administrator account for the organization.</p>"
+        },
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the organization behavior graph.</p>"
+        },
+        "DelegationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the Detective administrator account was enabled. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        }
+      },
+      "documentation":"<p>Information about the Detective administrator account for an organization.</p>"
+    },
+    "AdministratorList":{
+      "type":"list",
+      "member":{"shape":"Administrator"}
+    },
+    "AiPaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "Aso":{"type":"string"},
+    "BatchGetGraphMemberDatasourcesRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "AccountIds"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "AccountIds":{
+          "shape":"AccountIdExtendedList",
+          "documentation":"<p>The list of Amazon Web Services accounts to get data source package information on.</p>"
+        }
+      }
+    },
+    "BatchGetGraphMemberDatasourcesResponse":{
+      "type":"structure",
+      "members":{
+        "MemberDatasources":{
+          "shape":"MembershipDatasourcesList",
+          "documentation":"<p>Details on the status of data source packages for members of the behavior graph.</p>"
+        },
+        "UnprocessedAccounts":{
+          "shape":"UnprocessedAccountList",
+          "documentation":"<p>Accounts that data source package information could not be retrieved for.</p>"
+        }
+      }
+    },
+    "BatchGetMembershipDatasourcesRequest":{
+      "type":"structure",
+      "required":["GraphArns"],
+      "members":{
+        "GraphArns":{
+          "shape":"GraphArnList",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        }
+      }
+    },
+    "BatchGetMembershipDatasourcesResponse":{
+      "type":"structure",
+      "members":{
+        "MembershipDatasources":{
+          "shape":"MembershipDatasourcesList",
+          "documentation":"<p>Details on the data source package history for an member of the behavior graph.</p>"
+        },
+        "UnprocessedGraphs":{
+          "shape":"UnprocessedGraphList",
+          "documentation":"<p>Graphs that data source package information could not be retrieved for.</p>"
+        }
+      }
+    },
+    "Boolean":{"type":"boolean"},
+    "ByteValue":{"type":"long"},
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request attempted an invalid action.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "CreateGraphRequest":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the new behavior graph. You can add up to 50 tags. For each tag, you provide the tag key and the tag value. Each tag key can contain up to 128 characters. Each tag value can contain up to 256 characters.</p>"
+        }
+      }
+    },
+    "CreateGraphResponse":{
+      "type":"structure",
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the new behavior graph.</p>"
+        }
+      }
+    },
+    "CreateMembersRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "Accounts"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "Message":{
+          "shape":"EmailMessage",
+          "documentation":"<p>Customized message text to include in the invitation email message to the invited member accounts.</p>"
+        },
+        "DisableEmailNotification":{
+          "shape":"Boolean",
+          "documentation":"<p>if set to <code>true</code>, then the invited accounts do not receive email notifications. By default, this is set to <code>false</code>, and the invited accounts receive email notifications.</p> <p>Organization accounts in the organization behavior graph do not receive email notifications.</p>"
+        },
+        "Accounts":{
+          "shape":"AccountList",
+          "documentation":"<p>The list of Amazon Web Services accounts to invite or to enable. You can invite or enable up to 50 accounts at a time. For each invited account, the account list contains the account identifier and the Amazon Web Services account root user email address. For organization accounts in the organization behavior graph, the email address is not required.</p>"
+        }
+      }
+    },
+    "CreateMembersResponse":{
+      "type":"structure",
+      "members":{
+        "Members":{
+          "shape":"MemberDetailList",
+          "documentation":"<p>The set of member account invitation or enablement requests that Detective was able to process. This includes accounts that are being verified, that failed verification, and that passed verification and are being sent an invitation or are being enabled.</p>"
+        },
+        "UnprocessedAccounts":{
+          "shape":"UnprocessedAccountList",
+          "documentation":"<p>The list of accounts for which Detective was unable to process the invitation or enablement request. For each account, the list provides the reason why the request could not be processed. The list includes accounts that are already member accounts in the behavior graph.</p>"
+        }
+      }
+    },
+    "DatasourcePackage":{
+      "type":"string",
+      "enum":[
+        "DETECTIVE_CORE",
+        "EKS_AUDIT",
+        "ASFF_SECURITYHUB_FINDING"
+      ]
+    },
+    "DatasourcePackageIngestDetail":{
+      "type":"structure",
+      "members":{
+        "DatasourcePackageIngestState":{
+          "shape":"DatasourcePackageIngestState",
+          "documentation":"<p>Details on which data source packages are ingested for a member account.</p>"
+        },
+        "LastIngestStateChange":{
+          "shape":"LastIngestStateChangeDates",
+          "documentation":"<p>The date a data source package was enabled for this account</p>"
+        }
+      },
+      "documentation":"<p>Details about the data source packages ingested by your behavior graph.</p>"
+    },
+    "DatasourcePackageIngestDetails":{
+      "type":"map",
+      "key":{"shape":"DatasourcePackage"},
+      "value":{"shape":"DatasourcePackageIngestDetail"}
+    },
+    "DatasourcePackageIngestHistory":{
+      "type":"map",
+      "key":{"shape":"DatasourcePackage"},
+      "value":{"shape":"LastIngestStateChangeDates"}
+    },
+    "DatasourcePackageIngestState":{
+      "type":"string",
+      "enum":[
+        "STARTED",
+        "STOPPED",
+        "DISABLED"
+      ]
+    },
+    "DatasourcePackageIngestStates":{
+      "type":"map",
+      "key":{"shape":"DatasourcePackage"},
+      "value":{"shape":"DatasourcePackageIngestState"}
+    },
+    "DatasourcePackageList":{
+      "type":"list",
+      "member":{"shape":"DatasourcePackage"},
+      "max":25,
+      "min":1
+    },
+    "DatasourcePackageUsageInfo":{
+      "type":"structure",
+      "members":{
+        "VolumeUsageInBytes":{
+          "shape":"ByteValue",
+          "documentation":"<p>Total volume of data in bytes per day ingested for a given data source package.</p>"
+        },
+        "VolumeUsageUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when the member account data volume was last updated. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        }
+      },
+      "documentation":"<p>Information on the usage of a data source package in the behavior graph.</p>"
+    },
+    "DateFilter":{
+      "type":"structure",
+      "required":[
+        "StartInclusive",
+        "EndInclusive"
+      ],
+      "members":{
+        "StartInclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp representing the start of the time period from when data is filtered, including the start date.</p>"
+        },
+        "EndInclusive":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp representing the end date of the time period until when data is filtered, including the end date.</p>"
+        }
+      },
+      "documentation":"<p>Contains details on the time range used to filter data.</p>"
+    },
+    "DeleteGraphRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to disable.</p>"
+        }
+      }
+    },
+    "DeleteMembersRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "AccountIds"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to remove members from.</p>"
+        },
+        "AccountIds":{
+          "shape":"AccountIdList",
+          "documentation":"<p>The list of Amazon Web Services account identifiers for the member accounts to remove from the behavior graph. You can remove up to 50 member accounts at a time.</p>"
+        }
+      }
+    },
+    "DeleteMembersResponse":{
+      "type":"structure",
+      "members":{
+        "AccountIds":{
+          "shape":"AccountIdList",
+          "documentation":"<p>The list of Amazon Web Services account identifiers for the member accounts that Detective successfully removed from the behavior graph.</p>"
+        },
+        "UnprocessedAccounts":{
+          "shape":"UnprocessedAccountList",
+          "documentation":"<p>The list of member accounts that Detective was not able to remove from the behavior graph. For each member account, provides the reason that the deletion could not be processed.</p>"
+        }
+      }
+    },
+    "DescribeOrganizationConfigurationRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the organization behavior graph.</p>"
+        }
+      }
+    },
+    "DescribeOrganizationConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "AutoEnable":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to automatically enable new organization accounts as member accounts in the organization behavior graph.</p>"
+        }
+      }
+    },
+    "DisassociateMembershipRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to remove the member account from.</p> <p>The member account's member status in the behavior graph must be <code>ENABLED</code>.</p>"
+        }
+      }
+    },
+    "EmailAddress":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^.+@(?:(?:(?!-)[A-Za-z0-9-]{1,62})?[A-Za-z0-9]{1}\\.)+[A-Za-z]{2,63}$",
+      "sensitive":true
+    },
+    "EmailMessage":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "sensitive":true
+    },
+    "EnableOrganizationAdminAccountRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier of the account to designate as the Detective administrator account for the organization.</p>"
+        }
+      }
+    },
+    "EntityArn":{
+      "type":"string",
+      "pattern":"^arn:.*"
+    },
+    "EntityType":{
+      "type":"string",
+      "enum":[
+        "IAM_ROLE",
+        "IAM_USER"
+      ]
+    },
+    "ErrorCode":{
+      "type":"string",
+      "enum":[
+        "INVALID_GRAPH_ARN",
+        "INVALID_REQUEST_BODY",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "ErrorCodeReason":{"type":"string"},
+    "ErrorMessage":{"type":"string"},
+    "Field":{
+      "type":"string",
+      "enum":[
+        "SEVERITY",
+        "STATUS",
+        "CREATED_TIME"
+      ]
+    },
+    "FilterCriteria":{
+      "type":"structure",
+      "members":{
+        "Severity":{
+          "shape":"StringFilter",
+          "documentation":"<p>Filter the investigation results based on the severity.</p>"
+        },
+        "Status":{
+          "shape":"StringFilter",
+          "documentation":"<p>Filter the investigation results based on the status.</p>"
+        },
+        "State":{
+          "shape":"StringFilter",
+          "documentation":"<p>Filter the investigation results based on the state.</p>"
+        },
+        "EntityArn":{
+          "shape":"StringFilter",
+          "documentation":"<p>Filter the investigation results based on the Amazon Resource Name (ARN) of the entity.</p>"
+        },
+        "CreatedTime":{
+          "shape":"DateFilter",
+          "documentation":"<p>Filter the investigation results based on when the investigation was created.</p>"
+        }
+      },
+      "documentation":"<p>Details on the criteria used to define the filter for investigation results.</p>"
+    },
+    "FlaggedIpAddressDetail":{
+      "type":"structure",
+      "members":{
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>IP address of the suspicious entity.</p>"
+        },
+        "Reason":{
+          "shape":"Reason",
+          "documentation":"<p>Details the reason the IP address was flagged as suspicious.</p>"
+        }
+      },
+      "documentation":"<p>Contains information on suspicious IP addresses identified as indicators of compromise. This indicator is derived from Amazon Web Services threat intelligence.</p>"
+    },
+    "GetInvestigationRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "InvestigationId"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        }
+      }
+    },
+    "GetInvestigationResponse":{
+      "type":"structure",
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        },
+        "EntityArn":{
+          "shape":"EntityArn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN). Detective supports IAM user ARNs and IAM role ARNs.</p>"
+        },
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>Type of entity. For example, Amazon Web Services accounts, such as an IAM user and/or IAM role.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the investigation report in UTC time stamp format.</p>"
+        },
+        "ScopeStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start date and time used to set the scope time within which you want to generate the investigation report. The value is an UTC ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "ScopeEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when the investigation began. The value is an UTC ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "Status":{
+          "shape":"Status",
+          "documentation":"<p>The status based on the completion status of the investigation.</p>"
+        },
+        "Severity":{
+          "shape":"Severity",
+          "documentation":"<p>The severity assigned is based on the likelihood and impact of the indicators of compromise discovered in the investigation.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The current state of the investigation. An archived investigation indicates that you have completed reviewing the investigation.</p>"
+        }
+      }
+    },
+    "GetMembersRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "AccountIds"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph for which to request the member details.</p>"
+        },
+        "AccountIds":{
+          "shape":"AccountIdList",
+          "documentation":"<p>The list of Amazon Web Services account identifiers for the member account for which to return member details. You can request details for up to 50 member accounts at a time.</p> <p>You cannot use <code>GetMembers</code> to retrieve information about member accounts that were removed from the behavior graph.</p>"
+        }
+      }
+    },
+    "GetMembersResponse":{
+      "type":"structure",
+      "members":{
+        "MemberDetails":{
+          "shape":"MemberDetailList",
+          "documentation":"<p>The member account details that Detective is returning in response to the request.</p>"
+        },
+        "UnprocessedAccounts":{
+          "shape":"UnprocessedAccountList",
+          "documentation":"<p>The requested member accounts for which Detective was unable to return member details.</p> <p>For each account, provides the reason why the request could not be processed.</p>"
+        }
+      }
+    },
+    "Graph":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the behavior graph was created. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        }
+      },
+      "documentation":"<p>A behavior graph in Detective.</p>"
+    },
+    "GraphArn":{
+      "type":"string",
+      "pattern":"^arn:aws[-\\w]{0,10}?:detective:[-\\w]{2,20}?:\\d{12}?:graph:[abcdef\\d]{32}?$"
+    },
+    "GraphArnList":{
+      "type":"list",
+      "member":{"shape":"GraphArn"},
+      "max":50,
+      "min":1
+    },
+    "GraphList":{
+      "type":"list",
+      "member":{"shape":"Graph"}
+    },
+    "HourlyTimeDelta":{
+      "type":"integer",
+      "box":true
+    },
+    "Id":{"type":"string"},
+    "ImpossibleTravelDetail":{
+      "type":"structure",
+      "members":{
+        "StartingIpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>IP address where the resource was first used in the impossible travel.</p>"
+        },
+        "EndingIpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>IP address where the resource was last used in the impossible travel.</p>"
+        },
+        "StartingLocation":{
+          "shape":"Location",
+          "documentation":"<p>Location where the resource was first used in the impossible travel.</p>"
+        },
+        "EndingLocation":{
+          "shape":"Location",
+          "documentation":"<p>Location where the resource was last used in the impossible travel.</p>"
+        },
+        "HourlyTimeDelta":{
+          "shape":"HourlyTimeDelta",
+          "documentation":"<p>Returns the time difference between the first and last timestamp the resource was used.</p>"
+        }
+      },
+      "documentation":"<p>Contains information on unusual and impossible travel in an account.</p>"
+    },
+    "Indicator":{
+      "type":"structure",
+      "members":{
+        "IndicatorType":{
+          "shape":"IndicatorType",
+          "documentation":"<p>The type of indicator. </p>"
+        },
+        "IndicatorDetail":{
+          "shape":"IndicatorDetail",
+          "documentation":"<p>Details about the indicators of compromise that are used to determine if a resource is involved in a security incident. An indicator of compromise (IOC) is an artifact observed in or on a network, system, or environment that can (with a high level of confidence) identify malicious activity or a security incident.</p>"
+        }
+      },
+      "documentation":"<p>Detective investigations triages indicators of compromises such as a finding and surfaces only the most critical and suspicious issues, so you can focus on high-level investigations. An <code>Indicator</code> lets you determine if an Amazon Web Services resource is involved in unusual activity that could indicate malicious behavior and its impact.</p>"
+    },
+    "IndicatorDetail":{
+      "type":"structure",
+      "members":{
+        "TTPsObservedDetail":{
+          "shape":"TTPsObservedDetail",
+          "documentation":"<p>Details about the indicator of compromise.</p>"
+        },
+        "ImpossibleTravelDetail":{
+          "shape":"ImpossibleTravelDetail",
+          "documentation":"<p>Identifies unusual and impossible user activity for an account. </p>"
+        },
+        "FlaggedIpAddressDetail":{
+          "shape":"FlaggedIpAddressDetail",
+          "documentation":"<p>Suspicious IP addresses that are flagged, which indicates critical or severe threats based on threat intelligence by Detective. This indicator is derived from Amazon Web Services threat intelligence.</p>"
+        },
+        "NewGeolocationDetail":{
+          "shape":"NewGeolocationDetail",
+          "documentation":"<p>Contains details about the new geographic location.</p>"
+        },
+        "NewAsoDetail":{
+          "shape":"NewAsoDetail",
+          "documentation":"<p>Contains details about the new Autonomous System Organization (ASO).</p>"
+        },
+        "NewUserAgentDetail":{
+          "shape":"NewUserAgentDetail",
+          "documentation":"<p>Contains details about the new user agent.</p>"
+        },
+        "RelatedFindingDetail":{
+          "shape":"RelatedFindingDetail",
+          "documentation":"<p>Contains details about related findings.</p>"
+        },
+        "RelatedFindingGroupDetail":{
+          "shape":"RelatedFindingGroupDetail",
+          "documentation":"<p>Contains details about related finding groups.</p>"
+        }
+      },
+      "documentation":"<p>Details about the indicators of compromise which are used to determine if a resource is involved in a security incident. An indicator of compromise (IOC) is an artifact observed in or on a network, system, or environment that can (with a high level of confidence) identify malicious activity or a security incident. For the list of indicators of compromise that are generated by Detective investigations, see <a href=\"https://docs.aws.amazon.com/detective/latest/userguide/detective-investigation-about.html\">Detective investigations</a>.</p>"
+    },
+    "IndicatorType":{
+      "type":"string",
+      "enum":[
+        "TTP_OBSERVED",
+        "IMPOSSIBLE_TRAVEL",
+        "FLAGGED_IP_ADDRESS",
+        "NEW_GEOLOCATION",
+        "NEW_ASO",
+        "NEW_USER_AGENT",
+        "RELATED_FINDING",
+        "RELATED_FINDING_GROUP"
+      ]
+    },
+    "Indicators":{
+      "type":"list",
+      "member":{"shape":"Indicator"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was valid but failed because of a problem with the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true
+    },
+    "InvestigationDetail":{
+      "type":"structure",
+      "members":{
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        },
+        "Severity":{
+          "shape":"Severity",
+          "documentation":"<p>Severity based on the likelihood and impact of the indicators of compromise discovered in the investigation.</p>"
+        },
+        "Status":{
+          "shape":"Status",
+          "documentation":"<p>Status based on the completion status of the investigation.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The current state of the investigation. An archived investigation indicates you have completed reviewing the investigation.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time stamp of the creation time of the investigation report. The value is an UTC ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "EntityArn":{
+          "shape":"EntityArn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the IAM user and IAM role.</p>"
+        },
+        "EntityType":{
+          "shape":"EntityType",
+          "documentation":"<p>Type of entity. For example, Amazon Web Services accounts, such as IAM user and role.</p>"
+        }
+      },
+      "documentation":"<p>Details about the investigation related to a potential security event identified by Detective.</p>"
+    },
+    "InvestigationDetails":{
+      "type":"list",
+      "member":{"shape":"InvestigationDetail"}
+    },
+    "InvestigationId":{
+      "type":"string",
+      "max":21,
+      "min":21,
+      "pattern":"^[0-9]+$"
+    },
+    "InvitationType":{
+      "type":"string",
+      "enum":[
+        "INVITATION",
+        "ORGANIZATION"
+      ]
+    },
+    "IpAddress":{"type":"string"},
+    "IsNewForEntireAccount":{"type":"boolean"},
+    "LastIngestStateChangeDates":{
+      "type":"map",
+      "key":{"shape":"DatasourcePackageIngestState"},
+      "value":{"shape":"TimestampForCollection"}
+    },
+    "ListDatasourcePackagesRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to get the next page of results, the pagination token that was returned with the previous set of results. The initial request does not include a pagination token.</p>"
+        },
+        "MaxResults":{
+          "shape":"MemberResultsLimit",
+          "documentation":"<p>The maximum number of results to return.</p>"
+        }
+      }
+    },
+    "ListDatasourcePackagesResponse":{
+      "type":"structure",
+      "members":{
+        "DatasourcePackages":{
+          "shape":"DatasourcePackageIngestDetails",
+          "documentation":"<p>Details on the data source packages active in the behavior graph.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to get the next page of results, the pagination token that was returned with the previous set of results. The initial request does not include a pagination token.</p>"
+        }
+      }
+    },
+    "ListGraphsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to get the next page of results, the pagination token that was returned with the previous set of results. The initial request does not include a pagination token.</p>"
+        },
+        "MaxResults":{
+          "shape":"MemberResultsLimit",
+          "documentation":"<p>The maximum number of graphs to return at a time. The total must be less than the overall limit on the number of results to return, which is currently 200.</p>"
+        }
+      }
+    },
+    "ListGraphsResponse":{
+      "type":"structure",
+      "members":{
+        "GraphList":{
+          "shape":"GraphList",
+          "documentation":"<p>A list of behavior graphs that the account is an administrator account for.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more behavior graphs remaining in the results, then this is the pagination token to use to request the next page of behavior graphs.</p>"
+        }
+      }
+    },
+    "ListIndicatorsRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "InvestigationId"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        },
+        "IndicatorType":{
+          "shape":"IndicatorType",
+          "documentation":"<p>For the list of indicators of compromise that are generated by Detective investigations, see <a href=\"https://docs.aws.amazon.com/detective/latest/userguide/detective-investigation-about.html\">Detective investigations</a>.</p>"
+        },
+        "NextToken":{
+          "shape":"AiPaginationToken",
+          "documentation":"<p>Lists if there are more results available. The value of nextToken is a unique pagination token for each page. Repeat the call using the returned token to retrieve the next page. Keep all other arguments unchanged.</p> <p>Each pagination token expires after 24 hours. Using an expired pagination token will return a Validation Exception error.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Lists the maximum number of indicators in a page.</p>"
+        }
+      }
+    },
+    "ListIndicatorsResponse":{
+      "type":"structure",
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        },
+        "NextToken":{
+          "shape":"AiPaginationToken",
+          "documentation":"<p>Lists if there are more results available. The value of nextToken is a unique pagination token for each page. Repeat the call using the returned token to retrieve the next page. Keep all other arguments unchanged.</p> <p>Each pagination token expires after 24 hours. Using an expired pagination token will return a Validation Exception error.</p>"
+        },
+        "Indicators":{
+          "shape":"Indicators",
+          "documentation":"<p>Lists the indicators of compromise.</p>"
+        }
+      }
+    },
+    "ListInvestigationsRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "NextToken":{
+          "shape":"AiPaginationToken",
+          "documentation":"<p>Lists if there are more results available. The value of nextToken is a unique pagination token for each page. Repeat the call using the returned token to retrieve the next page. Keep all other arguments unchanged.</p> <p>Each pagination token expires after 24 hours. Using an expired pagination token will return a Validation Exception error.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Lists the maximum number of investigations in a page.</p>"
+        },
+        "FilterCriteria":{
+          "shape":"FilterCriteria",
+          "documentation":"<p>Filters the investigation results based on a criteria.</p>"
+        },
+        "SortCriteria":{
+          "shape":"SortCriteria",
+          "documentation":"<p>Sorts the investigation results based on a criteria.</p>"
+        }
+      }
+    },
+    "ListInvestigationsResponse":{
+      "type":"structure",
+      "members":{
+        "InvestigationDetails":{
+          "shape":"InvestigationDetails",
+          "documentation":"<p>Lists the summary of uncommon behavior or malicious activity which indicates a compromise.</p>"
+        },
+        "NextToken":{
+          "shape":"AiPaginationToken",
+          "documentation":"<p>Lists if there are more results available. The value of nextToken is a unique pagination token for each page. Repeat the call using the returned token to retrieve the next page. Keep all other arguments unchanged.</p> <p>Each pagination token expires after 24 hours. </p>"
+        }
+      }
+    },
+    "ListInvitationsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to retrieve the next page of results, the pagination token that was returned with the previous page of results. The initial request does not include a pagination token.</p>"
+        },
+        "MaxResults":{
+          "shape":"MemberResultsLimit",
+          "documentation":"<p>The maximum number of behavior graph invitations to return in the response. The total must be less than the overall limit on the number of results to return, which is currently 200.</p>"
+        }
+      }
+    },
+    "ListInvitationsResponse":{
+      "type":"structure",
+      "members":{
+        "Invitations":{
+          "shape":"MemberDetailList",
+          "documentation":"<p>The list of behavior graphs for which the member account has open or accepted invitations.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more behavior graphs remaining in the results, then this is the pagination token to use to request the next page of behavior graphs.</p>"
+        }
+      }
+    },
+    "ListMembersRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph for which to retrieve the list of member accounts.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to retrieve the next page of member account results, the pagination token that was returned with the previous page of results. The initial request does not include a pagination token.</p>"
+        },
+        "MaxResults":{
+          "shape":"MemberResultsLimit",
+          "documentation":"<p>The maximum number of member accounts to include in the response. The total must be less than the overall limit on the number of results to return, which is currently 200.</p>"
+        }
+      }
+    },
+    "ListMembersResponse":{
+      "type":"structure",
+      "members":{
+        "MemberDetails":{
+          "shape":"MemberDetailList",
+          "documentation":"<p>The list of member accounts in the behavior graph.</p> <p>For invited accounts, the results include member accounts that did not pass verification and member accounts that have not yet accepted the invitation to the behavior graph. The results do not include member accounts that were removed from the behavior graph.</p> <p>For the organization behavior graph, the results do not include organization accounts that the Detective administrator account has not enabled as member accounts.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more member accounts remaining in the results, then use this pagination token to request the next page of member accounts.</p>"
+        }
+      }
+    },
+    "ListOrganizationAdminAccountsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>For requests to get the next page of results, the pagination token that was returned with the previous set of results. The initial request does not include a pagination token.</p>"
+        },
+        "MaxResults":{
+          "shape":"MemberResultsLimit",
+          "documentation":"<p>The maximum number of results to return.</p>"
+        }
+      }
+    },
+    "ListOrganizationAdminAccountsResponse":{
+      "type":"structure",
+      "members":{
+        "Administrators":{
+          "shape":"AdministratorList",
+          "documentation":"<p>The list of Detective administrator accounts.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more accounts remaining in the results, then this is the pagination token to use to request the next page of accounts.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph for which to retrieve the tag values.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tag values that are assigned to the behavior graph. The request returns up to 50 tag values.</p>"
+        }
+      }
+    },
+    "Location":{"type":"string"},
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MemberDetail":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier for the member account.</p>"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The Amazon Web Services account root user email address for the member account.</p>"
+        },
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "MasterId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier of the administrator account for the behavior graph.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property is deprecated. Use AdministratorId instead."
+        },
+        "AdministratorId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier of the administrator account for the behavior graph.</p>"
+        },
+        "Status":{
+          "shape":"MemberStatus",
+          "documentation":"<p>The current membership status of the member account. The status can have one of the following values:</p> <ul> <li> <p> <code>INVITED</code> - For invited accounts only. Indicates that the member was sent an invitation but has not yet responded.</p> </li> <li> <p> <code>VERIFICATION_IN_PROGRESS</code> - For invited accounts only, indicates that Detective is verifying that the account identifier and email address provided for the member account match. If they do match, then Detective sends the invitation. If the email address and account identifier don't match, then the member cannot be added to the behavior graph.</p> <p>For organization accounts in the organization behavior graph, indicates that Detective is verifying that the account belongs to the organization.</p> </li> <li> <p> <code>VERIFICATION_FAILED</code> - For invited accounts only. Indicates that the account and email address provided for the member account do not match, and Detective did not send an invitation to the account.</p> </li> <li> <p> <code>ENABLED</code> - Indicates that the member account currently contributes data to the behavior graph. For invited accounts, the member account accepted the invitation. For organization accounts in the organization behavior graph, the Detective administrator account enabled the organization account as a member account.</p> </li> <li> <p> <code>ACCEPTED_BUT_DISABLED</code> - The account accepted the invitation, or was enabled by the Detective administrator account, but is prevented from contributing data to the behavior graph. <code>DisabledReason</code> provides the reason why the member account is not enabled.</p> </li> </ul> <p>Invited accounts that declined an invitation or that were removed from the behavior graph are not included. In the organization behavior graph, organization accounts that the Detective administrator account did not enable are not included.</p>"
+        },
+        "DisabledReason":{
+          "shape":"MemberDisabledReason",
+          "documentation":"<p>For member accounts with a status of <code>ACCEPTED_BUT_DISABLED</code>, the reason that the member account is not enabled.</p> <p>The reason can have one of the following values:</p> <ul> <li> <p> <code>VOLUME_TOO_HIGH</code> - Indicates that adding the member account would cause the data volume for the behavior graph to be too high.</p> </li> <li> <p> <code>VOLUME_UNKNOWN</code> - Indicates that Detective is unable to verify the data volume for the member account. This is usually because the member account is not enrolled in Amazon GuardDuty. </p> </li> </ul>"
+        },
+        "InvitedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>For invited accounts, the date and time that Detective sent the invitation to the account. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "UpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the member account was last updated. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "VolumeUsageInBytes":{
+          "shape":"ByteValue",
+          "documentation":"<p>The data volume in bytes per day for the member account.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property is deprecated. Use VolumeUsageByDatasourcePackage instead."
+        },
+        "VolumeUsageUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when the member account data volume was last updated. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property is deprecated. Use VolumeUsageByDatasourcePackage instead."
+        },
+        "PercentOfGraphUtilization":{
+          "shape":"Percentage",
+          "documentation":"<p>The member account data volume as a percentage of the maximum allowed data volume. 0 indicates 0 percent, and 100 indicates 100 percent.</p> <p>Note that this is not the percentage of the behavior graph data volume.</p> <p>For example, the data volume for the behavior graph is 80 GB per day. The maximum data volume is 160 GB per day. If the data volume for the member account is 40 GB per day, then <code>PercentOfGraphUtilization</code> is 25. It represents 25% of the maximum allowed data volume. </p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property is deprecated. Use VolumeUsageByDatasourcePackage instead."
+        },
+        "PercentOfGraphUtilizationUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the graph utilization percentage was last updated. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property is deprecated. Use VolumeUsageByDatasourcePackage instead."
+        },
+        "InvitationType":{
+          "shape":"InvitationType",
+          "documentation":"<p>The type of behavior graph membership.</p> <p>For an organization account in the organization behavior graph, the type is <code>ORGANIZATION</code>.</p> <p>For an account that was invited to a behavior graph, the type is <code>INVITATION</code>. </p>"
+        },
+        "VolumeUsageByDatasourcePackage":{
+          "shape":"VolumeUsageByDatasourcePackage",
+          "documentation":"<p>Details on the volume of usage for each data source package in a behavior graph.</p>"
+        },
+        "DatasourcePackageIngestStates":{
+          "shape":"DatasourcePackageIngestStates",
+          "documentation":"<p>The state of a data source package for the behavior graph.</p>"
+        }
+      },
+      "documentation":"<p>Details about a member account in a behavior graph.</p>"
+    },
+    "MemberDetailList":{
+      "type":"list",
+      "member":{"shape":"MemberDetail"}
+    },
+    "MemberDisabledReason":{
+      "type":"string",
+      "enum":[
+        "VOLUME_TOO_HIGH",
+        "VOLUME_UNKNOWN"
+      ]
+    },
+    "MemberResultsLimit":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "MemberStatus":{
+      "type":"string",
+      "enum":[
+        "INVITED",
+        "VERIFICATION_IN_PROGRESS",
+        "VERIFICATION_FAILED",
+        "ENABLED",
+        "ACCEPTED_BUT_DISABLED"
+      ]
+    },
+    "MembershipDatasources":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account identifier of the Amazon Web Services account.</p>"
+        },
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the organization behavior graph.</p>"
+        },
+        "DatasourcePackageIngestHistory":{
+          "shape":"DatasourcePackageIngestHistory",
+          "documentation":"<p>Details on when a data source package was added to a behavior graph.</p>"
+        }
+      },
+      "documentation":"<p>Details on data source packages for members of the behavior graph.</p>"
+    },
+    "MembershipDatasourcesList":{
+      "type":"list",
+      "member":{"shape":"MembershipDatasources"}
+    },
+    "NewAsoDetail":{
+      "type":"structure",
+      "members":{
+        "Aso":{
+          "shape":"Aso",
+          "documentation":"<p>Details about the new Autonomous System Organization (ASO).</p>"
+        },
+        "IsNewForEntireAccount":{
+          "shape":"IsNewForEntireAccount",
+          "documentation":"<p>Checks if the Autonomous System Organization (ASO) is new for the entire account.</p>"
+        }
+      },
+      "documentation":"<p>Details new Autonomous System Organizations (ASOs) used either at the resource or account level. </p>"
+    },
+    "NewGeolocationDetail":{
+      "type":"structure",
+      "members":{
+        "Location":{
+          "shape":"Location",
+          "documentation":"<p>Location where the resource was accessed.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>IP address using which the resource was accessed.</p>"
+        },
+        "IsNewForEntireAccount":{
+          "shape":"IsNewForEntireAccount",
+          "documentation":"<p>Checks if the geolocation is new for the entire account.</p>"
+        }
+      },
+      "documentation":"<p>Details new geolocations used either at the resource or account level. For example, lists an observed geolocation that is an infrequent or unused location based on previous user activity.</p>"
+    },
+    "NewUserAgentDetail":{
+      "type":"structure",
+      "members":{
+        "UserAgent":{
+          "shape":"UserAgent",
+          "documentation":"<p>New user agent which accessed the resource.</p>"
+        },
+        "IsNewForEntireAccount":{
+          "shape":"IsNewForEntireAccount",
+          "documentation":"<p>Checks if the user agent is new for the entire account.</p>"
+        }
+      },
+      "documentation":"<p>Details new user agents used either at the resource or account level.</p>"
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "Percentage":{"type":"double"},
+    "Procedure":{"type":"string"},
+    "Reason":{
+      "type":"string",
+      "enum":["AWS_THREAT_INTELLIGENCE"]
+    },
+    "RejectInvitationRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to reject the invitation to.</p> <p>The member account's current member status in the behavior graph must be <code>INVITED</code>.</p>"
+        }
+      }
+    },
+    "RelatedFindingDetail":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"EntityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the related finding.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of finding.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>The IP address of the finding.</p>"
+        }
+      },
+      "documentation":"<p>Details related activities associated with a potential security event. Lists all distinct categories of evidence that are connected to the resource or the finding group.</p>"
+    },
+    "RelatedFindingGroupDetail":{
+      "type":"structure",
+      "members":{
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the finding group.</p>"
+        }
+      },
+      "documentation":"<p>Details multiple activities as they related to a potential security event. Detective uses graph analysis technique that infers relationships between findings and entities, and groups them together as a finding group.</p>"
+    },
+    "Resource":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ResourceList":{
+      "type":"list",
+      "member":{"shape":"Resource"},
+      "max":50,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request refers to a nonexistent resource.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Resources":{
+          "shape":"ResourceList",
+          "documentation":"<p>The type of resource that has exceeded the service quota.</p>"
+        }
+      },
+      "documentation":"<p>This request cannot be completed for one of the following reasons.</p> <ul> <li> <p>This request cannot be completed if it would cause the number of member accounts in the behavior graph to exceed the maximum allowed. A behavior graph cannot have more than 1,200 member accounts.</p> </li> <li> <p>This request cannot be completed if the current volume ingested is above the limit of 10 TB per day. Detective will not allow you to add additional member accounts.</p> </li> </ul>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "Severity":{
+      "type":"string",
+      "enum":[
+        "INFORMATIONAL",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ]
+    },
+    "SortCriteria":{
+      "type":"structure",
+      "members":{
+        "Field":{
+          "shape":"Field",
+          "documentation":"<p>Represents the <code>Field</code> attribute to sort investigations.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The order by which the sorted findings are displayed.</p>"
+        }
+      },
+      "documentation":"<p>Details about the criteria used for sorting investigations.</p>"
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "StartInvestigationRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "EntityArn",
+        "ScopeStartTime",
+        "ScopeEndTime"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "EntityArn":{
+          "shape":"EntityArn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the IAM user and IAM role.</p>"
+        },
+        "ScopeStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when the investigation began. The value is an UTC ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        },
+        "ScopeEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when the investigation ended. The value is an UTC ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        }
+      }
+    },
+    "StartInvestigationResponse":{
+      "type":"structure",
+      "members":{
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        }
+      }
+    },
+    "StartMonitoringMemberRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "AccountId"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account ID of the member account to try to enable.</p> <p>The account must be an invited member account with a status of <code>ACCEPTED_BUT_DISABLED</code>. </p>"
+        }
+      }
+    },
+    "State":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "ARCHIVED"
+      ]
+    },
+    "Status":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "FAILED",
+        "SUCCESSFUL"
+      ]
+    },
+    "StringFilter":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The string filter value.</p>"
+        }
+      },
+      "documentation":"<p>A string for filtering Detective investigations.</p>"
+    },
+    "TTPsObservedDetail":{
+      "type":"structure",
+      "members":{
+        "Tactic":{
+          "shape":"Tactic",
+          "documentation":"<p>The tactic used, identified by the investigation.</p>"
+        },
+        "Technique":{
+          "shape":"Technique",
+          "documentation":"<p>The technique used, identified by the investigation. </p>"
+        },
+        "Procedure":{
+          "shape":"Procedure",
+          "documentation":"<p>The procedure used, identified by the investigation.</p>"
+        },
+        "IpAddress":{
+          "shape":"IpAddress",
+          "documentation":"<p>The IP address where the tactics, techniques, and procedure (TTP) was observed.</p>"
+        },
+        "APIName":{
+          "shape":"APIName",
+          "documentation":"<p>The name of the API where the tactics, techniques, and procedure (TTP) was observed.</p>"
+        },
+        "APISuccessCount":{
+          "shape":"APISuccessCount",
+          "documentation":"<p>The total number of successful API requests.</p>"
+        },
+        "APIFailureCount":{
+          "shape":"APIFailureCount",
+          "documentation":"<p>The total number of failed API requests.</p>"
+        }
+      },
+      "documentation":"<p>Details tactics, techniques, and procedures (TTPs) used in a potential security event. Tactics are based on <a href=\"https://attack.mitre.org/matrices/enterprise/\">MITRE ATT&amp;CK Matrix for Enterprise</a>. </p>"
+    },
+    "Tactic":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to assign the tags to.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the behavior graph. You can add up to 50 tags. For each tag, you provide the tag key and the tag value. Each tag key can contain up to 128 characters. Each tag value can contain up to 256 characters.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
+    "Technique":{"type":"string"},
+    "Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TimestampForCollection":{
+      "type":"structure",
+      "members":{
+        "Timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The data and time when data collection began for a source package. The value is an ISO8601 formatted string. For example, <code>2021-08-18T16:35:56.284Z</code>.</p>"
+        }
+      },
+      "documentation":"<p>Details on when data collection began for a source package.</p>"
+    },
+    "TooManyRequestsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request cannot be completed because too many other requests are occurring at the same time.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "Type":{"type":"string"},
+    "UnprocessedAccount":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account identifier of the member account that was not processed.</p>"
+        },
+        "Reason":{
+          "shape":"UnprocessedReason",
+          "documentation":"<p>The reason that the member account request could not be processed.</p>"
+        }
+      },
+      "documentation":"<p>A member account that was included in a request but for which the request could not be processed.</p>"
+    },
+    "UnprocessedAccountList":{
+      "type":"list",
+      "member":{"shape":"UnprocessedAccount"}
+    },
+    "UnprocessedGraph":{
+      "type":"structure",
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the organization behavior graph.</p>"
+        },
+        "Reason":{
+          "shape":"UnprocessedReason",
+          "documentation":"<p>The reason data source package information could not be processed for a behavior graph.</p>"
+        }
+      },
+      "documentation":"<p>Behavior graphs that could not be processed in the request.</p>"
+    },
+    "UnprocessedGraphList":{
+      "type":"list",
+      "member":{"shape":"UnprocessedGraph"}
+    },
+    "UnprocessedReason":{"type":"string"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph to remove the tags from.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys of the tags to remove from the behavior graph. You can remove up to 50 tags at a time.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDatasourcePackagesRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "DatasourcePackages"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the behavior graph.</p>"
+        },
+        "DatasourcePackages":{
+          "shape":"DatasourcePackageList",
+          "documentation":"<p>The data source package to start for the behavior graph.</p>"
+        }
+      }
+    },
+    "UpdateInvestigationStateRequest":{
+      "type":"structure",
+      "required":[
+        "GraphArn",
+        "InvestigationId",
+        "State"
+      ],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the behavior graph.</p>"
+        },
+        "InvestigationId":{
+          "shape":"InvestigationId",
+          "documentation":"<p>The investigation ID of the investigation report.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The current state of the investigation. An archived investigation indicates you have completed reviewing the investigation.</p>"
+        }
+      }
+    },
+    "UpdateOrganizationConfigurationRequest":{
+      "type":"structure",
+      "required":["GraphArn"],
+      "members":{
+        "GraphArn":{
+          "shape":"GraphArn",
+          "documentation":"<p>The ARN of the organization behavior graph.</p>"
+        },
+        "AutoEnable":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to automatically enable new organization accounts as member accounts in the organization behavior graph.</p>"
+        }
+      }
+    },
+    "UserAgent":{"type":"string"},
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code associated with the validation failure.</p>"
+        },
+        "ErrorCodeReason":{
+          "shape":"ErrorCodeReason",
+          "documentation":"<p> An explanation of why validation failed.</p>"
+        }
+      },
+      "documentation":"<p>The request parameters are invalid.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "Value":{
+      "type":"string",
+      "max":500,
+      "min":1
+    },
+    "VolumeUsageByDatasourcePackage":{
+      "type":"map",
+      "key":{"shape":"DatasourcePackage"},
+      "value":{"shape":"DatasourcePackageUsageInfo"}
+    }
+  },
+  "documentation":"<p>Detective uses machine learning and purpose-built visualizations to help you to analyze and investigate security issues across your Amazon Web Services (Amazon Web Services) workloads. Detective automatically extracts time-based events such as login attempts, API calls, and network traffic from CloudTrail and Amazon Virtual Private Cloud (Amazon VPC) flow logs. It also extracts findings detected by Amazon GuardDuty.</p> <p>The Detective API primarily supports the creation and management of behavior graphs. A behavior graph contains the extracted data from a set of member accounts, and is created and managed by an administrator account.</p> <p>To add a member account to the behavior graph, the administrator account sends an invitation to the account. When the account accepts the invitation, it becomes a member account in the behavior graph.</p> <p>Detective is also integrated with Organizations. The organization management account designates the Detective administrator account for the organization. That account becomes the administrator account for the organization behavior graph. The Detective administrator account is also the delegated administrator account for Detective in Organizations.</p> <p>The Detective administrator account can enable any organization account as a member account in the organization behavior graph. The organization accounts do not receive invitations. The Detective administrator account can also invite other accounts to the organization behavior graph.</p> <p>Every behavior graph is specific to a Region. You can only use the API to manage behavior graphs that belong to the Region that is associated with the currently selected endpoint.</p> <p>The administrator account for a behavior graph can use the Detective API to do the following:</p> <ul> <li> <p>Enable and disable Detective. Enabling Detective creates a new behavior graph.</p> </li> <li> <p>View the list of member accounts in a behavior graph.</p> </li> <li> <p>Add member accounts to a behavior graph.</p> </li> <li> <p>Remove member accounts from a behavior graph.</p> </li> <li> <p>Apply tags to a behavior graph.</p> </li> </ul> <p>The organization management account can use the Detective API to select the delegated administrator for Detective.</p> <p>The Detective administrator account for an organization can use the Detective API to do the following:</p> <ul> <li> <p>Perform all of the functions of an administrator account.</p> </li> <li> <p>Determine whether to automatically enable new organization accounts as member accounts in the organization behavior graph.</p> </li> </ul> <p>An invited member account can use the Detective API to do the following:</p> <ul> <li> <p>View the list of behavior graphs that they are invited to.</p> </li> <li> <p>Accept an invitation to contribute to a behavior graph.</p> </li> <li> <p>Decline an invitation to contribute to a behavior graph.</p> </li> <li> <p>Remove their account from a behavior graph.</p> </li> </ul> <p>All API actions are logged as CloudTrail events. See <a href=\"https://docs.aws.amazon.com/detective/latest/userguide/logging-using-cloudtrail.html\">Logging Detective API Calls with CloudTrail</a>.</p> <note> <p>We replaced the term \"master account\" with the term \"administrator account\". An administrator account is used to centrally manage multiple accounts. In the case of Detective, the administrator account manages the accounts in their behavior graph.</p> </note>"
+}

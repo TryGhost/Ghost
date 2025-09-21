@@ -1,0 +1,3964 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-09-28",
+    "endpointPrefix":"codecatalyst",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon CodeCatalyst",
+    "serviceId":"CodeCatalyst",
+    "signatureVersion":"bearer",
+    "signingName":"codecatalyst",
+    "uid":"codecatalyst-2022-09-28"
+  },
+  "operations":{
+    "CreateAccessToken":{
+      "name":"CreateAccessToken",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/accessTokens",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateAccessTokenRequest"},
+      "output":{"shape":"CreateAccessTokenResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a personal access token (PAT) for the current user. A personal access token (PAT) is similar to a password. It is associated with your user identity for use across all spaces and projects in Amazon CodeCatalyst. You use PATs to access CodeCatalyst from resources that include integrated development environments (IDEs) and Git-based source repositories. PATs represent you in Amazon CodeCatalyst and you can manage them in your user settings.For more information, see <a href=\"https://docs.aws.amazon.com/codecatalyst/latest/userguide/ipa-tokens-keys.html\">Managing personal access tokens in Amazon CodeCatalyst</a>.</p>"
+    },
+    "CreateDevEnvironment":{
+      "name":"CreateDevEnvironment",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateDevEnvironmentRequest"},
+      "output":{"shape":"CreateDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a Dev Environment in Amazon CodeCatalyst, a cloud-based development environment that you can use to quickly work on the code stored in the source repositories of your project. </p> <note> <p>When created in the Amazon CodeCatalyst console, by default a Dev Environment is configured to have a 2 core processor, 4GB of RAM, and 16GB of persistent storage. None of these defaults apply to a Dev Environment created programmatically.</p> </note>",
+      "idempotent":true
+    },
+    "CreateProject":{
+      "name":"CreateProject",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateProjectRequest"},
+      "output":{"shape":"CreateProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a project in a specified space.</p>",
+      "idempotent":true
+    },
+    "CreateSourceRepository":{
+      "name":"CreateSourceRepository",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{name}",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSourceRepositoryRequest"},
+      "output":{"shape":"CreateSourceRepositoryResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an empty Git-based source repository in a specified project. The repository is created with an initial empty commit with a default branch named <code>main</code>.</p>",
+      "idempotent":true
+    },
+    "CreateSourceRepositoryBranch":{
+      "name":"CreateSourceRepositoryBranch",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{sourceRepositoryName}/branches/{name}",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSourceRepositoryBranchRequest"},
+      "output":{"shape":"CreateSourceRepositoryBranchResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a branch in a specified source repository in Amazon CodeCatalyst. </p> <note> <p>This API only creates a branch in a source repository hosted in Amazon CodeCatalyst. You cannot use this API to create a branch in a linked repository.</p> </note>",
+      "idempotent":true
+    },
+    "DeleteAccessToken":{
+      "name":"DeleteAccessToken",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/accessTokens/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteAccessTokenRequest"},
+      "output":{"shape":"DeleteAccessTokenResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a specified personal access token (PAT). A personal access token can only be deleted by the user who created it.</p>",
+      "idempotent":true
+    },
+    "DeleteDevEnvironment":{
+      "name":"DeleteDevEnvironment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDevEnvironmentRequest"},
+      "output":{"shape":"DeleteDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a Dev Environment. </p>",
+      "idempotent":true
+    },
+    "DeleteProject":{
+      "name":"DeleteProject",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteProjectRequest"},
+      "output":{"shape":"DeleteProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a project in a space.</p>",
+      "idempotent":true
+    },
+    "DeleteSourceRepository":{
+      "name":"DeleteSourceRepository",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSourceRepositoryRequest"},
+      "output":{"shape":"DeleteSourceRepositoryResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a source repository in Amazon CodeCatalyst. You cannot use this API to delete a linked repository. It can only be used to delete a Amazon CodeCatalyst source repository.</p>",
+      "idempotent":true
+    },
+    "DeleteSpace":{
+      "name":"DeleteSpace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/spaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSpaceRequest"},
+      "output":{"shape":"DeleteSpaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a space.</p> <important> <p>Deleting a space cannot be undone. Additionally, since space names must be unique across Amazon CodeCatalyst, you cannot reuse names of deleted spaces.</p> </important>",
+      "idempotent":true
+    },
+    "GetDevEnvironment":{
+      "name":"GetDevEnvironment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDevEnvironmentRequest"},
+      "output":{"shape":"GetDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a Dev Environment for a source repository in a project. Dev Environments are specific to the user who creates them.</p>"
+    },
+    "GetProject":{
+      "name":"GetProject",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetProjectRequest"},
+      "output":{"shape":"GetProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a project.</p>"
+    },
+    "GetSourceRepository":{
+      "name":"GetSourceRepository",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSourceRepositoryRequest"},
+      "output":{"shape":"GetSourceRepositoryResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a source repository.</p>"
+    },
+    "GetSourceRepositoryCloneUrls":{
+      "name":"GetSourceRepositoryCloneUrls",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{sourceRepositoryName}/cloneUrls",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSourceRepositoryCloneUrlsRequest"},
+      "output":{"shape":"GetSourceRepositoryCloneUrlsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about the URLs that can be used with a Git client to clone a source repository.</p>"
+    },
+    "GetSpace":{
+      "name":"GetSpace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSpaceRequest"},
+      "output":{"shape":"GetSpaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about an space.</p>"
+    },
+    "GetSubscription":{
+      "name":"GetSubscription",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/subscription",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSubscriptionRequest"},
+      "output":{"shape":"GetSubscriptionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about the Amazon Web Services account used for billing purposes and the billing plan for the space.</p>"
+    },
+    "GetUserDetails":{
+      "name":"GetUserDetails",
+      "http":{
+        "method":"GET",
+        "requestUri":"/userDetails",
+        "responseCode":200
+      },
+      "input":{"shape":"GetUserDetailsRequest"},
+      "output":{"shape":"GetUserDetailsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a user. </p>"
+    },
+    "GetWorkflow":{
+      "name":"GetWorkflow",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/workflows/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkflowRequest"},
+      "output":{"shape":"GetWorkflowResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a workflow.</p>"
+    },
+    "GetWorkflowRun":{
+      "name":"GetWorkflowRun",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/workflowRuns/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkflowRunRequest"},
+      "output":{"shape":"GetWorkflowRunResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a specified run of a workflow.</p>"
+    },
+    "ListAccessTokens":{
+      "name":"ListAccessTokens",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/accessTokens",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAccessTokensRequest"},
+      "output":{"shape":"ListAccessTokensResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all personal access tokens (PATs) associated with the user who calls the API. You can only list PATs associated with your Amazon Web Services Builder ID.</p>"
+    },
+    "ListDevEnvironmentSessions":{
+      "name":"ListDevEnvironmentSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{devEnvironmentId}/sessions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevEnvironmentSessionsRequest"},
+      "output":{"shape":"ListDevEnvironmentSessionsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of active sessions for a Dev Environment in a project.</p>"
+    },
+    "ListDevEnvironments":{
+      "name":"ListDevEnvironments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/devEnvironments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevEnvironmentsRequest"},
+      "output":{"shape":"ListDevEnvironmentsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of Dev Environments in a project.</p>"
+    },
+    "ListEventLogs":{
+      "name":"ListEventLogs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/eventLogs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEventLogsRequest"},
+      "output":{"shape":"ListEventLogsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of events that occurred during a specific time in a space. You can use these events to audit user and system activity in a space. For more information, see <a href=\"https://docs.aws.amazon.com/codecatalyst/latest/userguide/ipa-monitoring.html\">Monitoring</a> in the <i>Amazon CodeCatalyst User Guide</i>.</p> <note> <p>ListEventLogs guarantees events for the last 30 days in a given space. You can also view and retrieve a list of management events over the last 90 days for Amazon CodeCatalyst in the CloudTrail console by viewing Event history, or by creating a trail to create and maintain a record of events that extends past 90 days. For more information, see <a href=\"https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html\">Working with CloudTrail Event History</a> and <a href=\"https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-getting-started.html\">Working with CloudTrail trails</a>.</p> </note>"
+    },
+    "ListProjects":{
+      "name":"ListProjects",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects",
+        "responseCode":200
+      },
+      "input":{"shape":"ListProjectsRequest"},
+      "output":{"shape":"ListProjectsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of projects.</p>"
+    },
+    "ListSourceRepositories":{
+      "name":"ListSourceRepositories",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSourceRepositoriesRequest"},
+      "output":{"shape":"ListSourceRepositoriesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of source repositories in a project.</p>"
+    },
+    "ListSourceRepositoryBranches":{
+      "name":"ListSourceRepositoryBranches",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/sourceRepositories/{sourceRepositoryName}/branches",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSourceRepositoryBranchesRequest"},
+      "output":{"shape":"ListSourceRepositoryBranchesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of branches in a specified source repository.</p>"
+    },
+    "ListSpaces":{
+      "name":"ListSpaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSpacesRequest"},
+      "output":{"shape":"ListSpacesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of spaces.</p>"
+    },
+    "ListWorkflowRuns":{
+      "name":"ListWorkflowRuns",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/workflowRuns",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkflowRunsRequest"},
+      "output":{"shape":"ListWorkflowRunsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of workflow runs of a specified workflow.</p>"
+    },
+    "ListWorkflows":{
+      "name":"ListWorkflows",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/workflows",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkflowsRequest"},
+      "output":{"shape":"ListWorkflowsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of workflows in a specified project.</p>"
+    },
+    "StartDevEnvironment":{
+      "name":"StartDevEnvironment",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartDevEnvironmentRequest"},
+      "output":{"shape":"StartDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts a specified Dev Environment and puts it into an active state. </p>",
+      "idempotent":true
+    },
+    "StartDevEnvironmentSession":{
+      "name":"StartDevEnvironmentSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}/session",
+        "responseCode":200
+      },
+      "input":{"shape":"StartDevEnvironmentSessionRequest"},
+      "output":{"shape":"StartDevEnvironmentSessionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts a session for a specified Dev Environment.</p>"
+    },
+    "StartWorkflowRun":{
+      "name":"StartWorkflowRun",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/workflowRuns",
+        "responseCode":200
+      },
+      "input":{"shape":"StartWorkflowRunRequest"},
+      "output":{"shape":"StartWorkflowRunResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Begins a run of a specified workflow.</p>",
+      "idempotent":true
+    },
+    "StopDevEnvironment":{
+      "name":"StopDevEnvironment",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopDevEnvironmentRequest"},
+      "output":{"shape":"StopDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Pauses a specified Dev Environment and places it in a non-running state. Stopped Dev Environments do not consume compute minutes.</p>",
+      "idempotent":true
+    },
+    "StopDevEnvironmentSession":{
+      "name":"StopDevEnvironmentSession",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}/session/{sessionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"StopDevEnvironmentSessionRequest"},
+      "output":{"shape":"StopDevEnvironmentSessionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Stops a session for a specified Dev Environment.</p>",
+      "idempotent":true
+    },
+    "UpdateDevEnvironment":{
+      "name":"UpdateDevEnvironment",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{projectName}/devEnvironments/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDevEnvironmentRequest"},
+      "output":{"shape":"UpdateDevEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Changes one or more values for a Dev Environment. Updating certain values of the Dev Environment will cause a restart.</p>",
+      "idempotent":true
+    },
+    "UpdateProject":{
+      "name":"UpdateProject",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/spaces/{spaceName}/projects/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateProjectRequest"},
+      "output":{"shape":"UpdateProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Changes one or more values for a project.</p>",
+      "idempotent":true
+    },
+    "UpdateSpace":{
+      "name":"UpdateSpace",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/spaces/{name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSpaceRequest"},
+      "output":{"shape":"UpdateSpaceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Changes one or more values for a space.</p>",
+      "idempotent":true
+    },
+    "VerifySession":{
+      "name":"VerifySession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/session",
+        "responseCode":200
+      },
+      "output":{"shape":"VerifySessionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Verifies whether the calling user has a valid Amazon CodeCatalyst login and session. If successful, this returns the ID of the user in Amazon CodeCatalyst.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because you don't have sufficient access to perform this action. Verify that you are a member of a role that allows this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessTokenId":{
+      "type":"string",
+      "max":36,
+      "min":1
+    },
+    "AccessTokenName":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "AccessTokenSecret":{
+      "type":"string",
+      "max":4000,
+      "min":1,
+      "sensitive":true
+    },
+    "AccessTokenSummaries":{
+      "type":"list",
+      "member":{"shape":"AccessTokenSummary"}
+    },
+    "AccessTokenSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name"
+      ],
+      "members":{
+        "id":{
+          "shape":"AccessTokenId",
+          "documentation":"<p>The system-generated ID of the personal access token.</p>"
+        },
+        "name":{
+          "shape":"AccessTokenName",
+          "documentation":"<p>The friendly name of the personal access token.</p>"
+        },
+        "expiresTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time when the personal access token will expire, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        }
+      },
+      "documentation":"<p>Information about a specified personal access token (PAT).</p>"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ComparisonOperator":{
+      "type":"string",
+      "enum":[
+        "EQ",
+        "GT",
+        "GE",
+        "LT",
+        "LE",
+        "BEGINS_WITH"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because the requested operation would cause a conflict with the current state of a service resource associated with the request. Another user might have updated the resource. Reload, make sure you have the latest data, and then try again.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateAccessTokenRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"AccessTokenName",
+          "documentation":"<p>The friendly name of the personal access token.</p>"
+        },
+        "expiresTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the personal access token expires, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        }
+      }
+    },
+    "CreateAccessTokenResponse":{
+      "type":"structure",
+      "required":[
+        "secret",
+        "name",
+        "expiresTime",
+        "accessTokenId"
+      ],
+      "members":{
+        "secret":{
+          "shape":"AccessTokenSecret",
+          "documentation":"<p>The secret value of the personal access token.</p>"
+        },
+        "name":{
+          "shape":"AccessTokenName",
+          "documentation":"<p>The friendly name of the personal access token.</p>"
+        },
+        "expiresTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the personal access token expires, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>. If not specified, the default is one year from creation.</p>"
+        },
+        "accessTokenId":{
+          "shape":"AccessTokenId",
+          "documentation":"<p>The system-generated unique ID of the access token.</p>"
+        }
+      }
+    },
+    "CreateDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "instanceType",
+        "persistentStorage"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "repositories":{
+          "shape":"RepositoriesInput",
+          "documentation":"<p>The source repository that contains the branch to clone into the Dev Environment. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A user-specified idempotency token. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries return the result from the original successful request and have no additional effect.</p>"
+        },
+        "alias":{
+          "shape":"CreateDevEnvironmentRequestAliasString",
+          "documentation":"<p>The user-defined alias for a Dev Environment.</p>"
+        },
+        "ides":{
+          "shape":"IdeConfigurationList",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for a Dev Environment.</p> <note> <p>An IDE is required to create a Dev Environment. For Dev Environment creation, this field contains configuration information and must be provided. </p> </note>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type to use for the Dev Environment. </p>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes. Only whole integers are allowed. Dev Environments consume compute minutes when running.</p>"
+        },
+        "persistentStorage":{
+          "shape":"PersistentStorageConfiguration",
+          "documentation":"<p>Information about the amount of storage allocated to the Dev Environment. </p> <note> <p>By default, a Dev Environment is configured to have 16GB of persistent storage when created from the Amazon CodeCatalyst console, but there is no default when programmatically creating a Dev Environment. Valid values for persistent storage are based on memory sizes in 16GB increments. Valid values are 16, 32, and 64.</p> </note>"
+        },
+        "vpcConnectionName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the connection that will be used to connect to Amazon VPC, if any.</p>"
+        }
+      }
+    },
+    "CreateDevEnvironmentRequestAliasString":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "CreateDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>"
+        },
+        "vpcConnectionName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the connection used to connect to Amazon VPC used when the Dev Environment was created, if any.</p>"
+        }
+      }
+    },
+    "CreateProjectRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "displayName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "displayName":{
+          "shape":"ProjectDisplayName",
+          "documentation":"<p>The friendly name of the project that will be displayed to users.</p>"
+        },
+        "description":{
+          "shape":"ProjectDescription",
+          "documentation":"<p>The description of the project. This description will be displayed to all users of the project. We recommend providing a brief description of the project and its intended purpose.</p>"
+        }
+      }
+    },
+    "CreateProjectResponse":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the project.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      }
+    },
+    "CreateSourceRepositoryBranchRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "sourceRepositoryName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "sourceRepositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the repository where you want to create a branch.</p>",
+          "location":"uri",
+          "locationName":"sourceRepositoryName"
+        },
+        "name":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name for the branch you're creating.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "headCommitId":{
+          "shape":"String",
+          "documentation":"<p>The commit ID in an existing branch from which you want to create the new branch.</p>"
+        }
+      }
+    },
+    "CreateSourceRepositoryBranchResponse":{
+      "type":"structure",
+      "members":{
+        "ref":{
+          "shape":"SourceRepositoryBranchRefString",
+          "documentation":"<p>The Git reference name of the branch.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the newly created branch.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time the branch was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "headCommitId":{
+          "shape":"String",
+          "documentation":"<p>The commit ID of the tip of the newly created branch.</p>"
+        }
+      }
+    },
+    "CreateSourceRepositoryRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository. For more information about name requirements, see <a href=\"https://docs.aws.amazon.com/codecatalyst/latest/userguide/source-quotas.html\">Quotas for source repositories</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"SourceRepositoryDescriptionString",
+          "documentation":"<p>The description of the source repository.</p>"
+        }
+      }
+    },
+    "CreateSourceRepositoryResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>"
+        },
+        "description":{
+          "shape":"SourceRepositoryDescriptionString",
+          "documentation":"<p>The description of the source repository.</p>"
+        }
+      }
+    },
+    "DeleteAccessTokenRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"AccessTokenId",
+          "documentation":"<p>The ID of the personal access token to delete. You can find the IDs of all PATs associated with your Amazon Web Services Builder ID in a space by calling <a>ListAccessTokens</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "DeleteAccessTokenResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment you want to delete. To retrieve a list of Dev Environment IDs, use <a>ListDevEnvironments</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "DeleteDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the deleted Dev Environment. </p>"
+        }
+      }
+    },
+    "DeleteProjectRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space. To retrieve a list of project names, use <a>ListProjects</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteProjectResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name displayed to users of the project in Amazon CodeCatalyst.</p>"
+        }
+      }
+    },
+    "DeleteSourceRepositoryRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteSourceRepositoryResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the repository.</p>"
+        }
+      }
+    },
+    "DeleteSpaceRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space. To retrieve a list of space names, use <a>ListSpaces</a>.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteSpaceResponse":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the space displayed to users of the space in Amazon CodeCatalyst.</p>"
+        }
+      }
+    },
+    "DevEnvironmentAccessDetails":{
+      "type":"structure",
+      "required":[
+        "streamUrl",
+        "tokenValue"
+      ],
+      "members":{
+        "streamUrl":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The URL used to send commands to and from the Dev Environment.</p>"
+        },
+        "tokenValue":{
+          "shape":"SensitiveString",
+          "documentation":"<p>An encrypted token value that contains session and caller information used to authenticate the connection.</p>"
+        }
+      },
+      "documentation":"<p>Information about connection details for a Dev Environment.</p>",
+      "sensitive":true
+    },
+    "DevEnvironmentRepositorySummaries":{
+      "type":"list",
+      "member":{"shape":"DevEnvironmentRepositorySummary"}
+    },
+    "DevEnvironmentRepositorySummary":{
+      "type":"structure",
+      "required":["repositoryName"],
+      "members":{
+        "repositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>"
+        },
+        "branchName":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the branch in a source repository cloned into the Dev Environment. </p>"
+        }
+      },
+      "documentation":"<p>Information about the source repsitory for a Dev Environment. </p>"
+    },
+    "DevEnvironmentSessionConfiguration":{
+      "type":"structure",
+      "required":["sessionType"],
+      "members":{
+        "sessionType":{
+          "shape":"DevEnvironmentSessionType",
+          "documentation":"<p>The type of the session.</p>"
+        },
+        "executeCommandSessionConfiguration":{
+          "shape":"ExecuteCommandSessionConfiguration",
+          "documentation":"<p>Information about optional commands that will be run on the Dev Environment when the SSH session begins.</p>"
+        }
+      },
+      "documentation":"<p>Information about the configuration of a Dev Environment session.</p>"
+    },
+    "DevEnvironmentSessionSummary":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "devEnvironmentId",
+        "startedTime",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "devEnvironmentId":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment.</p>"
+        },
+        "startedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the session started, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "id":{
+          "shape":"DevEnvironmentSessionSummaryIdString",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment session.</p>"
+        }
+      },
+      "documentation":"<p>Information about active sessions for a Dev Environment.</p>"
+    },
+    "DevEnvironmentSessionSummaryIdString":{
+      "type":"string",
+      "max":96,
+      "min":1
+    },
+    "DevEnvironmentSessionType":{
+      "type":"string",
+      "enum":[
+        "SSM",
+        "SSH"
+      ]
+    },
+    "DevEnvironmentSessionsSummaryList":{
+      "type":"list",
+      "member":{"shape":"DevEnvironmentSessionSummary"}
+    },
+    "DevEnvironmentStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "RUNNING",
+        "STARTING",
+        "STOPPING",
+        "STOPPED",
+        "FAILED",
+        "DELETING",
+        "DELETED"
+      ]
+    },
+    "DevEnvironmentSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "lastUpdatedTime",
+        "creatorId",
+        "status",
+        "repositories",
+        "instanceType",
+        "inactivityTimeoutMinutes",
+        "persistentStorage"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID for the Dev Environment. </p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time when the Dev Environment was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "creatorId":{
+          "shape":"DevEnvironmentSummaryCreatorIdString",
+          "documentation":"<p>The system-generated unique ID of the user who created the Dev Environment. </p>"
+        },
+        "status":{
+          "shape":"DevEnvironmentStatus",
+          "documentation":"<p>The status of the Dev Environment. </p>"
+        },
+        "statusReason":{
+          "shape":"StatusReason",
+          "documentation":"<p>The reason for the status.</p>"
+        },
+        "repositories":{
+          "shape":"DevEnvironmentRepositorySummaries",
+          "documentation":"<p>Information about the repositories that will be cloned into the Dev Environment. If no rvalue is specified, no repository is cloned.</p>"
+        },
+        "alias":{
+          "shape":"DevEnvironmentSummaryAliasString",
+          "documentation":"<p>The user-specified alias for the Dev Environment.</p>"
+        },
+        "ides":{
+          "shape":"Ides",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for a Dev Environment.</p>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type used for the Dev Environment. </p>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes. Dev Environments consume compute minutes when running.</p>"
+        },
+        "persistentStorage":{
+          "shape":"PersistentStorage",
+          "documentation":"<p>Information about the configuration of persistent storage for the Dev Environment.</p>"
+        },
+        "vpcConnectionName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the connection used to connect to Amazon VPC used when the Dev Environment was created, if any.</p>"
+        }
+      },
+      "documentation":"<p>Information about a Dev Environment. </p>"
+    },
+    "DevEnvironmentSummaryAliasString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "DevEnvironmentSummaryCreatorIdString":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "DevEnvironmentSummaryList":{
+      "type":"list",
+      "member":{"shape":"DevEnvironmentSummary"}
+    },
+    "EmailAddress":{
+      "type":"structure",
+      "members":{
+        "email":{
+          "shape":"String",
+          "documentation":"<p>The email address.</p>"
+        },
+        "verified":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the email address has been verified.</p>"
+        }
+      },
+      "documentation":"<p>Information about an email address.</p>"
+    },
+    "EventLogEntries":{
+      "type":"list",
+      "member":{"shape":"EventLogEntry"}
+    },
+    "EventLogEntry":{
+      "type":"structure",
+      "required":[
+        "id",
+        "eventName",
+        "eventType",
+        "eventCategory",
+        "eventSource",
+        "eventTime",
+        "operationType",
+        "userIdentity"
+      ],
+      "members":{
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The system-generated unique ID of the event.</p>"
+        },
+        "eventName":{
+          "shape":"String",
+          "documentation":"<p>The name of the event.</p>"
+        },
+        "eventType":{
+          "shape":"String",
+          "documentation":"<p>The type of the event.</p>"
+        },
+        "eventCategory":{
+          "shape":"String",
+          "documentation":"<p>The category for the event.</p>"
+        },
+        "eventSource":{
+          "shape":"String",
+          "documentation":"<p>The source of the event.</p>"
+        },
+        "eventTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time the event took place, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "operationType":{
+          "shape":"OperationType",
+          "documentation":"<p>The type of the event.</p>"
+        },
+        "userIdentity":{
+          "shape":"UserIdentity",
+          "documentation":"<p>The system-generated unique ID of the user whose actions are recorded in the event.</p>"
+        },
+        "projectInformation":{
+          "shape":"ProjectInformation",
+          "documentation":"<p>Information about the project where the event occurred.</p>"
+        },
+        "requestId":{
+          "shape":"String",
+          "documentation":"<p>The system-generated unique ID of the request.</p>"
+        },
+        "requestPayload":{
+          "shape":"EventPayload",
+          "documentation":"<p>Information about the payload of the request.</p>"
+        },
+        "responsePayload":{
+          "shape":"EventPayload",
+          "documentation":"<p>Information about the payload of the response, if any.</p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the error, if any.</p>"
+        },
+        "sourceIpAddress":{
+          "shape":"String",
+          "documentation":"<p>The IP address of the user whose actions are recorded in the event.</p>"
+        },
+        "userAgent":{
+          "shape":"String",
+          "documentation":"<p>The user agent whose actions are recorded in the event.</p>"
+        }
+      },
+      "documentation":"<p>Information about an entry in an event log of Amazon CodeCatalyst activity.</p>"
+    },
+    "EventPayload":{
+      "type":"structure",
+      "members":{
+        "contentType":{
+          "shape":"String",
+          "documentation":"<p>The type of content in the event payload.</p>"
+        },
+        "data":{
+          "shape":"String",
+          "documentation":"<p>The data included in the event payload.</p>"
+        }
+      },
+      "documentation":"<p>Information about the payload of an event recording Amazon CodeCatalyst activity.</p>"
+    },
+    "ExecuteCommandSessionConfiguration":{
+      "type":"structure",
+      "required":["command"],
+      "members":{
+        "command":{
+          "shape":"ExecuteCommandSessionConfigurationCommandString",
+          "documentation":"<p>The command used at the beginning of the SSH session to a Dev Environment.</p>"
+        },
+        "arguments":{
+          "shape":"ExecuteCommandSessionConfigurationArguments",
+          "documentation":"<p>An array of arguments containing arguments and members.</p>"
+        }
+      },
+      "documentation":"<p>Information about the commands that will be run on a Dev Environment when an SSH session begins.</p>"
+    },
+    "ExecuteCommandSessionConfigurationArguments":{
+      "type":"list",
+      "member":{"shape":"ExecuteCommandSessionConfigurationArgumentsMemberString"}
+    },
+    "ExecuteCommandSessionConfigurationArgumentsMemberString":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ExecuteCommandSessionConfigurationCommandString":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "key",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"String",
+          "documentation":"<p>A key that can be used to sort results.</p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p>The values of the key.</p>"
+        },
+        "comparisonOperator":{
+          "shape":"String",
+          "documentation":"<p>The operator used to compare the fields.</p>"
+        }
+      },
+      "documentation":"<p>Information about a filter used to limit results of a query.</p>"
+    },
+    "FilterKey":{
+      "type":"string",
+      "enum":[
+        "hasAccessTo",
+        "name"
+      ]
+    },
+    "Filters":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "GetDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment for which you want to view information. To retrieve a list of Dev Environment IDs, use <a>ListDevEnvironments</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "lastUpdatedTime",
+        "creatorId",
+        "status",
+        "repositories",
+        "instanceType",
+        "inactivityTimeoutMinutes",
+        "persistentStorage"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time when the Dev Environment was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "creatorId":{
+          "shape":"GetDevEnvironmentResponseCreatorIdString",
+          "documentation":"<p>The system-generated unique ID of the user who created the Dev Environment. </p>"
+        },
+        "status":{
+          "shape":"DevEnvironmentStatus",
+          "documentation":"<p>The current status of the Dev Environment.</p>"
+        },
+        "statusReason":{
+          "shape":"StatusReason",
+          "documentation":"<p>The reason for the status.</p>"
+        },
+        "repositories":{
+          "shape":"DevEnvironmentRepositorySummaries",
+          "documentation":"<p>The source repository that contains the branch cloned into the Dev Environment. </p>"
+        },
+        "alias":{
+          "shape":"GetDevEnvironmentResponseAliasString",
+          "documentation":"<p>The user-specified alias for the Dev Environment. </p>"
+        },
+        "ides":{
+          "shape":"Ides",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for the Dev Environment. </p>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type to use for the Dev Environment. </p>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes.</p>"
+        },
+        "persistentStorage":{
+          "shape":"PersistentStorage",
+          "documentation":"<p>Information about the amount of storage allocated to the Dev Environment. By default, a Dev Environment is configured to have 16GB of persistent storage.</p>"
+        },
+        "vpcConnectionName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the connection used to connect to Amazon VPC used when the Dev Environment was created, if any.</p>"
+        }
+      }
+    },
+    "GetDevEnvironmentResponseAliasString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "GetDevEnvironmentResponseCreatorIdString":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "GetProjectRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "GetProjectResponse":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the project displayed to users in Amazon CodeCatalyst.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      }
+    },
+    "GetSourceRepositoryCloneUrlsRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "sourceRepositoryName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "sourceRepositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>",
+          "location":"uri",
+          "locationName":"sourceRepositoryName"
+        }
+      }
+    },
+    "GetSourceRepositoryCloneUrlsResponse":{
+      "type":"structure",
+      "required":["https"],
+      "members":{
+        "https":{
+          "shape":"String",
+          "documentation":"<p>The HTTPS URL to use when cloning the source repository.</p>"
+        }
+      }
+    },
+    "GetSourceRepositoryRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "GetSourceRepositoryResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "name",
+        "lastUpdatedTime",
+        "createdTime"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>"
+        },
+        "description":{
+          "shape":"SourceRepositoryDescriptionString",
+          "documentation":"<p>The description of the source repository.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the source repository was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the source repository was created, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        }
+      }
+    },
+    "GetSpaceRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "GetSpaceResponse":{
+      "type":"structure",
+      "required":[
+        "name",
+        "regionName"
+      ],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "regionName":{
+          "shape":"RegionString",
+          "documentation":"<p>The Amazon Web Services Region where the space exists.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the space displayed to users.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the space.</p>"
+        }
+      }
+    },
+    "GetSubscriptionRequest":{
+      "type":"structure",
+      "required":["spaceName"],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        }
+      }
+    },
+    "GetSubscriptionResponse":{
+      "type":"structure",
+      "members":{
+        "subscriptionType":{
+          "shape":"String",
+          "documentation":"<p>The type of the billing plan for the space.</p>"
+        },
+        "awsAccountName":{
+          "shape":"NameString",
+          "documentation":"<p>The display name of the Amazon Web Services account used for billing for the space.</p>"
+        },
+        "pendingSubscriptionType":{
+          "shape":"String",
+          "documentation":"<p>The type of the billing plan that the space will be changed to at the start of the next billing cycle. This applies only to changes that reduce the functionality available for the space. Billing plan changes that increase functionality are applied immediately. For more information, see <a href=\"https://codecatalyst.aws/explore/pricing\">Pricing</a>.</p>"
+        },
+        "pendingSubscriptionStartTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The day and time the pending change will be applied to the space, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        }
+      }
+    },
+    "GetUserDetailsRequest":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"GetUserDetailsRequestIdString",
+          "documentation":"<p>The system-generated unique ID of the user. </p>",
+          "location":"querystring",
+          "locationName":"id"
+        },
+        "userName":{
+          "shape":"GetUserDetailsRequestUserNameString",
+          "documentation":"<p>The name of the user as displayed in Amazon CodeCatalyst.</p>",
+          "location":"querystring",
+          "locationName":"userName"
+        }
+      }
+    },
+    "GetUserDetailsRequestIdString":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "GetUserDetailsRequestUserNameString":{
+      "type":"string",
+      "max":100,
+      "min":3,
+      "pattern":"[a-zA-Z0-9_.-]{3,100}"
+    },
+    "GetUserDetailsResponse":{
+      "type":"structure",
+      "members":{
+        "userId":{
+          "shape":"String",
+          "documentation":"<p>The system-generated unique ID of the user.</p>"
+        },
+        "userName":{
+          "shape":"String",
+          "documentation":"<p>The name of the user as displayed in Amazon CodeCatalyst.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name displayed for the user in Amazon CodeCatalyst.</p>"
+        },
+        "primaryEmail":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The email address provided by the user when they signed up.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p/>"
+        }
+      }
+    },
+    "GetWorkflowRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "id",
+        "projectName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow. To rerieve a list of workflow IDs, use <a>ListWorkflows</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "projectName":{
+          "shape":"GetWorkflowRequestProjectNameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        }
+      }
+    },
+    "GetWorkflowRequestProjectNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "GetWorkflowResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "name",
+        "definition",
+        "createdTime",
+        "lastUpdatedTime",
+        "runMode",
+        "status"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "sourceRepositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository where the workflow YAML is stored.</p>"
+        },
+        "sourceBranchName":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the branch that contains the workflow YAML.</p>"
+        },
+        "definition":{
+          "shape":"WorkflowDefinition",
+          "documentation":"<p>Information about the workflow definition file for the workflow.</p>"
+        },
+        "createdTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow was created, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "runMode":{
+          "shape":"WorkflowRunMode",
+          "documentation":"<p>The behavior to use when multiple workflows occur at the same time. For more information, see <a href=\"https://docs.aws.amazon.com/codecatalyst/latest/userguide/workflows-configure-runs.html\">https://docs.aws.amazon.com/codecatalyst/latest/userguide/workflows-configure-runs.html</a> in the Amazon CodeCatalyst User Guide.</p>"
+        },
+        "status":{
+          "shape":"WorkflowStatus",
+          "documentation":"<p>The status of the workflow.</p>"
+        }
+      }
+    },
+    "GetWorkflowRunRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "id",
+        "projectName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow run. To retrieve a list of workflow run IDs, use <a>ListWorkflowRuns</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "projectName":{
+          "shape":"GetWorkflowRunRequestProjectNameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        }
+      }
+    },
+    "GetWorkflowRunRequestProjectNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "GetWorkflowRunResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "workflowId",
+        "status",
+        "startTime",
+        "lastUpdatedTime"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow run.</p>"
+        },
+        "workflowId":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow.</p>"
+        },
+        "status":{
+          "shape":"WorkflowRunStatus",
+          "documentation":"<p>The status of the workflow run.</p>"
+        },
+        "statusReasons":{
+          "shape":"WorkflowRunStatusReasons",
+          "documentation":"<p>Information about the reasons for the status of the workflow run.</p>"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow run began, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow run ended, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow run status was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        }
+      }
+    },
+    "Ide":{
+      "type":"structure",
+      "members":{
+        "runtime":{
+          "shape":"IdeRuntimeString",
+          "documentation":"<p>A link to the IDE runtime image.</p>"
+        },
+        "name":{
+          "shape":"IdeNameString",
+          "documentation":"<p>The name of the IDE.</p>"
+        }
+      },
+      "documentation":"<p>Information about an integrated development environment (IDE) used in a Dev Environment.</p>"
+    },
+    "IdeConfiguration":{
+      "type":"structure",
+      "members":{
+        "runtime":{
+          "shape":"IdeConfigurationRuntimeString",
+          "documentation":"<p>A link to the IDE runtime image. </p> <note> <p>This parameter is not required for <code>VSCode</code>.</p> </note>"
+        },
+        "name":{
+          "shape":"IdeConfigurationNameString",
+          "documentation":"<p>The name of the IDE. Valid values include <code>Cloud9</code>, <code>IntelliJ</code>, <code>PyCharm</code>, <code>GoLand</code>, and <code>VSCode</code>.</p>"
+        }
+      },
+      "documentation":"<p>Information about the configuration of an integrated development environment (IDE) for a Dev Environment.</p>"
+    },
+    "IdeConfigurationList":{
+      "type":"list",
+      "member":{"shape":"IdeConfiguration"},
+      "max":1,
+      "min":0
+    },
+    "IdeConfigurationNameString":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "IdeConfigurationRuntimeString":{
+      "type":"string",
+      "max":400,
+      "min":1
+    },
+    "IdeNameString":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "IdeRuntimeString":{
+      "type":"string",
+      "max":400,
+      "min":1
+    },
+    "Ides":{
+      "type":"list",
+      "member":{"shape":"Ide"},
+      "max":1,
+      "min":0
+    },
+    "InactivityTimeoutMinutes":{
+      "type":"integer",
+      "max":1200,
+      "min":0
+    },
+    "InstanceType":{
+      "type":"string",
+      "enum":[
+        "dev.standard1.small",
+        "dev.standard1.medium",
+        "dev.standard1.large",
+        "dev.standard1.xlarge"
+      ]
+    },
+    "ListAccessTokensRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListAccessTokensRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        },
+        "nextToken":{
+          "shape":"ListAccessTokensRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListAccessTokensRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10
+    },
+    "ListAccessTokensRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListAccessTokensResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "items":{
+          "shape":"AccessTokenSummaries",
+          "documentation":"<p>A list of personal access tokens (PATs) associated with the calling user identity.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListDevEnvironmentSessionsRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "devEnvironmentId"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "devEnvironmentId":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment.</p>",
+          "location":"uri",
+          "locationName":"devEnvironmentId"
+        },
+        "nextToken":{
+          "shape":"ListDevEnvironmentSessionsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListDevEnvironmentSessionsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        }
+      }
+    },
+    "ListDevEnvironmentSessionsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListDevEnvironmentSessionsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListDevEnvironmentSessionsResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "items":{
+          "shape":"DevEnvironmentSessionsSummaryList",
+          "documentation":"<p>Information about each session retrieved in the list.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListDevEnvironmentsRequest":{
+      "type":"structure",
+      "required":["spaceName"],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "filters":{
+          "shape":"Filters",
+          "documentation":"<p>Information about filters to apply to narrow the results returned in the list.</p>"
+        },
+        "nextToken":{
+          "shape":"ListDevEnvironmentsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListDevEnvironmentsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        }
+      }
+    },
+    "ListDevEnvironmentsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListDevEnvironmentsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListDevEnvironmentsResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "items":{
+          "shape":"DevEnvironmentSummaryList",
+          "documentation":"<p>Information about the Dev Environments in a project.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListEventLogsRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "startTime",
+        "endTime"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time when you want to start retrieving events, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time after which you do not want any events retrieved, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "eventName":{
+          "shape":"String",
+          "documentation":"<p>The name of the event.</p>"
+        },
+        "nextToken":{
+          "shape":"ListEventLogsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListEventLogsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        }
+      }
+    },
+    "ListEventLogsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListEventLogsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListEventLogsResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"EventLogEntries",
+          "documentation":"<p>Information about each event retrieved in the list.</p>"
+        }
+      }
+    },
+    "ListProjectsRequest":{
+      "type":"structure",
+      "required":["spaceName"],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "nextToken":{
+          "shape":"ListProjectsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListProjectsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        },
+        "filters":{
+          "shape":"ProjectListFilters",
+          "documentation":"<p>Information about filters to apply to narrow the results returned in the list.</p>"
+        }
+      }
+    },
+    "ListProjectsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListProjectsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListProjectsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"ProjectSummaries",
+          "documentation":"<p>Information about the projects.</p>"
+        }
+      }
+    },
+    "ListSourceRepositoriesItem":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "lastUpdatedTime",
+        "createdTime"
+      ],
+      "members":{
+        "id":{
+          "shape":"SourceRepositoryIdString",
+          "documentation":"<p>The system-generated unique ID of the source repository.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>"
+        },
+        "description":{
+          "shape":"SourceRepositoryDescriptionString",
+          "documentation":"<p>The description of the repository, if any.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the source repository was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the source repository was created, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        }
+      },
+      "documentation":"<p>Information about a source repository returned in a list of source repositories.</p>"
+    },
+    "ListSourceRepositoriesItems":{
+      "type":"list",
+      "member":{"shape":"ListSourceRepositoriesItem"}
+    },
+    "ListSourceRepositoriesRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "nextToken":{
+          "shape":"ListSourceRepositoriesRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListSourceRepositoriesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        }
+      }
+    },
+    "ListSourceRepositoriesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListSourceRepositoriesRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListSourceRepositoriesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"ListSourceRepositoriesItems",
+          "documentation":"<p>Information about the source repositories.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListSourceRepositoryBranchesItem":{
+      "type":"structure",
+      "members":{
+        "ref":{
+          "shape":"SourceRepositoryBranchRefString",
+          "documentation":"<p>The Git reference name of the branch.</p>"
+        },
+        "name":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the branch.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time the branch was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "headCommitId":{
+          "shape":"String",
+          "documentation":"<p>The commit ID of the tip of the branch at the time of the request, also known as the head commit.</p>"
+        }
+      },
+      "documentation":"<p>Information about a branch of a source repository returned in a list of branches.</p>"
+    },
+    "ListSourceRepositoryBranchesItems":{
+      "type":"list",
+      "member":{"shape":"ListSourceRepositoryBranchesItem"}
+    },
+    "ListSourceRepositoryBranchesRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "sourceRepositoryName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "sourceRepositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>",
+          "location":"uri",
+          "locationName":"sourceRepositoryName"
+        },
+        "nextToken":{
+          "shape":"ListSourceRepositoryBranchesRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "maxResults":{
+          "shape":"ListSourceRepositoryBranchesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>"
+        }
+      }
+    },
+    "ListSourceRepositoryBranchesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListSourceRepositoryBranchesRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListSourceRepositoryBranchesResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"ListSourceRepositoryBranchesItems",
+          "documentation":"<p>Information about the source branches.</p>"
+        }
+      }
+    },
+    "ListSpacesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"ListSpacesRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        }
+      }
+    },
+    "ListSpacesRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "ListSpacesResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"SpaceSummaries",
+          "documentation":"<p>Information about the spaces. </p>"
+        }
+      }
+    },
+    "ListWorkflowRunsRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "workflowId":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the workflow. To retrieve a list of workflow IDs, use <a>ListWorkflows</a>.</p>",
+          "location":"querystring",
+          "locationName":"workflowId"
+        },
+        "projectName":{
+          "shape":"ListWorkflowRunsRequestProjectNameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "nextToken":{
+          "shape":"ListWorkflowRunsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListWorkflowRunsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "sortBy":{
+          "shape":"WorkflowRunSortCriteriaList",
+          "documentation":"<p>Information used to sort the items in the returned list.</p>"
+        }
+      }
+    },
+    "ListWorkflowRunsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListWorkflowRunsRequestNextTokenString":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ListWorkflowRunsRequestProjectNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "ListWorkflowRunsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"WorkflowRunSummaries",
+          "documentation":"<p>Information about the runs of a workflow.</p>"
+        }
+      }
+    },
+    "ListWorkflowsRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"ListWorkflowsRequestSpaceNameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "nextToken":{
+          "shape":"ListWorkflowsRequestNextTokenString",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListWorkflowsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to show in a single call to this API. If the number of results is larger than the number you specified, the response will include a <code>NextToken</code> element, which you can use to obtain additional results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "sortBy":{
+          "shape":"WorkflowSortCriteriaList",
+          "documentation":"<p>Information used to sort the items in the returned list.</p>"
+        }
+      }
+    },
+    "ListWorkflowsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListWorkflowsRequestNextTokenString":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ListWorkflowsRequestSpaceNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "ListWorkflowsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>A token returned from a call to this API to indicate the next batch of results to return, if any.</p>"
+        },
+        "items":{
+          "shape":"WorkflowSummaries",
+          "documentation":"<p>Information about the workflows in a project.</p>"
+        }
+      }
+    },
+    "NameString":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "OperationType":{
+      "type":"string",
+      "enum":[
+        "READONLY",
+        "MUTATION"
+      ]
+    },
+    "PersistentStorage":{
+      "type":"structure",
+      "required":["sizeInGiB"],
+      "members":{
+        "sizeInGiB":{
+          "shape":"PersistentStorageSizeInGiBInteger",
+          "documentation":"<p>The size of the persistent storage in gigabytes (specifically GiB).</p> <note> <p>Valid values for storage are based on memory sizes in 16GB increments. Valid values are 16, 32, and 64.</p> </note>"
+        }
+      },
+      "documentation":"<p>Information about the persistent storage for a Dev Environment.</p>"
+    },
+    "PersistentStorageConfiguration":{
+      "type":"structure",
+      "required":["sizeInGiB"],
+      "members":{
+        "sizeInGiB":{
+          "shape":"PersistentStorageConfigurationSizeInGiBInteger",
+          "documentation":"<p>The size of the persistent storage in gigabytes (specifically GiB).</p> <note> <p>Valid values for storage are based on memory sizes in 16GB increments. Valid values are 16, 32, and 64.</p> </note>"
+        }
+      },
+      "documentation":"<p>Information about the configuration of persistent storage for a Dev Environment. </p>"
+    },
+    "PersistentStorageConfigurationSizeInGiBInteger":{
+      "type":"integer",
+      "box":true,
+      "max":64,
+      "min":0
+    },
+    "PersistentStorageSizeInGiBInteger":{
+      "type":"integer",
+      "box":true,
+      "max":64,
+      "min":0
+    },
+    "ProjectDescription":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "pattern":"[a-zA-Z0-9]+(?:[-_a-zA-Z0-9.,;:/\\+=?&$%    ])*"
+    },
+    "ProjectDisplayName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\. ][a-zA-Z0-9]+)*"
+    },
+    "ProjectInformation":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "projectId":{
+          "shape":"String",
+          "documentation":"<p>The system-generated unique ID of the project.</p>"
+        }
+      },
+      "documentation":"<p>Information about a project in a space.</p>"
+    },
+    "ProjectListFilter":{
+      "type":"structure",
+      "required":[
+        "key",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"FilterKey",
+          "documentation":"<p>A key that can be used to sort results.</p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p>The values of the key.</p>"
+        },
+        "comparisonOperator":{
+          "shape":"ComparisonOperator",
+          "documentation":"<p>The operator used to compare the fields.</p>"
+        }
+      },
+      "documentation":"<p>nformation about the filter used to narrow the results returned in a list of projects.</p>"
+    },
+    "ProjectListFilters":{
+      "type":"list",
+      "member":{"shape":"ProjectListFilter"}
+    },
+    "ProjectSummaries":{
+      "type":"list",
+      "member":{"shape":"ProjectSummary"}
+    },
+    "ProjectSummary":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name displayed to users of the project in Amazon CodeCatalyst.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      },
+      "documentation":"<p>Information about a project.</p>"
+    },
+    "RegionString":{
+      "type":"string",
+      "max":16,
+      "min":3,
+      "pattern":"(us(?:-gov)?|af|ap|ca|cn|eu|sa)-(central|(?:north|south)?(?:east|west)?)-(\\d+)"
+    },
+    "RepositoriesInput":{
+      "type":"list",
+      "member":{"shape":"RepositoryInput"}
+    },
+    "RepositoryInput":{
+      "type":"structure",
+      "required":["repositoryName"],
+      "members":{
+        "repositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository.</p>"
+        },
+        "branchName":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the branch in a source repository.</p>"
+        }
+      },
+      "documentation":"<p>Information about a repository that will be cloned to a Dev Environment.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because the specified resource was not found. Verify that the spelling is correct and that you have access to the resource.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because one or more resources has reached its limits for the tier the space belongs to. Either reduce the number of resources, or change the tier if applicable.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SourceRepositoryBranchRefString":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "SourceRepositoryBranchString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "SourceRepositoryDescriptionString":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "SourceRepositoryIdString":{
+      "type":"string",
+      "pattern":"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    },
+    "SourceRepositoryNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"(?!.*[.]git$)[\\w\\-.]*"
+    },
+    "SpaceDescription":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "pattern":"[a-zA-Z0-9]+(?:[-_a-zA-Z0-9.,;:/\\+=?&$%    ])*"
+    },
+    "SpaceSummaries":{
+      "type":"list",
+      "member":{"shape":"SpaceSummary"}
+    },
+    "SpaceSummary":{
+      "type":"structure",
+      "required":[
+        "name",
+        "regionName"
+      ],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "regionName":{
+          "shape":"RegionString",
+          "documentation":"<p>The Amazon Web Services Region where the space exists.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the space displayed to users.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the space.</p>"
+        }
+      },
+      "documentation":"<p>Information about an space.</p>"
+    },
+    "StartDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "ides":{
+          "shape":"IdeConfigurationList",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for a Dev Environment. </p>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type to use for the Dev Environment. </p>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes. Only whole integers are allowed. Dev Environments consume compute minutes when running.</p>"
+        }
+      }
+    },
+    "StartDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "status"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>"
+        },
+        "status":{
+          "shape":"DevEnvironmentStatus",
+          "documentation":"<p>The status of the Dev Environment. </p>"
+        }
+      }
+    },
+    "StartDevEnvironmentSessionRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "sessionConfiguration"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "sessionConfiguration":{"shape":"DevEnvironmentSessionConfiguration"}
+      }
+    },
+    "StartDevEnvironmentSessionResponse":{
+      "type":"structure",
+      "required":[
+        "accessDetails",
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "accessDetails":{"shape":"DevEnvironmentAccessDetails"},
+        "sessionId":{
+          "shape":"StartDevEnvironmentSessionResponseSessionIdString",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment session.</p>"
+        },
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment.</p>"
+        }
+      }
+    },
+    "StartDevEnvironmentSessionResponseSessionIdString":{
+      "type":"string",
+      "max":96,
+      "min":1
+    },
+    "StartWorkflowRunRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "workflowId"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"StartWorkflowRunRequestSpaceNameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"StartWorkflowRunRequestProjectNameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "workflowId":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the workflow. To retrieve a list of workflow IDs, use <a>ListWorkflows</a>.</p>",
+          "location":"querystring",
+          "locationName":"workflowId"
+        },
+        "clientToken":{
+          "shape":"StartWorkflowRunRequestClientTokenString",
+          "documentation":"<p>A user-specified idempotency token. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries return the result from the original successful request and have no additional effect.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartWorkflowRunRequestClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "StartWorkflowRunRequestProjectNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "StartWorkflowRunRequestSpaceNameString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "StartWorkflowRunResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "workflowId"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the workflow run.</p>"
+        },
+        "workflowId":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the workflow.</p>"
+        }
+      }
+    },
+    "StatusReason":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "StopDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "StopDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "status"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>"
+        },
+        "status":{
+          "shape":"DevEnvironmentStatus",
+          "documentation":"<p>The status of the Dev Environment. </p>"
+        }
+      }
+    },
+    "StopDevEnvironmentSessionRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "sessionId"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. To obtain this ID, use <a>ListDevEnvironments</a>.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "sessionId":{
+          "shape":"StopDevEnvironmentSessionRequestSessionIdString",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment session. This ID is returned by <a>StartDevEnvironmentSession</a>.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "StopDevEnvironmentSessionRequestSessionIdString":{
+      "type":"string",
+      "max":96,
+      "min":1
+    },
+    "StopDevEnvironmentSessionResponse":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id",
+        "sessionId"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment.</p>"
+        },
+        "sessionId":{
+          "shape":"StopDevEnvironmentSessionResponseSessionIdString",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment session.</p>"
+        }
+      }
+    },
+    "StopDevEnvironmentSessionResponseSessionIdString":{
+      "type":"string",
+      "max":96,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "UpdateDevEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "projectName",
+        "id"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "alias":{
+          "shape":"UpdateDevEnvironmentRequestAliasString",
+          "documentation":"<p>The user-specified alias for the Dev Environment. Changing this value will not cause a restart.</p>"
+        },
+        "ides":{
+          "shape":"IdeConfigurationList",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for a Dev Environment.</p>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type to use for the Dev Environment. </p> <note> <p>Changing this value will cause a restart of the Dev Environment if it is running.</p> </note>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes. Only whole integers are allowed. Dev Environments consume compute minutes when running.</p> <note> <p>Changing this value will cause a restart of the Dev Environment if it is running.</p> </note>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A user-specified idempotency token. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries return the result from the original successful request and have no additional effect.</p>"
+        }
+      }
+    },
+    "UpdateDevEnvironmentRequestAliasString":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "pattern":"$|^[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "UpdateDevEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "id",
+        "spaceName",
+        "projectName"
+      ],
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the Dev Environment. </p>"
+        },
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "projectName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project in the space.</p>"
+        },
+        "alias":{
+          "shape":"UpdateDevEnvironmentResponseAliasString",
+          "documentation":"<p>The user-specified alias for the Dev Environment.</p>"
+        },
+        "ides":{
+          "shape":"IdeConfigurationList",
+          "documentation":"<p>Information about the integrated development environment (IDE) configured for the Dev Environment.</p>"
+        },
+        "instanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>The Amazon EC2 instace type to use for the Dev Environment. </p>"
+        },
+        "inactivityTimeoutMinutes":{
+          "shape":"InactivityTimeoutMinutes",
+          "documentation":"<p>The amount of time the Dev Environment will run without any activity detected before stopping, in minutes. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A user-specified idempotency token. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries return the result from the original successful request and have no additional effect.</p>"
+        }
+      }
+    },
+    "UpdateDevEnvironmentResponseAliasString":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+(?:[-_\\.][a-zA-Z0-9]+)*"
+    },
+    "UpdateProjectRequest":{
+      "type":"structure",
+      "required":[
+        "spaceName",
+        "name"
+      ],
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"spaceName"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"ProjectDescription",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      }
+    },
+    "UpdateProjectResponse":{
+      "type":"structure",
+      "members":{
+        "spaceName":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the project displayed to users in Amazon CodeCatalyst.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      }
+    },
+    "UpdateSpaceRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "description":{
+          "shape":"SpaceDescription",
+          "documentation":"<p>The description of the space.</p>"
+        }
+      }
+    },
+    "UpdateSpaceResponse":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"NameString",
+          "documentation":"<p>The name of the space.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The friendly name of the space displayed to users in Amazon CodeCatalyst.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the space.</p>"
+        }
+      }
+    },
+    "UserIdentity":{
+      "type":"structure",
+      "required":[
+        "userType",
+        "principalId"
+      ],
+      "members":{
+        "userType":{
+          "shape":"UserType",
+          "documentation":"<p>The role assigned to the user in a Amazon CodeCatalyst space or project when the event occurred.</p>"
+        },
+        "principalId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Amazon CodeCatalyst service principal.</p>"
+        },
+        "userName":{
+          "shape":"String",
+          "documentation":"<p>The display name of the user in Amazon CodeCatalyst.</p>"
+        },
+        "awsAccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services account number of the user in Amazon Web Services, if any.</p>"
+        }
+      },
+      "documentation":"<p>Information about a user whose activity is recorded in an event for a space.</p>"
+    },
+    "UserType":{
+      "type":"string",
+      "enum":[
+        "USER",
+        "AWS_ACCOUNT",
+        "UNKNOWN"
+      ]
+    },
+    "Uuid":{
+      "type":"string",
+      "pattern":"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because an input failed to satisfy the constraints specified by the service. Check the spelling and input requirements, and then try again.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VerifySessionResponse":{
+      "type":"structure",
+      "members":{
+        "identity":{
+          "shape":"VerifySessionResponseIdentityString",
+          "documentation":"<p>The system-generated unique ID of the user in Amazon CodeCatalyst.</p>"
+        }
+      }
+    },
+    "VerifySessionResponseIdentityString":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "WorkflowDefinition":{
+      "type":"structure",
+      "required":["path"],
+      "members":{
+        "path":{
+          "shape":"String",
+          "documentation":"<p>The path to the workflow definition file stored in the source repository for the project, including the file name.</p>"
+        }
+      },
+      "documentation":"<p>Information about a workflow definition file.</p>"
+    },
+    "WorkflowDefinitionSummary":{
+      "type":"structure",
+      "required":["path"],
+      "members":{
+        "path":{
+          "shape":"String",
+          "documentation":"<p>The path to the workflow definition file stored in the source repository for the project, including the file name.</p>"
+        }
+      },
+      "documentation":"<p>Information about a workflow definition.</p>"
+    },
+    "WorkflowRunMode":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "PARALLEL",
+        "SUPERSEDED"
+      ]
+    },
+    "WorkflowRunSortCriteria":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Information used to sort workflow runs in the returned list.</p>"
+    },
+    "WorkflowRunSortCriteriaList":{
+      "type":"list",
+      "member":{"shape":"WorkflowRunSortCriteria"},
+      "max":1,
+      "min":0
+    },
+    "WorkflowRunStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "FAILED",
+        "STOPPED",
+        "SUPERSEDED",
+        "CANCELLED",
+        "NOT_RUN",
+        "VALIDATING",
+        "PROVISIONING",
+        "IN_PROGRESS",
+        "STOPPING",
+        "ABANDONED"
+      ]
+    },
+    "WorkflowRunStatusReason":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Information about the status of a workflow run.</p>"
+    },
+    "WorkflowRunStatusReasons":{
+      "type":"list",
+      "member":{"shape":"WorkflowRunStatusReason"}
+    },
+    "WorkflowRunSummaries":{
+      "type":"list",
+      "member":{"shape":"WorkflowRunSummary"}
+    },
+    "WorkflowRunSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "workflowId",
+        "workflowName",
+        "status",
+        "startTime",
+        "lastUpdatedTime"
+      ],
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the workflow run.</p>"
+        },
+        "workflowId":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of the workflow.</p>"
+        },
+        "workflowName":{
+          "shape":"String",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "status":{
+          "shape":"WorkflowRunStatus",
+          "documentation":"<p>The status of the workflow run.</p>"
+        },
+        "statusReasons":{
+          "shape":"WorkflowRunStatusReasons",
+          "documentation":"<p>The reasons for the workflow run status.</p>"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow run began, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a>.</p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow run ended, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        }
+      },
+      "documentation":"<p>Information about a workflow run.</p>"
+    },
+    "WorkflowSortCriteria":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Information used to sort workflows in the returned list.</p>"
+    },
+    "WorkflowSortCriteriaList":{
+      "type":"list",
+      "member":{"shape":"WorkflowSortCriteria"},
+      "max":1,
+      "min":0
+    },
+    "WorkflowStatus":{
+      "type":"string",
+      "enum":[
+        "INVALID",
+        "ACTIVE"
+      ]
+    },
+    "WorkflowSummaries":{
+      "type":"list",
+      "member":{"shape":"WorkflowSummary"}
+    },
+    "WorkflowSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "sourceRepositoryName",
+        "sourceBranchName",
+        "definition",
+        "createdTime",
+        "lastUpdatedTime",
+        "runMode",
+        "status"
+      ],
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The system-generated unique ID of a workflow.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "sourceRepositoryName":{
+          "shape":"SourceRepositoryNameString",
+          "documentation":"<p>The name of the source repository where the workflow definition file is stored.</p>"
+        },
+        "sourceBranchName":{
+          "shape":"SourceRepositoryBranchString",
+          "documentation":"<p>The name of the branch of the source repository where the workflow definition file is stored.</p>"
+        },
+        "definition":{
+          "shape":"WorkflowDefinitionSummary",
+          "documentation":"<p>Information about the workflow definition file.</p>"
+        },
+        "createdTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow was created, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the workflow was last updated, in coordinated universal time (UTC) timestamp format as specified in <a href=\"https://www.rfc-editor.org/rfc/rfc3339#section-5.6\">RFC 3339</a> </p>"
+        },
+        "runMode":{
+          "shape":"WorkflowRunMode",
+          "documentation":"<p>The run mode of the workflow.</p>"
+        },
+        "status":{
+          "shape":"WorkflowStatus",
+          "documentation":"<p>The status of the workflow.</p>"
+        }
+      },
+      "documentation":"<p>Information about a workflow.</p>"
+    }
+  },
+  "documentation":"<p>Welcome to the Amazon CodeCatalyst API reference. This reference provides descriptions of operations and data types for Amazon CodeCatalyst. You can use the Amazon CodeCatalyst API to work with the following objects. </p> <p>Spaces, by calling the following:</p> <ul> <li> <p> <a>DeleteSpace</a>, which deletes a space.</p> </li> <li> <p> <a>GetSpace</a>, which returns information about a space.</p> </li> <li> <p> <a>GetSubscription</a>, which returns information about the Amazon Web Services account used for billing purposes and the billing plan for the space.</p> </li> <li> <p> <a>ListSpaces</a>, which retrieves a list of spaces.</p> </li> <li> <p> <a>UpdateSpace</a>, which changes one or more values for a space.</p> </li> </ul> <p>Projects, by calling the following:</p> <ul> <li> <p> <a>CreateProject</a> which creates a project in a specified space.</p> </li> <li> <p> <a>GetProject</a>, which returns information about a project.</p> </li> <li> <p> <a>ListProjects</a>, which retrieves a list of projects in a space.</p> </li> </ul> <p>Users, by calling the following:</p> <ul> <li> <p> <a>GetUserDetails</a>, which returns information about a user in Amazon CodeCatalyst.</p> </li> </ul> <p>Source repositories, by calling the following:</p> <ul> <li> <p> <a>CreateSourceRepository</a>, which creates an empty Git-based source repository in a specified project.</p> </li> <li> <p> <a>CreateSourceRepositoryBranch</a>, which creates a branch in a specified repository where you can work on code.</p> </li> <li> <p> <a>DeleteSourceRepository</a>, which deletes a source repository.</p> </li> <li> <p> <a>GetSourceRepository</a>, which returns information about a source repository.</p> </li> <li> <p> <a>GetSourceRepositoryCloneUrls</a>, which returns information about the URLs that can be used with a Git client to clone a source repository.</p> </li> <li> <p> <a>ListSourceRepositories</a>, which retrieves a list of source repositories in a project.</p> </li> <li> <p> <a>ListSourceRepositoryBranches</a>, which retrieves a list of branches in a source repository.</p> </li> </ul> <p>Dev Environments and the Amazon Web Services Toolkits, by calling the following:</p> <ul> <li> <p> <a>CreateDevEnvironment</a>, which creates a Dev Environment, where you can quickly work on the code stored in the source repositories of your project.</p> </li> <li> <p> <a>DeleteDevEnvironment</a>, which deletes a Dev Environment.</p> </li> <li> <p> <a>GetDevEnvironment</a>, which returns information about a Dev Environment.</p> </li> <li> <p> <a>ListDevEnvironments</a>, which retrieves a list of Dev Environments in a project.</p> </li> <li> <p> <a>ListDevEnvironmentSessions</a>, which retrieves a list of active Dev Environment sessions in a project.</p> </li> <li> <p> <a>StartDevEnvironment</a>, which starts a specified Dev Environment and puts it into an active state.</p> </li> <li> <p> <a>StartDevEnvironmentSession</a>, which starts a session to a specified Dev Environment.</p> </li> <li> <p> <a>StopDevEnvironment</a>, which stops a specified Dev Environment and puts it into an stopped state.</p> </li> <li> <p> <a>StopDevEnvironmentSession</a>, which stops a session for a specified Dev Environment.</p> </li> <li> <p> <a>UpdateDevEnvironment</a>, which changes one or more values for a Dev Environment.</p> </li> </ul> <p>Workflows, by calling the following:</p> <ul> <li> <p> <a>GetWorkflow</a>, which returns information about a workflow.</p> </li> <li> <p> <a>GetWorkflowRun</a>, which returns information about a specified run of a workflow.</p> </li> <li> <p> <a>ListWorkflowRuns</a>, which retrieves a list of runs of a specified workflow.</p> </li> <li> <p> <a>ListWorkflows</a>, which retrieves a list of workflows in a specified project.</p> </li> <li> <p> <a>StartWorkflowRun</a>, which starts a run of a specified workflow.</p> </li> </ul> <p>Security, activity, and resource management in Amazon CodeCatalyst, by calling the following:</p> <ul> <li> <p> <a>CreateAccessToken</a>, which creates a personal access token (PAT) for the current user.</p> </li> <li> <p> <a>DeleteAccessToken</a>, which deletes a specified personal access token (PAT).</p> </li> <li> <p> <a>ListAccessTokens</a>, which lists all personal access tokens (PATs) associated with a user.</p> </li> <li> <p> <a>ListEventLogs</a>, which retrieves a list of events that occurred during a specified time period in a space.</p> </li> <li> <p> <a>VerifySession</a>, which verifies whether the calling user has a valid Amazon CodeCatalyst login and session.</p> </li> </ul> <note> <p>If you are using the Amazon CodeCatalyst APIs with an SDK or the CLI, you must configure your computer to work with Amazon CodeCatalyst and single sign-on (SSO). For more information, see <a href=\"https://docs.aws.amazon.com/codecatalyst/latest/userguide/set-up-cli.html\">Setting up to use the CLI with Amazon CodeCatalyst</a> and the SSO documentation for your SDK.</p> </note>"
+}

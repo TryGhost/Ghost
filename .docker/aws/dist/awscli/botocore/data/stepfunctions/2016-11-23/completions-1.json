@@ -1,0 +1,117 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Activity": {
+      "operation": "ListActivities",
+      "resourceIdentifier": {
+        "activityArn": "activities[].activityArn"
+      }
+    },
+    "StateMachine": {
+      "operation": "ListStateMachines",
+      "resourceIdentifier": {
+        "stateMachineArn": "stateMachines[].stateMachineArn",
+        "name": "stateMachines[].name"
+      }
+    }
+  },
+  "operations": {
+    "DeleteActivity": {
+      "activityArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Activity",
+            "resourceIdentifier": "activityArn"
+          }
+        ]
+      }
+    },
+    "DeleteStateMachine": {
+      "stateMachineArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "stateMachineArn"
+          }
+        ]
+      }
+    },
+    "DescribeActivity": {
+      "activityArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Activity",
+            "resourceIdentifier": "activityArn"
+          }
+        ]
+      }
+    },
+    "DescribeStateMachine": {
+      "stateMachineArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "stateMachineArn"
+          }
+        ]
+      }
+    },
+    "GetActivityTask": {
+      "activityArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Activity",
+            "resourceIdentifier": "activityArn"
+          }
+        ]
+      }
+    },
+    "ListExecutions": {
+      "stateMachineArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "stateMachineArn"
+          }
+        ]
+      }
+    },
+    "StartExecution": {
+      "stateMachineArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "stateMachineArn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "UpdateStateMachine": {
+      "stateMachineArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StateMachine",
+            "resourceIdentifier": "stateMachineArn"
+          }
+        ]
+      }
+    }
+  }
+}

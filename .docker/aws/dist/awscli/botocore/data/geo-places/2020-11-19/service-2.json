@@ -1,0 +1,3529 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-11-19",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"geo-places",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Location Service Places V2",
+    "serviceId":"Geo Places",
+    "signatureVersion":"v4",
+    "signingName":"geo-places",
+    "uid":"geo-places-2020-11-19"
+  },
+  "operations":{
+    "Autocomplete":{
+      "name":"Autocomplete",
+      "http":{
+        "method":"POST",
+        "requestUri":"/autocomplete",
+        "responseCode":200
+      },
+      "input":{"shape":"AutocompleteRequest"},
+      "output":{"shape":"AutocompleteResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>Autocomplete</code> completes potential places and addresses as the user types, based on the partial input. The API enhances the efficiency and accuracy of address by completing query based on a few entered keystrokes. It helps you by completing partial queries with valid address completion. Also, the API supports the filtering of results based on geographic location, country, or specific place types, and can be tailored using optional parameters like language and political views.</p>"
+    },
+    "Geocode":{
+      "name":"Geocode",
+      "http":{
+        "method":"POST",
+        "requestUri":"/geocode",
+        "responseCode":200
+      },
+      "input":{"shape":"GeocodeRequest"},
+      "output":{"shape":"GeocodeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>Geocode</code> converts a textual address or place into geographic coordinates. You can obtain geographic coordinates, address component, and other related information. It supports flexible queries, including free-form text or structured queries with components like street names, postal codes, and regions. The Geocode API can also provide additional features such as time zone information and the inclusion of political views.</p>"
+    },
+    "GetPlace":{
+      "name":"GetPlace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/place/{PlaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPlaceRequest"},
+      "output":{"shape":"GetPlaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>GetPlace</code> finds a place by its unique ID. A <code>PlaceId</code> is returned by other place operations.</p>"
+    },
+    "ReverseGeocode":{
+      "name":"ReverseGeocode",
+      "http":{
+        "method":"POST",
+        "requestUri":"/reverse-geocode",
+        "responseCode":200
+      },
+      "input":{"shape":"ReverseGeocodeRequest"},
+      "output":{"shape":"ReverseGeocodeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>ReverseGeocode</code> converts geographic coordinates into a human-readable address or place. You can obtain address component, and other related information such as place type, category, street information. The Reverse Geocode API supports filtering to on place type so that you can refine result based on your need. Also, The Reverse Geocode API can also provide additional features such as time zone information and the inclusion of political views.</p>"
+    },
+    "SearchNearby":{
+      "name":"SearchNearby",
+      "http":{
+        "method":"POST",
+        "requestUri":"/search-nearby",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchNearbyRequest"},
+      "output":{"shape":"SearchNearbyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>SearchNearby</code> queries for points of interest within a radius from a central coordinates, returning place results with optional filters such as categories, business chains, food types and more. The API returns details such as a place name, address, phone, category, food type, contact, opening hours. Also, the API can return phonemes, time zones and more based on requested parameters.</p>"
+    },
+    "SearchText":{
+      "name":"SearchText",
+      "http":{
+        "method":"POST",
+        "requestUri":"/search-text",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchTextRequest"},
+      "output":{"shape":"SearchTextResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>SearchText</code> searches for geocode and place information. You can then complete a follow-up query suggested from the <code>Suggest</code> API via a query id.</p>"
+    },
+    "Suggest":{
+      "name":"Suggest",
+      "http":{
+        "method":"POST",
+        "requestUri":"/suggest",
+        "responseCode":200
+      },
+      "input":{"shape":"SuggestRequest"},
+      "output":{"shape":"SuggestResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> <code>Suggest</code> provides intelligent predictions or recommendations based on the user's input or context, such as relevant places, points of interest, query terms or search category. It is designed to help users find places or point of interests candidates or identify a follow on query based on incomplete or misspelled queries. It returns a list of possible matches or refinements that can be used to formulate a more accurate query. Users can select the most appropriate suggestion and use it for further searching. The API provides options for filtering results by location and other attributes, and allows for additional features like phonemes and timezones. The response includes refined query terms and detailed place information.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "locationName":"message"
+        }
+      },
+      "documentation":"<p>You don't have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessPoint":{
+      "type":"structure",
+      "members":{
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        }
+      },
+      "documentation":"<p>Position of the access point represented by longitude and latitude for a vehicle.</p>"
+    },
+    "AccessPointList":{
+      "type":"list",
+      "member":{"shape":"AccessPoint"},
+      "max":100,
+      "min":0
+    },
+    "AccessRestriction":{
+      "type":"structure",
+      "members":{
+        "Restricted":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>The restriction.</p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong too.</p>"
+        }
+      },
+      "documentation":"<p>Indicates if the access location is restricted. Index correlates to that of an access point and indicates if access through this point has some form of restriction. </p>"
+    },
+    "AccessRestrictionList":{
+      "type":"list",
+      "member":{"shape":"AccessRestriction"},
+      "max":100,
+      "min":1
+    },
+    "Address":{
+      "type":"structure",
+      "members":{
+        "Label":{
+          "shape":"AddressLabelString",
+          "documentation":"<p>Assembled address value built out of the address components, according to the regional postal rules. This is the correctly formatted address.</p>"
+        },
+        "Country":{
+          "shape":"Country",
+          "documentation":"<p>The country component of the address.</p>"
+        },
+        "Region":{
+          "shape":"Region",
+          "documentation":"<p>The region or state results should be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>.</p>"
+        },
+        "SubRegion":{
+          "shape":"SubRegion",
+          "documentation":"<p>The sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"AddressLocalityString",
+          "documentation":"<p>The city or locality of the address.</p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"AddressDistrictString",
+          "documentation":"<p>The district or division of a locality associated with this address.</p>"
+        },
+        "SubDistrict":{
+          "shape":"AddressSubDistrictString",
+          "documentation":"<p>A subdivision of a district. </p> <p>Example: <code>Minden-Lübbecke</code>.</p>"
+        },
+        "PostalCode":{
+          "shape":"AddressPostalCodeString",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code, for which the result should possess. </p>"
+        },
+        "Block":{
+          "shape":"AddressBlockString",
+          "documentation":"<p>Name of the block. </p> <p>Example: <code>Sunny Mansion 203 block: 2 Chome</code> </p>"
+        },
+        "SubBlock":{
+          "shape":"AddressSubBlockString",
+          "documentation":"<p>Name of sub-block. </p> <p>Example: <code>Sunny Mansion 203 sub-block: 4</code> </p>"
+        },
+        "Intersection":{
+          "shape":"IntersectionStreetList",
+          "documentation":"<p>Name of the streets in the intersection. </p> <p>Example: <code>[\"Friedrichstraße\",\"Unter den Linden\"]</code> </p>"
+        },
+        "Street":{
+          "shape":"AddressStreetString",
+          "documentation":"<p>The name of the street results should be present in.</p>"
+        },
+        "StreetComponents":{
+          "shape":"StreetComponentsList",
+          "documentation":"<p>Components of the street. </p> <p>Example: Younge from the \"Younge street\".</p>"
+        },
+        "AddressNumber":{
+          "shape":"AddressAddressNumberString",
+          "documentation":"<p>The number that identifies an address within a street.</p>"
+        },
+        "Building":{
+          "shape":"AddressBuildingString",
+          "documentation":"<p>The name of the building at the address.</p>"
+        },
+        "SecondaryAddressComponents":{
+          "shape":"SecondaryAddressComponentList",
+          "documentation":"<p>Components that correspond to secondary identifiers on an Address. Secondary address components include information such as Suite or Unit Number, Building, or Floor.</p>"
+        }
+      },
+      "documentation":"<p>The place address.</p>"
+    },
+    "AddressAddressNumberString":{
+      "type":"string",
+      "max":10,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressBlockString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressBuildingString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressComponentMatchScores":{
+      "type":"structure",
+      "members":{
+        "Country":{
+          "shape":"MatchScore",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+        },
+        "Region":{
+          "shape":"MatchScore",
+          "documentation":"<p>The region or state results should be to be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>.</p>"
+        },
+        "SubRegion":{
+          "shape":"MatchScore",
+          "documentation":"<p>The sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"MatchScore",
+          "documentation":"<p>The city or locality results should be present in. </p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"MatchScore",
+          "documentation":"<p>The district or division of a city the results should be present in.</p>"
+        },
+        "SubDistrict":{
+          "shape":"MatchScore",
+          "documentation":"<p>A subdivision of a district. </p> <p>Example: <code>Minden-Lübbecke</code> </p>"
+        },
+        "PostalCode":{
+          "shape":"MatchScore",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code, for which the result should possess. </p>"
+        },
+        "Block":{
+          "shape":"MatchScore",
+          "documentation":"<p>Name of the block. </p> <p>Example: <code>Sunny Mansion 203 block: 2 Chome</code> </p>"
+        },
+        "SubBlock":{
+          "shape":"MatchScore",
+          "documentation":"<p>Name of sub-block. </p> <p>Example: <code>Sunny Mansion 203 sub-block: 4</code> </p>"
+        },
+        "Intersection":{
+          "shape":"AddressComponentMatchScoresIntersectionList",
+          "documentation":"<p>Name of the streets in the intersection. </p> <p>Example: <code>[\"Friedrichstraße\",\"Unter den Linden\"]</code> </p>"
+        },
+        "AddressNumber":{
+          "shape":"MatchScore",
+          "documentation":"<p>The house number or address results should have. </p>"
+        },
+        "Building":{
+          "shape":"MatchScore",
+          "documentation":"<p>The name of the building at the address.</p>"
+        },
+        "SecondaryAddressComponents":{
+          "shape":"SecondaryAddressComponentMatchScoreList",
+          "documentation":"<p>Match scores for the secondary address components in the result.</p>"
+        }
+      },
+      "documentation":"<p>Indicates how well the entire input matches the returned. It is equal to 1 if all input tokens are recognized and matched.</p>"
+    },
+    "AddressComponentMatchScoresIntersectionList":{
+      "type":"list",
+      "member":{"shape":"MatchScore"},
+      "max":2,
+      "min":1
+    },
+    "AddressComponentPhonemes":{
+      "type":"structure",
+      "members":{
+        "Country":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+        },
+        "Region":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the region or state results should be to be present in.</p>"
+        },
+        "SubRegion":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the city or locality results should be present in. </p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the district or division of a city results should be present in.</p>"
+        },
+        "SubDistrict":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the sub-district or division of a city results should be present in.</p>"
+        },
+        "Block":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the name of the block.</p>"
+        },
+        "SubBlock":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the name of the sub-block.</p>"
+        },
+        "Street":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>How to pronounce the name of the street results should be present in.</p>"
+        }
+      },
+      "documentation":"<p>How to pronounce the various components of the address or place.</p>"
+    },
+    "AddressDistrictString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressLabelString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressLocalityString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressPostalCodeString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressStreetString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressSubBlockString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "AddressSubDistrictString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "ApiKey":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "sensitive":true
+    },
+    "AutocompleteAdditionalFeature":{
+      "type":"string",
+      "enum":["Core"]
+    },
+    "AutocompleteAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"AutocompleteAdditionalFeature"},
+      "max":1,
+      "min":1
+    },
+    "AutocompleteAddressHighlights":{
+      "type":"structure",
+      "members":{
+        "Label":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending indexes for result items where they are identified to match the input query. This should be used to provide emphasis to output display to make selecting the correct result from a list easier for end users.</p>"
+        },
+        "Country":{
+          "shape":"CountryHighlights",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+        },
+        "Region":{
+          "shape":"RegionHighlights",
+          "documentation":"<p>The region or state results should be to be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>.</p>"
+        },
+        "SubRegion":{
+          "shape":"SubRegionHighlights",
+          "documentation":"<p>The sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"HighlightList",
+          "documentation":"<p>The city or locality results should be present in. </p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"HighlightList",
+          "documentation":"<p>The district or division of a city the results should be present in.</p>"
+        },
+        "SubDistrict":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the title in the text query that match the found title. </p>"
+        },
+        "Street":{
+          "shape":"HighlightList",
+          "documentation":"<p>The name of the street results should be present in.</p>"
+        },
+        "Block":{
+          "shape":"HighlightList",
+          "documentation":"<p>Name of the block. </p> <p>Example: <code>Sunny Mansion 203 block: 2 Chome</code> </p>"
+        },
+        "SubBlock":{
+          "shape":"HighlightList",
+          "documentation":"<p>Name of sub-block. </p> <p>Example: <code>Sunny Mansion 203 sub-block: 4</code> </p>"
+        },
+        "Intersection":{
+          "shape":"IntersectionHighlightsList",
+          "documentation":"<p>Name of the streets in the intersection. For example: e.g. [\"Friedrichstraße\",\"Unter den Linden\"]</p>"
+        },
+        "PostalCode":{
+          "shape":"HighlightList",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code for which the result should possess. </p>"
+        },
+        "AddressNumber":{
+          "shape":"HighlightList",
+          "documentation":"<p>The house number or address results should have. </p>"
+        },
+        "Building":{
+          "shape":"HighlightList",
+          "documentation":"<p>The name of the building at the address.</p>"
+        }
+      },
+      "documentation":"<p>Describes how the parts of the response element matched the input query by returning the sections of the response which matched to input query terms.</p>"
+    },
+    "AutocompleteFilter":{
+      "type":"structure",
+      "members":{
+        "BoundingBox":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Circle":{"shape":"FilterCircle"},
+        "IncludeCountries":{
+          "shape":"CountryCodeList",
+          "documentation":"<p> A list of countries that all results must be in. Countries are represented by either their alpha-2 or alpha-3 character codes.</p>"
+        },
+        "IncludePlaceTypes":{
+          "shape":"AutocompleteFilterPlaceTypeList",
+          "documentation":"<p>The included place types.</p>"
+        }
+      },
+      "documentation":"<p>Autocomplete structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+    },
+    "AutocompleteFilterPlaceType":{
+      "type":"string",
+      "enum":[
+        "Locality",
+        "PostalCode"
+      ]
+    },
+    "AutocompleteFilterPlaceTypeList":{
+      "type":"list",
+      "member":{"shape":"AutocompleteFilterPlaceType"},
+      "max":2,
+      "min":1
+    },
+    "AutocompleteHighlights":{
+      "type":"structure",
+      "members":{
+        "Title":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates where the title field in the result matches the input query.</p>"
+        },
+        "Address":{
+          "shape":"AutocompleteAddressHighlights",
+          "documentation":"<p>Describes how part of the result address match the input query.</p>"
+        }
+      },
+      "documentation":"<p>Describes how the parts of the response element matched the input query by returning the sections of the response which matched to input query terms.</p>"
+    },
+    "AutocompleteIntendedUse":{
+      "type":"string",
+      "enum":["SingleUse"]
+    },
+    "AutocompleteRequest":{
+      "type":"structure",
+      "required":["QueryText"],
+      "members":{
+        "QueryText":{
+          "shape":"AutocompleteRequestQueryTextString",
+          "documentation":"<p>The free-form text query to match addresses against. This is usually a partially typed address from an end user in an address box or form.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "MaxResults":{
+          "shape":"AutocompleteRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call. </p>"
+        },
+        "BiasPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position in longitude and latitude that the results should be close to. Typically, place results returned are ranked higher the closer they are to this position. Stored in <code>[lng, lat]</code> and in the WSG84 format.</p> <note> <p>The fields <code>BiasPosition</code>, <code>FilterBoundingBox</code>, and <code>FilterCircle</code> are mutually exclusive.</p> </note>"
+        },
+        "Filter":{
+          "shape":"AutocompleteFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "PostalCodeMode":{
+          "shape":"PostalCodeMode",
+          "documentation":"<p>The <code>PostalCodeMode</code> affects how postal code results are returned. If a postal code spans multiple localities and this value is empty, partial district or locality information may be returned under a single postal code result entry. If it's populated with the value <code>EnumerateSpannedLocalities</code>, all cities in that postal code are returned.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"AutocompleteAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p> <p>The following political views are currently supported:</p> <ul> <li> <p> <code>ARG</code>: Argentina's view on the Southern Patagonian Ice Field and Tierra Del Fuego, including the Falkland Islands, South Georgia, and South Sandwich Islands</p> </li> <li> <p> <code>EGY</code>: Egypt's view on Bir Tawil</p> </li> <li> <p> <code>IND</code>: India's view on Gilgit-Baltistan</p> </li> <li> <p> <code>KEN</code>: Kenya's view on the Ilemi Triangle</p> </li> <li> <p> <code>MAR</code>: Morocco's view on Western Sahara</p> </li> <li> <p> <code>RUS</code>: Russia's view on Crimea</p> </li> <li> <p> <code>SDN</code>: Sudan's view on the Halaib Triangle</p> </li> <li> <p> <code>SRB</code>: Serbia's view on Kosovo, Vukovar, and Sarengrad Islands</p> </li> <li> <p> <code>SUR</code>: Suriname's view on the Courantyne Headwaters and Lawa Headwaters</p> </li> <li> <p> <code>SYR</code>: Syria's view on the Golan Heights</p> </li> <li> <p> <code>TUR</code>: Turkey's view on Cyprus and Northern Cyprus</p> </li> <li> <p> <code>TZA</code>: Tanzania's view on Lake Malawi</p> </li> <li> <p> <code>URY</code>: Uruguay's view on Rincon de Artigas</p> </li> <li> <p> <code>VNM</code>: Vietnam's view on the Paracel Islands and Spratly Islands</p> </li> </ul>"
+        },
+        "IntendedUse":{
+          "shape":"AutocompleteIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "AutocompleteRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "AutocompleteRequestQueryTextString":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "sensitive":true
+    },
+    "AutocompleteResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"AutocompleteResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        }
+      }
+    },
+    "AutocompleteResultItem":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"AutocompleteResultItemPlaceIdString",
+          "documentation":"<p>The PlaceId of the place associated with this result. This can be used to look up additional details about the result via GetPlace.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>PlaceType describes the type of result entry returned.</p>"
+        },
+        "Title":{
+          "shape":"AutocompleteResultItemTitleString",
+          "documentation":"<p>A formatted string for display when presenting this result to an end user.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The address associated with this result.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters between the center of the search area and this result. Useful to evaluate how far away from the original bias position the result is.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Highlights":{
+          "shape":"AutocompleteHighlights",
+          "documentation":"<p>Indicates the starting and ending index of the place in the text query that match the found title. </p>"
+        }
+      },
+      "documentation":"<p>A result matching the input query text.</p>"
+    },
+    "AutocompleteResultItemList":{
+      "type":"list",
+      "member":{"shape":"AutocompleteResultItem"},
+      "max":20,
+      "min":0
+    },
+    "AutocompleteResultItemPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "AutocompleteResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "BoundingBox":{
+      "type":"list",
+      "member":{"shape":"Double"},
+      "max":4,
+      "min":4,
+      "sensitive":true
+    },
+    "BusinessChain":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"BusinessChainNameString",
+          "documentation":"<p>The business chain name.</p>"
+        },
+        "Id":{
+          "shape":"BusinessChainIdString",
+          "documentation":"<p>The Business Chain Id.</p>"
+        }
+      },
+      "documentation":"<p>A businesschain is a chain of businesses that belong to the same brand. For example <code>7-11</code>.</p>"
+    },
+    "BusinessChainIdString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "BusinessChainList":{
+      "type":"list",
+      "member":{"shape":"BusinessChain"},
+      "max":100,
+      "min":1
+    },
+    "BusinessChainNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "Category":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "Name"
+      ],
+      "members":{
+        "Id":{
+          "shape":"CategoryIdString",
+          "documentation":"<p>The category ID.</p>"
+        },
+        "Name":{
+          "shape":"CategoryNameString",
+          "documentation":"<p>The category name.</p>"
+        },
+        "LocalizedName":{
+          "shape":"CategoryLocalizedNameString",
+          "documentation":"<p>Localized name of the category type.</p>"
+        },
+        "Primary":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean which indicates if this category is the primary offered by the place.</p>"
+        }
+      },
+      "documentation":"<p>Category of the <code>Place</code> returned. </p>"
+    },
+    "CategoryIdString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "CategoryList":{
+      "type":"list",
+      "member":{"shape":"Category"},
+      "max":100,
+      "min":1
+    },
+    "CategoryLocalizedNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "CategoryNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "ComponentMatchScores":{
+      "type":"structure",
+      "members":{
+        "Title":{
+          "shape":"MatchScore",
+          "documentation":"<p>Indicates the match score of the title in the text query that match the found title. </p>"
+        },
+        "Address":{
+          "shape":"AddressComponentMatchScores",
+          "documentation":"<p>The place's address.</p>"
+        }
+      },
+      "documentation":"<p>Indicates how well the returned title and address components matches the input TextQuery. For each component a score is provied with 1 indicating all tokens were matched and 0 indicating no tokens were matched.</p>"
+    },
+    "ContactDetails":{
+      "type":"structure",
+      "members":{
+        "Label":{
+          "shape":"ContactDetailsLabelString",
+          "documentation":"<p>The contact's label.</p>"
+        },
+        "Value":{
+          "shape":"ContactDetailsValueString",
+          "documentation":"<p>The contact's value.</p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong too.</p>"
+        }
+      },
+      "documentation":"<p>Details related to contacts.</p>"
+    },
+    "ContactDetailsLabelString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "ContactDetailsList":{
+      "type":"list",
+      "member":{"shape":"ContactDetails"},
+      "max":100,
+      "min":1
+    },
+    "ContactDetailsValueString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "Contacts":{
+      "type":"structure",
+      "members":{
+        "Phones":{
+          "shape":"ContactDetailsList",
+          "documentation":"<p>List of phone numbers for the results contact. </p>"
+        },
+        "Faxes":{
+          "shape":"ContactDetailsList",
+          "documentation":"<p>List of fax addresses for the result contact. </p>"
+        },
+        "Websites":{
+          "shape":"ContactDetailsList",
+          "documentation":"<p>List of website URLs that belong to the result. </p>"
+        },
+        "Emails":{
+          "shape":"ContactDetailsList",
+          "documentation":"<p>List of emails for contacts of the result. </p>"
+        }
+      },
+      "documentation":"<p>A list of potential contact methods for the result/place.</p>"
+    },
+    "Country":{
+      "type":"structure",
+      "members":{
+        "Code2":{
+          "shape":"CountryCode2",
+          "documentation":"<p>Country, represented by its alpha 2-character code. </p>"
+        },
+        "Code3":{
+          "shape":"CountryCode3",
+          "documentation":"<p>Country, represented by its alpha t-character code. </p>"
+        },
+        "Name":{
+          "shape":"CountryNameString",
+          "documentation":"<p>Name of the country.</p>"
+        }
+      },
+      "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+    },
+    "CountryCode":{
+      "type":"string",
+      "max":3,
+      "min":2,
+      "pattern":"([A-Z]{2}|[A-Z]{3})",
+      "sensitive":true
+    },
+    "CountryCode2":{
+      "type":"string",
+      "max":2,
+      "min":2,
+      "pattern":"[A-Z]{2}",
+      "sensitive":true
+    },
+    "CountryCode3":{
+      "type":"string",
+      "max":3,
+      "min":3,
+      "pattern":"[A-Z]{3}",
+      "sensitive":true
+    },
+    "CountryCodeList":{
+      "type":"list",
+      "member":{"shape":"CountryCode"},
+      "max":100,
+      "min":1
+    },
+    "CountryHighlights":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the country code in the text query that match the found title.</p>"
+        },
+        "Name":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the country code in the text query that match the found title.</p>"
+        }
+      },
+      "documentation":"<p>Indicates the starting and ending index of the country in the text query that match the found title. </p>"
+    },
+    "CountryNameString":{
+      "type":"string",
+      "max":100,
+      "min":0,
+      "sensitive":true
+    },
+    "DistanceMeters":{
+      "type":"long",
+      "max":4294967295,
+      "min":0,
+      "sensitive":true
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "FilterBusinessChainList":{
+      "type":"list",
+      "member":{"shape":"FilterBusinessChainListMemberString"},
+      "max":10,
+      "min":1
+    },
+    "FilterBusinessChainListMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "FilterCategoryList":{
+      "type":"list",
+      "member":{"shape":"FilterCategoryListMemberString"},
+      "max":10,
+      "min":1
+    },
+    "FilterCategoryListMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "FilterCircle":{
+      "type":"structure",
+      "required":[
+        "Center",
+        "Radius"
+      ],
+      "members":{
+        "Center":{
+          "shape":"Position",
+          "documentation":"<p>The center position, in longitude and latitude, of the <code>FilterCircle</code>.</p>"
+        },
+        "Radius":{
+          "shape":"FilterCircleRadiusLong",
+          "documentation":"<p>The radius, in meters, of the <code>FilterCircle</code>.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>The <code>Circle</code> that all results must be in. </p>",
+      "sensitive":true
+    },
+    "FilterCircleRadiusLong":{
+      "type":"long",
+      "max":21000000,
+      "min":1,
+      "sensitive":true
+    },
+    "FilterFoodTypeList":{
+      "type":"list",
+      "member":{"shape":"FilterFoodTypeListMemberString"},
+      "max":10,
+      "min":1
+    },
+    "FilterFoodTypeListMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "FoodType":{
+      "type":"structure",
+      "required":["LocalizedName"],
+      "members":{
+        "LocalizedName":{
+          "shape":"FoodTypeLocalizedNameString",
+          "documentation":"<p>Localized name of the food type.</p>"
+        },
+        "Id":{
+          "shape":"FoodTypeIdString",
+          "documentation":"<p>The Food Type Id.</p>"
+        },
+        "Primary":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean which indicates if this food type is the primary offered by the place. For example, if a location serves fast food, but also dessert, he primary would likely be fast food.</p>"
+        }
+      },
+      "documentation":"<p>List of <code>Food</code> types offered by this result.</p>"
+    },
+    "FoodTypeIdString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "FoodTypeList":{
+      "type":"list",
+      "member":{"shape":"FoodType"},
+      "max":100,
+      "min":1
+    },
+    "FoodTypeLocalizedNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "GeocodeAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "TimeZone",
+        "Access",
+        "SecondaryAddresses",
+        "Intersections"
+      ]
+    },
+    "GeocodeAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"GeocodeAdditionalFeature"},
+      "max":2,
+      "min":1
+    },
+    "GeocodeFilter":{
+      "type":"structure",
+      "members":{
+        "IncludeCountries":{
+          "shape":"CountryCodeList",
+          "documentation":"<p> A list of countries that all results must be in. Countries are represented by either their alpha-2 or alpha-3 character codes.</p>"
+        },
+        "IncludePlaceTypes":{
+          "shape":"GeocodeFilterPlaceTypeList",
+          "documentation":"<p>The included place types.</p>"
+        }
+      },
+      "documentation":"<p>Geocode structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+    },
+    "GeocodeFilterPlaceType":{
+      "type":"string",
+      "enum":[
+        "Locality",
+        "PostalCode",
+        "Intersection",
+        "Street",
+        "PointAddress",
+        "InterpolatedAddress"
+      ],
+      "sensitive":true
+    },
+    "GeocodeFilterPlaceTypeList":{
+      "type":"list",
+      "member":{"shape":"GeocodeFilterPlaceType"},
+      "max":6,
+      "min":1
+    },
+    "GeocodeIntendedUse":{
+      "type":"string",
+      "enum":[
+        "SingleUse",
+        "Storage"
+      ]
+    },
+    "GeocodeParsedQuery":{
+      "type":"structure",
+      "members":{
+        "Title":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>.</p>"
+        },
+        "Address":{
+          "shape":"GeocodeParsedQueryAddressComponents",
+          "documentation":"<p>The place address.</p>"
+        }
+      },
+      "documentation":"<p>Parsed components in the provided QueryText.</p>"
+    },
+    "GeocodeParsedQueryAddressComponents":{
+      "type":"structure",
+      "members":{
+        "Country":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+        },
+        "Region":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The region or state results should be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>.</p>"
+        },
+        "SubRegion":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The city or locality of the address.</p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The district or division of a city the results should be present in.</p>"
+        },
+        "SubDistrict":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>A subdivision of a district. </p> <p>Example: <code>Minden-Lübbecke</code>.</p>"
+        },
+        "PostalCode":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code, for which the result should possess. </p>"
+        },
+        "Block":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>Name of the block. </p> <p>Example: <code>Sunny Mansion 203 block: 2 Chome</code> </p>"
+        },
+        "SubBlock":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>Name of sub-block. </p> <p>Example: <code>Sunny Mansion 203 sub-block: 4</code> </p>"
+        },
+        "Street":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The name of the street results should be present in.</p>"
+        },
+        "AddressNumber":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The number that identifies an address within a street.</p>"
+        },
+        "Building":{
+          "shape":"ParsedQueryComponentList",
+          "documentation":"<p>The name of the building at the address.</p>"
+        },
+        "SecondaryAddressComponents":{
+          "shape":"ParsedQuerySecondaryAddressComponentList",
+          "documentation":"<p>Parsed secondary address components from the provided query text.</p>"
+        }
+      },
+      "documentation":"<p>Parsed address components in the provided QueryText.</p>"
+    },
+    "GeocodeQueryComponents":{
+      "type":"structure",
+      "members":{
+        "Country":{
+          "shape":"GeocodeQueryComponentsCountryString",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the country that the results will be present in.</p>"
+        },
+        "Region":{
+          "shape":"GeocodeQueryComponentsRegionString",
+          "documentation":"<p>The region or state results should be to be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>.</p>"
+        },
+        "SubRegion":{
+          "shape":"GeocodeQueryComponentsSubRegionString",
+          "documentation":"<p>The sub-region or county for which results should be present in. </p>"
+        },
+        "Locality":{
+          "shape":"GeocodeQueryComponentsLocalityString",
+          "documentation":"<p>The city or locality results should be present in. </p> <p>Example: <code>Vancouver</code>.</p>"
+        },
+        "District":{
+          "shape":"GeocodeQueryComponentsDistrictString",
+          "documentation":"<p>The district or division of a city the results should be present in.</p>"
+        },
+        "Street":{
+          "shape":"GeocodeQueryComponentsStreetString",
+          "documentation":"<p>The name of the street results should be present in.</p>"
+        },
+        "AddressNumber":{
+          "shape":"GeocodeQueryComponentsAddressNumberString",
+          "documentation":"<p>The house number or address results should have. </p>"
+        },
+        "PostalCode":{
+          "shape":"GeocodeQueryComponentsPostalCodeString",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code for which the result should possess. </p>"
+        }
+      },
+      "documentation":"<p>A structured free text query allows you to search for places by the name or text representation of specific properties of the place. </p>"
+    },
+    "GeocodeQueryComponentsAddressNumberString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsCountryString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsDistrictString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsLocalityString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsPostalCodeString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsRegionString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsStreetString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeQueryComponentsSubRegionString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[^;]+",
+      "sensitive":true
+    },
+    "GeocodeRequest":{
+      "type":"structure",
+      "members":{
+        "QueryText":{
+          "shape":"GeocodeRequestQueryTextString",
+          "documentation":"<p>The free-form text query to match addresses against. This is usually a partially typed address from an end user in an address box or form.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "QueryComponents":{"shape":"GeocodeQueryComponents"},
+        "MaxResults":{
+          "shape":"GeocodeRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call.</p>"
+        },
+        "BiasPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude, that the results should be close to. Typically, place results returned are ranked higher the closer they are to this position. Stored in <code>[lng, lat]</code> and in the WSG84 format.</p> <note> <p>The fields <code>BiasPosition</code>, <code>FilterBoundingBox</code>, and <code>FilterCircle</code> are mutually exclusive.</p> </note>"
+        },
+        "Filter":{
+          "shape":"GeocodeFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"GeocodeAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters, such as time zone, that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "IntendedUse":{
+          "shape":"GeocodeIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p> <note> <p>Storing the response of an Geocode query is required to comply with service terms, but charged at a higher cost per request. Please review the <a href=\"https://aws.amazon.com/location/sla/\">user agreement</a> and <a href=\"https://aws.amazon.com/location/pricing/\">service pricing structure</a> to determine the correct setting for your use case.</p> </note>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "GeocodeRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "GeocodeRequestQueryTextString":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "sensitive":true
+    },
+    "GeocodeResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"GeocodeResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        }
+      }
+    },
+    "GeocodeResultItem":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"GeocodeResultItemPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place result.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"GeocodeResultItemTitleString",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>. </p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "AddressNumberCorrected":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean indicating if the address provided has been corrected.</p>"
+        },
+        "PostalCodeDetails":{
+          "shape":"PostalCodeDetailsList",
+          "documentation":"<p>Contains details about the postal code of the place/result. </p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represented by longitude and latitude.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "MatchScores":{
+          "shape":"MatchScoreDetails",
+          "documentation":"<p>Indicates how well the entire input matches the returned. It is equal to 1 if all input tokens are recognized and matched.</p>"
+        },
+        "ParsedQuery":{
+          "shape":"GeocodeParsedQuery",
+          "documentation":"<p>Free-form text query.</p>"
+        },
+        "Intersections":{
+          "shape":"IntersectionList",
+          "documentation":"<p>All Intersections that are near the provided address.</p>"
+        },
+        "MainAddress":{
+          "shape":"RelatedPlace",
+          "documentation":"<p>The main address corresponding to a place of type Secondary Address.</p>"
+        },
+        "SecondaryAddresses":{
+          "shape":"RelatedPlaceList",
+          "documentation":"<p>All secondary addresses that are associated with a main address. A secondary address is one that includes secondary designators, such as a Suite or Unit Number, Building, or Floor information.</p>"
+        }
+      },
+      "documentation":"<p>The Geocoded result.</p>"
+    },
+    "GeocodeResultItemList":{
+      "type":"list",
+      "member":{"shape":"GeocodeResultItem"},
+      "max":100,
+      "min":0
+    },
+    "GeocodeResultItemPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "GeocodeResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "GetPlaceAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "TimeZone",
+        "Phonemes",
+        "Access",
+        "Contact",
+        "SecondaryAddresses"
+      ]
+    },
+    "GetPlaceAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"GetPlaceAdditionalFeature"},
+      "max":4,
+      "min":1
+    },
+    "GetPlaceIntendedUse":{
+      "type":"string",
+      "enum":[
+        "SingleUse",
+        "Storage"
+      ]
+    },
+    "GetPlaceRequest":{
+      "type":"structure",
+      "required":["PlaceId"],
+      "members":{
+        "PlaceId":{
+          "shape":"GetPlaceRequestPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>",
+          "location":"uri",
+          "locationName":"PlaceId"
+        },
+        "AdditionalFeatures":{
+          "shape":"GetPlaceAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters such as time zone that can be requested for each result.</p>",
+          "location":"querystring",
+          "locationName":"additional-features"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>",
+          "location":"querystring",
+          "locationName":"language"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>",
+          "location":"querystring",
+          "locationName":"political-view"
+        },
+        "IntendedUse":{
+          "shape":"GetPlaceIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p> <note> <p>Storing the response of an GetPlace query is required to comply with service terms, but charged at a higher cost per request. Please review the <a href=\"https://aws.amazon.com/location/sla/\">user agreement</a> and <a href=\"https://aws.amazon.com/location/pricing/\">service pricing structure</a> to determine the correct setting for your use case.</p> </note>",
+          "location":"querystring",
+          "locationName":"intended-use"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "GetPlaceRequestPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "GetPlaceResponse":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title",
+        "PricingBucket"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"GetPlaceResponsePlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"GetPlaceResponseTitleString",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>.</p>"
+        },
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "AddressNumberCorrected":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean indicating if the address provided has been corrected.</p>"
+        },
+        "PostalCodeDetails":{
+          "shape":"PostalCodeDetailsList",
+          "documentation":"<p>Contains details about the postal code of the place/result. </p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set of four coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "BusinessChains":{
+          "shape":"BusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "Contacts":{
+          "shape":"Contacts",
+          "documentation":"<p>List of potential contact methods for the result/place.</p>"
+        },
+        "OpeningHours":{
+          "shape":"OpeningHoursList",
+          "documentation":"<p>List of opening hours objects.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point in <code>(lng,lat)</code>.</p>"
+        },
+        "AccessRestrictions":{
+          "shape":"AccessRestrictionList",
+          "documentation":"<p>Indicates known access restrictions on a vehicle access point. The index correlates to an access point and indicates if access through this point has some form of restriction.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Phonemes":{
+          "shape":"PhonemeDetails",
+          "documentation":"<p>How the various components of the result's address are pronounced in various languages.</p>"
+        },
+        "MainAddress":{
+          "shape":"RelatedPlace",
+          "documentation":"<p>The main address corresponding to a place of type Secondary Address.</p>"
+        },
+        "SecondaryAddresses":{
+          "shape":"RelatedPlaceList",
+          "documentation":"<p>All secondary addresses that are associated with a main address. A secondary address is one that includes secondary designators, such as a Suite or Unit Number, Building, or Floor information.</p>"
+        }
+      }
+    },
+    "GetPlaceResponsePlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "GetPlaceResponseTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "Highlight":{
+      "type":"structure",
+      "members":{
+        "StartIndex":{
+          "shape":"HighlightStartIndexInteger",
+          "documentation":"<p>Start index of the highlight.</p>"
+        },
+        "EndIndex":{
+          "shape":"HighlightEndIndexInteger",
+          "documentation":"<p>End index of the highlight.</p>"
+        },
+        "Value":{
+          "shape":"HighlightValueString",
+          "documentation":"<p>The highlight's value.</p>"
+        }
+      },
+      "documentation":"<p>Indicates the starting and ending index of the text query that match the found title.</p>"
+    },
+    "HighlightEndIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "HighlightList":{
+      "type":"list",
+      "member":{"shape":"Highlight"},
+      "max":200,
+      "min":0
+    },
+    "HighlightStartIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "HighlightValueString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "locationName":"message"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "Intersection":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"IntersectionPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place result.</p>"
+        },
+        "Title":{
+          "shape":"IntersectionTitleString",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>.</p>"
+        },
+        "Address":{"shape":"Address"},
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>",
+          "box":true
+        },
+        "RouteDistance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance from the routing position of the nearby address to the street result.</p>",
+          "box":true
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set of four coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represented by longitude and latitude.</p>"
+        }
+      },
+      "documentation":"<p>All Intersections that are near the provided address.</p>"
+    },
+    "IntersectionHighlightsList":{
+      "type":"list",
+      "member":{"shape":"HighlightList"},
+      "max":100,
+      "min":1
+    },
+    "IntersectionList":{
+      "type":"list",
+      "member":{"shape":"Intersection"},
+      "min":1
+    },
+    "IntersectionPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "IntersectionStreet":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "IntersectionStreetList":{
+      "type":"list",
+      "member":{"shape":"IntersectionStreet"},
+      "max":100,
+      "min":1
+    },
+    "IntersectionTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "LanguageTag":{
+      "type":"string",
+      "max":35,
+      "min":2
+    },
+    "MatchScore":{
+      "type":"double",
+      "max":1,
+      "min":0
+    },
+    "MatchScoreDetails":{
+      "type":"structure",
+      "members":{
+        "Overall":{
+          "shape":"MatchScore",
+          "documentation":"<p>Indicates how well the entire input matches the returned. It is equal to 1 if all input tokens are recognized and matched.</p>"
+        },
+        "Components":{
+          "shape":"ComponentMatchScores",
+          "documentation":"<p>Indicates how well the component input matches the returned. It is equal to 1 if all input tokens are recognized and matched.</p>"
+        }
+      },
+      "documentation":"<p>Details related to the match score.</p>"
+    },
+    "OpeningHours":{
+      "type":"structure",
+      "members":{
+        "Display":{
+          "shape":"OpeningHoursDisplayList",
+          "documentation":"<p>List of opening hours in the format they are displayed in. This can vary by result and in most cases represents how the result uniquely formats their opening hours. </p>"
+        },
+        "OpenNow":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean which indicates if the result/place is currently open. </p>"
+        },
+        "Components":{
+          "shape":"OpeningHoursComponentsList",
+          "documentation":"<p>Components of the opening hours object.</p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong too.</p>"
+        }
+      },
+      "documentation":"<p>List of opening hours objects.</p>"
+    },
+    "OpeningHoursComponents":{
+      "type":"structure",
+      "members":{
+        "OpenTime":{
+          "shape":"OpeningHoursComponentsOpenTimeString",
+          "documentation":"<p>String which represents the opening hours, such as <code>\"T070000\"</code>.</p>"
+        },
+        "OpenDuration":{
+          "shape":"OpeningHoursComponentsOpenDurationString",
+          "documentation":"<p>String which represents the duration of the opening period, such as <code>\"PT12H00M\"</code>.</p>"
+        },
+        "Recurrence":{
+          "shape":"OpeningHoursComponentsRecurrenceString",
+          "documentation":"<p>Days or periods when the provided opening hours are in affect. </p> <p>Example: <code>FREQ:DAILY;BYDAY:MO,TU,WE,TH,SU</code> </p>"
+        }
+      },
+      "documentation":"<p>Components of the opening hours object.</p>"
+    },
+    "OpeningHoursComponentsList":{
+      "type":"list",
+      "member":{"shape":"OpeningHoursComponents"},
+      "max":100,
+      "min":1
+    },
+    "OpeningHoursComponentsOpenDurationString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "OpeningHoursComponentsOpenTimeString":{
+      "type":"string",
+      "max":21,
+      "min":0,
+      "sensitive":true
+    },
+    "OpeningHoursComponentsRecurrenceString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "OpeningHoursDisplay":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "OpeningHoursDisplayList":{
+      "type":"list",
+      "member":{"shape":"OpeningHoursDisplay"},
+      "max":100,
+      "min":1
+    },
+    "OpeningHoursList":{
+      "type":"list",
+      "member":{"shape":"OpeningHours"},
+      "max":100,
+      "min":1
+    },
+    "ParsedQueryComponent":{
+      "type":"structure",
+      "members":{
+        "StartIndex":{
+          "shape":"ParsedQueryComponentStartIndexInteger",
+          "documentation":"<p>Start index of the parsed query component.</p>"
+        },
+        "EndIndex":{
+          "shape":"ParsedQueryComponentEndIndexInteger",
+          "documentation":"<p>End index of the parsed query component.</p>"
+        },
+        "Value":{
+          "shape":"ParsedQueryComponentValueString",
+          "documentation":"<p>Value of the parsed query component.</p>"
+        },
+        "QueryComponent":{
+          "shape":"ParsedQueryComponentQueryComponentString",
+          "documentation":"<p>The address component that the parsed query component corresponds to.</p>"
+        }
+      },
+      "documentation":"<p>Parsed components in the provided QueryText.</p>"
+    },
+    "ParsedQueryComponentEndIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ParsedQueryComponentList":{
+      "type":"list",
+      "member":{"shape":"ParsedQueryComponent"},
+      "max":200,
+      "min":0
+    },
+    "ParsedQueryComponentQueryComponentString":{
+      "type":"string",
+      "max":11,
+      "min":0,
+      "sensitive":true
+    },
+    "ParsedQueryComponentStartIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ParsedQueryComponentValueString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "ParsedQuerySecondaryAddressComponent":{
+      "type":"structure",
+      "required":[
+        "StartIndex",
+        "EndIndex",
+        "Value",
+        "Number",
+        "Designator"
+      ],
+      "members":{
+        "StartIndex":{
+          "shape":"ParsedQuerySecondaryAddressComponentStartIndexInteger",
+          "documentation":"<p>Start index of the parsed secondary address component in the query text.</p>"
+        },
+        "EndIndex":{
+          "shape":"ParsedQuerySecondaryAddressComponentEndIndexInteger",
+          "documentation":"<p>End index of the parsed secondary address component in the query text.</p>"
+        },
+        "Value":{
+          "shape":"ParsedQuerySecondaryAddressComponentValueString",
+          "documentation":"<p>Value of the parsed secondary address component.</p>"
+        },
+        "Number":{
+          "shape":"ParsedQuerySecondaryAddressComponentNumberString",
+          "documentation":"<p>Secondary address number provided in the query.</p>"
+        },
+        "Designator":{
+          "shape":"ParsedQuerySecondaryAddressComponentDesignatorString",
+          "documentation":"<p>Secondary address designator provided in the query.</p>"
+        }
+      },
+      "documentation":"<p>Information about a secondary address component parsed from the query text.</p>"
+    },
+    "ParsedQuerySecondaryAddressComponentDesignatorString":{
+      "type":"string",
+      "max":4,
+      "min":0,
+      "sensitive":true
+    },
+    "ParsedQuerySecondaryAddressComponentEndIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ParsedQuerySecondaryAddressComponentList":{
+      "type":"list",
+      "member":{"shape":"ParsedQuerySecondaryAddressComponent"},
+      "max":200,
+      "min":0
+    },
+    "ParsedQuerySecondaryAddressComponentNumberString":{
+      "type":"string",
+      "max":10,
+      "min":0,
+      "sensitive":true
+    },
+    "ParsedQuerySecondaryAddressComponentStartIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ParsedQuerySecondaryAddressComponentValueString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "PhonemeDetails":{
+      "type":"structure",
+      "members":{
+        "Title":{
+          "shape":"PhonemeTranscriptionList",
+          "documentation":"<p>List of <code>PhonemeTranscription</code>. See <code>PhonemeTranscription</code> for fields.</p>"
+        },
+        "Address":{
+          "shape":"AddressComponentPhonemes",
+          "documentation":"<p>How to pronounce the address.</p>"
+        }
+      },
+      "documentation":"<p>The phoneme details.</p>"
+    },
+    "PhonemeTranscription":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"PhonemeTranscriptionValueString",
+          "documentation":"<p>Value which indicates how to pronounce the value.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "Preferred":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean which indicates if it the preferred pronunciation.</p>"
+        }
+      },
+      "documentation":"<p>How to pronounce the various components of the address or place.</p>"
+    },
+    "PhonemeTranscriptionList":{
+      "type":"list",
+      "member":{"shape":"PhonemeTranscription"},
+      "max":100,
+      "min":0
+    },
+    "PhonemeTranscriptionValueString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "PlaceType":{
+      "type":"string",
+      "enum":[
+        "Country",
+        "Region",
+        "SubRegion",
+        "Locality",
+        "District",
+        "SubDistrict",
+        "PostalCode",
+        "Block",
+        "SubBlock",
+        "Intersection",
+        "Street",
+        "PointOfInterest",
+        "PointAddress",
+        "InterpolatedAddress",
+        "SecondaryAddress"
+      ],
+      "sensitive":true
+    },
+    "Position":{
+      "type":"list",
+      "member":{"shape":"Double"},
+      "max":2,
+      "min":2,
+      "sensitive":true
+    },
+    "PostalAuthority":{
+      "type":"string",
+      "enum":["Usps"],
+      "sensitive":true
+    },
+    "PostalCodeDetails":{
+      "type":"structure",
+      "members":{
+        "PostalCode":{
+          "shape":"PostalCodeDetailsPostalCodeString",
+          "documentation":"<p>An alphanumeric string included in a postal address to facilitate mail sorting, such as post code, postcode, or ZIP code for which the result should possess. </p>"
+        },
+        "PostalAuthority":{
+          "shape":"PostalAuthority",
+          "documentation":"<p>The postal authority or entity. This could be a governmental authority, a regulatory authority, or a designated postal operator.</p>"
+        },
+        "PostalCodeType":{
+          "shape":"PostalCodeType",
+          "documentation":"<p>The postal code type.</p>"
+        },
+        "UspsZip":{
+          "shape":"UspsZip",
+          "documentation":"<p>The ZIP Classification Code, or in other words what type of postal code is it.</p>"
+        },
+        "UspsZipPlus4":{
+          "shape":"UspsZipPlus4",
+          "documentation":"<p>The USPS ZIP+4 Record Type Code.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about the postal code of the place or result.</p>"
+    },
+    "PostalCodeDetailsList":{
+      "type":"list",
+      "member":{"shape":"PostalCodeDetails"},
+      "max":100,
+      "min":0
+    },
+    "PostalCodeDetailsPostalCodeString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "PostalCodeMode":{
+      "type":"string",
+      "enum":[
+        "MergeAllSpannedLocalities",
+        "EnumerateSpannedLocalities"
+      ]
+    },
+    "PostalCodeType":{
+      "type":"string",
+      "enum":[
+        "UspsZip",
+        "UspsZipPlus4"
+      ],
+      "sensitive":true
+    },
+    "QueryRefinement":{
+      "type":"structure",
+      "required":[
+        "RefinedTerm",
+        "OriginalTerm",
+        "StartIndex",
+        "EndIndex"
+      ],
+      "members":{
+        "RefinedTerm":{
+          "shape":"QueryRefinementRefinedTermString",
+          "documentation":"<p>The term that will be suggested to the user.</p>"
+        },
+        "OriginalTerm":{
+          "shape":"QueryRefinementOriginalTermString",
+          "documentation":"<p>The sub-string of the original query that is replaced by this query term.</p>"
+        },
+        "StartIndex":{
+          "shape":"QueryRefinementStartIndexInteger",
+          "documentation":"<p>Start index of the parsed component.</p>"
+        },
+        "EndIndex":{
+          "shape":"QueryRefinementEndIndexInteger",
+          "documentation":"<p>End index of the parsed query.</p>"
+        }
+      },
+      "documentation":"<p>Suggestions for refining individual query terms. Suggestions are returned as objects which note the term, suggested replacement, and its index in the query. </p>"
+    },
+    "QueryRefinementEndIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "QueryRefinementList":{
+      "type":"list",
+      "member":{"shape":"QueryRefinement"},
+      "max":10,
+      "min":0
+    },
+    "QueryRefinementOriginalTermString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "QueryRefinementRefinedTermString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "QueryRefinementStartIndexInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "QueryType":{
+      "type":"string",
+      "enum":[
+        "Category",
+        "BusinessChain"
+      ]
+    },
+    "RecordTypeCode":{
+      "type":"string",
+      "enum":[
+        "Firm",
+        "General",
+        "HighRise",
+        "PostOfficeBox",
+        "Rural",
+        "Street"
+      ],
+      "sensitive":true
+    },
+    "Region":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"RegionCodeString",
+          "documentation":"<p>Abbreviated code for a the state, province or region of the country. </p> <p>Example: <code>BC</code>.</p>"
+        },
+        "Name":{
+          "shape":"RegionNameString",
+          "documentation":"<p>Name for a the state, province, or region of the country. </p> <p>Example: <code>British Columbia</code>. </p>"
+        }
+      },
+      "documentation":"<p>The region or state results should be to be present in. </p> <p>Example: <code>North Rhine-Westphalia</code>. </p>"
+    },
+    "RegionCodeString":{
+      "type":"string",
+      "max":3,
+      "min":0,
+      "sensitive":true
+    },
+    "RegionHighlights":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the region in the text query that match the found title. </p>"
+        },
+        "Name":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the region name in the text query that match the found title. </p>"
+        }
+      },
+      "documentation":"<p>Indicates the starting and ending index of the region in the text query that match the found title. </p>"
+    },
+    "RegionNameString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "RelatedPlace":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"RelatedPlacePlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place result.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"RelatedPlaceTitleString",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>.</p>"
+        },
+        "Address":{"shape":"Address"},
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represented by longitude and latitude.</p>"
+        }
+      },
+      "documentation":"<p>Place that is related to the result item.</p>"
+    },
+    "RelatedPlaceList":{
+      "type":"list",
+      "member":{"shape":"RelatedPlace"},
+      "min":1
+    },
+    "RelatedPlacePlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "RelatedPlaceTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "ReverseGeocodeAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "TimeZone",
+        "Access",
+        "Intersections"
+      ]
+    },
+    "ReverseGeocodeAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"ReverseGeocodeAdditionalFeature"},
+      "max":2,
+      "min":1
+    },
+    "ReverseGeocodeFilter":{
+      "type":"structure",
+      "members":{
+        "IncludePlaceTypes":{
+          "shape":"ReverseGeocodeFilterPlaceTypeList",
+          "documentation":"<p>The included place types.</p>"
+        }
+      },
+      "documentation":"<p>The included place types.</p>"
+    },
+    "ReverseGeocodeFilterPlaceType":{
+      "type":"string",
+      "enum":[
+        "Locality",
+        "Intersection",
+        "Street",
+        "PointAddress",
+        "InterpolatedAddress"
+      ]
+    },
+    "ReverseGeocodeFilterPlaceTypeList":{
+      "type":"list",
+      "member":{"shape":"ReverseGeocodeFilterPlaceType"},
+      "max":5,
+      "min":1
+    },
+    "ReverseGeocodeIntendedUse":{
+      "type":"string",
+      "enum":[
+        "SingleUse",
+        "Storage"
+      ]
+    },
+    "ReverseGeocodeRequest":{
+      "type":"structure",
+      "required":["QueryPosition"],
+      "members":{
+        "QueryPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position, in <code>[lng, lat]</code> for which you are querying nearby results for. Results closer to the position will be ranked higher then results further away from the position</p>"
+        },
+        "QueryRadius":{
+          "shape":"ReverseGeocodeRequestQueryRadiusLong",
+          "documentation":"<p>The maximum distance in meters from the QueryPosition from which a result will be returned.</p>",
+          "box":true
+        },
+        "MaxResults":{
+          "shape":"ReverseGeocodeRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call.</p>"
+        },
+        "Filter":{
+          "shape":"ReverseGeocodeFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"ReverseGeocodeAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters, such as time zone that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "IntendedUse":{
+          "shape":"ReverseGeocodeIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p> <note> <p>Storing the response of an ReverseGeocode query is required to comply with service terms, but charged at a higher cost per request. Please review the <a href=\"https://aws.amazon.com/location/sla/\">user agreement</a> and <a href=\"https://aws.amazon.com/location/pricing/\">service pricing structure</a> to determine the correct setting for your use case.</p> </note>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "ReverseGeocodeRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ReverseGeocodeRequestQueryRadiusLong":{
+      "type":"long",
+      "max":21000000,
+      "min":1,
+      "sensitive":true
+    },
+    "ReverseGeocodeResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"ReverseGeocodeResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        }
+      }
+    },
+    "ReverseGeocodeResultItem":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"ReverseGeocodeResultItemPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"ReverseGeocodeResultItemTitleString",
+          "documentation":"<p>The localized display name of this result item based on request parameter <code>language</code>. </p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "AddressNumberCorrected":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean indicating if the address provided has been corrected.</p>"
+        },
+        "PostalCodeDetails":{
+          "shape":"PostalCodeDetailsList",
+          "documentation":"<p>Contains details about the postal code of the place/result. </p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represented by longitude and latitude.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Intersections":{
+          "shape":"IntersectionList",
+          "documentation":"<p>All Intersections that are near the provided address.</p>"
+        }
+      },
+      "documentation":"<p>The returned location from the <code>Reverse Geocode</code> action.</p>"
+    },
+    "ReverseGeocodeResultItemList":{
+      "type":"list",
+      "member":{"shape":"ReverseGeocodeResultItem"},
+      "max":100,
+      "min":0
+    },
+    "ReverseGeocodeResultItemPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "ReverseGeocodeResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "SearchNearbyAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "TimeZone",
+        "Phonemes",
+        "Access",
+        "Contact"
+      ]
+    },
+    "SearchNearbyAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"SearchNearbyAdditionalFeature"},
+      "max":4,
+      "min":1
+    },
+    "SearchNearbyFilter":{
+      "type":"structure",
+      "members":{
+        "BoundingBox":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "IncludeCountries":{
+          "shape":"CountryCodeList",
+          "documentation":"<p>A list of countries that all results must be in. Countries are represented by either their alpha-2 or alpha-3 character codes.</p>"
+        },
+        "IncludeCategories":{
+          "shape":"FilterCategoryList",
+          "documentation":"<p>Categories of results that results must belong too.</p>"
+        },
+        "ExcludeCategories":{
+          "shape":"FilterCategoryList",
+          "documentation":"<p>Categories of results that results are excluded from.</p>"
+        },
+        "IncludeBusinessChains":{
+          "shape":"FilterBusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "ExcludeBusinessChains":{
+          "shape":"FilterBusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "IncludeFoodTypes":{
+          "shape":"FilterFoodTypeList",
+          "documentation":"<p>Food types that results are included from.</p>"
+        },
+        "ExcludeFoodTypes":{
+          "shape":"FilterFoodTypeList",
+          "documentation":"<p>Food types that results are excluded from.</p>"
+        }
+      },
+      "documentation":"<p>SearchNearby structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+    },
+    "SearchNearbyIntendedUse":{
+      "type":"string",
+      "enum":[
+        "SingleUse",
+        "Storage"
+      ]
+    },
+    "SearchNearbyRequest":{
+      "type":"structure",
+      "required":["QueryPosition"],
+      "members":{
+        "QueryPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position, in <code>[lng, lat]</code> for which you are querying nearby results for. Results closer to the position will be ranked higher then results further away from the position</p>"
+        },
+        "QueryRadius":{
+          "shape":"SearchNearbyRequestQueryRadiusLong",
+          "documentation":"<p>The maximum distance in meters from the QueryPosition from which a result will be returned.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>",
+          "box":true
+        },
+        "MaxResults":{
+          "shape":"SearchNearbyRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call.</p>"
+        },
+        "Filter":{
+          "shape":"SearchNearbyFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"SearchNearbyAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters, such as time zone, that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "IntendedUse":{
+          "shape":"SearchNearbyIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p> <note> <p>Storing the response of an SearchNearby query is required to comply with service terms, but charged at a higher cost per request. Please review the <a href=\"https://aws.amazon.com/location/sla/\">user agreement</a> and <a href=\"https://aws.amazon.com/location/pricing/\">service pricing structure</a> to determine the correct setting for your use case.</p> </note>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. </p>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "SearchNearbyRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "SearchNearbyRequestQueryRadiusLong":{
+      "type":"long",
+      "max":21000000,
+      "min":1,
+      "sensitive":true
+    },
+    "SearchNearbyResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"SearchNearbyResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. </p>"
+        }
+      }
+    },
+    "SearchNearbyResultItem":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"SearchNearbyResultItemPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"SearchNearbyResultItemTitleString",
+          "documentation":"<p>The item's title.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "AddressNumberCorrected":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean indicating if the address provided has been corrected.</p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "BusinessChains":{
+          "shape":"BusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "Contacts":{
+          "shape":"Contacts",
+          "documentation":"<p>List of potential contact methods for the result/place.</p>"
+        },
+        "OpeningHours":{
+          "shape":"OpeningHoursList",
+          "documentation":"<p>List of opening hours objects.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represent by longitude and latitude.</p>"
+        },
+        "AccessRestrictions":{
+          "shape":"AccessRestrictionList",
+          "documentation":"<p>Indicates known access restrictions on a vehicle access point. The index correlates to an access point and indicates if access through this point has some form of restriction.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Phonemes":{
+          "shape":"PhonemeDetails",
+          "documentation":"<p>How the various components of the result's address are pronounced in various languages.</p>"
+        }
+      },
+      "documentation":"<p>The search results of nearby places.</p>"
+    },
+    "SearchNearbyResultItemList":{
+      "type":"list",
+      "member":{"shape":"SearchNearbyResultItem"},
+      "max":100,
+      "min":0
+    },
+    "SearchNearbyResultItemPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "SearchNearbyResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "SearchTextAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "TimeZone",
+        "Phonemes",
+        "Access",
+        "Contact"
+      ]
+    },
+    "SearchTextAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"SearchTextAdditionalFeature"},
+      "max":4,
+      "min":1
+    },
+    "SearchTextFilter":{
+      "type":"structure",
+      "members":{
+        "BoundingBox":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Circle":{"shape":"FilterCircle"},
+        "IncludeCountries":{
+          "shape":"CountryCodeList",
+          "documentation":"<p> A list of countries that all results must be in. Countries are represented by either their alpha-2 or alpha-3 character codes.</p>"
+        }
+      },
+      "documentation":"<p>SearchText structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+    },
+    "SearchTextIntendedUse":{
+      "type":"string",
+      "enum":[
+        "SingleUse",
+        "Storage"
+      ]
+    },
+    "SearchTextRequest":{
+      "type":"structure",
+      "members":{
+        "QueryText":{
+          "shape":"SearchTextRequestQueryTextString",
+          "documentation":"<p>The free-form text query to match addresses against. This is usually a partially typed address from an end user in an address box or form.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "QueryId":{
+          "shape":"SearchTextRequestQueryIdString",
+          "documentation":"<p>The query Id returned by the suggest API. If passed in the request, the SearchText API will preform a SearchText query with the improved query terms for the original query made to the suggest API.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "MaxResults":{
+          "shape":"SearchTextRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call.</p>"
+        },
+        "BiasPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude, that the results should be close to. Typically, place results returned are ranked higher the closer they are to this position. Stored in <code>[lng, lat]</code> and in the WSG84 format.</p> <note> <p>The fields <code>BiasPosition</code>, <code>FilterBoundingBox</code>, and <code>FilterCircle</code> are mutually exclusive.</p> </note>"
+        },
+        "Filter":{
+          "shape":"SearchTextFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"SearchTextAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters, such as time zone, that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "IntendedUse":{
+          "shape":"SearchTextIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p> <note> <p>Storing the response of an SearchText query is required to comply with service terms, but charged at a higher cost per request. Please review the <a href=\"https://aws.amazon.com/location/sla/\">user agreement</a> and <a href=\"https://aws.amazon.com/location/pricing/\">service pricing structure</a> to determine the correct setting for your use case.</p> </note>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. </p>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "SearchTextRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "SearchTextRequestQueryIdString":{
+      "type":"string",
+      "max":500,
+      "min":1,
+      "sensitive":true
+    },
+    "SearchTextRequestQueryTextString":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "sensitive":true
+    },
+    "SearchTextResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"SearchTextResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        },
+        "NextToken":{
+          "shape":"Token",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. </p>"
+        }
+      }
+    },
+    "SearchTextResultItem":{
+      "type":"structure",
+      "required":[
+        "PlaceId",
+        "PlaceType",
+        "Title"
+      ],
+      "members":{
+        "PlaceId":{
+          "shape":"SearchTextResultItemPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Title":{
+          "shape":"SearchTextResultItemTitleString",
+          "documentation":"<p>The item's title.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "AddressNumberCorrected":{
+          "shape":"SensitiveBoolean",
+          "documentation":"<p>Boolean indicating if the address provided has been corrected.</p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "BusinessChains":{
+          "shape":"BusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "Contacts":{
+          "shape":"Contacts",
+          "documentation":"<p>List of potential contact methods for the result/place.</p>"
+        },
+        "OpeningHours":{
+          "shape":"OpeningHoursList",
+          "documentation":"<p>List of opening hours objects.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represent by longitude and latitude.</p>"
+        },
+        "AccessRestrictions":{
+          "shape":"AccessRestrictionList",
+          "documentation":"<p>Indicates known access restrictions on a vehicle access point. The index correlates to an access point and indicates if access through this point has some form of restriction.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Phonemes":{
+          "shape":"PhonemeDetails",
+          "documentation":"<p>How the various components of the result's address are pronounced in various languages.</p>"
+        }
+      },
+      "documentation":"<p>The text search result.</p>"
+    },
+    "SearchTextResultItemList":{
+      "type":"list",
+      "member":{"shape":"SearchTextResultItem"},
+      "max":100,
+      "min":0
+    },
+    "SearchTextResultItemPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "SearchTextResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "SecondaryAddressComponent":{
+      "type":"structure",
+      "required":["Number"],
+      "members":{
+        "Number":{
+          "shape":"SecondaryAddressComponentNumberString",
+          "documentation":"<p>Number that uniquely identifies a secondary address.</p>"
+        }
+      },
+      "documentation":"<p>Components that correspond to secondary identifiers on an address. The only component type supported currently is Unit.</p>"
+    },
+    "SecondaryAddressComponentList":{
+      "type":"list",
+      "member":{"shape":"SecondaryAddressComponent"},
+      "max":1,
+      "min":0
+    },
+    "SecondaryAddressComponentMatchScore":{
+      "type":"structure",
+      "members":{
+        "Number":{
+          "shape":"MatchScore",
+          "documentation":"<p>Match score for the secondary address number.</p>"
+        }
+      },
+      "documentation":"<p>Match score for a secondary address component in the result.</p>"
+    },
+    "SecondaryAddressComponentMatchScoreList":{
+      "type":"list",
+      "member":{"shape":"SecondaryAddressComponentMatchScore"}
+    },
+    "SecondaryAddressComponentNumberString":{
+      "type":"string",
+      "max":10,
+      "min":0,
+      "sensitive":true
+    },
+    "SensitiveBoolean":{
+      "type":"boolean",
+      "box":true,
+      "sensitive":true
+    },
+    "StreetComponents":{
+      "type":"structure",
+      "members":{
+        "BaseName":{
+          "shape":"StreetComponentsBaseNameString",
+          "documentation":"<p>Base name part of the street name. </p> <p>Example: Younge from the \"Younge street\".</p>"
+        },
+        "Type":{
+          "shape":"StreetComponentsTypeString",
+          "documentation":"<p>Street type part of the street name. </p> <p>Example: <code>\"avenue\"</code>.</p>"
+        },
+        "TypePlacement":{
+          "shape":"TypePlacement",
+          "documentation":"<p>Defines if the street type is before or after the base name.</p>"
+        },
+        "TypeSeparator":{
+          "shape":"TypeSeparator",
+          "documentation":"<p>Defines a separator character such as <code>\"\"</code> or <code>\" \"</code> between the base name and type.</p>"
+        },
+        "Prefix":{
+          "shape":"StreetComponentsPrefixString",
+          "documentation":"<p>A prefix is a directional identifier that precedes, but is not included in, the base name of a road. </p> <p>Example: E for East.</p>"
+        },
+        "Suffix":{
+          "shape":"StreetComponentsSuffixString",
+          "documentation":"<p>A suffix is a directional identifier that follows, but is not included in, the base name of a road. </p> <p>Example W for West.</p>"
+        },
+        "Direction":{
+          "shape":"StreetComponentsDirectionString",
+          "documentation":"<p>Indicates the official directional identifiers assigned to highways.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        }
+      },
+      "documentation":"<p>Components of a street.</p>"
+    },
+    "StreetComponentsBaseNameString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "StreetComponentsDirectionString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "StreetComponentsList":{
+      "type":"list",
+      "member":{"shape":"StreetComponents"},
+      "max":100,
+      "min":0
+    },
+    "StreetComponentsPrefixString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "StreetComponentsSuffixString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "StreetComponentsTypeString":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "String":{"type":"string"},
+    "SubRegion":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"SubRegionCodeString",
+          "documentation":"<p>Abbreviated code for the county or sub-region.</p>"
+        },
+        "Name":{
+          "shape":"SubRegionNameString",
+          "documentation":"<p>Name for the county or sub-region.</p>"
+        }
+      },
+      "documentation":"<p>The sub-region.</p>"
+    },
+    "SubRegionCodeString":{
+      "type":"string",
+      "max":3,
+      "min":0,
+      "sensitive":true
+    },
+    "SubRegionHighlights":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the sub-region in the text query that match the found title. </p>"
+        },
+        "Name":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the name in the text query that match the found title. </p>"
+        }
+      },
+      "documentation":"<p>Indicates the starting and ending index of the sub-region in the text query that match the found title. </p>"
+    },
+    "SubRegionNameString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "SuggestAdditionalFeature":{
+      "type":"string",
+      "enum":[
+        "Core",
+        "TimeZone",
+        "Phonemes",
+        "Access"
+      ]
+    },
+    "SuggestAdditionalFeatureList":{
+      "type":"list",
+      "member":{"shape":"SuggestAdditionalFeature"},
+      "max":4,
+      "min":1
+    },
+    "SuggestAddressHighlights":{
+      "type":"structure",
+      "members":{
+        "Label":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending indexes of the places in the result which were identified to match the textQuery. This result is useful for providing emphasis to results where the user query directly matched to make selecting the correct result from a list easier for an end user.</p>"
+        }
+      },
+      "documentation":"<p>Describes how the parts of the textQuery matched the input query by returning the sections of the response which matched to textQuery terms.</p>"
+    },
+    "SuggestFilter":{
+      "type":"structure",
+      "members":{
+        "BoundingBox":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Circle":{"shape":"FilterCircle"},
+        "IncludeCountries":{
+          "shape":"CountryCodeList",
+          "documentation":"<p> A list of countries that all results must be in. Countries are represented by either their alpha-2 or alpha-3 character codes.</p>"
+        }
+      },
+      "documentation":"<p>SuggestFilter structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+    },
+    "SuggestHighlights":{
+      "type":"structure",
+      "members":{
+        "Title":{
+          "shape":"HighlightList",
+          "documentation":"<p>Indicates the starting and ending index of the title in the text query that match the found title. </p>"
+        },
+        "Address":{
+          "shape":"SuggestAddressHighlights",
+          "documentation":"<p>The place's address.</p>"
+        }
+      },
+      "documentation":"<p>Describes how the parts of the textQuery matched the input query by returning the sections of the response which matched to textQuery terms.</p>"
+    },
+    "SuggestIntendedUse":{
+      "type":"string",
+      "enum":["SingleUse"]
+    },
+    "SuggestPlaceResult":{
+      "type":"structure",
+      "members":{
+        "PlaceId":{
+          "shape":"SuggestPlaceResultPlaceIdString",
+          "documentation":"<p>The <code>PlaceId</code> of the place you wish to receive the information for.</p>"
+        },
+        "PlaceType":{
+          "shape":"PlaceType",
+          "documentation":"<p>A <code>PlaceType</code> is a category that the result place must belong to.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The place's address.</p>"
+        },
+        "Position":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude.</p>"
+        },
+        "Distance":{
+          "shape":"DistanceMeters",
+          "documentation":"<p>The distance in meters from the QueryPosition.</p>"
+        },
+        "MapView":{
+          "shape":"BoundingBox",
+          "documentation":"<p>The bounding box enclosing the geometric shape (area or line) that an individual result covers.</p> <p>The bounding box formed is defined as a set 4 coordinates: <code>[{westward lng}, {southern lat}, {eastward lng}, {northern lat}]</code> </p>"
+        },
+        "Categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>Categories of results that results must belong to.</p>"
+        },
+        "FoodTypes":{
+          "shape":"FoodTypeList",
+          "documentation":"<p>List of food types offered by this result.</p>"
+        },
+        "BusinessChains":{
+          "shape":"BusinessChainList",
+          "documentation":"<p>The Business Chains associated with the place.</p>"
+        },
+        "AccessPoints":{
+          "shape":"AccessPointList",
+          "documentation":"<p>Position of the access point represent by longitude and latitude.</p>"
+        },
+        "AccessRestrictions":{
+          "shape":"AccessRestrictionList",
+          "documentation":"<p>Indicates known access restrictions on a vehicle access point. The index correlates to an access point and indicates if access through this point has some form of restriction.</p>"
+        },
+        "TimeZone":{
+          "shape":"TimeZone",
+          "documentation":"<p>The time zone in which the place is located.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode3",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "Phonemes":{
+          "shape":"PhonemeDetails",
+          "documentation":"<p>How the various components of the result's address are pronounced in various languages.</p>"
+        }
+      },
+      "documentation":"<p>The suggested place results.</p>"
+    },
+    "SuggestPlaceResultPlaceIdString":{
+      "type":"string",
+      "max":500,
+      "min":1,
+      "sensitive":true
+    },
+    "SuggestQueryResult":{
+      "type":"structure",
+      "members":{
+        "QueryId":{
+          "shape":"SuggestQueryResultQueryIdString",
+          "documentation":"<p>QueryId can be used to complete a follow up query through the SearchText API. The QueryId retains context from the original Suggest request such as filters, political view and language. See the SearchText API documentation for more details <a href=\"https://docs.aws.amazon.com/latest/APIReference/API_geoplaces_SearchText.html\">SearchText API docs</a>.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "QueryType":{
+          "shape":"QueryType",
+          "documentation":"<p>The query type. Category queries will search for places which have an entry matching the given category, for example \"doctor office\". BusinessChain queries will search for instances of a given business.</p>"
+        }
+      },
+      "documentation":"<p>The suggested query results.</p>"
+    },
+    "SuggestQueryResultQueryIdString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "sensitive":true
+    },
+    "SuggestRequest":{
+      "type":"structure",
+      "required":["QueryText"],
+      "members":{
+        "QueryText":{
+          "shape":"SuggestRequestQueryTextString",
+          "documentation":"<p>The free-form text query to match addresses against. This is usually a partially typed address from an end user in an address box or form.</p> <note> <p>The fields <code>QueryText</code>, and <code>QueryID</code> are mutually exclusive.</p> </note>"
+        },
+        "MaxResults":{
+          "shape":"SuggestRequestMaxResultsInteger",
+          "documentation":"<p>An optional limit for the number of results returned in a single call.</p>"
+        },
+        "MaxQueryRefinements":{
+          "shape":"SuggestRequestMaxQueryRefinementsInteger",
+          "documentation":"<p>Maximum number of query terms to be returned for use with a search text query.</p>"
+        },
+        "BiasPosition":{
+          "shape":"Position",
+          "documentation":"<p>The position, in longitude and latitude, that the results should be close to. Typically, place results returned are ranked higher the closer they are to this position. Stored in <code>[lng, lat]</code> and in the WSG84 format.</p> <note> <p>The fields <code>BiasPosition</code>, <code>FilterBoundingBox</code>, and <code>FilterCircle</code> are mutually exclusive.</p> </note>"
+        },
+        "Filter":{
+          "shape":"SuggestFilter",
+          "documentation":"<p>A structure which contains a set of inclusion/exclusion properties that results must possess in order to be returned as a result.</p>"
+        },
+        "AdditionalFeatures":{
+          "shape":"SuggestAdditionalFeatureList",
+          "documentation":"<p>A list of optional additional parameters, such as time zone, that can be requested for each result.</p>"
+        },
+        "Language":{
+          "shape":"LanguageTag",
+          "documentation":"<p>A list of <a href=\"https://en.wikipedia.org/wiki/IETF_language_tag\">BCP 47</a> compliant language codes for the results to be rendered in. If there is no data for the result in the requested language, data will be returned in the default language for the entry.</p>"
+        },
+        "PoliticalView":{
+          "shape":"CountryCode",
+          "documentation":"<p>The alpha-2 or alpha-3 character code for the political view of a country. The political view applies to the results of the request to represent unresolved territorial claims through the point of view of the specified country.</p>"
+        },
+        "IntendedUse":{
+          "shape":"SuggestIntendedUse",
+          "documentation":"<p>Indicates if the results will be stored. Defaults to <code>SingleUse</code>, if left empty.</p>"
+        },
+        "Key":{
+          "shape":"ApiKey",
+          "documentation":"<p>Optional: The API key to be used for authorization. Either an API key or valid SigV4 signature must be provided when making a request.</p>",
+          "location":"querystring",
+          "locationName":"key"
+        }
+      }
+    },
+    "SuggestRequestMaxQueryRefinementsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10,
+      "min":1
+    },
+    "SuggestRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "SuggestRequestQueryTextString":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "sensitive":true
+    },
+    "SuggestResponse":{
+      "type":"structure",
+      "required":["PricingBucket"],
+      "members":{
+        "PricingBucket":{
+          "shape":"String",
+          "documentation":"<p>The pricing bucket for which the query is charged at.</p> <p>For more information on pricing, please visit <a href=\"https://aws.amazon.com/location/pricing/\">Amazon Location Service Pricing</a>.</p>",
+          "location":"header",
+          "locationName":"x-amz-geo-pricing-bucket"
+        },
+        "ResultItems":{
+          "shape":"SuggestResultItemList",
+          "documentation":"<p>List of places or results returned for a query. </p>"
+        },
+        "QueryRefinements":{
+          "shape":"QueryRefinementList",
+          "documentation":"<p>Maximum number of query terms to be returned for use with a search text query.</p>"
+        }
+      }
+    },
+    "SuggestResultItem":{
+      "type":"structure",
+      "required":[
+        "Title",
+        "SuggestResultItemType"
+      ],
+      "members":{
+        "Title":{
+          "shape":"SuggestResultItemTitleString",
+          "documentation":"<p>The display title that should be used when presenting this option to the end user.</p>"
+        },
+        "SuggestResultItemType":{
+          "shape":"SuggestResultItemType",
+          "documentation":"<p>The result type. Place results represent the final result for a point of interest, Query results represent a follow up query which can be completed through the SearchText operation.</p>"
+        },
+        "Place":{
+          "shape":"SuggestPlaceResult",
+          "documentation":"<p>The suggested place by its unique ID.</p>"
+        },
+        "Query":{"shape":"SuggestQueryResult"},
+        "Highlights":{
+          "shape":"SuggestHighlights",
+          "documentation":"<p>Describes how the parts of the response element matched the input query by returning the sections of the response which matched to input query terms. </p>"
+        }
+      },
+      "documentation":"<p>The resulting item from the suggested query.</p>"
+    },
+    "SuggestResultItemList":{
+      "type":"list",
+      "member":{"shape":"SuggestResultItem"},
+      "max":100,
+      "min":0
+    },
+    "SuggestResultItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "SuggestResultItemType":{
+      "type":"string",
+      "enum":[
+        "Place",
+        "Query"
+      ]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "locationName":"message"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "TimeZone":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"TimeZoneNameString",
+          "documentation":"<p>The time zone name.</p>"
+        },
+        "Offset":{
+          "shape":"TimeZoneOffsetString",
+          "documentation":"<p>Time zone offset of the timezone from UTC.</p>"
+        },
+        "OffsetSeconds":{
+          "shape":"TimeZoneOffsetSecondsLong",
+          "documentation":"<p>The offset of the time zone from UTC, in seconds.</p>"
+        }
+      },
+      "documentation":"<p>The time zone in which the place is located.</p>"
+    },
+    "TimeZoneNameString":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "TimeZoneOffsetSecondsLong":{
+      "type":"long",
+      "min":0,
+      "sensitive":true
+    },
+    "TimeZoneOffsetString":{
+      "type":"string",
+      "max":6,
+      "min":0,
+      "sensitive":true
+    },
+    "Token":{
+      "type":"string",
+      "max":2000,
+      "min":1
+    },
+    "TypePlacement":{
+      "type":"string",
+      "enum":[
+        "BeforeBaseName",
+        "AfterBaseName"
+      ]
+    },
+    "TypeSeparator":{
+      "type":"string",
+      "max":1,
+      "min":0,
+      "pattern":"$|^ "
+    },
+    "UspsZip":{
+      "type":"structure",
+      "members":{
+        "ZipClassificationCode":{
+          "shape":"ZipClassificationCode",
+          "documentation":"<p>The ZIP Classification Code, or in other words what type of postal code is it. </p>"
+        }
+      },
+      "documentation":"<p>The USPS zip code.</p>"
+    },
+    "UspsZipPlus4":{
+      "type":"structure",
+      "members":{
+        "RecordTypeCode":{
+          "shape":"RecordTypeCode",
+          "documentation":"<p>The USPS ZIP+4 Record Type Code.</p>"
+        }
+      },
+      "documentation":"<p>The USPS zip+4 code.</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "Reason",
+        "FieldList"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "locationName":"message"
+        },
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Test stub for reason</p>",
+          "locationName":"reason"
+        },
+        "FieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>Test stub for FieldList.</p>",
+          "locationName":"fieldList"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Message"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the resource.</p>",
+          "locationName":"name"
+        },
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>",
+          "locationName":"message"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by the Amazon Location service.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UnknownOperation",
+        "Missing",
+        "CannotParse",
+        "FieldValidationFailed",
+        "Other",
+        "UnknownField"
+      ]
+    },
+    "ZipClassificationCode":{
+      "type":"string",
+      "enum":[
+        "Military",
+        "PostOfficeBoxes",
+        "Unique"
+      ],
+      "sensitive":true
+    }
+  },
+  "documentation":"<p> The Places API enables powerful location search and geocoding capabilities for your applications, offering global coverage with rich, detailed information. Key features include: </p> <ul> <li> <p>Forward and reverse geocoding for addresses and coordinates</p> </li> <li> <p>Comprehensive place searches with detailed information, including:</p> <ul> <li> <p>Business names and addresses</p> </li> <li> <p>Contact information</p> </li> <li> <p>Hours of operation</p> </li> <li> <p>POI (Points of Interest) categories</p> </li> <li> <p>Food types for restaurants</p> </li> <li> <p>Chain affiliation for relevant businesses</p> </li> </ul> </li> <li> <p>Global data coverage with a wide range of POI categories</p> </li> <li> <p>Regular data updates to ensure accuracy and relevance</p> </li> </ul>"
+}

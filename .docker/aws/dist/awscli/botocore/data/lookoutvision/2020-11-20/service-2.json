@@ -1,0 +1,2265 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-11-20",
+    "endpointPrefix":"lookoutvision",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Lookout for Vision",
+    "serviceId":"LookoutVision",
+    "signatureVersion":"v4",
+    "signingName":"lookoutvision",
+    "uid":"lookoutvision-2020-11-20",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateDataset":{
+      "name":"CreateDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/datasets",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateDatasetRequest"},
+      "output":{"shape":"CreateDatasetResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new dataset in an Amazon Lookout for Vision project. <code>CreateDataset</code> can create a training or a test dataset from a valid dataset source (<code>DatasetSource</code>).</p> <p>If you want a single dataset project, specify <code>train</code> for the value of <code>DatasetType</code>.</p> <p>To have a project with separate training and test datasets, call <code>CreateDataset</code> twice. On the first call, specify <code>train</code> for the value of <code>DatasetType</code>. On the second call, specify <code>test</code> for the value of <code>DatasetType</code>. </p> <p>This operation requires permissions to perform the <code>lookoutvision:CreateDataset</code> operation.</p>"
+    },
+    "CreateModel":{
+      "name":"CreateModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/models",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateModelRequest"},
+      "output":{"shape":"CreateModelResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new version of a model within an an Amazon Lookout for Vision project. <code>CreateModel</code> is an asynchronous operation in which Amazon Lookout for Vision trains, tests, and evaluates a new version of a model. </p> <p>To get the current status, check the <code>Status</code> field returned in the response from <a>DescribeModel</a>.</p> <p>If the project has a single dataset, Amazon Lookout for Vision internally splits the dataset to create a training and a test dataset. If the project has a training and a test dataset, Lookout for Vision uses the respective datasets to train and test the model. </p> <p>After training completes, the evaluation metrics are stored at the location specified in <code>OutputConfig</code>. </p> <p>This operation requires permissions to perform the <code>lookoutvision:CreateModel</code> operation. If you want to tag your model, you also require permission to the <code>lookoutvision:TagResource</code> operation.</p>"
+    },
+    "CreateProject":{
+      "name":"CreateProject",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects"
+      },
+      "input":{"shape":"CreateProjectRequest"},
+      "output":{"shape":"CreateProjectResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates an empty Amazon Lookout for Vision project. After you create the project, add a dataset by calling <a>CreateDataset</a>.</p> <p>This operation requires permissions to perform the <code>lookoutvision:CreateProject</code> operation.</p>"
+    },
+    "DeleteDataset":{
+      "name":"DeleteDataset",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2020-11-20/projects/{projectName}/datasets/{datasetType}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteDatasetRequest"},
+      "output":{"shape":"DeleteDatasetResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes an existing Amazon Lookout for Vision <code>dataset</code>. </p> <p>If your the project has a single dataset, you must create a new dataset before you can create a model.</p> <p>If you project has a training dataset and a test dataset consider the following. </p> <ul> <li> <p>If you delete the test dataset, your project reverts to a single dataset project. If you then train the model, Amazon Lookout for Vision internally splits the remaining dataset into a training and test dataset.</p> </li> <li> <p>If you delete the training dataset, you must create a training dataset before you can create a model.</p> </li> </ul> <p>This operation requires permissions to perform the <code>lookoutvision:DeleteDataset</code> operation.</p>"
+    },
+    "DeleteModel":{
+      "name":"DeleteModel",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2020-11-20/projects/{projectName}/models/{modelVersion}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteModelRequest"},
+      "output":{"shape":"DeleteModelResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Lookout for Vision model. You can't delete a running model. To stop a running model, use the <a>StopModel</a> operation.</p> <p>It might take a few seconds to delete a model. To determine if a model has been deleted, call <a>ListModels</a> and check if the version of the model (<code>ModelVersion</code>) is in the <code>Models</code> array. </p> <p/> <p>This operation requires permissions to perform the <code>lookoutvision:DeleteModel</code> operation.</p>"
+    },
+    "DeleteProject":{
+      "name":"DeleteProject",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2020-11-20/projects/{projectName}"
+      },
+      "input":{"shape":"DeleteProjectRequest"},
+      "output":{"shape":"DeleteProjectResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Lookout for Vision project.</p> <p>To delete a project, you must first delete each version of the model associated with the project. To delete a model use the <a>DeleteModel</a> operation.</p> <p>You also have to delete the dataset(s) associated with the model. For more information, see <a>DeleteDataset</a>. The images referenced by the training and test datasets aren't deleted. </p> <p>This operation requires permissions to perform the <code>lookoutvision:DeleteProject</code> operation.</p>"
+    },
+    "DescribeDataset":{
+      "name":"DescribeDataset",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/datasets/{datasetType}"
+      },
+      "input":{"shape":"DescribeDatasetRequest"},
+      "output":{"shape":"DescribeDatasetResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Describe an Amazon Lookout for Vision dataset.</p> <p>This operation requires permissions to perform the <code>lookoutvision:DescribeDataset</code> operation.</p>"
+    },
+    "DescribeModel":{
+      "name":"DescribeModel",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/models/{modelVersion}"
+      },
+      "input":{"shape":"DescribeModelRequest"},
+      "output":{"shape":"DescribeModelResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Describes a version of an Amazon Lookout for Vision model.</p> <p>This operation requires permissions to perform the <code>lookoutvision:DescribeModel</code> operation.</p>"
+    },
+    "DescribeModelPackagingJob":{
+      "name":"DescribeModelPackagingJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/modelpackagingjobs/{jobName}"
+      },
+      "input":{"shape":"DescribeModelPackagingJobRequest"},
+      "output":{"shape":"DescribeModelPackagingJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Describes an Amazon Lookout for Vision model packaging job. </p> <p>This operation requires permissions to perform the <code>lookoutvision:DescribeModelPackagingJob</code> operation.</p> <p>For more information, see <i>Using your Amazon Lookout for Vision model on an edge device</i> in the Amazon Lookout for Vision Developer Guide. </p>"
+    },
+    "DescribeProject":{
+      "name":"DescribeProject",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}"
+      },
+      "input":{"shape":"DescribeProjectRequest"},
+      "output":{"shape":"DescribeProjectResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Describes an Amazon Lookout for Vision project.</p> <p>This operation requires permissions to perform the <code>lookoutvision:DescribeProject</code> operation.</p>"
+    },
+    "DetectAnomalies":{
+      "name":"DetectAnomalies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/models/{modelVersion}/detect"
+      },
+      "input":{"shape":"DetectAnomaliesRequest"},
+      "output":{"shape":"DetectAnomaliesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Detects anomalies in an image that you supply. </p> <p>The response from <code>DetectAnomalies</code> includes a boolean prediction that the image contains one or more anomalies and a confidence value for the prediction. If the model is an image segmentation model, the response also includes segmentation information for each type of anomaly found in the image.</p> <note> <p>Before calling <code>DetectAnomalies</code>, you must first start your model with the <a>StartModel</a> operation. You are charged for the amount of time, in minutes, that a model runs and for the number of anomaly detection units that your model uses. If you are not using a model, use the <a>StopModel</a> operation to stop your model. </p> </note> <p>For more information, see <i>Detecting anomalies in an image</i> in the Amazon Lookout for Vision developer guide.</p> <p>This operation requires permissions to perform the <code>lookoutvision:DetectAnomalies</code> operation.</p>"
+    },
+    "ListDatasetEntries":{
+      "name":"ListDatasetEntries",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/datasets/{datasetType}/entries"
+      },
+      "input":{"shape":"ListDatasetEntriesRequest"},
+      "output":{"shape":"ListDatasetEntriesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the JSON Lines within a dataset. An Amazon Lookout for Vision JSON Line contains the anomaly information for a single image, including the image location and the assigned label.</p> <p>This operation requires permissions to perform the <code>lookoutvision:ListDatasetEntries</code> operation.</p>"
+    },
+    "ListModelPackagingJobs":{
+      "name":"ListModelPackagingJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/modelpackagingjobs"
+      },
+      "input":{"shape":"ListModelPackagingJobsRequest"},
+      "output":{"shape":"ListModelPackagingJobsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the model packaging jobs created for an Amazon Lookout for Vision project. </p> <p>This operation requires permissions to perform the <code>lookoutvision:ListModelPackagingJobs</code> operation. </p> <p>For more information, see <i>Using your Amazon Lookout for Vision model on an edge device</i> in the Amazon Lookout for Vision Developer Guide. </p>"
+    },
+    "ListModels":{
+      "name":"ListModels",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects/{projectName}/models"
+      },
+      "input":{"shape":"ListModelsRequest"},
+      "output":{"shape":"ListModelsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the versions of a model in an Amazon Lookout for Vision project.</p> <p>The <code>ListModels</code> operation is eventually consistent. Recent calls to <code>CreateModel</code> might take a while to appear in the response from <code>ListProjects</code>.</p> <p>This operation requires permissions to perform the <code>lookoutvision:ListModels</code> operation.</p>"
+    },
+    "ListProjects":{
+      "name":"ListProjects",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/projects"
+      },
+      "input":{"shape":"ListProjectsRequest"},
+      "output":{"shape":"ListProjectsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the Amazon Lookout for Vision projects in your AWS account that are in the AWS Region in which you call <code>ListProjects</code>.</p> <p>The <code>ListProjects</code> operation is eventually consistent. Recent calls to <code>CreateProject</code> and <code>DeleteProject</code> might take a while to appear in the response from <code>ListProjects</code>.</p> <p>This operation requires permissions to perform the <code>lookoutvision:ListProjects</code> operation.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2020-11-20/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of tags attached to the specified Amazon Lookout for Vision model.</p> <p>This operation requires permissions to perform the <code>lookoutvision:ListTagsForResource</code> operation.</p>"
+    },
+    "StartModel":{
+      "name":"StartModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/models/{modelVersion}/start",
+        "responseCode":202
+      },
+      "input":{"shape":"StartModelRequest"},
+      "output":{"shape":"StartModelResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Starts the running of the version of an Amazon Lookout for Vision model. Starting a model takes a while to complete. To check the current state of the model, use <a>DescribeModel</a>.</p> <p>A model is ready to use when its status is <code>HOSTED</code>.</p> <p>Once the model is running, you can detect custom labels in new images by calling <a>DetectAnomalies</a>.</p> <note> <p>You are charged for the amount of time that the model is running. To stop a running model, call <a>StopModel</a>.</p> </note> <p>This operation requires permissions to perform the <code>lookoutvision:StartModel</code> operation.</p>"
+    },
+    "StartModelPackagingJob":{
+      "name":"StartModelPackagingJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/modelpackagingjobs"
+      },
+      "input":{"shape":"StartModelPackagingJobRequest"},
+      "output":{"shape":"StartModelPackagingJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Starts an Amazon Lookout for Vision model packaging job. A model packaging job creates an AWS IoT Greengrass component for a Lookout for Vision model. You can use the component to deploy your model to an edge device managed by Greengrass. </p> <p>Use the <a>DescribeModelPackagingJob</a> API to determine the current status of the job. The model packaging job is complete if the value of <code>Status</code> is <code>SUCCEEDED</code>.</p> <p>To deploy the component to the target device, use the component name and component version with the AWS IoT Greengrass <a href=\"https://docs.aws.amazon.com/greengrass/v2/APIReference/API_CreateDeployment.html\">CreateDeployment</a> API.</p> <p>This operation requires the following permissions:</p> <ul> <li> <p> <code>lookoutvision:StartModelPackagingJob</code> </p> </li> <li> <p> <code>s3:PutObject</code> </p> </li> <li> <p> <code>s3:GetBucketLocation</code> </p> </li> <li> <p> <code>kms:GenerateDataKey</code> </p> </li> <li> <p> <code>greengrass:CreateComponentVersion</code> </p> </li> <li> <p> <code>greengrass:DescribeComponent</code> </p> </li> <li> <p>(Optional) <code>greengrass:TagResource</code>. Only required if you want to tag the component.</p> </li> </ul> <p>For more information, see <i>Using your Amazon Lookout for Vision model on an edge device</i> in the Amazon Lookout for Vision Developer Guide. </p>"
+    },
+    "StopModel":{
+      "name":"StopModel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/projects/{projectName}/models/{modelVersion}/stop",
+        "responseCode":202
+      },
+      "input":{"shape":"StopModelRequest"},
+      "output":{"shape":"StopModelResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops the hosting of a running model. The operation might take a while to complete. To check the current status, call <a>DescribeModel</a>. </p> <p>After the model hosting stops, the <code>Status</code> of the model is <code>TRAINED</code>.</p> <p>This operation requires permissions to perform the <code>lookoutvision:StopModel</code> operation.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/2020-11-20/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Adds one or more key-value tags to an Amazon Lookout for Vision model. For more information, see <i>Tagging a model</i> in the <i>Amazon Lookout for Vision Developer Guide</i>. </p> <p>This operation requires permissions to perform the <code>lookoutvision:TagResource</code> operation.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/2020-11-20/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes one or more tags from an Amazon Lookout for Vision model. For more information, see <i>Tagging a model</i> in the <i>Amazon Lookout for Vision Developer Guide</i>. </p> <p>This operation requires permissions to perform the <code>lookoutvision:UntagResource</code> operation.</p>"
+    },
+    "UpdateDatasetEntries":{
+      "name":"UpdateDatasetEntries",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/2020-11-20/projects/{projectName}/datasets/{datasetType}/entries",
+        "responseCode":202
+      },
+      "input":{"shape":"UpdateDatasetEntriesRequest"},
+      "output":{"shape":"UpdateDatasetEntriesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Adds or updates one or more JSON Line entries in a dataset. A JSON Line includes information about an image used for training or testing an Amazon Lookout for Vision model.</p> <p>To update an existing JSON Line, use the <code>source-ref</code> field to identify the JSON Line. The JSON line that you supply replaces the existing JSON line. Any existing annotations that are not in the new JSON line are removed from the dataset. </p> <p>For more information, see <i>Defining JSON lines for anomaly classification</i> in the Amazon Lookout for Vision Developer Guide. </p> <note> <p>The images you reference in the <code>source-ref</code> field of a JSON line, must be in the same S3 bucket as the existing images in the dataset. </p> </note> <p>Updating a dataset might take a while to complete. To check the current status, call <a>DescribeDataset</a> and check the <code>Status</code> field in the response.</p> <p>This operation requires permissions to perform the <code>lookoutvision:UpdateDatasetEntries</code> operation.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ExceptionString"}
+      },
+      "documentation":"<p>You are not authorized to perform the action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "Anomaly":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"AnomalyName",
+          "documentation":"<p>The name of an anomaly type found in an image. <code>Name</code> maps to an anomaly type in the training dataset, apart from the anomaly type <code>background</code>. The service automatically inserts the <code>background</code> anomaly type into the response from <code>DetectAnomalies</code>. </p>"
+        },
+        "PixelAnomaly":{
+          "shape":"PixelAnomaly",
+          "documentation":"<p>Information about the pixel mask that covers an anomaly type.</p>"
+        }
+      },
+      "documentation":"<p>Information about an anomaly type found on an image by an image segmentation model. For more information, see <a>DetectAnomalies</a>.</p>"
+    },
+    "AnomalyClassFilter":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "pattern":"(normal|anomaly)"
+    },
+    "AnomalyList":{
+      "type":"list",
+      "member":{"shape":"Anomaly"}
+    },
+    "AnomalyMask":{
+      "type":"blob",
+      "max":5242880,
+      "min":1
+    },
+    "AnomalyName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "Boolean":{"type":"boolean"},
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-]+$"
+    },
+    "Color":{
+      "type":"string",
+      "max":7,
+      "min":7,
+      "pattern":"\\#[a-zA-Z0-9]{6}"
+    },
+    "CompilerOptions":{
+      "type":"string",
+      "max":1024,
+      "min":3,
+      "pattern":".*"
+    },
+    "ComponentDescription":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_. ()':,;?]+"
+    },
+    "ComponentName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_.]+"
+    },
+    "ComponentVersion":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^([0-9]{1,6})\\.([0-9]{1,6})\\.([0-9]{1,6})$"
+    },
+    "ComponentVersionArn":{
+      "type":"string",
+      "pattern":"arn:[^:]*:greengrass:[^:]*:aws:components:[^:]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"ExceptionString"},
+        "ResourceId":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>The update or deletion of a resource caused an inconsistent state.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "ContentType":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":".*"
+    },
+    "CreateDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "DatasetType"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project in which you want to create a dataset.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset. Specify <code>train</code> for a training dataset. Specify <code>test</code> for a test dataset.</p>"
+        },
+        "DatasetSource":{
+          "shape":"DatasetSource",
+          "documentation":"<p>The location of the manifest file that Amazon Lookout for Vision uses to create the dataset.</p> <p>If you don't specify <code>DatasetSource</code>, an empty dataset is created and the operation synchronously returns. Later, you can add JSON Lines by calling <a>UpdateDatasetEntries</a>. </p> <p>If you specify a value for <code>DataSource</code>, the manifest at the S3 location is validated and used to create the dataset. The call to <code>CreateDataset</code> is asynchronous and might take a while to complete. To find out the current status, Check the value of <code>Status</code> returned in a call to <a>DescribeDataset</a>.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>CreateDataset</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>CreateDataset</code>. In this case, safely retry your call to <code>CreateDataset</code> by using the same <code>ClientToken</code> parameter value.</p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple dataset creation requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>CreateDataset</code>. An idempotency token is active for 8 hours. </p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "CreateDatasetResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetMetadata":{
+          "shape":"DatasetMetadata",
+          "documentation":"<p>Information about the dataset.</p>"
+        }
+      }
+    },
+    "CreateModelRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "OutputConfig"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project in which you want to create a model version.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "Description":{
+          "shape":"ModelDescriptionMessage",
+          "documentation":"<p>A description for the version of the model.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>CreateModel</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>CreateModel</code>. In this case, safely retry your call to <code>CreateModel</code> by using the same <code>ClientToken</code> parameter value. </p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from starting multiple training jobs. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>CreateModel</code>. An idempotency token is active for 8 hours.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        },
+        "OutputConfig":{
+          "shape":"OutputConfig",
+          "documentation":"<p>The location where Amazon Lookout for Vision saves the training results.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The identifier for your AWS KMS key. The key is used to encrypt training and test images copied into the service for model training. Your source images are unaffected. If this parameter is not specified, the copied images are encrypted by a key that AWS owns and manages.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A set of tags (key-value pairs) that you want to attach to the model.</p>"
+        }
+      }
+    },
+    "CreateModelResponse":{
+      "type":"structure",
+      "members":{
+        "ModelMetadata":{
+          "shape":"ModelMetadata",
+          "documentation":"<p>The response from a call to <code>CreateModel</code>.</p>"
+        }
+      }
+    },
+    "CreateProjectRequest":{
+      "type":"structure",
+      "required":["ProjectName"],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name for the project.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>CreateProject</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>CreateProject</code>. In this case, safely retry your call to <code>CreateProject</code> by using the same <code>ClientToken</code> parameter value. </p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple project creation requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>CreateProject</code>. An idempotency token is active for 8 hours.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "CreateProjectResponse":{
+      "type":"structure",
+      "members":{
+        "ProjectMetadata":{
+          "shape":"ProjectMetadata",
+          "documentation":"<p>Information about the project.</p>"
+        }
+      }
+    },
+    "DatasetChanges":{
+      "type":"blob",
+      "max":10485760,
+      "min":1
+    },
+    "DatasetDescription":{
+      "type":"structure",
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the dataset.</p>"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset. The value <code>train</code> represents a training dataset or single dataset project. The value <code>test</code> represents a test dataset.</p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The Unix timestamp for the time and date that the dataset was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The Unix timestamp for the date and time that the dataset was last updated.</p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>The status of the dataset.</p>"
+        },
+        "StatusMessage":{
+          "shape":"DatasetStatusMessage",
+          "documentation":"<p>The status message for the dataset. </p>"
+        },
+        "ImageStats":{
+          "shape":"DatasetImageStats",
+          "documentation":"<p>Statistics about the images in a dataset.</p>"
+        }
+      },
+      "documentation":"<p>The description for a dataset. For more information, see <a>DescribeDataset</a>.</p>"
+    },
+    "DatasetEntry":{
+      "type":"string",
+      "max":8192,
+      "min":2,
+      "pattern":"^\\{.*\\}$"
+    },
+    "DatasetEntryList":{
+      "type":"list",
+      "member":{"shape":"DatasetEntry"}
+    },
+    "DatasetGroundTruthManifest":{
+      "type":"structure",
+      "members":{
+        "S3Object":{
+          "shape":"InputS3Object",
+          "documentation":"<p>The S3 bucket location for the manifest file.</p>"
+        }
+      },
+      "documentation":"<p>Location information about a manifest file. You can use a manifest file to create a dataset.</p>"
+    },
+    "DatasetImageStats":{
+      "type":"structure",
+      "members":{
+        "Total":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of images in the dataset.</p>"
+        },
+        "Labeled":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of labeled images.</p>"
+        },
+        "Normal":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of images labeled as normal.</p>"
+        },
+        "Anomaly":{
+          "shape":"Integer",
+          "documentation":"<p>the total number of images labeled as an anomaly.</p>"
+        }
+      },
+      "documentation":"<p>Statistics about the images in a dataset.</p>"
+    },
+    "DatasetMetadata":{
+      "type":"structure",
+      "members":{
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset.</p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The Unix timestamp for the date and time that the dataset was created. </p>"
+        },
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>The status for the dataset.</p>"
+        },
+        "StatusMessage":{
+          "shape":"DatasetStatusMessage",
+          "documentation":"<p>The status message for the dataset.</p>"
+        }
+      },
+      "documentation":"<p>Summary information for an Amazon Lookout for Vision dataset. For more information, see <a>DescribeDataset</a> and <a>ProjectDescription</a>.</p>"
+    },
+    "DatasetMetadataList":{
+      "type":"list",
+      "member":{"shape":"DatasetMetadata"}
+    },
+    "DatasetSource":{
+      "type":"structure",
+      "members":{
+        "GroundTruthManifest":{
+          "shape":"DatasetGroundTruthManifest",
+          "documentation":"<p>Location information for the manifest file.</p>"
+        }
+      },
+      "documentation":"<p>Information about the location of a manifest file that Amazon Lookout for Vision uses to to create a dataset.</p>"
+    },
+    "DatasetStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_IN_PROGRESS",
+        "CREATE_COMPLETE",
+        "CREATE_FAILED",
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_COMPLETE",
+        "UPDATE_FAILED_ROLLBACK_IN_PROGRESS",
+        "UPDATE_FAILED_ROLLBACK_COMPLETE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_COMPLETE",
+        "DELETE_FAILED"
+      ]
+    },
+    "DatasetStatusMessage":{"type":"string"},
+    "DatasetType":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "pattern":"train|test"
+    },
+    "DateTime":{"type":"timestamp"},
+    "DeleteDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "DatasetType"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the dataset that you want to delete.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset to delete. Specify <code>train</code> to delete the training dataset. Specify <code>test</code> to delete the test dataset. To delete the dataset in a single dataset project, specify <code>train</code>.</p>",
+          "location":"uri",
+          "locationName":"datasetType"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>DeleteDataset</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>DeleteDataset</code>. In this case, safely retry your call to <code>DeleteDataset</code> by using the same <code>ClientToken</code> parameter value. </p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple deletetion requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>DeleteDataset</code>. An idempotency token is active for 8 hours.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "DeleteDatasetResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteModelRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model that you want to delete.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersionNoLatest",
+          "documentation":"<p>The version of the model that you want to delete.</p>",
+          "location":"uri",
+          "locationName":"modelVersion"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>DeleteModel</code> completes only once. You choose the value to pass. For example, an issue might prevent you from getting a response from <code>DeleteModel</code>. In this case, safely retry your call to <code>DeleteModel</code> by using the same <code>ClientToken</code> parameter value.</p> <p>If you don't supply a value for ClientToken, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple model deletion requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>DeleteModel</code>. An idempotency token is active for 8 hours.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "DeleteModelResponse":{
+      "type":"structure",
+      "members":{
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model that was deleted.</p>"
+        }
+      }
+    },
+    "DeleteProjectRequest":{
+      "type":"structure",
+      "required":["ProjectName"],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to delete.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>DeleteProject</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>DeleteProject</code>. In this case, safely retry your call to <code>DeleteProject</code> by using the same <code>ClientToken</code> parameter value. </p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple project deletion requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>DeleteProject</code>. An idempotency token is active for 8 hours.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "DeleteProjectResponse":{
+      "type":"structure",
+      "members":{
+        "ProjectArn":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the project that was deleted.</p>"
+        }
+      }
+    },
+    "DescribeDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "DatasetType"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the dataset that you want to describe.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset to describe. Specify <code>train</code> to describe the training dataset. Specify <code>test</code> to describe the test dataset. If you have a single dataset project, specify <code>train</code> </p>",
+          "location":"uri",
+          "locationName":"datasetType"
+        }
+      }
+    },
+    "DescribeDatasetResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetDescription":{
+          "shape":"DatasetDescription",
+          "documentation":"<p>The description of the requested dataset. </p>"
+        }
+      }
+    },
+    "DescribeModelPackagingJobRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "JobName"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model packaging job that you want to describe. </p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "JobName":{
+          "shape":"ModelPackagingJobName",
+          "documentation":"<p>The job name for the model packaging job. </p>",
+          "location":"uri",
+          "locationName":"jobName"
+        }
+      }
+    },
+    "DescribeModelPackagingJobResponse":{
+      "type":"structure",
+      "members":{
+        "ModelPackagingDescription":{
+          "shape":"ModelPackagingDescription",
+          "documentation":"<p>The description of the model packaging job. </p>"
+        }
+      }
+    },
+    "DescribeModelRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The project that contains the version of a model that you want to describe.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model that you want to describe.</p>",
+          "location":"uri",
+          "locationName":"modelVersion"
+        }
+      }
+    },
+    "DescribeModelResponse":{
+      "type":"structure",
+      "members":{
+        "ModelDescription":{
+          "shape":"ModelDescription",
+          "documentation":"<p>Contains the description of the model.</p>"
+        }
+      }
+    },
+    "DescribeProjectRequest":{
+      "type":"structure",
+      "required":["ProjectName"],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that you want to describe.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        }
+      }
+    },
+    "DescribeProjectResponse":{
+      "type":"structure",
+      "members":{
+        "ProjectDescription":{
+          "shape":"ProjectDescription",
+          "documentation":"<p>The description of the project.</p>"
+        }
+      }
+    },
+    "DetectAnomaliesRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion",
+        "Body",
+        "ContentType"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model version that you want to use.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model that you want to use.</p>",
+          "location":"uri",
+          "locationName":"modelVersion"
+        },
+        "Body":{
+          "shape":"Stream",
+          "documentation":"<p>The unencrypted image bytes that you want to analyze. </p>"
+        },
+        "ContentType":{
+          "shape":"ContentType",
+          "documentation":"<p>The type of the image passed in <code>Body</code>. Valid values are <code>image/png</code> (PNG format images) and <code>image/jpeg</code> (JPG format images). </p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        }
+      },
+      "payload":"Body"
+    },
+    "DetectAnomaliesResponse":{
+      "type":"structure",
+      "members":{
+        "DetectAnomalyResult":{
+          "shape":"DetectAnomalyResult",
+          "documentation":"<p>The results of the <code>DetectAnomalies</code> operation.</p>"
+        }
+      }
+    },
+    "DetectAnomalyResult":{
+      "type":"structure",
+      "members":{
+        "Source":{
+          "shape":"ImageSource",
+          "documentation":"<p>The source of the image that was analyzed. <code>direct</code> means that the images was supplied from the local computer. No other values are supported.</p>"
+        },
+        "IsAnomalous":{
+          "shape":"Boolean",
+          "documentation":"<p>True if Amazon Lookout for Vision classifies the image as containing an anomaly, otherwise false.</p>"
+        },
+        "Confidence":{
+          "shape":"Float",
+          "documentation":"<p>The confidence that Lookout for Vision has in the accuracy of the classification in <code>IsAnomalous</code>.</p>"
+        },
+        "Anomalies":{
+          "shape":"AnomalyList",
+          "documentation":"<p>If the model is an image segmentation model, <code>Anomalies</code> contains a list of anomaly types found in the image. There is one entry for each type of anomaly found (even if multiple instances of an anomaly type exist on the image). The first element in the list is always an anomaly type representing the image background ('background') and shouldn't be considered an anomaly. Amazon Lookout for Vision automatically add the background anomaly type to the response, and you don't need to declare a background anomaly type in your dataset.</p> <p>If the list has one entry ('background'), no anomalies were found on the image.</p> <p/> <p>An image classification model doesn't return an <code>Anomalies</code> list. </p>"
+        },
+        "AnomalyMask":{
+          "shape":"AnomalyMask",
+          "documentation":"<p>If the model is an image segmentation model, <code>AnomalyMask</code> contains pixel masks that covers all anomaly types found on the image. Each anomaly type has a different mask color. To map a color to an anomaly type, see the <code>color</code> field of the <a>PixelAnomaly</a> object.</p> <p>An image classification model doesn't return an <code>Anomalies</code> list. </p>"
+        }
+      },
+      "documentation":"<p>The prediction results from a call to <a>DetectAnomalies</a>. <code>DetectAnomalyResult</code> includes classification information for the prediction (<code>IsAnomalous</code> and <code>Confidence</code>). If the model you use is an image segementation model, <code>DetectAnomalyResult</code> also includes segmentation information (<code>Anomalies</code> and <code>AnomalyMask</code>). Classification information is calculated separately from segmentation information and you shouldn't assume a relationship between them.</p>"
+    },
+    "ExceptionString":{"type":"string"},
+    "Float":{"type":"float"},
+    "GreengrassConfiguration":{
+      "type":"structure",
+      "required":[
+        "S3OutputLocation",
+        "ComponentName"
+      ],
+      "members":{
+        "CompilerOptions":{
+          "shape":"CompilerOptions",
+          "documentation":"<p>Additional compiler options for the Greengrass component. Currently, only NVIDIA Graphics Processing Units (GPU) and CPU accelerators are supported. If you specify <code>TargetDevice</code>, don't specify <code>CompilerOptions</code>.</p> <p>For more information, see <i>Compiler options</i> in the Amazon Lookout for Vision Developer Guide. </p>"
+        },
+        "TargetDevice":{
+          "shape":"TargetDevice",
+          "documentation":"<p>The target device for the model. Currently the only supported value is <code>jetson_xavier</code>. If you specify <code>TargetDevice</code>, you can't specify <code>TargetPlatform</code>. </p>"
+        },
+        "TargetPlatform":{
+          "shape":"TargetPlatform",
+          "documentation":"<p>The target platform for the model. If you specify <code>TargetPlatform</code>, you can't specify <code>TargetDevice</code>. </p>"
+        },
+        "S3OutputLocation":{
+          "shape":"S3Location",
+          "documentation":"<p> An S3 location in which Lookout for Vision stores the component artifacts. </p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p> A name for the AWS IoT Greengrass component. </p>"
+        },
+        "ComponentVersion":{
+          "shape":"ComponentVersion",
+          "documentation":"<p>A Version for the AWS IoT Greengrass component. If you don't provide a value, a default value of <code> <i>Model Version</i>.0.0</code> is used. </p>"
+        },
+        "ComponentDescription":{
+          "shape":"ComponentDescription",
+          "documentation":"<p> A description for the AWS IoT Greengrass component. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p> A set of tags (key-value pairs) that you want to attach to the AWS IoT Greengrass component. </p>"
+        }
+      },
+      "documentation":"<p>Configuration information for the AWS IoT Greengrass component created in a model packaging job. For more information, see <a>StartModelPackagingJob</a>. </p> <note> <p>You can't specify a component with the same <code>ComponentName</code> and <code>Componentversion</code> as an existing component with the same component name and component version.</p> </note>"
+    },
+    "GreengrassOutputDetails":{
+      "type":"structure",
+      "members":{
+        "ComponentVersionArn":{
+          "shape":"ComponentVersionArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the component. </p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p> The name of the component. </p>"
+        },
+        "ComponentVersion":{
+          "shape":"ComponentVersion",
+          "documentation":"<p> The version of the component. </p>"
+        }
+      },
+      "documentation":"<p>Information about the AWS IoT Greengrass component created by a model packaging job. </p>"
+    },
+    "ImageSource":{
+      "type":"structure",
+      "members":{
+        "Type":{
+          "shape":"ImageSourceType",
+          "documentation":"<p>The type of the image.</p>"
+        }
+      },
+      "documentation":"<p>The source for an image.</p>"
+    },
+    "ImageSourceType":{
+      "type":"string",
+      "pattern":"direct"
+    },
+    "InferenceUnits":{
+      "type":"integer",
+      "min":1
+    },
+    "InputS3Object":{
+      "type":"structure",
+      "required":[
+        "Bucket",
+        "Key"
+      ],
+      "members":{
+        "Bucket":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The Amazon S3 bucket that contains the manifest.</p>"
+        },
+        "Key":{
+          "shape":"S3ObjectKey",
+          "documentation":"<p>The name and location of the manifest file withiin the bucket.</p>"
+        },
+        "VersionId":{
+          "shape":"S3ObjectVersion",
+          "documentation":"<p>The version ID of the bucket.</p>"
+        }
+      },
+      "documentation":"<p>Amazon S3 Location information for an input manifest file. </p>"
+    },
+    "Integer":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ExceptionString"},
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The period of time, in seconds, before the operation can be retried.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>Amazon Lookout for Vision experienced a service issue. Try your call again.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "IsLabeled":{"type":"boolean"},
+    "KmsKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,2048}$"
+    },
+    "ListDatasetEntriesRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "DatasetType"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the dataset that you want to list.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset that you want to list. Specify <code>train</code> to list the training dataset. Specify <code>test</code> to list the test dataset. If you have a single dataset project, specify <code>train</code>.</p>",
+          "location":"uri",
+          "locationName":"datasetType"
+        },
+        "Labeled":{
+          "shape":"IsLabeled",
+          "documentation":"<p>Specify <code>true</code> to include labeled entries, otherwise specify <code>false</code>. If you don't specify a value, Lookout for Vision returns all entries.</p>",
+          "location":"querystring",
+          "locationName":"labeled"
+        },
+        "AnomalyClass":{
+          "shape":"AnomalyClassFilter",
+          "documentation":"<p>Specify <code>normal</code> to include only normal images. Specify <code>anomaly</code> to only include anomalous entries. If you don't specify a value, Amazon Lookout for Vision returns normal and anomalous images.</p>",
+          "location":"querystring",
+          "locationName":"anomalyClass"
+        },
+        "BeforeCreationDate":{
+          "shape":"DateTime",
+          "documentation":"<p>Only includes entries before the specified date in the response. For example, <code>2020-06-23T00:00:00</code>.</p>",
+          "location":"querystring",
+          "locationName":"createdBefore"
+        },
+        "AfterCreationDate":{
+          "shape":"DateTime",
+          "documentation":"<p>Only includes entries after the specified date in the response. For example, <code>2020-06-23T00:00:00</code>.</p>",
+          "location":"querystring",
+          "locationName":"createdAfter"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the previous response was incomplete (because there is more data to retrieve), Amazon Lookout for Vision returns a pagination token in the response. You can use this pagination token to retrieve the next set of dataset entries.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return per paginated call. The largest value you can specify is 100. If you specify a value greater than 100, a ValidationException error occurs. The default value is 100.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "SourceRefContains":{
+          "shape":"QueryString",
+          "documentation":"<p>Perform a \"contains\" search on the values of the <code>source-ref</code> key within the dataset. For example a value of \"IMG_17\" returns all JSON Lines where the <code>source-ref</code> key value matches <i>*IMG_17*</i>.</p>",
+          "location":"querystring",
+          "locationName":"sourceRefContains"
+        }
+      }
+    },
+    "ListDatasetEntriesResponse":{
+      "type":"structure",
+      "members":{
+        "DatasetEntries":{
+          "shape":"DatasetEntryList",
+          "documentation":"<p>A list of the entries (JSON Lines) within the dataset.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the response is truncated, Amazon Lookout for Vision returns this token that you can use in the subsequent request to retrieve the next set ofdataset entries.</p>"
+        }
+      }
+    },
+    "ListModelPackagingJobsRequest":{
+      "type":"structure",
+      "required":["ProjectName"],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p> The name of the project for which you want to list the model packaging jobs. </p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the previous response was incomplete (because there is more results to retrieve), Amazon Lookout for Vision returns a pagination token in the response. You can use this pagination token to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return per paginated call. The largest value you can specify is 100. If you specify a value greater than 100, a ValidationException error occurs. The default value is 100. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListModelPackagingJobsResponse":{
+      "type":"structure",
+      "members":{
+        "ModelPackagingJobs":{
+          "shape":"ModelPackagingJobsList",
+          "documentation":"<p> A list of the model packaging jobs created for the specified Amazon Lookout for Vision project. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the previous response was incomplete (because there is more results to retrieve), Amazon Lookout for Vision returns a pagination token in the response. You can use this pagination token to retrieve the next set of results. </p>"
+        }
+      }
+    },
+    "ListModelsRequest":{
+      "type":"structure",
+      "required":["ProjectName"],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model versions that you want to list.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the previous response was incomplete (because there is more data to retrieve), Amazon Lookout for Vision returns a pagination token in the response. You can use this pagination token to retrieve the next set of models.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return per paginated call. The largest value you can specify is 100. If you specify a value greater than 100, a ValidationException error occurs. The default value is 100.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListModelsResponse":{
+      "type":"structure",
+      "members":{
+        "Models":{
+          "shape":"ModelMetadataList",
+          "documentation":"<p>A list of model versions in the specified project. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the response is truncated, Amazon Lookout for Vision returns this token that you can use in the subsequent request to retrieve the next set of models. </p>"
+        }
+      }
+    },
+    "ListProjectsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the previous response was incomplete (because there is more data to retrieve), Amazon Lookout for Vision returns a pagination token in the response. You can use this pagination token to retrieve the next set of projects.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return per paginated call. The largest value you can specify is 100. If you specify a value greater than 100, a ValidationException error occurs. The default value is 100.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListProjectsResponse":{
+      "type":"structure",
+      "members":{
+        "Projects":{
+          "shape":"ProjectMetadataList",
+          "documentation":"<p>A list of projects in your AWS account.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If the response is truncated, Amazon Lookout for Vision returns this token that you can use in the subsequent request to retrieve the next set of projects.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model for which you want to list tags. </p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of tag keys and values attached to the specified model.</p>"
+        }
+      }
+    },
+    "ModelArn":{"type":"string"},
+    "ModelDescription":{
+      "type":"structure",
+      "members":{
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model.</p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The unix timestamp for the date and time that the model was created. </p>"
+        },
+        "Description":{
+          "shape":"ModelDescriptionMessage",
+          "documentation":"<p>The description for the model.</p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>The status of the model.</p>"
+        },
+        "StatusMessage":{
+          "shape":"ModelStatusMessage",
+          "documentation":"<p>The status message for the model.</p>"
+        },
+        "Performance":{
+          "shape":"ModelPerformance",
+          "documentation":"<p>Performance metrics for the model. Created during training.</p>"
+        },
+        "OutputConfig":{
+          "shape":"OutputConfig",
+          "documentation":"<p>The S3 location where Amazon Lookout for Vision saves model training files.</p>"
+        },
+        "EvaluationManifest":{
+          "shape":"OutputS3Object",
+          "documentation":"<p>The S3 location where Amazon Lookout for Vision saves the manifest file that was used to test the trained model and generate the performance scores.</p>"
+        },
+        "EvaluationResult":{
+          "shape":"OutputS3Object",
+          "documentation":"<p>The S3 location where Amazon Lookout for Vision saves the performance metrics.</p>"
+        },
+        "EvaluationEndTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The unix timestamp for the date and time that the evaluation ended. </p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The identifer for the AWS Key Management Service (AWS KMS) key that was used to encrypt the model during training.</p>"
+        },
+        "MinInferenceUnits":{
+          "shape":"InferenceUnits",
+          "documentation":"<p>The minimum number of inference units used by the model. For more information, see <a>StartModel</a> </p>"
+        },
+        "MaxInferenceUnits":{
+          "shape":"InferenceUnits",
+          "documentation":"<p>The maximum number of inference units Amazon Lookout for Vision uses to auto-scale the model. For more information, see <a>StartModel</a>.</p>"
+        }
+      },
+      "documentation":"<p>Describes an Amazon Lookout for Vision model.</p>"
+    },
+    "ModelDescriptionMessage":{
+      "type":"string",
+      "max":500,
+      "min":1,
+      "pattern":"[0-9A-Za-z\\.\\-_]*"
+    },
+    "ModelHostingStatus":{
+      "type":"string",
+      "enum":[
+        "STARTING_HOSTING",
+        "HOSTED",
+        "HOSTING_FAILED",
+        "STOPPING_HOSTING",
+        "SYSTEM_UPDATING"
+      ]
+    },
+    "ModelMetadata":{
+      "type":"structure",
+      "members":{
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The unix timestamp for the date and time that the model was created. </p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model.</p>"
+        },
+        "ModelArn":{
+          "shape":"ModelArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model.</p>"
+        },
+        "Description":{
+          "shape":"ModelDescriptionMessage",
+          "documentation":"<p>The description for the model.</p>"
+        },
+        "Status":{
+          "shape":"ModelStatus",
+          "documentation":"<p>The status of the model.</p>"
+        },
+        "StatusMessage":{
+          "shape":"ModelStatusMessage",
+          "documentation":"<p>The status message for the model.</p>"
+        },
+        "Performance":{
+          "shape":"ModelPerformance",
+          "documentation":"<p>Performance metrics for the model. Not available until training has successfully completed.</p>"
+        }
+      },
+      "documentation":"<p>Describes an Amazon Lookout for Vision model.</p>"
+    },
+    "ModelMetadataList":{
+      "type":"list",
+      "member":{"shape":"ModelMetadata"}
+    },
+    "ModelPackagingConfiguration":{
+      "type":"structure",
+      "required":["Greengrass"],
+      "members":{
+        "Greengrass":{
+          "shape":"GreengrassConfiguration",
+          "documentation":"<p> Configuration information for the AWS IoT Greengrass component in a model packaging job. </p>"
+        }
+      },
+      "documentation":"<p> Configuration information for a Amazon Lookout for Vision model packaging job. For more information, see <a>StartModelPackagingJob</a>. </p>"
+    },
+    "ModelPackagingDescription":{
+      "type":"structure",
+      "members":{
+        "JobName":{
+          "shape":"ModelPackagingJobName",
+          "documentation":"<p> The name of the model packaging job. </p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that's associated with a model that's in the model package. </p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model used in the model packaging job. </p>"
+        },
+        "ModelPackagingConfiguration":{
+          "shape":"ModelPackagingConfiguration",
+          "documentation":"<p> The configuration information used in the model packaging job. </p>"
+        },
+        "ModelPackagingJobDescription":{
+          "shape":"ModelPackagingJobDescription",
+          "documentation":"<p>The description for the model packaging job. </p>"
+        },
+        "ModelPackagingMethod":{
+          "shape":"ModelPackagingMethod",
+          "documentation":"<p>The AWS service used to package the job. Currently Lookout for Vision can package jobs with AWS IoT Greengrass. </p>"
+        },
+        "ModelPackagingOutputDetails":{
+          "shape":"ModelPackagingOutputDetails",
+          "documentation":"<p>Information about the output of the model packaging job. For more information, see <a>DescribeModelPackagingJob</a>. </p>"
+        },
+        "Status":{
+          "shape":"ModelPackagingJobStatus",
+          "documentation":"<p> The status of the model packaging job. </p>"
+        },
+        "StatusMessage":{
+          "shape":"ModelPackagingStatusMessage",
+          "documentation":"<p> The status message for the model packaging job. </p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p> The Unix timestamp for the time and date that the model packaging job was created. </p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p> The Unix timestamp for the time and date that the model packaging job was last updated. </p>"
+        }
+      },
+      "documentation":"<p> Information about a model packaging job. For more information, see <a>DescribeModelPackagingJob</a>. </p>"
+    },
+    "ModelPackagingJobDescription":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_. ()':,;?]+"
+    },
+    "ModelPackagingJobMetadata":{
+      "type":"structure",
+      "members":{
+        "JobName":{
+          "shape":"ModelPackagingJobName",
+          "documentation":"<p> The name of the model packaging job. </p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p> The project that contains the model that is in the model package. </p>"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p> The version of the model that is in the model package. </p>"
+        },
+        "ModelPackagingJobDescription":{
+          "shape":"ModelPackagingJobDescription",
+          "documentation":"<p> The description for the model packaging job. </p>"
+        },
+        "ModelPackagingMethod":{
+          "shape":"ModelPackagingMethod",
+          "documentation":"<p> The AWS service used to package the job. Currently Lookout for Vision can package jobs with AWS IoT Greengrass. </p>"
+        },
+        "Status":{
+          "shape":"ModelPackagingJobStatus",
+          "documentation":"<p>The status of the model packaging job. </p>"
+        },
+        "StatusMessage":{
+          "shape":"ModelPackagingStatusMessage",
+          "documentation":"<p>The status message for the model packaging job. </p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The Unix timestamp for the time and date that the model packaging job was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The Unix timestamp for the time and date that the model packaging job was last updated.</p>"
+        }
+      },
+      "documentation":"<p> Metadata for a model packaging job. For more information, see <a>ListModelPackagingJobs</a>. </p>"
+    },
+    "ModelPackagingJobName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "ModelPackagingJobStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "ModelPackagingJobsList":{
+      "type":"list",
+      "member":{"shape":"ModelPackagingJobMetadata"}
+    },
+    "ModelPackagingMethod":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9]+"
+    },
+    "ModelPackagingOutputDetails":{
+      "type":"structure",
+      "members":{
+        "Greengrass":{
+          "shape":"GreengrassOutputDetails",
+          "documentation":"<p> Information about the AWS IoT Greengrass component in a model packaging job. </p>"
+        }
+      },
+      "documentation":"<p> Information about the output from a model packaging job. </p>"
+    },
+    "ModelPackagingStatusMessage":{"type":"string"},
+    "ModelPerformance":{
+      "type":"structure",
+      "members":{
+        "F1Score":{
+          "shape":"Float",
+          "documentation":"<p>The overall F1 score metric for the trained model.</p>"
+        },
+        "Recall":{
+          "shape":"Float",
+          "documentation":"<p>The overall recall metric value for the trained model. </p>"
+        },
+        "Precision":{
+          "shape":"Float",
+          "documentation":"<p>The overall precision metric value for the trained model.</p>"
+        }
+      },
+      "documentation":"<p>Information about the evaluation performance of a trained model. </p>"
+    },
+    "ModelStatus":{
+      "type":"string",
+      "enum":[
+        "TRAINING",
+        "TRAINED",
+        "TRAINING_FAILED",
+        "STARTING_HOSTING",
+        "HOSTED",
+        "HOSTING_FAILED",
+        "STOPPING_HOSTING",
+        "SYSTEM_UPDATING",
+        "DELETING"
+      ]
+    },
+    "ModelStatusMessage":{"type":"string"},
+    "ModelVersion":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "pattern":"([1-9][0-9]*|latest)"
+    },
+    "ModelVersionNoLatest":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "pattern":"([1-9][0-9]*)"
+    },
+    "OutputConfig":{
+      "type":"structure",
+      "required":["S3Location"],
+      "members":{
+        "S3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The S3 location for the output.</p>"
+        }
+      },
+      "documentation":"<p>The S3 location where Amazon Lookout for Vision saves model training files.</p>"
+    },
+    "OutputS3Object":{
+      "type":"structure",
+      "required":[
+        "Bucket",
+        "Key"
+      ],
+      "members":{
+        "Bucket":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The bucket that contains the training output.</p>"
+        },
+        "Key":{
+          "shape":"S3ObjectKey",
+          "documentation":"<p>The location of the training output in the bucket.</p>"
+        }
+      },
+      "documentation":"<p>The S3 location where Amazon Lookout for Vision saves training output.</p>"
+    },
+    "PageSize":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "pattern":"^[a-zA-Z0-9\\/\\+\\=]{0,2048}$"
+    },
+    "PixelAnomaly":{
+      "type":"structure",
+      "members":{
+        "TotalPercentageArea":{
+          "shape":"Float",
+          "documentation":"<p>The percentage area of the image that the anomaly type covers.</p>"
+        },
+        "Color":{
+          "shape":"Color",
+          "documentation":"<p>A hex color value for the mask that covers an anomaly type. Each anomaly type has a different mask color. The color maps to the color of the anomaly type used in the training dataset. </p>"
+        }
+      },
+      "documentation":"<p>Information about the pixels in an anomaly mask. For more information, see <a>Anomaly</a>. <code>PixelAnomaly</code> is only returned by image segmentation models.</p>"
+    },
+    "ProjectArn":{"type":"string"},
+    "ProjectDescription":{
+      "type":"structure",
+      "members":{
+        "ProjectArn":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the project.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The unix timestamp for the date and time that the project was created. </p>"
+        },
+        "Datasets":{
+          "shape":"DatasetMetadataList",
+          "documentation":"<p>A list of datasets in the project.</p>"
+        }
+      },
+      "documentation":"<p>Describe an Amazon Lookout for Vision project. For more information, see <a>DescribeProject</a>.</p>"
+    },
+    "ProjectMetadata":{
+      "type":"structure",
+      "members":{
+        "ProjectArn":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the project.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "CreationTimestamp":{
+          "shape":"DateTime",
+          "documentation":"<p>The unix timestamp for the date and time that the project was created. </p>"
+        }
+      },
+      "documentation":"<p>Metadata about an Amazon Lookout for Vision project.</p>"
+    },
+    "ProjectMetadataList":{
+      "type":"list",
+      "member":{"shape":"ProjectMetadata"}
+    },
+    "ProjectName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_\\-]*"
+    },
+    "QueryString":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"ExceptionString"},
+        "ResourceId":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>The resource could not be found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "PROJECT",
+        "DATASET",
+        "MODEL",
+        "TRIAL",
+        "MODEL_PACKAGE_JOB"
+      ]
+    },
+    "RetryAfterSeconds":{"type":"integer"},
+    "S3BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[0-9A-Za-z\\.\\-_]*"
+    },
+    "S3KeyPrefix":{
+      "type":"string",
+      "max":1024,
+      "pattern":"^([a-zA-Z0-9!_.*'()-][/a-zA-Z0-9!_.*'()-]*)?$"
+    },
+    "S3Location":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The S3 bucket that contains the training or model packaging job output. If you are training a model, the bucket must in your AWS account. If you use an S3 bucket for a model packaging job, the S3 bucket must be in the same AWS Region and AWS account in which you use AWS IoT Greengrass.</p>"
+        },
+        "Prefix":{
+          "shape":"S3KeyPrefix",
+          "documentation":"<p>The path of the folder, within the S3 bucket, that contains the output.</p>"
+        }
+      },
+      "documentation":"<p>Information about the location of training output or the output of a model packaging job.</p>"
+    },
+    "S3ObjectKey":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^([a-zA-Z0-9!_.*'()-][/a-zA-Z0-9!_.*'()-]*)?$"
+    },
+    "S3ObjectVersion":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".*"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "QuotaCode",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"ExceptionString"},
+        "ResourceId":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource.</p>"
+        },
+        "QuotaCode":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The quota code. </p>"
+        },
+        "ServiceCode":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The service code. </p>"
+        }
+      },
+      "documentation":"<p>A service quota was exceeded the allowed limit. For more information, see Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer Guide. </p>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "StartModelPackagingJobRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion",
+        "Configuration"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p> The name of the project which contains the version of the model that you want to package. </p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p> The version of the model within the project that you want to package. </p>"
+        },
+        "JobName":{
+          "shape":"ModelPackagingJobName",
+          "documentation":"<p>A name for the model packaging job. If you don't supply a value, the service creates a job name for you. </p>"
+        },
+        "Configuration":{
+          "shape":"ModelPackagingConfiguration",
+          "documentation":"<p>The configuration for the model packaging job. </p>"
+        },
+        "Description":{
+          "shape":"ModelPackagingJobDescription",
+          "documentation":"<p>A description for the model packaging job. </p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>StartModelPackagingJob</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>StartModelPackagingJob</code>. In this case, safely retry your call to <code>StartModelPackagingJob</code> by using the same <code>ClientToken</code> parameter value.</p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple dataset creation requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>StartModelPackagingJob</code>. An idempotency token is active for 8 hours. </p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "StartModelPackagingJobResponse":{
+      "type":"structure",
+      "members":{
+        "JobName":{
+          "shape":"ModelPackagingJobName",
+          "documentation":"<p>The job name for the model packaging job. If you don't supply a job name in the <code>JobName</code> input parameter, the service creates a job name for you. </p>"
+        }
+      }
+    },
+    "StartModelRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion",
+        "MinInferenceUnits"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model that you want to start.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model that you want to start.</p>",
+          "location":"uri",
+          "locationName":"modelVersion"
+        },
+        "MinInferenceUnits":{
+          "shape":"InferenceUnits",
+          "documentation":"<p>The minimum number of inference units to use. A single inference unit represents 1 hour of processing. Use a higher number to increase the TPS throughput of your model. You are charged for the number of inference units that you use. </p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>StartModel</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>StartModel</code>. In this case, safely retry your call to <code>StartModel</code> by using the same <code>ClientToken</code> parameter value. </p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple start requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>StartModel</code>. An idempotency token is active for 8 hours. </p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        },
+        "MaxInferenceUnits":{
+          "shape":"InferenceUnits",
+          "documentation":"<p>The maximum number of inference units to use for auto-scaling the model. If you don't specify a value, Amazon Lookout for Vision doesn't auto-scale the model.</p>"
+        }
+      }
+    },
+    "StartModelResponse":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"ModelHostingStatus",
+          "documentation":"<p>The current running status of the model.</p>"
+        }
+      }
+    },
+    "StopModelRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "ModelVersion"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the model that you want to stop.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "ModelVersion":{
+          "shape":"ModelVersion",
+          "documentation":"<p>The version of the model that you want to stop.</p>",
+          "location":"uri",
+          "locationName":"modelVersion"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>StopModel</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>StopModel</code>. In this case, safely retry your call to <code>StopModel</code> by using the same <code>ClientToken</code> parameter value.</p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple stop requests. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>StopModel</code>. An idempotency token is active for 8 hours. </p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "StopModelResponse":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"ModelHostingStatus",
+          "documentation":"<p>The status of the model.</p>"
+        }
+      }
+    },
+    "Stream":{
+      "type":"blob",
+      "requiresLength":true,
+      "streaming":true
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag that is attached to the specified model.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag that is attached to the specified model.</p>"
+        }
+      },
+      "documentation":"<p>A key and value pair that is attached to the specified Amazon Lookout for Vision model.</p>"
+    },
+    "TagArn":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model to assign the tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The key-value tags to assign to the model.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TargetDevice":{
+      "type":"string",
+      "enum":["jetson_xavier"]
+    },
+    "TargetPlatform":{
+      "type":"structure",
+      "required":[
+        "Os",
+        "Arch"
+      ],
+      "members":{
+        "Os":{
+          "shape":"TargetPlatformOs",
+          "documentation":"<p>The target operating system for the model. Linux is the only operating system that is currently supported. </p>"
+        },
+        "Arch":{
+          "shape":"TargetPlatformArch",
+          "documentation":"<p>The target architecture for the model. The currently supported architectures are X86_64 (64-bit version of the x86 instruction set) and ARM_64 (ARMv8 64-bit CPU). </p>"
+        },
+        "Accelerator":{
+          "shape":"TargetPlatformAccelerator",
+          "documentation":"<p>The target accelerator for the model. Currently, Amazon Lookout for Vision only supports NVIDIA (Nvidia graphics processing unit) and CPU accelerators. If you specify NVIDIA as an accelerator, you must also specify the <code>gpu-code</code>, <code>trt-ver</code>, and <code>cuda-ver</code> compiler options. If you don't specify an accelerator, Lookout for Vision uses the CPU for compilation and we highly recommend that you use the <a>GreengrassConfiguration$CompilerOptions</a> field. For example, you can use the following compiler options for CPU: </p> <ul> <li> <p> <code>mcpu</code>: CPU micro-architecture. For example, <code>{'mcpu': 'skylake-avx512'}</code> </p> </li> <li> <p> <code>mattr</code>: CPU flags. For example, <code>{'mattr': ['+neon', '+vfpv4']}</code> </p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The platform on which a model runs on an AWS IoT Greengrass core device.</p>"
+    },
+    "TargetPlatformAccelerator":{
+      "type":"string",
+      "enum":["NVIDIA"]
+    },
+    "TargetPlatformArch":{
+      "type":"string",
+      "enum":[
+        "ARM64",
+        "X86_64"
+      ]
+    },
+    "TargetPlatformOs":{
+      "type":"string",
+      "enum":["LINUX"]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ExceptionString"},
+        "QuotaCode":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The quota code. </p>"
+        },
+        "ServiceCode":{
+          "shape":"ExceptionString",
+          "documentation":"<p>The service code. </p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The period of time, in seconds, before the operation can be retried. </p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>Amazon Lookout for Vision is temporarily unable to process the request. Try your call again.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the model from which you want to remove tags. </p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of the keys of the tags that you want to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDatasetEntriesRequest":{
+      "type":"structure",
+      "required":[
+        "ProjectName",
+        "DatasetType",
+        "Changes"
+      ],
+      "members":{
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that contains the dataset that you want to update.</p>",
+          "location":"uri",
+          "locationName":"projectName"
+        },
+        "DatasetType":{
+          "shape":"DatasetType",
+          "documentation":"<p>The type of the dataset that you want to update. Specify <code>train</code> to update the training dataset. Specify <code>test</code> to update the test dataset. If you have a single dataset project, specify <code>train</code>.</p>",
+          "location":"uri",
+          "locationName":"datasetType"
+        },
+        "Changes":{
+          "shape":"DatasetChanges",
+          "documentation":"<p>The entries to add to the dataset.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>ClientToken is an idempotency token that ensures a call to <code>UpdateDatasetEntries</code> completes only once. You choose the value to pass. For example, An issue might prevent you from getting a response from <code>UpdateDatasetEntries</code>. In this case, safely retry your call to <code>UpdateDatasetEntries</code> by using the same <code>ClientToken</code> parameter value.</p> <p>If you don't supply a value for <code>ClientToken</code>, the AWS SDK you are using inserts a value for you. This prevents retries after a network error from making multiple updates with the same dataset entries. You'll need to provide your own value for other use cases. </p> <p>An error occurs if the other input parameters are not the same as in the first request. Using a different value for <code>ClientToken</code> is considered a new call to <code>UpdateDatasetEntries</code>. An idempotency token is active for 8 hours. </p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Client-Token"
+        }
+      }
+    },
+    "UpdateDatasetEntriesResponse":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"DatasetStatus",
+          "documentation":"<p>The status of the dataset update.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"ExceptionString"}
+      },
+      "documentation":"<p>An input validation error occured. For example, invalid characters in a project name, or if a pagination token is invalid.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    }
+  },
+  "documentation":"<p>This is the Amazon Lookout for Vision API Reference. It provides descriptions of actions, data types, common parameters, and common errors.</p> <p>Amazon Lookout for Vision enables you to find visual defects in industrial products, accurately and at scale. It uses computer vision to identify missing components in an industrial product, damage to vehicles or structures, irregularities in production lines, and even minuscule defects in silicon wafers — or any other physical item where quality is important such as a missing capacitor on printed circuit boards.</p>"
+}

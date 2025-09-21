@@ -1,0 +1,1110 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-06-10",
+    "endpointPrefix":"oam",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"CloudWatch Observability Access Manager",
+    "serviceId":"OAM",
+    "signatureVersion":"v4",
+    "signingName":"oam",
+    "uid":"oam-2022-06-10",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateLink":{
+      "name":"CreateLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateLink",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateLinkInput"},
+      "output":{"shape":"CreateLinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"ConflictException"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Creates a link between a source account and a sink that you have created in a monitoring account. After the link is created, data is sent from the source account to the monitoring account. When you create a link, you can optionally specify filters that specify which metric namespaces and which log groups are shared from the source account to the monitoring account.</p> <p>Before you create a link, you must create a sink in the monitoring account and create a sink policy in that account. The sink policy must permit the source account to link to it. You can grant permission to source accounts by granting permission to an entire organization or to individual accounts.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_CreateSink.html\">CreateSink</a> and <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_PutSinkPolicy.html\">PutSinkPolicy</a>.</p> <p>Each monitoring account can be linked to as many as 100,000 source accounts.</p> <p>Each source account can be linked to as many as five monitoring accounts.</p>"
+    },
+    "CreateSink":{
+      "name":"CreateSink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateSink",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSinkInput"},
+      "output":{"shape":"CreateSinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"ConflictException"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Use this to create a <i>sink</i> in the current account, so that it can be used as a monitoring account in CloudWatch cross-account observability. A sink is a resource that represents an attachment point in a monitoring account. Source accounts can link to the sink to send observability data.</p> <p>After you create a sink, you must create a sink policy that allows source accounts to attach to it. For more information, see <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_PutSinkPolicy.html\">PutSinkPolicy</a>.</p> <p>Each account can contain one sink per Region. If you delete a sink, you can then create a new one in that Region.</p>"
+    },
+    "DeleteLink":{
+      "name":"DeleteLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteLink",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteLinkInput"},
+      "output":{"shape":"DeleteLinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a link between a monitoring account sink and a source account. You must run this operation in the source account.</p>"
+    },
+    "DeleteSink":{
+      "name":"DeleteSink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteSink",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSinkInput"},
+      "output":{"shape":"DeleteSinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"ConflictException"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a sink. You must delete all links to a sink before you can delete that sink.</p>"
+    },
+    "GetLink":{
+      "name":"GetLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetLink",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLinkInput"},
+      "output":{"shape":"GetLinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns complete information about one link.</p> <p>To use this operation, provide the link ARN. To retrieve a list of link ARNs, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListLinks.html\">ListLinks</a>.</p>"
+    },
+    "GetSink":{
+      "name":"GetSink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetSink",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSinkInput"},
+      "output":{"shape":"GetSinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns complete information about one monitoring account sink.</p> <p>To use this operation, provide the sink ARN. To retrieve a list of sink ARNs, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListSinks.html\">ListSinks</a>.</p>"
+    },
+    "GetSinkPolicy":{
+      "name":"GetSinkPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetSinkPolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSinkPolicyInput"},
+      "output":{"shape":"GetSinkPolicyOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the current sink policy attached to this sink. The sink policy specifies what accounts can attach to this sink as source accounts, and what types of data they can share.</p>"
+    },
+    "ListAttachedLinks":{
+      "name":"ListAttachedLinks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListAttachedLinks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAttachedLinksInput"},
+      "output":{"shape":"ListAttachedLinksOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of source account links that are linked to this monitoring account sink.</p> <p>To use this operation, provide the sink ARN. To retrieve a list of sink ARNs, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListSinks.html\">ListSinks</a>.</p> <p>To find a list of links for one source account, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListLinks.html\">ListLinks</a>.</p>"
+    },
+    "ListLinks":{
+      "name":"ListLinks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListLinks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLinksInput"},
+      "output":{"shape":"ListLinksOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation in a source account to return a list of links to monitoring account sinks that this source account has.</p> <p>To find a list of links for one monitoring account sink, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListAttachedLinks.html\">ListAttachedLinks</a> from within the monitoring account.</p>"
+    },
+    "ListSinks":{
+      "name":"ListSinks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListSinks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSinksInput"},
+      "output":{"shape":"ListSinksOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation in a monitoring account to return the list of sinks created in that account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Displays the tags associated with a resource. Both sinks and links support tagging.</p>"
+    },
+    "PutSinkPolicy":{
+      "name":"PutSinkPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutSinkPolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"PutSinkPolicyInput"},
+      "output":{"shape":"PutSinkPolicyOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates or updates the resource policy that grants permissions to source accounts to link to the monitoring account sink. When you create a sink policy, you can grant permissions to all accounts in an organization or to individual accounts.</p> <p>You can also use a sink policy to limit the types of data that is shared. The six types of services with their respective resource types that you can allow or deny are:</p> <ul> <li> <p> <b>Metrics</b> - Specify with <code>AWS::CloudWatch::Metric</code> </p> </li> <li> <p> <b>Log groups</b> - Specify with <code>AWS::Logs::LogGroup</code> </p> </li> <li> <p> <b>Traces</b> - Specify with <code>AWS::XRay::Trace</code> </p> </li> <li> <p> <b>Application Insights - Applications</b> - Specify with <code>AWS::ApplicationInsights::Application</code> </p> </li> <li> <p> <b>Internet Monitor</b> - Specify with <code>AWS::InternetMonitor::Monitor</code> </p> </li> <li> <p> <b>Application Signals</b> - Specify with <code>AWS::ApplicationSignals::Service</code> and <code>AWS::ApplicationSignals::ServiceLevelObjective</code> </p> </li> </ul> <p>See the examples in this section to see how to specify permitted source accounts and data types.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified resource. Both sinks and links can be tagged. </p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can use the <code>TagResource</code> action with a resource that already has tags. If you specify a new tag key for the alarm, this tag is appended to the list of tags associated with the alarm. If you specify a tag key that is already associated with the alarm, the new tag value that you specify replaces the previous value for that tag.</p> <p>You can associate as many as 50 tags with a resource.</p> <important> <p>Unlike tagging permissions in other Amazon Web Services services, to tag or untag links and sinks you must have the <code>oam:ResourceTag</code> permission. The <code>iam:ResourceTag</code> permission does not allow you to tag and untag links and sinks.</p> </important>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes one or more tags from the specified resource.</p> <important> <p>Unlike tagging permissions in other Amazon Web Services services, to tag or untag links and sinks you must have the <code>oam:ResourceTag</code> permission. The <code>iam:TagResource</code> permission does not allow you to tag and untag links and sinks.</p> </important>"
+    },
+    "UpdateLink":{
+      "name":"UpdateLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateLink",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLinkInput"},
+      "output":{"shape":"UpdateLinkOutput"},
+      "errors":[
+        {"shape":"InternalServiceFault"},
+        {"shape":"MissingRequiredParameterException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation to change what types of data are shared from a source account to its linked monitoring account sink. You can't change the sink or change the monitoring account with this operation.</p> <p>When you update a link, you can optionally specify filters that specify which metric namespaces and which log groups are shared from the source account to the monitoring account.</p> <p>To update the list of tags associated with the sink, use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_TagResource.html\">TagResource</a>.</p>"
+    }
+  },
+  "shapes":{
+    "Arn":{
+      "type":"string",
+      "pattern":"^arn:(\\w|-)+:oam:.+:.+:.+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        }
+      },
+      "documentation":"<p>A resource was in an inconsistent state during an update or a deletion.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateLinkInput":{
+      "type":"structure",
+      "required":[
+        "LabelTemplate",
+        "ResourceTypes",
+        "SinkIdentifier"
+      ],
+      "members":{
+        "LabelTemplate":{
+          "shape":"LabelTemplate",
+          "documentation":"<p>Specify a friendly human-readable name to use to identify this source account when you are viewing data from it in the monitoring account.</p> <p>You can use a custom label or use the following variables:</p> <ul> <li> <p> <code>$AccountName</code> is the name of the account</p> </li> <li> <p> <code>$AccountEmail</code> is the globally unique email address of the account</p> </li> <li> <p> <code>$AccountEmailNoDomain</code> is the email address of the account without the domain name</p> </li> </ul> <note> <p>In the Amazon Web Services GovCloud (US-East) and Amazon Web Services GovCloud (US-West) Regions, the only supported option is to use custom labels, and the <code>$AccountName</code>, <code>$AccountEmail</code>, and <code>$AccountEmailNoDomain</code> variables all resolve as <i>account-id</i> instead of the specified variable.</p> </note>"
+        },
+        "LinkConfiguration":{
+          "shape":"LinkConfiguration",
+          "documentation":"<p>Use this structure to optionally create filters that specify that only some metric namespaces or log groups are to be shared from the source account to the monitoring account.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesInput",
+          "documentation":"<p>An array of strings that define which types of data that the source account shares with the monitoring account.</p>"
+        },
+        "SinkIdentifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink to use to create this link. You can use <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_ListSinks.html\">ListSinks</a> to find the ARNs of sinks.</p> <p>For more information about sinks, see <a href=\"https://docs.aws.amazon.com/OAM/latest/APIReference/API_CreateSink.html\">CreateSink</a>.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapInput",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the link. </p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>For more information about using tags to control access, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html\">Controlling access to Amazon Web Services resources using tags</a>.</p>"
+        }
+      }
+    },
+    "CreateLinkOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the link that is newly created.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the link ARN.</p>"
+        },
+        "Label":{
+          "shape":"String",
+          "documentation":"<p>The label that you assigned to this link. If the <code>labelTemplate</code> includes variables, this field displays the variables resolved to their actual values.</p>"
+        },
+        "LabelTemplate":{
+          "shape":"String",
+          "documentation":"<p>The exact label template that you specified, with the variables not resolved.</p>"
+        },
+        "LinkConfiguration":{
+          "shape":"LinkConfiguration",
+          "documentation":"<p>This structure includes filters that specify which metric namespaces and which log groups are shared from the source account to the monitoring account.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesOutput",
+          "documentation":"<p>The resource types supported by this link.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink that is used for this link.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The tags assigned to the link.</p>"
+        }
+      }
+    },
+    "CreateSinkInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"SinkName",
+          "documentation":"<p>A name for the sink.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapInput",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the link. </p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>For more information about using tags to control access, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html\">Controlling access to Amazon Web Services resources using tags</a>.</p>"
+        }
+      }
+    },
+    "CreateSinkOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink that is newly created.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the sink.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The tags assigned to the sink.</p>"
+        }
+      }
+    },
+    "DeleteLinkInput":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the link to delete.</p>"
+        }
+      }
+    },
+    "DeleteLinkOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSinkInput":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink to delete.</p>"
+        }
+      }
+    },
+    "DeleteSinkOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetLinkInput":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the link to retrieve information for.</p>"
+        },
+        "IncludeTags":{
+          "shape":"IncludeTags",
+          "documentation":"<p>Specifies whether to include the tags associated with the link in the response. When <code>IncludeTags</code> is set to <code>true</code> and the caller has the required permission, <code>oam:ListTagsForResource</code>, the API will return the tags for the specified resource. If the caller doesn't have the required permission, <code>oam:ListTagsForResource</code>, the API will raise an exception.</p> <p>The default value is <code>false</code>.</p>"
+        }
+      }
+    },
+    "GetLinkOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the link.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the link ARN.</p>"
+        },
+        "Label":{
+          "shape":"String",
+          "documentation":"<p>The label that you assigned to this link, with the variables resolved to their actual values.</p>"
+        },
+        "LabelTemplate":{
+          "shape":"String",
+          "documentation":"<p>The exact label template that was specified when the link was created, with the template variables not resolved.</p>"
+        },
+        "LinkConfiguration":{
+          "shape":"LinkConfiguration",
+          "documentation":"<p>This structure includes filters that specify which metric namespaces and which log groups are shared from the source account to the monitoring account.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesOutput",
+          "documentation":"<p>The resource types supported by this link.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink that is used for this link.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The tags assigned to the link.</p>"
+        }
+      }
+    },
+    "GetSinkInput":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink to retrieve information for.</p>"
+        },
+        "IncludeTags":{
+          "shape":"IncludeTags",
+          "documentation":"<p>Specifies whether to include the tags associated with the sink in the response. When <code>IncludeTags</code> is set to <code>true</code> and the caller has the required permission, <code>oam:ListTagsForResource</code>, the API will return the tags for the specified resource. If the caller doesn't have the required permission, <code>oam:ListTagsForResource</code>, the API will raise an exception.</p> <p>The default value is <code>false</code>.</p>"
+        }
+      }
+    },
+    "GetSinkOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the sink.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The tags assigned to the sink.</p>"
+        }
+      }
+    },
+    "GetSinkPolicyInput":{
+      "type":"structure",
+      "required":["SinkIdentifier"],
+      "members":{
+        "SinkIdentifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink to retrieve the policy of.</p>"
+        }
+      }
+    },
+    "GetSinkPolicyOutput":{
+      "type":"structure",
+      "members":{
+        "Policy":{
+          "shape":"String",
+          "documentation":"<p>The policy that you specified, in JSON format.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink.</p>"
+        },
+        "SinkId":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        }
+      }
+    },
+    "IncludeTags":{
+      "type":"boolean",
+      "box":true
+    },
+    "InternalServiceFault":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        }
+      },
+      "documentation":"<p>Unexpected error while processing the request. Retry the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidParameterException":{
+      "type":"structure",
+      "members":{
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        },
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>A parameter is specified incorrectly.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "LabelTemplate":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "LinkConfiguration":{
+      "type":"structure",
+      "members":{
+        "LogGroupConfiguration":{
+          "shape":"LogGroupConfiguration",
+          "documentation":"<p>Use this structure to filter which log groups are to send log events from the source account to the monitoring account.</p>"
+        },
+        "MetricConfiguration":{
+          "shape":"MetricConfiguration",
+          "documentation":"<p>Use this structure to filter which metric namespaces are to be shared from the source account to the monitoring account.</p>"
+        }
+      },
+      "documentation":"<p>Use this structure to optionally create filters that specify that only some metric namespaces or log groups are to be shared from the source account to the monitoring account.</p>"
+    },
+    "ListAttachedLinksInput":{
+      "type":"structure",
+      "required":["SinkIdentifier"],
+      "members":{
+        "MaxResults":{
+          "shape":"ListAttachedLinksMaxResults",
+          "documentation":"<p>Limits the number of returned links to the specified number.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of items to return. You received this token from a previous call.</p>"
+        },
+        "SinkIdentifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink that you want to retrieve links for.</p>"
+        }
+      }
+    },
+    "ListAttachedLinksItem":{
+      "type":"structure",
+      "members":{
+        "Label":{
+          "shape":"String",
+          "documentation":"<p>The label that was assigned to this link at creation, with the variables resolved to their actual values.</p>"
+        },
+        "LinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the link.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesOutput",
+          "documentation":"<p>The resource types supported by this link.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about one link attached to this monitoring account sink.</p>"
+    },
+    "ListAttachedLinksItems":{
+      "type":"list",
+      "member":{"shape":"ListAttachedLinksItem"}
+    },
+    "ListAttachedLinksMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListAttachedLinksOutput":{
+      "type":"structure",
+      "required":["Items"],
+      "members":{
+        "Items":{
+          "shape":"ListAttachedLinksItems",
+          "documentation":"<p>An array of structures that contain the information about the attached links.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use when requesting the next set of links.</p>"
+        }
+      }
+    },
+    "ListLinksInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListLinksMaxResults",
+          "documentation":"<p>Limits the number of returned links to the specified number.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of items to return. You received this token from a previous call.</p>"
+        }
+      }
+    },
+    "ListLinksItem":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the link.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the link ARN.</p>"
+        },
+        "Label":{
+          "shape":"String",
+          "documentation":"<p>The label that was assigned to this link at creation, with the variables resolved to their actual values.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesOutput",
+          "documentation":"<p>The resource types supported by this link.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink that this link is attached to.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about one of this source account's links to a monitoring account.</p>"
+    },
+    "ListLinksItems":{
+      "type":"list",
+      "member":{"shape":"ListLinksItem"}
+    },
+    "ListLinksMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":5,
+      "min":1
+    },
+    "ListLinksOutput":{
+      "type":"structure",
+      "required":["Items"],
+      "members":{
+        "Items":{
+          "shape":"ListLinksItems",
+          "documentation":"<p>An array of structures that contain the information about the returned links.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use when requesting the next set of links.</p>"
+        }
+      }
+    },
+    "ListSinksInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListSinksMaxResults",
+          "documentation":"<p>Limits the number of returned links to the specified number.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of items to return. You received this token from a previous call.</p>"
+        }
+      }
+    },
+    "ListSinksItem":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the sink.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about one of this monitoring account's sinks.</p>"
+    },
+    "ListSinksItems":{
+      "type":"list",
+      "member":{"shape":"ListSinksItem"}
+    },
+    "ListSinksMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSinksOutput":{
+      "type":"structure",
+      "required":["Items"],
+      "members":{
+        "Items":{
+          "shape":"ListSinksItems",
+          "documentation":"<p>An array of structures that contain the information about the returned sinks.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use when requesting the next set of sinks.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that you want to view tags for.</p> <p>The ARN format of a sink is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:sink/<i>sink-id</i> </code> </p> <p>The ARN format of a link is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:link/<i>link-id</i> </code> </p> <p>For more information about ARN format, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html\">CloudWatch Logs resources and operations</a>.</p> <important> <p>Unlike tagging permissions in other Amazon Web Services services, to retrieve the list of tags for links or sinks you must have the <code>oam:RequestTag</code> permission. The <code>aws:ReguestTag</code> permission does not allow you to tag and untag links and sinks.</p> </important>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The list of tags associated with the requested resource.&gt;</p>"
+        }
+      }
+    },
+    "LogGroupConfiguration":{
+      "type":"structure",
+      "required":["Filter"],
+      "members":{
+        "Filter":{
+          "shape":"LogsFilter",
+          "documentation":"<p>Use this field to specify which log groups are to share their log events with the monitoring account. Use the term <code>LogGroupName</code> and one or more of the following operands. Use single quotation marks (') around log group names. The matching of log group names is case sensitive. Each filter has a limit of five conditional operands. Conditional operands are <code>AND</code> and <code>OR</code>.</p> <ul> <li> <p> <code>=</code> and <code>!=</code> </p> </li> <li> <p> <code>AND</code> </p> </li> <li> <p> <code>OR</code> </p> </li> <li> <p> <code>LIKE</code> and <code>NOT LIKE</code>. These can be used only as prefix searches. Include a <code>%</code> at the end of the string that you want to search for and include.</p> </li> <li> <p> <code>IN</code> and <code>NOT IN</code>, using parentheses <code>( )</code> </p> </li> </ul> <p>Examples:</p> <ul> <li> <p> <code>LogGroupName IN ('This-Log-Group', 'Other-Log-Group')</code> includes only the log groups with names <code>This-Log-Group</code> and <code>Other-Log-Group</code>.</p> </li> <li> <p> <code>LogGroupName NOT IN ('Private-Log-Group', 'Private-Log-Group-2')</code> includes all log groups except the log groups with names <code>Private-Log-Group</code> and <code>Private-Log-Group-2</code>.</p> </li> <li> <p> <code>LogGroupName LIKE 'aws/lambda/%' OR LogGroupName LIKE 'AWSLogs%'</code> includes all log groups that have names that start with <code>aws/lambda/</code> or <code>AWSLogs</code>.</p> </li> </ul> <note> <p>If you are updating a link that uses filters, you can specify <code>*</code> as the only value for the <code>filter</code> parameter to delete the filter and share all log groups with the monitoring account.</p> </note>"
+        }
+      },
+      "documentation":"<p>This structure contains the <code>Filter</code> parameter which you can use to specify which log groups are to share log events from this source account to the monitoring account.</p>"
+    },
+    "LogsFilter":{
+      "type":"string",
+      "max":2000,
+      "min":1
+    },
+    "MetricConfiguration":{
+      "type":"structure",
+      "required":["Filter"],
+      "members":{
+        "Filter":{
+          "shape":"MetricsFilter",
+          "documentation":"<p>Use this field to specify which metrics are to be shared with the monitoring account. Use the term <code>Namespace</code> and one or more of the following operands. Use single quotation marks (') around namespace names. The matching of namespace names is case sensitive. Each filter has a limit of five conditional operands. Conditional operands are <code>AND</code> and <code>OR</code>.</p> <ul> <li> <p> <code>=</code> and <code>!=</code> </p> </li> <li> <p> <code>AND</code> </p> </li> <li> <p> <code>OR</code> </p> </li> <li> <p> <code>LIKE</code> and <code>NOT LIKE</code>. These can be used only as prefix searches. Include a <code>%</code> at the end of the string that you want to search for and include.</p> </li> <li> <p> <code>IN</code> and <code>NOT IN</code>, using parentheses <code>( )</code> </p> </li> </ul> <p>Examples:</p> <ul> <li> <p> <code>Namespace NOT LIKE 'AWS/%'</code> includes only namespaces that don't start with <code>AWS/</code>, such as custom namespaces.</p> </li> <li> <p> <code>Namespace IN ('AWS/EC2', 'AWS/ELB', 'AWS/S3')</code> includes only the metrics in the EC2, Elastic Load Balancing, and Amazon S3 namespaces. </p> </li> <li> <p> <code>Namespace = 'AWS/EC2' OR Namespace NOT LIKE 'AWS/%'</code> includes only the EC2 namespace and your custom namespaces.</p> </li> </ul> <note> <p>If you are updating a link that uses filters, you can specify <code>*</code> as the only value for the <code>filter</code> parameter to delete the filter and share all metric namespaces with the monitoring account.</p> </note>"
+        }
+      },
+      "documentation":"<p>This structure contains the <code>Filter</code> parameter which you can use to specify which metric namespaces are to be shared from this source account to the monitoring account.</p>"
+    },
+    "MetricsFilter":{
+      "type":"string",
+      "max":2000,
+      "min":1
+    },
+    "MissingRequiredParameterException":{
+      "type":"structure",
+      "members":{
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        },
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>A required parameter is missing from the request.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "NextToken":{"type":"string"},
+    "PutSinkPolicyInput":{
+      "type":"structure",
+      "required":[
+        "Policy",
+        "SinkIdentifier"
+      ],
+      "members":{
+        "Policy":{
+          "shape":"SinkPolicy",
+          "documentation":"<p>The JSON policy to use. If you are updating an existing policy, the entire existing policy is replaced by what you specify here.</p> <p>The policy must be in JSON string format with quotation marks escaped and no newlines.</p> <p>For examples of different types of policies, see the <b>Examples</b> section on this page.</p>"
+        },
+        "SinkIdentifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the sink to attach this policy to.</p>"
+        }
+      }
+    },
+    "PutSinkPolicyOutput":{
+      "type":"structure",
+      "members":{
+        "Policy":{
+          "shape":"String",
+          "documentation":"<p>The policy that you specified.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink.</p>"
+        },
+        "SinkId":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        }
+      }
+    },
+    "ResourceIdentifier":{
+      "type":"string",
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_:\\.\\-\\/]{0,2047}$"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        }
+      },
+      "documentation":"<p>The request references a resource that does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "AWS::CloudWatch::Metric",
+        "AWS::Logs::LogGroup",
+        "AWS::XRay::Trace",
+        "AWS::ApplicationInsights::Application",
+        "AWS::InternetMonitor::Monitor",
+        "AWS::ApplicationSignals::Service",
+        "AWS::ApplicationSignals::ServiceLevelObjective"
+      ]
+    },
+    "ResourceTypesInput":{
+      "type":"list",
+      "member":{"shape":"ResourceType"},
+      "max":50,
+      "min":1
+    },
+    "ResourceTypesOutput":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "amznErrorType":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>",
+          "location":"header",
+          "locationName":"x-amzn-ErrorType"
+        }
+      },
+      "documentation":"<p>The request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SinkName":{
+      "type":"string",
+      "pattern":"^[a-zA-Z0-9_\\.\\-]{1,255}$"
+    },
+    "SinkPolicy":{"type":"string"},
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagMapInput":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "TagMapOutput":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that you're adding tags to.</p> <p>The ARN format of a sink is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:sink/<i>sink-id</i> </code> </p> <p>The ARN format of a link is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:link/<i>link-id</i> </code> </p> <p>For more information about ARN format, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html\">CloudWatch Logs resources and operations</a>.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMapInput",
+          "documentation":"<p>The list of key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>A resource can have no more than 50 tags.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that you're removing tags from.</p> <p>The ARN format of a sink is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:sink/<i>sink-id</i> </code> </p> <p>The ARN format of a link is <code>arn:aws:oam:<i>Region</i>:<i>account-id</i>:link/<i>link-id</i> </code> </p> <p>For more information about ARN format, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html\">CloudWatch Logs resources and operations</a>.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The list of tag keys to remove from the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateLinkInput":{
+      "type":"structure",
+      "required":[
+        "Identifier",
+        "ResourceTypes"
+      ],
+      "members":{
+        "Identifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ARN of the link that you want to update.</p>"
+        },
+        "IncludeTags":{
+          "shape":"IncludeTags",
+          "documentation":"<p>Specifies whether to include the tags associated with the link in the response after the update operation. When <code>IncludeTags</code> is set to <code>true</code> and the caller has the required permission, <code>oam:ListTagsForResource</code>, the API will return the tags for the specified resource. If the caller doesn't have the required permission, <code>oam:ListTagsForResource</code>, the API will raise an exception. </p> <p>The default value is <code>false</code>.</p>"
+        },
+        "LinkConfiguration":{
+          "shape":"LinkConfiguration",
+          "documentation":"<p>Use this structure to filter which metric namespaces and which log groups are to be shared from the source account to the monitoring account.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesInput",
+          "documentation":"<p>An array of strings that define which types of data that the source account will send to the monitoring account.</p> <p>Your input here replaces the current set of data types that are shared.</p>"
+        }
+      }
+    },
+    "UpdateLinkOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the link that you have updated.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>The random ID string that Amazon Web Services generated as part of the sink ARN.</p>"
+        },
+        "Label":{
+          "shape":"String",
+          "documentation":"<p>The label assigned to this link, with the variables resolved to their actual values.</p>"
+        },
+        "LabelTemplate":{
+          "shape":"LabelTemplate",
+          "documentation":"<p>The exact label template that was specified when the link was created, with the template variables not resolved.</p>"
+        },
+        "LinkConfiguration":{
+          "shape":"LinkConfiguration",
+          "documentation":"<p>This structure includes filters that specify which metric namespaces and which log groups are shared from the source account to the monitoring account.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypesOutput",
+          "documentation":"<p>The resource types now supported by this link.</p>"
+        },
+        "SinkArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the sink that is used for this link.</p>"
+        },
+        "Tags":{
+          "shape":"TagMapOutput",
+          "documentation":"<p>The tags assigned to the link.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The value of a parameter in the request caused an error.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>Use Amazon CloudWatch Observability Access Manager to create and manage links between source accounts and monitoring accounts by using <i>CloudWatch cross-account observability</i>. With CloudWatch cross-account observability, you can monitor and troubleshoot applications that span multiple accounts within a Region. Seamlessly search, visualize, and analyze your metrics, logs, traces, Application Signals services and service level objectives (SLOs), Application Insights applications, and internet monitors in any of the linked accounts without account boundaries.</p> <p>Set up one or more Amazon Web Services accounts as <i>monitoring accounts</i> and link them with multiple <i>source accounts</i>. A monitoring account is a central Amazon Web Services account that can view and interact with observability data generated from source accounts. A source account is an individual Amazon Web Services account that generates observability data for the resources that reside in it. Source accounts share their observability data with the monitoring account. The shared observability data can include metrics in Amazon CloudWatch, logs in Amazon CloudWatch Logs, traces in X-Ray, Application Signals services and service level objectives (SLOs), applications in Amazon CloudWatch Application Insights, and internet monitors in CloudWatch Internet Monitor.</p> <p>When you set up a link, you can choose to share the metrics from all namespaces with the monitoring account, or filter to a subset of namespaces. And for CloudWatch Logs, you can choose to share all log groups with the monitoring account, or filter to a subset of log groups. </p>"
+}

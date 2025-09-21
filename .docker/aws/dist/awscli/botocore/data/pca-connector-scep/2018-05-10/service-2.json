@@ -1,0 +1,982 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"pca-connector-scep",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Private CA Connector for SCEP",
+    "serviceId":"Pca Connector Scep",
+    "signatureVersion":"v4",
+    "signingName":"pca-connector-scep",
+    "uid":"pca-connector-scep-2018-05-10"
+  },
+  "operations":{
+    "CreateChallenge":{
+      "name":"CreateChallenge",
+      "http":{
+        "method":"POST",
+        "requestUri":"/challenges",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateChallengeRequest"},
+      "output":{"shape":"CreateChallengeResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>For general-purpose connectors. Creates a <i>challenge password</i> for the specified connector. The SCEP protocol uses a challenge password to authenticate a request before issuing a certificate from a certificate authority (CA). Your SCEP clients include the challenge password as part of their certificate request to Connector for SCEP. To retrieve the connector Amazon Resource Names (ARNs) for the connectors in your account, call <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_ListConnectors.html\">ListConnectors</a>.</p> <p>To create additional challenge passwords for the connector, call <code>CreateChallenge</code> again. We recommend frequently rotating your challenge passwords.</p>"
+    },
+    "CreateConnector":{
+      "name":"CreateConnector",
+      "http":{
+        "method":"POST",
+        "requestUri":"/connectors",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateConnectorRequest"},
+      "output":{"shape":"CreateConnectorResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a SCEP connector. A SCEP connector links Amazon Web Services Private Certificate Authority to your SCEP-compatible devices and mobile device management (MDM) systems. Before you create a connector, you must complete a set of prerequisites, including creation of a private certificate authority (CA) to use with this connector. For more information, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-prerequisites.html\">Connector for SCEP prerequisites</a>.</p>"
+    },
+    "DeleteChallenge":{
+      "name":"DeleteChallenge",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/challenges/{ChallengeArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteChallengeRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes the specified <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_Challenge.html\">Challenge</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteConnector":{
+      "name":"DeleteConnector",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/connectors/{ConnectorArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteConnectorRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes the specified <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_Connector.html\">Connector</a>. This operation also deletes any challenges associated with the connector.</p>",
+      "idempotent":true
+    },
+    "GetChallengeMetadata":{
+      "name":"GetChallengeMetadata",
+      "http":{
+        "method":"GET",
+        "requestUri":"/challengeMetadata/{ChallengeArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetChallengeMetadataRequest"},
+      "output":{"shape":"GetChallengeMetadataResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the metadata for the specified <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_Challenge.html\">Challenge</a>.</p>"
+    },
+    "GetChallengePassword":{
+      "name":"GetChallengePassword",
+      "http":{
+        "method":"GET",
+        "requestUri":"/challengePasswords/{ChallengeArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetChallengePasswordRequest"},
+      "output":{"shape":"GetChallengePasswordResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the challenge password for the specified <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_Challenge.html\">Challenge</a>.</p>"
+    },
+    "GetConnector":{
+      "name":"GetConnector",
+      "http":{
+        "method":"GET",
+        "requestUri":"/connectors/{ConnectorArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetConnectorRequest"},
+      "output":{"shape":"GetConnectorResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves details about the specified <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_Connector.html\">Connector</a>. Calling this action returns important details about the connector, such as the public SCEP URL where your clients can request certificates.</p>"
+    },
+    "ListChallengeMetadata":{
+      "name":"ListChallengeMetadata",
+      "http":{
+        "method":"GET",
+        "requestUri":"/challengeMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"ListChallengeMetadataRequest"},
+      "output":{"shape":"ListChallengeMetadataResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the challenge metadata for the specified ARN.</p>"
+    },
+    "ListConnectors":{
+      "name":"ListConnectors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/connectors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListConnectorsRequest"},
+      "output":{"shape":"ListConnectorsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the connectors belonging to your Amazon Web Services account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the tags associated with the specified resource. Tags are key-value pairs that you can use to categorize and manage your resources, for purposes like billing. For example, you might set the tag key to \"customer\" and the value to the customer name or ID. You can specify one or more tags to add to each Amazon Web Services resource, up to 50 tags for a resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Adds one or more tags to your resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Removes one or more tags from your resource.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You can receive this error if you attempt to perform an operation and you don't have the required permissions. This can be caused by insufficient permissions in policies attached to your Amazon Web Services Identity and Access Management (IAM) principal. It can also happen because of restrictions in place from an Amazon Web Services Organizations service control policy (SCP) that affects your Amazon Web Services account.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AzureApplicationId":{
+      "type":"string",
+      "max":100,
+      "min":15,
+      "pattern":"[a-zA-Z0-9]{2,15}-[a-zA-Z0-9]{2,15}-[a-zA-Z0-9]{2,15}-[a-zA-Z0-9]{2,15}-[a-zA-Z0-9]{2,15}"
+    },
+    "AzureDomain":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9._-]+"
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request is malformed or contains an error such as an invalid parameter value or a missing required parameter.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CertificateAuthorityArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"arn:aws(-[a-z]+)*:acm-pca:[a-z]+(-[a-z]+)+-[1-9]\\d*:\\d{12}:certificate-authority\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+    },
+    "Challenge":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge.</p>"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was updated.</p>"
+        },
+        "Password":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The SCEP challenge password, in UUID format.</p>"
+        }
+      },
+      "documentation":"<p>For Connector for SCEP for general-purpose. An object containing information about the specified connector's SCEP challenge passwords.</p>"
+    },
+    "ChallengeArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"arn:aws(-[a-z]+)*:pca-connector-scep:[a-z]+(-[a-z]+)+-[1-9]\\d*:\\d{12}:connector\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}\\/challenge\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+    },
+    "ChallengeMetadata":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge.</p>"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was updated.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about the connector's challenge.</p>"
+    },
+    "ChallengeMetadataList":{
+      "type":"list",
+      "member":{"shape":"ChallengeMetadataSummary"}
+    },
+    "ChallengeMetadataSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge.</p>"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was updated.</p>"
+        }
+      },
+      "documentation":"<p>Details about the specified challenge, returned by the <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_GetChallengeMetadata.html\">GetChallengeMetadata</a> action.</p>"
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[!-~]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the Amazon Web Services resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be either <code>Connector</code> or <code>Challenge</code>.</p>"
+        }
+      },
+      "documentation":"<p>This request can't be completed for one of the following reasons because the requested resource was being concurrently modified by another request.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Connector":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>"
+        },
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the certificate authority associated with the connector.</p>"
+        },
+        "Type":{
+          "shape":"ConnectorType",
+          "documentation":"<p>The connector type.</p>"
+        },
+        "MobileDeviceManagement":{
+          "shape":"MobileDeviceManagement",
+          "documentation":"<p>Contains settings relevant to the mobile device management system that you chose for the connector. If you didn't configure <code>MobileDeviceManagement</code>, then the connector is for general-purpose use and this object is empty.</p>"
+        },
+        "OpenIdConfiguration":{
+          "shape":"OpenIdConfiguration",
+          "documentation":"<p>Contains OpenID Connect (OIDC) parameters for use with Connector for SCEP for Microsoft Intune. For more information about using Connector for SCEP for Microsoft Intune, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p>"
+        },
+        "Status":{
+          "shape":"ConnectorStatus",
+          "documentation":"<p>The connector's status.</p>"
+        },
+        "StatusReason":{
+          "shape":"ConnectorStatusReason",
+          "documentation":"<p>Information about why connector creation failed, if status is <code>FAILED</code>.</p>"
+        },
+        "Endpoint":{
+          "shape":"String",
+          "documentation":"<p>The connector's HTTPS public SCEP URL.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was updated.</p>"
+        }
+      },
+      "documentation":"<p>Connector for SCEP is a service that links Amazon Web Services Private Certificate Authority to your SCEP-enabled devices. The connector brokers the exchange of certificates from Amazon Web Services Private CA to your SCEP-enabled devices and mobile device management systems. The connector is a complex type that contains the connector's configuration settings.</p>"
+    },
+    "ConnectorArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"arn:aws(-[a-z]+)*:pca-connector-scep:[a-z]+(-[a-z]+)+-[1-9]\\d*:\\d{12}:connector\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+    },
+    "ConnectorList":{
+      "type":"list",
+      "member":{"shape":"ConnectorSummary"}
+    },
+    "ConnectorStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ConnectorStatusReason":{
+      "type":"string",
+      "enum":[
+        "INTERNAL_FAILURE",
+        "PRIVATECA_ACCESS_DENIED",
+        "PRIVATECA_INVALID_STATE",
+        "PRIVATECA_RESOURCE_NOT_FOUND"
+      ]
+    },
+    "ConnectorSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>"
+        },
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector's associated certificate authority.</p>"
+        },
+        "Type":{
+          "shape":"ConnectorType",
+          "documentation":"<p>The connector type.</p>"
+        },
+        "MobileDeviceManagement":{
+          "shape":"MobileDeviceManagement",
+          "documentation":"<p>Contains settings relevant to the mobile device management system that you chose for the connector. If you didn't configure <code>MobileDeviceManagement</code>, then the connector is for general-purpose use and this object is empty.</p>"
+        },
+        "OpenIdConfiguration":{
+          "shape":"OpenIdConfiguration",
+          "documentation":"<p>Contains OpenID Connect (OIDC) parameters for use with Microsoft Intune.</p>"
+        },
+        "Status":{
+          "shape":"ConnectorStatus",
+          "documentation":"<p>The connector's status. Status can be creating, active, deleting, or failed.</p>"
+        },
+        "StatusReason":{
+          "shape":"ConnectorStatusReason",
+          "documentation":"<p>Information about why connector creation failed, if status is <code>FAILED</code>.</p>"
+        },
+        "Endpoint":{
+          "shape":"String",
+          "documentation":"<p>The connector's HTTPS public SCEP URL.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the challenge was updated.</p>"
+        }
+      },
+      "documentation":"<p>Lists the Amazon Web Services Private CA SCEP connectors belonging to your Amazon Web Services account.</p>"
+    },
+    "ConnectorType":{
+      "type":"string",
+      "enum":[
+        "GENERAL_PURPOSE",
+        "INTUNE"
+      ]
+    },
+    "CreateChallengeRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector that you want to create a challenge for.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Custom string that can be used to distinguish between calls to the <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_CreateChallenge.html\">CreateChallenge</a> action. Client tokens for <code>CreateChallenge</code> time out after five minutes. Therefore, if you call <code>CreateChallenge</code> multiple times with the same client token within five minutes, Connector for SCEP recognizes that you are requesting only one challenge and will only respond with one. If you change the client token for each call, Connector for SCEP recognizes that you are requesting multiple challenge passwords.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "CreateChallengeResponse":{
+      "type":"structure",
+      "members":{
+        "Challenge":{
+          "shape":"Challenge",
+          "documentation":"<p>Returns the challenge details for the specified connector.</p>"
+        }
+      }
+    },
+    "CreateConnectorRequest":{
+      "type":"structure",
+      "required":["CertificateAuthorityArn"],
+      "members":{
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Web Services Private Certificate Authority certificate authority to use with this connector. Due to security vulnerabilities present in the SCEP protocol, we recommend using a private CA that's dedicated for use with the connector.</p> <p>To retrieve the private CAs associated with your account, you can call <a href=\"https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html\">ListCertificateAuthorities</a> using the Amazon Web Services Private CA API.</p>"
+        },
+        "MobileDeviceManagement":{
+          "shape":"MobileDeviceManagement",
+          "documentation":"<p>If you don't supply a value, by default Connector for SCEP creates a connector for general-purpose use. A general-purpose connector is designed to work with clients or endpoints that support the SCEP protocol, except Connector for SCEP for Microsoft Intune. With connectors for general-purpose use, you manage SCEP challenge passwords using Connector for SCEP. For information about considerations and limitations with using Connector for SCEP, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlc4scep-considerations-limitations.html\">Considerations and Limitations</a>.</p> <p>If you provide an <code>IntuneConfiguration</code>, Connector for SCEP creates a connector for use with Microsoft Intune, and you manage the challenge passwords using Microsoft Intune. For more information, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Custom string that can be used to distinguish between calls to the <a href=\"https://docs.aws.amazon.com/C4SCEP_API/pca-connector-scep/latest/APIReference/API_CreateChallenge.html\">CreateChallenge</a> action. Client tokens for <code>CreateChallenge</code> time out after five minutes. Therefore, if you call <code>CreateChallenge</code> multiple times with the same client token within five minutes, Connector for SCEP recognizes that you are requesting only one challenge and will only respond with one. If you change the client token for each call, Connector for SCEP recognizes that you are requesting multiple challenge passwords.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "CreateConnectorResponse":{
+      "type":"structure",
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>Returns the Amazon Resource Name (ARN) of the connector.</p>"
+        }
+      }
+    },
+    "DeleteChallengeRequest":{
+      "type":"structure",
+      "required":["ChallengeArn"],
+      "members":{
+        "ChallengeArn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge password to delete.</p>",
+          "location":"uri",
+          "locationName":"ChallengeArn"
+        }
+      }
+    },
+    "DeleteConnectorRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector to delete.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        }
+      }
+    },
+    "GetChallengeMetadataRequest":{
+      "type":"structure",
+      "required":["ChallengeArn"],
+      "members":{
+        "ChallengeArn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge.</p>",
+          "location":"uri",
+          "locationName":"ChallengeArn"
+        }
+      }
+    },
+    "GetChallengeMetadataResponse":{
+      "type":"structure",
+      "members":{
+        "ChallengeMetadata":{
+          "shape":"ChallengeMetadata",
+          "documentation":"<p>The metadata for the challenge.</p>"
+        }
+      }
+    },
+    "GetChallengePasswordRequest":{
+      "type":"structure",
+      "required":["ChallengeArn"],
+      "members":{
+        "ChallengeArn":{
+          "shape":"ChallengeArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the challenge.</p>",
+          "location":"uri",
+          "locationName":"ChallengeArn"
+        }
+      }
+    },
+    "GetChallengePasswordResponse":{
+      "type":"structure",
+      "members":{
+        "Password":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The SCEP challenge password.</p>"
+        }
+      }
+    },
+    "GetConnectorRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        }
+      }
+    },
+    "GetConnectorResponse":{
+      "type":"structure",
+      "members":{
+        "Connector":{
+          "shape":"Connector",
+          "documentation":"<p>The properties of the connector.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure with an internal server.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "IntuneConfiguration":{
+      "type":"structure",
+      "required":[
+        "AzureApplicationId",
+        "Domain"
+      ],
+      "members":{
+        "AzureApplicationId":{
+          "shape":"AzureApplicationId",
+          "documentation":"<p>The directory (tenant) ID from your Microsoft Entra ID app registration.</p>"
+        },
+        "Domain":{
+          "shape":"AzureDomain",
+          "documentation":"<p>The primary domain from your Microsoft Entra ID app registration.</p>"
+        }
+      },
+      "documentation":"<p>Contains configuration details for use with Microsoft Intune. For information about using Connector for SCEP for Microsoft Intune, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p> <p>When you use Connector for SCEP for Microsoft Intune, certain functionalities are enabled by accessing Microsoft Intune through the Microsoft API. Your use of the Connector for SCEP and accompanying Amazon Web Services services doesn't remove your need to have a valid license for your use of the Microsoft Intune service. You should also review the <a href=\"https://learn.microsoft.com/en-us/mem/intune/apps/app-protection-policy\">Microsoft Intune® App Protection Policies</a>.</p>"
+    },
+    "ListChallengeMetadataRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that you want Connector for SCEP to return for this request. If more objects are available, in the response, Connector for SCEP provides a <code>NextToken</code> value that you can use in a subsequent call to get the next batch of objects.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When you request a list of objects with a <code>MaxResults</code> setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Connector for SCEP returns a <code>NextToken</code> value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connector.</p>",
+          "location":"querystring",
+          "locationName":"ConnectorArn"
+        }
+      }
+    },
+    "ListChallengeMetadataResponse":{
+      "type":"structure",
+      "members":{
+        "Challenges":{
+          "shape":"ChallengeMetadataList",
+          "documentation":"<p>The challenge metadata for the challenges belonging to your Amazon Web Services account.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When you request a list of objects with a <code>MaxResults</code> setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Connector for SCEP returns a <code>NextToken</code> value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request.</p>"
+        }
+      }
+    },
+    "ListConnectorsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that you want Connector for SCEP to return for this request. If more objects are available, in the response, Connector for SCEP provides a <code>NextToken</code> value that you can use in a subsequent call to get the next batch of objects.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When you request a list of objects with a <code>MaxResults</code> setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Connector for SCEP returns a <code>NextToken</code> value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListConnectorsResponse":{
+      "type":"structure",
+      "members":{
+        "Connectors":{
+          "shape":"ConnectorList",
+          "documentation":"<p>The connectors belonging to your Amazon Web Services account.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>When you request a list of objects with a <code>MaxResults</code> setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Connector for SCEP returns a <code>NextToken</code> value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "MobileDeviceManagement":{
+      "type":"structure",
+      "members":{
+        "Intune":{
+          "shape":"IntuneConfiguration",
+          "documentation":"<p>Configuration settings for use with Microsoft Intune. For information about using Connector for SCEP for Microsoft Intune, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p>"
+        }
+      },
+      "documentation":"<p>If you don't supply a value, by default Connector for SCEP creates a connector for general-purpose use. A general-purpose connector is designed to work with clients or endpoints that support the SCEP protocol, except Connector for SCEP for Microsoft Intune. For information about considerations and limitations with using Connector for SCEP, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlc4scep-considerations-limitations.html\">Considerations and Limitations</a>.</p> <p>If you provide an <code>IntuneConfiguration</code>, Connector for SCEP creates a connector for use with Microsoft Intune, and you manage the challenge passwords using Microsoft Intune. For more information, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p>",
+      "union":true
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}==|[A-Za-z0-9_-]{3}=)?"
+    },
+    "OpenIdConfiguration":{
+      "type":"structure",
+      "members":{
+        "Issuer":{
+          "shape":"String",
+          "documentation":"<p>The issuer value to copy into your Microsoft Entra app registration's OIDC.</p>"
+        },
+        "Subject":{
+          "shape":"String",
+          "documentation":"<p>The subject value to copy into your Microsoft Entra app registration's OIDC.</p>"
+        },
+        "Audience":{
+          "shape":"String",
+          "documentation":"<p>The audience value to copy into your Microsoft Entra app registration's OIDC.</p>"
+        }
+      },
+      "documentation":"<p>Contains OpenID Connect (OIDC) parameters for use with Microsoft Intune. For more information about using Connector for SCEP for Microsoft Intune, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep-intune.html\">Using Connector for SCEP for Microsoft Intune</a>.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the Amazon Web Services resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be either <code>Connector</code> or <code>Challenge</code>.</p>"
+        }
+      },
+      "documentation":"<p>The operation tried to access a nonexistent resource. The resource might be incorrectly specified, or it might have a status other than <code>ACTIVE</code>.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceType",
+        "ServiceCode",
+        "QuotaCode"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be either <code>Connector</code> or <code>Challenge</code>.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Identifies the originating service.</p>"
+        },
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>The quota identifier.</p>"
+        }
+      },
+      "documentation":"<p>The request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The limit on the number of requests per second was exceeded.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Specifies a list of tag keys that you want to remove from the specified resources.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the validation error, if available. The service doesn't return a reason for every validation exception.</p>"
+        }
+      },
+      "documentation":"<p>An input validation error occurred. For example, invalid characters in a name tag, or an invalid pagination token.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "CA_CERT_VALIDITY_TOO_SHORT",
+        "INVALID_CA_USAGE_MODE",
+        "INVALID_CONNECTOR_TYPE",
+        "INVALID_STATE",
+        "NO_CLIENT_TOKEN",
+        "UNKNOWN_OPERATION",
+        "OTHER"
+      ]
+    }
+  },
+  "documentation":"<p>Connector for SCEP creates a connector between Amazon Web Services Private CA and your SCEP-enabled clients and devices. For more information, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/scep-connector.htmlconnector-for-scep.html\">Connector for SCEP</a> in the <i>Amazon Web Services Private CA User Guide</i>.</p>"
+}

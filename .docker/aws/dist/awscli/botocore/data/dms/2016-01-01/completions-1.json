@@ -1,0 +1,738 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Certificate": {
+      "operation": "DescribeCertificates",
+      "resourceIdentifier": {
+        "CertificateIdentifier": "Certificates[].CertificateIdentifier",
+        "CertificatePem": "Certificates[].CertificatePem",
+        "CertificateWallet": "Certificates[].CertificateWallet"
+      }
+    },
+    "Endpoint": {
+      "operation": "DescribeEndpoints",
+      "resourceIdentifier": {
+        "EndpointIdentifier": "Endpoints[].EndpointIdentifier",
+        "EndpointType": "Endpoints[].EndpointType",
+        "EngineName": "Endpoints[].EngineName",
+        "Username": "Endpoints[].Username",
+        "ServerName": "Endpoints[].ServerName",
+        "Port": "Endpoints[].Port",
+        "DatabaseName": "Endpoints[].DatabaseName",
+        "ExtraConnectionAttributes": "Endpoints[].ExtraConnectionAttributes",
+        "EndpointArn": "Endpoints[].EndpointArn",
+        "CertificateArn": "Endpoints[].CertificateArn",
+        "SslMode": "Endpoints[].SslMode",
+        "ServiceAccessRoleArn": "Endpoints[].ServiceAccessRoleArn",
+        "ExternalTableDefinition": "Endpoints[].ExternalTableDefinition",
+        "DynamoDbSettings": "Endpoints[].DynamoDbSettings",
+        "S3Settings": "Endpoints[].S3Settings",
+        "DmsTransferSettings": "Endpoints[].DmsTransferSettings",
+        "MongoDbSettings": "Endpoints[].MongoDbSettings"
+      }
+    },
+    "EventSubscription": {
+      "operation": "DescribeEventSubscriptions",
+      "resourceIdentifier": {
+        "SnsTopicArn": "EventSubscriptionsList[].SnsTopicArn",
+        "Enabled": "EventSubscriptionsList[].Enabled"
+      }
+    },
+    "Event": {
+      "operation": "DescribeEvents",
+      "resourceIdentifier": {
+        "SourceIdentifier": "Events[].SourceIdentifier",
+        "SourceType": "Events[].SourceType",
+        "EventCategories": "Events[].EventCategories"
+      }
+    },
+    "ReplicationInstance": {
+      "operation": "DescribeReplicationInstances",
+      "resourceIdentifier": {
+        "ReplicationInstanceIdentifier": "ReplicationInstances[].ReplicationInstanceIdentifier",
+        "ReplicationInstanceClass": "ReplicationInstances[].ReplicationInstanceClass",
+        "AllocatedStorage": "ReplicationInstances[].AllocatedStorage",
+        "VpcSecurityGroups": "ReplicationInstances[].VpcSecurityGroups",
+        "PreferredMaintenanceWindow": "ReplicationInstances[].PreferredMaintenanceWindow",
+        "MultiAZ": "ReplicationInstances[].MultiAZ",
+        "EngineVersion": "ReplicationInstances[].EngineVersion",
+        "AutoMinorVersionUpgrade": "ReplicationInstances[].AutoMinorVersionUpgrade"
+      }
+    },
+    "ReplicationSubnetGroup": {
+      "operation": "DescribeReplicationSubnetGroups",
+      "resourceIdentifier": {
+        "ReplicationSubnetGroupIdentifier": "ReplicationSubnetGroups[].ReplicationSubnetGroupIdentifier",
+        "ReplicationSubnetGroupDescription": "ReplicationSubnetGroups[].ReplicationSubnetGroupDescription"
+      }
+    },
+    "ReplicationTask": {
+      "operation": "DescribeReplicationTasks",
+      "resourceIdentifier": {
+        "ReplicationTaskIdentifier": "ReplicationTasks[].ReplicationTaskIdentifier",
+        "ReplicationInstanceArn": "ReplicationTasks[].ReplicationInstanceArn",
+        "MigrationType": "ReplicationTasks[].MigrationType",
+        "TableMappings": "ReplicationTasks[].TableMappings",
+        "ReplicationTaskSettings": "ReplicationTasks[].ReplicationTaskSettings",
+        "CdcStartPosition": "ReplicationTasks[].CdcStartPosition",
+        "CdcStopPosition": "ReplicationTasks[].CdcStopPosition",
+        "ReplicationTaskArn": "ReplicationTasks[].ReplicationTaskArn"
+      }
+    }
+  },
+  "operations": {
+    "DeleteCertificate": {
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      }
+    },
+    "DeleteEndpoint": {
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      }
+    },
+    "DeleteReplicationInstance": {
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      }
+    },
+    "DeleteReplicationSubnetGroup": {
+      "ReplicationSubnetGroupIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationSubnetGroup",
+            "resourceIdentifier": "ReplicationSubnetGroupIdentifier"
+          }
+        ]
+      }
+    },
+    "DeleteReplicationTask": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "DescribeEventCategories": {
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      }
+    },
+    "DescribeEvents": {
+      "SourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceIdentifier"
+          }
+        ]
+      },
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      },
+      "EventCategories": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "EventCategories"
+          }
+        ]
+      }
+    },
+    "DescribeRefreshSchemasStatus": {
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      }
+    },
+    "DescribeReplicationInstanceTaskLogs": {
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      }
+    },
+    "DescribeReplicationTaskAssessmentResults": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "DescribeSchemas": {
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      }
+    },
+    "DescribeTableStatistics": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "ImportCertificate": {
+      "CertificateIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateIdentifier"
+          }
+        ]
+      },
+      "CertificatePem": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificatePem"
+          }
+        ]
+      },
+      "CertificateWallet": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateWallet"
+          }
+        ]
+      }
+    },
+    "ModifyEndpoint": {
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      },
+      "EndpointIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointIdentifier"
+          }
+        ]
+      },
+      "EndpointType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointType"
+          }
+        ]
+      },
+      "EngineName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EngineName"
+          }
+        ]
+      },
+      "Username": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "Username"
+          }
+        ]
+      },
+      "ServerName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "ServerName"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "DatabaseName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "DatabaseName"
+          }
+        ]
+      },
+      "ExtraConnectionAttributes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "ExtraConnectionAttributes"
+          }
+        ]
+      },
+      "CertificateArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "CertificateArn"
+          }
+        ]
+      },
+      "SslMode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "SslMode"
+          }
+        ]
+      },
+      "ServiceAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "ServiceAccessRoleArn"
+          }
+        ]
+      },
+      "ExternalTableDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "ExternalTableDefinition"
+          }
+        ]
+      },
+      "DynamoDbSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "DynamoDbSettings"
+          }
+        ]
+      },
+      "S3Settings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "S3Settings"
+          }
+        ]
+      },
+      "DmsTransferSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "DmsTransferSettings"
+          }
+        ]
+      },
+      "MongoDbSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "MongoDbSettings"
+          }
+        ]
+      }
+    },
+    "ModifyEventSubscription": {
+      "SnsTopicArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "SnsTopicArn"
+          }
+        ]
+      },
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      },
+      "EventCategories": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "EventCategories"
+          }
+        ]
+      },
+      "Enabled": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "Enabled"
+          }
+        ]
+      }
+    },
+    "ModifyReplicationInstance": {
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      },
+      "AllocatedStorage": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "AllocatedStorage"
+          }
+        ]
+      },
+      "ReplicationInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "ReplicationInstanceClass"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "AutoMinorVersionUpgrade": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "AutoMinorVersionUpgrade"
+          }
+        ]
+      },
+      "ReplicationInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationInstance",
+            "resourceIdentifier": "ReplicationInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "ModifyReplicationSubnetGroup": {
+      "ReplicationSubnetGroupIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationSubnetGroup",
+            "resourceIdentifier": "ReplicationSubnetGroupIdentifier"
+          }
+        ]
+      },
+      "ReplicationSubnetGroupDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationSubnetGroup",
+            "resourceIdentifier": "ReplicationSubnetGroupDescription"
+          }
+        ]
+      }
+    },
+    "ModifyReplicationTask": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      },
+      "ReplicationTaskIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskIdentifier"
+          }
+        ]
+      },
+      "MigrationType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "MigrationType"
+          }
+        ]
+      },
+      "TableMappings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "TableMappings"
+          }
+        ]
+      },
+      "ReplicationTaskSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskSettings"
+          }
+        ]
+      },
+      "CdcStartPosition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "CdcStartPosition"
+          }
+        ]
+      },
+      "CdcStopPosition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "CdcStopPosition"
+          }
+        ]
+      }
+    },
+    "RebootReplicationInstance": {
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      }
+    },
+    "RefreshSchemas": {
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      },
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      }
+    },
+    "ReloadTables": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "StartReplicationTask": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      },
+      "CdcStartPosition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "CdcStartPosition"
+          }
+        ]
+      },
+      "CdcStopPosition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "CdcStopPosition"
+          }
+        ]
+      }
+    },
+    "StartReplicationTaskAssessment": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "StopReplicationTask": {
+      "ReplicationTaskArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationTaskArn"
+          }
+        ]
+      }
+    },
+    "TestConnection": {
+      "ReplicationInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReplicationTask",
+            "resourceIdentifier": "ReplicationInstanceArn"
+          }
+        ]
+      },
+      "EndpointArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Endpoint",
+            "resourceIdentifier": "EndpointArn"
+          }
+        ]
+      }
+    }
+  }
+}

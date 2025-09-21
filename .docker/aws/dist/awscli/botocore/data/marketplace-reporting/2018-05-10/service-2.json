@@ -1,0 +1,141 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"reporting-marketplace",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Marketplace Reporting Service",
+    "serviceId":"Marketplace Reporting",
+    "signatureVersion":"v4",
+    "signingName":"aws-marketplace",
+    "uid":"marketplace-reporting-2018-05-10"
+  },
+  "operations":{
+    "GetBuyerDashboard":{
+      "name":"GetBuyerDashboard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getBuyerDashboard",
+        "responseCode":200
+      },
+      "input":{"shape":"GetBuyerDashboardInput"},
+      "output":{"shape":"GetBuyerDashboardOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Generates an embedding URL for an Amazon QuickSight dashboard for an anonymous user.</p> <note> <p>This API is available only to Amazon Web Services Organization management accounts or delegated administrators registered for the procurement insights (<code>procurement-insights.marketplace.amazonaws.com</code>) feature.</p> </note> <p>The following rules apply to a generated URL:</p> <ul> <li> <p>It contains a temporary bearer token, valid for 5 minutes after it is generated. Once redeemed within that period, it cannot be re-used again.</p> </li> <li> <p>It has a session lifetime of one hour. The 5-minute validity period runs separately from the session lifetime.</p> </li> </ul>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request is malformed, or it contains an error such as an invalid parameter. Ensure the request has all required parameters.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "DashboardIdentifier":{
+      "type":"string",
+      "max":1023,
+      "min":1,
+      "pattern":"arn:aws:aws-marketplace::[0-9]{12}:AWSMarketplace/ReportingData/(Agreement_V1/Dashboard/AgreementSummary_V1|BillingEvent_V1/Dashboard/CostAnalysis_V1)"
+    },
+    "EmbeddingDomain":{
+      "type":"string",
+      "max":2000,
+      "min":1,
+      "pattern":"(https://[a-zA-Z\\.\\*0-9\\-_]+[\\.]{1}[a-zA-Z]{1,}[a-zA-Z0-9&?/-_=]*[a-zA-Z\\*0-9/]+|http[s]*://localhost(:[0-9]{1,5})?)"
+    },
+    "EmbeddingDomains":{
+      "type":"list",
+      "member":{"shape":"EmbeddingDomain"},
+      "max":2,
+      "min":1
+    },
+    "GetBuyerDashboardInput":{
+      "type":"structure",
+      "required":[
+        "dashboardIdentifier",
+        "embeddingDomains"
+      ],
+      "members":{
+        "dashboardIdentifier":{
+          "shape":"DashboardIdentifier",
+          "documentation":"<p>The ARN of the requested dashboard.</p>"
+        },
+        "embeddingDomains":{
+          "shape":"EmbeddingDomains",
+          "documentation":"<p>Fully qualified domains that you add to the allow list for access to the generated URL that is then embedded. You can list up to two domains or subdomains in each API call. To include all subdomains under a specific domain, use <code>*</code>. For example, <code>https://*.amazon.com</code> includes all subdomains under <code>https://aws.amazon.com</code>.</p>"
+        }
+      }
+    },
+    "GetBuyerDashboardOutput":{
+      "type":"structure",
+      "required":[
+        "embedUrl",
+        "dashboardIdentifier",
+        "embeddingDomains"
+      ],
+      "members":{
+        "embedUrl":{
+          "shape":"String",
+          "documentation":"<p>The dashboard's embedding URL.</p>"
+        },
+        "dashboardIdentifier":{
+          "shape":"DashboardIdentifier",
+          "documentation":"<p>The ARN of the returned dashboard.</p>"
+        },
+        "embeddingDomains":{
+          "shape":"EmbeddingDomains",
+          "documentation":"<p>The fully qualified domains specified in the request. The domains enable access to the generated URL that is then embedded. You can list up to two domains or subdomains in each API call. To include all subdomains under a specific domain, use <code>*</code>. For example, <code>https://*.amazon.com</code> includes all subdomains under <code>https://aws.amazon.com</code>.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The operation failed due to a server error.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "String":{"type":"string"},
+    "UnauthorizedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have permission to perform this action.</p>",
+      "error":{
+        "httpStatusCode":401,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>The Amazon Web Services Marketplace <code>GetBuyerDashboard</code> API enables you to get a procurement insights dashboard programmatically. The API gets the agreement and cost analysis dashboards with data for all of the Amazon Web Services accounts in your Amazon Web Services Organization. </p> <p>To use the Amazon Web Services Marketplace Reporting API, you must complete the following prerequisites:</p> <ul> <li> <p>Enable all features for your organization. For more information, see <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html\">Enabling all features for an organization with Organizations</a>, in the <i>Organizations User Guide</i>.</p> </li> <li> <p>Call the service as the Organizations management account or an account registered as a delegated administrator for the procurement insights service.</p> <p>For more information about management accounts, see <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tutorials_basic.html\">Tutorial: Creating and configuring an organization</a> and <a href=\"https://docs.aws.amazon.com/organizations/latest/userguide/orgs-manage_accounts_management.html\">Managing the management account with Organizations</a>, both in the <i>Organizations User Guide</i>.</p> <p>For more information about delegated administrators, see <a href=\"https://docs.aws.amazon.com/marketplace/latest/buyerguide/management-delegates.html\">Using delegated administrators</a>, in the <i>Amazon Web Services Marketplace Buyer Guide</i>.</p> </li> <li> <p>Create an IAM policy that enables the <code>aws-marketplace:GetBuyerDashboard</code> and <code>organizations:DescribeOrganization</code> permissions. In addition, the management account requires the <code>organizations:EnableAWSServiceAccess</code> and <code>iam:CreateServiceLinkedRole</code> permissions to create. For more information about creating the policy, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html\">Policies and permissions in Identity and Access Management</a>, in the <i>IAM User Guide</i>.</p> <note> <p>Access can be shared only by registering the desired linked account as a delegated administrator. That requires <code>organizations:RegisterDelegatedAdministrator</code> <code>organizations:ListDelegatedAdministrators</code> and <code>organizations:DeregisterDelegatedAdministrator</code> permissions.</p> </note> </li> <li> <p>Use the Amazon Web Services Marketplace console to create the <code>AWSServiceRoleForProcurementInsightsPolicy</code> service-linked role. The role enables Amazon Web Services Marketplace procurement visibility integration. The management account requires an IAM policy with the <code>organizations:EnableAWSServiceAccess</code> and <code>iam:CreateServiceLinkedRole</code> permissions to create the service-linked role and enable the service access. For more information, see <a href=\"https://docs.aws.amazon.com/marketplace/latest/buyerguide/orgs-access-slr.html\">Granting access to Organizations</a> and <a href=\"https://docs.aws.amazon.com/marketplace/latest/buyerguide/buyer-service-linked-role-procurement.html\">Service-linked role to share procurement data</a> in the <i>Amazon Web Services Marketplace Buyer Guide</i>.</p> </li> <li> <p>After creating the service-linked role, you must enable trusted access that grants Amazon Web Services Marketplace permission to access data from your Organizations. For more information, see <a href=\"https://docs.aws.amazon.com/marketplace/latest/buyerguide/orgs-access-slr.html\">Granting access to Organizations</a> in the <i>Amazon Web Services Marketplace Buyer Guide</i>.</p> </li> </ul>"
+}

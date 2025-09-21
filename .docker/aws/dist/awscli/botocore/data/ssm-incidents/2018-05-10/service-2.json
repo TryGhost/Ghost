@@ -1,0 +1,3102 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "endpointPrefix":"ssm-incidents",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceAbbreviation":"SSM Incidents",
+    "serviceFullName":"AWS Systems Manager Incident Manager",
+    "serviceId":"SSM Incidents",
+    "signatureVersion":"v4",
+    "signingName":"ssm-incidents",
+    "uid":"ssm-incidents-2018-05-10"
+  },
+  "operations":{
+    "BatchGetIncidentFindings":{
+      "name":"BatchGetIncidentFindings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/batchGetIncidentFindings",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchGetIncidentFindingsInput"},
+      "output":{"shape":"BatchGetIncidentFindingsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves details about all specified findings for an incident, including descriptive details about each finding. A finding represents a recent application environment change made by an CodeDeploy deployment or an CloudFormation stack creation or update that can be investigated as a potential cause of the incident.</p>"
+    },
+    "CreateReplicationSet":{
+      "name":"CreateReplicationSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/createReplicationSet",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateReplicationSetInput"},
+      "output":{"shape":"CreateReplicationSetOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>A replication set replicates and encrypts your data to the provided Regions with the provided KMS key. </p>"
+    },
+    "CreateResponsePlan":{
+      "name":"CreateResponsePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/createResponsePlan",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateResponsePlanInput"},
+      "output":{"shape":"CreateResponsePlanOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a response plan that automates the initial response to incidents. A response plan engages contacts, starts chat channel collaboration, and initiates runbooks at the beginning of an incident.</p>",
+      "idempotent":true
+    },
+    "CreateTimelineEvent":{
+      "name":"CreateTimelineEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/createTimelineEvent",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateTimelineEventInput"},
+      "output":{"shape":"CreateTimelineEventOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a custom timeline event on the incident details page of an incident record. Incident Manager automatically creates timeline events that mark key moments during an incident. You can create custom timeline events to mark important events that Incident Manager can detect automatically.</p>",
+      "idempotent":true
+    },
+    "DeleteIncidentRecord":{
+      "name":"DeleteIncidentRecord",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteIncidentRecord",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteIncidentRecordInput"},
+      "output":{"shape":"DeleteIncidentRecordOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Delete an incident record from Incident Manager. </p>",
+      "idempotent":true
+    },
+    "DeleteReplicationSet":{
+      "name":"DeleteReplicationSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteReplicationSet",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteReplicationSetInput"},
+      "output":{"shape":"DeleteReplicationSetOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes all Regions in your replication set. Deleting the replication set deletes all Incident Manager data.</p>"
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteResourcePolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteResourcePolicyInput"},
+      "output":{"shape":"DeleteResourcePolicyOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the resource policy that Resource Access Manager uses to share your Incident Manager resource.</p>"
+    },
+    "DeleteResponsePlan":{
+      "name":"DeleteResponsePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteResponsePlan",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteResponsePlanInput"},
+      "output":{"shape":"DeleteResponsePlanOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes the specified response plan. Deleting a response plan stops all linked CloudWatch alarms and EventBridge events from creating an incident with this response plan.</p>",
+      "idempotent":true
+    },
+    "DeleteTimelineEvent":{
+      "name":"DeleteTimelineEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteTimelineEvent",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTimelineEventInput"},
+      "output":{"shape":"DeleteTimelineEventOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a timeline event from an incident.</p>",
+      "idempotent":true
+    },
+    "GetIncidentRecord":{
+      "name":"GetIncidentRecord",
+      "http":{
+        "method":"GET",
+        "requestUri":"/getIncidentRecord",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIncidentRecordInput"},
+      "output":{"shape":"GetIncidentRecordOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the details for the specified incident record.</p>"
+    },
+    "GetReplicationSet":{
+      "name":"GetReplicationSet",
+      "http":{
+        "method":"GET",
+        "requestUri":"/getReplicationSet",
+        "responseCode":200
+      },
+      "input":{"shape":"GetReplicationSetInput"},
+      "output":{"shape":"GetReplicationSetOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieve your Incident Manager replication set.</p>"
+    },
+    "GetResourcePolicies":{
+      "name":"GetResourcePolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getResourcePolicies",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResourcePoliciesInput"},
+      "output":{"shape":"GetResourcePoliciesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the resource policies attached to the specified response plan.</p>"
+    },
+    "GetResponsePlan":{
+      "name":"GetResponsePlan",
+      "http":{
+        "method":"GET",
+        "requestUri":"/getResponsePlan",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResponsePlanInput"},
+      "output":{"shape":"GetResponsePlanOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the details of the specified response plan.</p>"
+    },
+    "GetTimelineEvent":{
+      "name":"GetTimelineEvent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/getTimelineEvent",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTimelineEventInput"},
+      "output":{"shape":"GetTimelineEventOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a timeline event based on its ID and incident record.</p>"
+    },
+    "ListIncidentFindings":{
+      "name":"ListIncidentFindings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listIncidentFindings",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIncidentFindingsInput"},
+      "output":{"shape":"ListIncidentFindingsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of the IDs of findings, plus their last modified times, that have been identified for a specified incident. A finding represents a recent application environment change made by an CloudFormation stack creation or update or an CodeDeploy deployment that can be investigated as a potential cause of the incident.</p>"
+    },
+    "ListIncidentRecords":{
+      "name":"ListIncidentRecords",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listIncidentRecords",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIncidentRecordsInput"},
+      "output":{"shape":"ListIncidentRecordsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all incident records in your account. Use this command to retrieve the Amazon Resource Name (ARN) of the incident record you want to update. </p>"
+    },
+    "ListRelatedItems":{
+      "name":"ListRelatedItems",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listRelatedItems",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRelatedItemsInput"},
+      "output":{"shape":"ListRelatedItemsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List all related items for an incident record.</p>"
+    },
+    "ListReplicationSets":{
+      "name":"ListReplicationSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listReplicationSets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListReplicationSetsInput"},
+      "output":{"shape":"ListReplicationSetsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists details about the replication set configured in your account. </p>"
+    },
+    "ListResponsePlans":{
+      "name":"ListResponsePlans",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listResponsePlans",
+        "responseCode":200
+      },
+      "input":{"shape":"ListResponsePlansInput"},
+      "output":{"shape":"ListResponsePlansOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all response plans in your account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the tags that are attached to the specified response plan or incident.</p>"
+    },
+    "ListTimelineEvents":{
+      "name":"ListTimelineEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listTimelineEvents",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTimelineEventsInput"},
+      "output":{"shape":"ListTimelineEventsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists timeline events for the specified incident record.</p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/putResourcePolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"PutResourcePolicyInput"},
+      "output":{"shape":"PutResourcePolicyOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a resource policy to the specified response plan. The resource policy is used to share the response plan using Resource Access Manager (RAM). For more information about cross-account sharing, see <a href=\"https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-manager-cross-account-cross-region.html\">Cross-Region and cross-account incident management</a>.</p>"
+    },
+    "StartIncident":{
+      "name":"StartIncident",
+      "http":{
+        "method":"POST",
+        "requestUri":"/startIncident",
+        "responseCode":200
+      },
+      "input":{"shape":"StartIncidentInput"},
+      "output":{"shape":"StartIncidentOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Used to start an incident from CloudWatch alarms, EventBridge events, or manually. </p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a tag to a response plan.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a tag from a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateDeletionProtection":{
+      "name":"UpdateDeletionProtection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateDeletionProtection",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateDeletionProtectionInput"},
+      "output":{"shape":"UpdateDeletionProtectionOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Update deletion protection to either allow or deny deletion of the final Region in a replication set.</p>"
+    },
+    "UpdateIncidentRecord":{
+      "name":"UpdateIncidentRecord",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateIncidentRecord",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateIncidentRecordInput"},
+      "output":{"shape":"UpdateIncidentRecordOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Update the details of an incident record. You can use this operation to update an incident record from the defined chat channel. For more information about using actions in chat channels, see <a href=\"https://docs.aws.amazon.com/incident-manager/latest/userguide/chat.html#chat-interact\">Interacting through chat</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateRelatedItems":{
+      "name":"UpdateRelatedItems",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateRelatedItems",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateRelatedItemsInput"},
+      "output":{"shape":"UpdateRelatedItemsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Add or remove related items from the related items tab of an incident record.</p>",
+      "idempotent":true
+    },
+    "UpdateReplicationSet":{
+      "name":"UpdateReplicationSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateReplicationSet",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateReplicationSetInput"},
+      "output":{"shape":"UpdateReplicationSetOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Add or delete Regions from your replication set.</p>"
+    },
+    "UpdateResponsePlan":{
+      "name":"UpdateResponsePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateResponsePlan",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateResponsePlanInput"},
+      "output":{"shape":"UpdateResponsePlanOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the specified response plan.</p>",
+      "idempotent":true
+    },
+    "UpdateTimelineEvent":{
+      "name":"UpdateTimelineEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/updateTimelineEvent",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateTimelineEventInput"},
+      "output":{"shape":"UpdateTimelineEventOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a timeline event. You can update events of type <code>Custom Event</code>.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>You don't have sufficient access to perform this operation.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Action":{
+      "type":"structure",
+      "members":{
+        "ssmAutomation":{
+          "shape":"SsmAutomation",
+          "documentation":"<p>The Systems Manager automation document to start as the runbook at the beginning of the incident.</p>"
+        }
+      },
+      "documentation":"<p>The action that starts at the beginning of an incident. The response plan defines the action.</p>",
+      "union":true
+    },
+    "ActionsList":{
+      "type":"list",
+      "member":{"shape":"Action"},
+      "max":1,
+      "min":0
+    },
+    "AddRegionAction":{
+      "type":"structure",
+      "required":["regionName"],
+      "members":{
+        "regionName":{
+          "shape":"RegionName",
+          "documentation":"<p>The Amazon Web Services Region name to add to the replication set.</p>"
+        },
+        "sseKmsKeyId":{
+          "shape":"SseKmsKey",
+          "documentation":"<p>The KMS key ID to use to encrypt your replication set.</p>"
+        }
+      },
+      "documentation":"<p>Defines the Amazon Web Services Region and KMS key to add to the replication set. </p>"
+    },
+    "Arn":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":"^arn:aws(-cn|-us-gov)?:[a-z0-9-]*:[a-z0-9-]*:([0-9]{12})?:.+$"
+    },
+    "AttributeValueList":{
+      "type":"structure",
+      "members":{
+        "integerValues":{
+          "shape":"IntegerList",
+          "documentation":"<p>The list of integer values that the filter matches.</p>"
+        },
+        "stringValues":{
+          "shape":"StringList",
+          "documentation":"<p>The list of string values that the filter matches.</p>"
+        }
+      },
+      "documentation":"<p>Use the AttributeValueList to filter by string or integer values.</p>",
+      "union":true
+    },
+    "AutomationExecution":{
+      "type":"structure",
+      "members":{
+        "ssmExecutionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the automation process.</p>"
+        }
+      },
+      "documentation":"<p>The Systems Manager automation document process to start as the runbook at the beginning of the incident.</p>",
+      "union":true
+    },
+    "AutomationExecutionSet":{
+      "type":"list",
+      "member":{"shape":"AutomationExecution"},
+      "max":100,
+      "min":0
+    },
+    "BatchGetIncidentFindingsError":{
+      "type":"structure",
+      "required":[
+        "code",
+        "findingId",
+        "message"
+      ],
+      "members":{
+        "code":{
+          "shape":"String",
+          "documentation":"<p>The code associated with an error that was returned for a <code>BatchGetIncidentFindings</code> operation.</p>"
+        },
+        "findingId":{
+          "shape":"FindingId",
+          "documentation":"<p>The ID of a specified finding for which an error was returned for a <code>BatchGetIncidentFindings</code> operation.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The description for an error that was returned for a <code>BatchGetIncidentFindings</code> operation.</p>"
+        }
+      },
+      "documentation":"<p>Details about an error returned for a <a>BatchGetIncidentFindings</a> operation.</p>"
+    },
+    "BatchGetIncidentFindingsErrorList":{
+      "type":"list",
+      "member":{"shape":"BatchGetIncidentFindingsError"}
+    },
+    "BatchGetIncidentFindingsInput":{
+      "type":"structure",
+      "required":[
+        "findingIds",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "findingIds":{
+          "shape":"FindingIdList",
+          "documentation":"<p>A list of IDs of findings for which you want to view details.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident for which you want to view finding details.</p>"
+        }
+      }
+    },
+    "BatchGetIncidentFindingsOutput":{
+      "type":"structure",
+      "required":[
+        "errors",
+        "findings"
+      ],
+      "members":{
+        "errors":{
+          "shape":"BatchGetIncidentFindingsErrorList",
+          "documentation":"<p>A list of errors encountered during the operation.</p>"
+        },
+        "findings":{
+          "shape":"FindingList",
+          "documentation":"<p>Information about the requested findings.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ChatChannel":{
+      "type":"structure",
+      "members":{
+        "chatbotSns":{
+          "shape":"ChatbotSnsConfigurationSet",
+          "documentation":"<p>The Amazon SNS targets that Chatbot uses to notify the chat channel of updates to an incident. You can also make updates to the incident through the chat channel by using the Amazon SNS topics. </p>"
+        },
+        "empty":{
+          "shape":"EmptyChatChannel",
+          "documentation":"<p>Used to remove the chat channel from an incident record or response plan.</p>"
+        }
+      },
+      "documentation":"<p>The Chatbot chat channel used for collaboration during an incident.</p>",
+      "union":true
+    },
+    "ChatbotSnsConfigurationSet":{
+      "type":"list",
+      "member":{"shape":"SnsArn"},
+      "max":5,
+      "min":1
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "CloudFormationStackUpdate":{
+      "type":"structure",
+      "required":[
+        "stackArn",
+        "startTime"
+      ],
+      "members":{
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the CloudFormation stack creation or update ended. Not reported for deployments that are still in progress.</p>"
+        },
+        "stackArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the CloudFormation stack involved in the update.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the CloudFormation stack creation or update began.</p>"
+        }
+      },
+      "documentation":"<p>Information about an CloudFormation stack creation or update that occurred around the time of an incident and could be a potential cause of the incident.</p>"
+    },
+    "CodeDeployDeployment":{
+      "type":"structure",
+      "required":[
+        "deploymentGroupArn",
+        "deploymentId",
+        "startTime"
+      ],
+      "members":{
+        "deploymentGroupArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the CodeDeploy deployment group associated with the deployment.</p>"
+        },
+        "deploymentId":{
+          "shape":"CodeDeployDeploymentDeploymentIdString",
+          "documentation":"<p>The ID of the CodeDeploy deployment.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the CodeDeploy deployment ended. Not reported for deployments that are still in progress.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the CodeDeploy deployment began.</p>"
+        }
+      },
+      "documentation":"<p>Information about a CodeDeploy deployment that occurred around the time of an incident and could be a possible cause of the incident.</p>"
+    },
+    "CodeDeployDeploymentDeploymentIdString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "Condition":{
+      "type":"structure",
+      "members":{
+        "after":{
+          "shape":"Timestamp",
+          "documentation":"<p>After the specified timestamp.</p>"
+        },
+        "before":{
+          "shape":"Timestamp",
+          "documentation":"<p>Before the specified timestamp</p>"
+        },
+        "equals":{
+          "shape":"AttributeValueList",
+          "documentation":"<p>The value is equal to the provided string or integer. </p>"
+        }
+      },
+      "documentation":"<p>A conditional statement with which to compare a value, after a timestamp, before a timestamp, or equal to a string or integer. If multiple conditions are specified, the conditionals become an <code>AND</code>ed statement. If multiple values are specified for a conditional, the values are <code>OR</code>d.</p>",
+      "union":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "resourceIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the requested resource</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The resource type</p>"
+        },
+        "retryAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>If present in the output, the operation can be retried after this time</p>"
+        }
+      },
+      "documentation":"<p>Updating or deleting a resource causes an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateReplicationSetInput":{
+      "type":"structure",
+      "required":["regions"],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "regions":{
+          "shape":"RegionMapInput",
+          "documentation":"<p>The Regions that Incident Manager replicates your data to. You can have up to three Regions in your replication set.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags to add to the replication set.</p>"
+        }
+      }
+    },
+    "CreateReplicationSetOutput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set. </p>"
+        }
+      }
+    },
+    "CreateResponsePlanInput":{
+      "type":"structure",
+      "required":[
+        "incidentTemplate",
+        "name"
+      ],
+      "members":{
+        "actions":{
+          "shape":"ActionsList",
+          "documentation":"<p>The actions that the response plan starts at the beginning of an incident.</p>"
+        },
+        "chatChannel":{
+          "shape":"ChatChannel",
+          "documentation":"<p>The Chatbot chat channel used for collaboration during an incident.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "displayName":{
+          "shape":"ResponsePlanDisplayName",
+          "documentation":"<p>The long format of the response plan name. This field can contain spaces.</p>"
+        },
+        "engagements":{
+          "shape":"EngagementSet",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the contacts and escalation plans that the response plan engages during an incident.</p>"
+        },
+        "incidentTemplate":{
+          "shape":"IncidentTemplate",
+          "documentation":"<p>Details used to create an incident when using this response plan.</p>"
+        },
+        "integrations":{
+          "shape":"Integrations",
+          "documentation":"<p>Information about third-party services integrated into the response plan.</p>"
+        },
+        "name":{
+          "shape":"ResponsePlanName",
+          "documentation":"<p>The short format name of the response plan. Can't include spaces.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags that you are adding to the response plan.</p>"
+        }
+      }
+    },
+    "CreateResponsePlanOutput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan.</p>"
+        }
+      }
+    },
+    "CreateTimelineEventInput":{
+      "type":"structure",
+      "required":[
+        "eventData",
+        "eventTime",
+        "eventType",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that a client calls the action only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "eventData":{
+          "shape":"EventData",
+          "documentation":"<p>A short description of the event.</p>"
+        },
+        "eventReferences":{
+          "shape":"EventReferenceList",
+          "documentation":"<p>Adds one or more references to the <code>TimelineEvent</code>. A reference is an Amazon Web Services resource involved or associated with the incident. To specify a reference, enter its Amazon Resource Name (ARN). You can also specify a related item associated with a resource. For example, to specify an Amazon DynamoDB (DynamoDB) table as a resource, use the table's ARN. You can also specify an Amazon CloudWatch metric associated with the DynamoDB table as a related item.</p>"
+        },
+        "eventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the event occurred.</p>"
+        },
+        "eventType":{
+          "shape":"TimelineEventType",
+          "documentation":"<p>The type of event. You can create timeline events of type <code>Custom Event</code> and <code>Note</code>.</p> <p>To make a Note-type event appear on the <i>Incident notes</i> panel in the console, specify <code>eventType</code> as <code>Note</code>and enter the Amazon Resource Name (ARN) of the incident as the value for <code>eventReference</code>.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record that the action adds the incident to.</p>"
+        }
+      }
+    },
+    "CreateTimelineEventOutput":{
+      "type":"structure",
+      "required":[
+        "eventId",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the event for easy reference later. </p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the incident record that you added the event to.</p>"
+        }
+      }
+    },
+    "DedupeString":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "DeleteIncidentRecordInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record you are deleting.</p>"
+        }
+      }
+    },
+    "DeleteIncidentRecordOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteRegionAction":{
+      "type":"structure",
+      "required":["regionName"],
+      "members":{
+        "regionName":{
+          "shape":"RegionName",
+          "documentation":"<p>The name of the Amazon Web Services Region you're deleting from the replication set.</p>"
+        }
+      },
+      "documentation":"<p>Defines the information about the Amazon Web Services Region you're deleting from your replication set.</p>"
+    },
+    "DeleteReplicationSetInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set you're deleting.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        }
+      }
+    },
+    "DeleteReplicationSetOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteResourcePolicyInput":{
+      "type":"structure",
+      "required":[
+        "policyId",
+        "resourceArn"
+      ],
+      "members":{
+        "policyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The ID of the resource policy you're deleting.</p>"
+        },
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource you're deleting the policy from.</p>"
+        }
+      }
+    },
+    "DeleteResourcePolicyOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteResponsePlanInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan.</p>"
+        }
+      }
+    },
+    "DeleteResponsePlanOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTimelineEventInput":{
+      "type":"structure",
+      "required":[
+        "eventId",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the event to update. You can use <code>ListTimelineEvents</code> to find an event's ID.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that includes the timeline event.</p>"
+        }
+      }
+    },
+    "DeleteTimelineEventOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DynamicSsmParameterValue":{
+      "type":"structure",
+      "members":{
+        "variable":{
+          "shape":"VariableType",
+          "documentation":"<p>Variable dynamic parameters. A parameter value is determined when an incident is created.</p>"
+        }
+      },
+      "documentation":"<p>The dynamic SSM parameter value.</p>",
+      "union":true
+    },
+    "DynamicSsmParameters":{
+      "type":"map",
+      "key":{"shape":"DynamicSsmParametersKeyString"},
+      "value":{"shape":"DynamicSsmParameterValue"},
+      "max":200,
+      "min":1
+    },
+    "DynamicSsmParametersKeyString":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "EmptyChatChannel":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Used to remove the chat channel from an incident record or response plan.</p>"
+    },
+    "EngagementSet":{
+      "type":"list",
+      "member":{"shape":"SsmContactsArn"},
+      "max":5,
+      "min":0
+    },
+    "EventData":{
+      "type":"string",
+      "max":12000,
+      "min":0
+    },
+    "EventReference":{
+      "type":"structure",
+      "members":{
+        "relatedItemId":{
+          "shape":"GeneratedId",
+          "documentation":"<p>The ID of a <code>RelatedItem</code> referenced in a <code>TimelineEvent</code>.</p>"
+        },
+        "resource":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Amazon Web Services resource referenced in a <code>TimelineEvent</code>.</p>"
+        }
+      },
+      "documentation":"<p>An item referenced in a <code>TimelineEvent</code> that is involved in or somehow associated with an incident. You can specify an Amazon Resource Name (ARN) for an Amazon Web Services resource or a <code>RelatedItem</code> ID.</p>",
+      "union":true
+    },
+    "EventReferenceList":{
+      "type":"list",
+      "member":{"shape":"EventReference"},
+      "max":10,
+      "min":0
+    },
+    "EventSummary":{
+      "type":"structure",
+      "required":[
+        "eventId",
+        "eventTime",
+        "eventType",
+        "eventUpdatedTime",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The timeline event ID.</p>"
+        },
+        "eventReferences":{
+          "shape":"EventReferenceList",
+          "documentation":"<p>A list of references in a <code>TimelineEvent</code>.</p>"
+        },
+        "eventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the event occurred.</p>"
+        },
+        "eventType":{
+          "shape":"TimelineEventType",
+          "documentation":"<p>The type of event. The timeline event must be <code>Custom Event</code> or <code>Note</code>.</p>"
+        },
+        "eventUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the timeline event was last updated.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that the event happened during.</p>"
+        }
+      },
+      "documentation":"<p>Details about a timeline event during an incident.</p>"
+    },
+    "EventSummaryList":{
+      "type":"list",
+      "member":{"shape":"EventSummary"},
+      "max":100,
+      "min":0
+    },
+    "ExceptionMessage":{"type":"string"},
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "condition",
+        "key"
+      ],
+      "members":{
+        "condition":{
+          "shape":"Condition",
+          "documentation":"<p>The condition accepts before or after a specified time, equal to a string, or equal to an integer.</p>"
+        },
+        "key":{
+          "shape":"FilterKeyString",
+          "documentation":"<p>The key that you're filtering on.</p>"
+        }
+      },
+      "documentation":"<p>Filter the selection by using a condition.</p>"
+    },
+    "FilterKeyString":{
+      "type":"string",
+      "max":50,
+      "min":0
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"},
+      "max":5,
+      "min":0
+    },
+    "Finding":{
+      "type":"structure",
+      "required":[
+        "creationTime",
+        "id",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when a finding was created.</p>"
+        },
+        "details":{
+          "shape":"FindingDetails",
+          "documentation":"<p>Details about the finding.</p>"
+        },
+        "id":{
+          "shape":"FindingId",
+          "documentation":"<p>The ID assigned to the finding.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the finding was most recently updated with additional information.</p>"
+        }
+      },
+      "documentation":"<p>Information about a specific CodeDeploy deployment or CloudFormation stack creation or update that occurred around the time of a reported incident. These activities can be investigated as a potential cause of the incident.</p>"
+    },
+    "FindingDetails":{
+      "type":"structure",
+      "members":{
+        "cloudFormationStackUpdate":{
+          "shape":"CloudFormationStackUpdate",
+          "documentation":"<p>Information about the CloudFormation stack creation or update associated with the finding.</p>"
+        },
+        "codeDeployDeployment":{
+          "shape":"CodeDeployDeployment",
+          "documentation":"<p>Information about the CodeDeploy deployment associated with the finding.</p>"
+        }
+      },
+      "documentation":"<p>Extended textual information about the finding.</p>",
+      "union":true
+    },
+    "FindingId":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "FindingIdList":{
+      "type":"list",
+      "member":{"shape":"FindingId"},
+      "max":20,
+      "min":0
+    },
+    "FindingList":{
+      "type":"list",
+      "member":{"shape":"Finding"}
+    },
+    "FindingSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "lastModifiedTime"
+      ],
+      "members":{
+        "id":{
+          "shape":"FindingId",
+          "documentation":"<p>The ID of the finding.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the finding was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Identifying information about the finding.</p>"
+    },
+    "FindingSummaryList":{
+      "type":"list",
+      "member":{"shape":"FindingSummary"},
+      "max":100,
+      "min":0
+    },
+    "GeneratedId":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "pattern":"^related-item/(ANALYSIS|INCIDENT|METRIC|PARENT|ATTACHMENT|OTHER|AUTOMATION|INVOLVED_RESOURCE|TASK)/([0-9]|[A-F]){32}$"
+    },
+    "GetIncidentRecordInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        }
+      }
+    },
+    "GetIncidentRecordOutput":{
+      "type":"structure",
+      "required":["incidentRecord"],
+      "members":{
+        "incidentRecord":{
+          "shape":"IncidentRecord",
+          "documentation":"<p>Details the structure of the incident record.</p>"
+        }
+      }
+    },
+    "GetReplicationSetInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set you want to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        }
+      }
+    },
+    "GetReplicationSetOutput":{
+      "type":"structure",
+      "required":["replicationSet"],
+      "members":{
+        "replicationSet":{
+          "shape":"ReplicationSet",
+          "documentation":"<p>Details of the replication set.</p>"
+        }
+      }
+    },
+    "GetResourcePoliciesInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of resource policies to display for each page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        },
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan with the attached resource policy. </p>",
+          "location":"querystring",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "GetResourcePoliciesOutput":{
+      "type":"structure",
+      "required":["resourcePolicies"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        },
+        "resourcePolicies":{
+          "shape":"ResourcePolicyList",
+          "documentation":"<p>Details about the resource policy attached to the response plan.</p>"
+        }
+      }
+    },
+    "GetResponsePlanInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan.</p>",
+          "location":"querystring",
+          "locationName":"arn"
+        }
+      }
+    },
+    "GetResponsePlanOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "incidentTemplate",
+        "name"
+      ],
+      "members":{
+        "actions":{
+          "shape":"ActionsList",
+          "documentation":"<p>The actions that this response plan takes at the beginning of the incident.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the response plan.</p>"
+        },
+        "chatChannel":{
+          "shape":"ChatChannel",
+          "documentation":"<p>The Chatbot chat channel used for collaboration during an incident.</p>"
+        },
+        "displayName":{
+          "shape":"ResponsePlanDisplayName",
+          "documentation":"<p>The long format name of the response plan. Can contain spaces.</p>"
+        },
+        "engagements":{
+          "shape":"EngagementSet",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the contacts and escalation plans that the response plan engages during an incident.</p>"
+        },
+        "incidentTemplate":{
+          "shape":"IncidentTemplate",
+          "documentation":"<p>Details used to create the incident when using this response plan.</p>"
+        },
+        "integrations":{
+          "shape":"Integrations",
+          "documentation":"<p>Information about third-party services integrated into the Incident Manager response plan.</p>"
+        },
+        "name":{
+          "shape":"ResponsePlanName",
+          "documentation":"<p>The short format name of the response plan. The name can't contain spaces.</p>"
+        }
+      }
+    },
+    "GetTimelineEventInput":{
+      "type":"structure",
+      "required":[
+        "eventId",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the event. You can get an event's ID when you create it, or by using <code>ListTimelineEvents</code>.</p>",
+          "location":"querystring",
+          "locationName":"eventId"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that includes the timeline event.</p>",
+          "location":"querystring",
+          "locationName":"incidentRecordArn"
+        }
+      }
+    },
+    "GetTimelineEventOutput":{
+      "type":"structure",
+      "required":["event"],
+      "members":{
+        "event":{
+          "shape":"TimelineEvent",
+          "documentation":"<p>Details about the timeline event.</p>"
+        }
+      }
+    },
+    "Impact":{
+      "type":"integer",
+      "box":true,
+      "max":5,
+      "min":1
+    },
+    "IncidentRecord":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationTime",
+        "dedupeString",
+        "impact",
+        "incidentRecordSource",
+        "lastModifiedBy",
+        "lastModifiedTime",
+        "status",
+        "title"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record.</p>"
+        },
+        "automationExecutions":{
+          "shape":"AutomationExecutionSet",
+          "documentation":"<p>The runbook, or automation document, that's run at the beginning of the incident.</p>"
+        },
+        "chatChannel":{
+          "shape":"ChatChannel",
+          "documentation":"<p>The chat channel used for collaboration during an incident.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when Incident Manager created the incident record.</p>"
+        },
+        "dedupeString":{
+          "shape":"DedupeString",
+          "documentation":"<p>The string Incident Manager uses to prevent duplicate incidents from being created by the same incident in the same account.</p>"
+        },
+        "impact":{
+          "shape":"Impact",
+          "documentation":"<p>The impact of the incident on customers and applications.</p> <p class=\"title\"> <b>Supported impact codes</b> </p> <ul> <li> <p> <code>1</code> - Critical</p> </li> <li> <p> <code>2</code> - High</p> </li> <li> <p> <code>3</code> - Medium</p> </li> <li> <p> <code>4</code> - Low</p> </li> <li> <p> <code>5</code> - No Impact</p> </li> </ul>"
+        },
+        "incidentRecordSource":{
+          "shape":"IncidentRecordSource",
+          "documentation":"<p>Details about the action that started the incident.</p>"
+        },
+        "lastModifiedBy":{
+          "shape":"Arn",
+          "documentation":"<p>Who modified the incident most recently.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the incident was most recently modified.</p>"
+        },
+        "notificationTargets":{
+          "shape":"NotificationTargetSet",
+          "documentation":"<p>The Amazon SNS targets that are notified when updates are made to an incident.</p>"
+        },
+        "resolvedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the incident was resolved. This appears as a timeline event.</p>"
+        },
+        "status":{
+          "shape":"IncidentRecordStatus",
+          "documentation":"<p>The current status of the incident.</p>"
+        },
+        "summary":{
+          "shape":"IncidentSummary",
+          "documentation":"<p>The summary of the incident. The summary is a brief synopsis of what occurred, what's currently happening, and context of the incident.</p>"
+        },
+        "title":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>The title of the incident.</p>"
+        }
+      },
+      "documentation":"<p>The record of the incident that's created when an incident occurs.</p>"
+    },
+    "IncidentRecordSource":{
+      "type":"structure",
+      "required":[
+        "createdBy",
+        "source"
+      ],
+      "members":{
+        "createdBy":{
+          "shape":"Arn",
+          "documentation":"<p>The principal that started the incident.</p>"
+        },
+        "invokedBy":{
+          "shape":"ServicePrincipal",
+          "documentation":"<p>The service principal that assumed the role specified in <code>createdBy</code>. If no service principal assumed the role this will be left blank.</p>"
+        },
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The resource that caused the incident to be created.</p>"
+        },
+        "source":{
+          "shape":"IncidentSource",
+          "documentation":"<p>The service that started the incident. This can be manually created from Incident Manager, automatically created using an Amazon CloudWatch alarm, or Amazon EventBridge event.</p>"
+        }
+      },
+      "documentation":"<p>Details about what created the incident record and when it was created.</p>"
+    },
+    "IncidentRecordStatus":{
+      "type":"string",
+      "enum":[
+        "OPEN",
+        "RESOLVED"
+      ]
+    },
+    "IncidentRecordSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationTime",
+        "impact",
+        "incidentRecordSource",
+        "status",
+        "title"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the incident was created.</p>"
+        },
+        "impact":{
+          "shape":"Impact",
+          "documentation":"<p>Defines the impact to customers and applications.</p>"
+        },
+        "incidentRecordSource":{
+          "shape":"IncidentRecordSource",
+          "documentation":"<p>What caused Incident Manager to create the incident.</p>"
+        },
+        "resolvedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the incident was resolved.</p>"
+        },
+        "status":{
+          "shape":"IncidentRecordStatus",
+          "documentation":"<p>The current status of the incident.</p>"
+        },
+        "title":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>The title of the incident. This value is either provided by the response plan or overwritten on creation.</p>"
+        }
+      },
+      "documentation":"<p>Details describing an incident record.</p>"
+    },
+    "IncidentRecordSummaryList":{
+      "type":"list",
+      "member":{"shape":"IncidentRecordSummary"},
+      "max":100,
+      "min":0
+    },
+    "IncidentSource":{
+      "type":"string",
+      "max":50,
+      "min":0
+    },
+    "IncidentSummary":{
+      "type":"string",
+      "max":8000,
+      "min":0
+    },
+    "IncidentTemplate":{
+      "type":"structure",
+      "required":[
+        "impact",
+        "title"
+      ],
+      "members":{
+        "dedupeString":{
+          "shape":"DedupeString",
+          "documentation":"<p>The string Incident Manager uses to prevent the same root cause from creating multiple incidents in the same account.</p> <p>A deduplication string is a term or phrase the system uses to check for duplicate incidents. If you specify a deduplication string, Incident Manager searches for open incidents that contain the same string in the <code>dedupeString</code> field when it creates the incident. If a duplicate is detected, Incident Manager deduplicates the newer incident into the existing incident.</p> <note> <p>By default, Incident Manager automatically deduplicates multiple incidents created by the same Amazon CloudWatch alarm or Amazon EventBridge event. You don't have to enter your own deduplication string to prevent duplication for these resource types.</p> </note>"
+        },
+        "impact":{
+          "shape":"Impact",
+          "documentation":"<p>The impact of the incident on your customers and applications.</p> <p class=\"title\"> <b>Supported impact codes</b> </p> <ul> <li> <p> <code>1</code> - Critical</p> </li> <li> <p> <code>2</code> - High</p> </li> <li> <p> <code>3</code> - Medium</p> </li> <li> <p> <code>4</code> - Low</p> </li> <li> <p> <code>5</code> - No Impact</p> </li> </ul>"
+        },
+        "incidentTags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags to assign to the template. When the <code>StartIncident</code> API action is called, Incident Manager assigns the tags specified in the template to the incident.</p>"
+        },
+        "notificationTargets":{
+          "shape":"NotificationTargetSet",
+          "documentation":"<p>The Amazon SNS targets that are notified when updates are made to an incident.</p>"
+        },
+        "summary":{
+          "shape":"IncidentSummary",
+          "documentation":"<p>The summary of the incident. The summary is a brief synopsis of what occurred, what's currently happening, and context.</p>"
+        },
+        "title":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>The title of the incident. </p>"
+        }
+      },
+      "documentation":"<p>Basic details used in creating a response plan. The response plan is then used to create an incident record.</p>"
+    },
+    "IncidentTitle":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "IntegerList":{
+      "type":"list",
+      "member":{"shape":"Integer"},
+      "max":100,
+      "min":0
+    },
+    "Integration":{
+      "type":"structure",
+      "members":{
+        "pagerDutyConfiguration":{
+          "shape":"PagerDutyConfiguration",
+          "documentation":"<p>Information about the PagerDuty service where the response plan creates an incident.</p>"
+        }
+      },
+      "documentation":"<p>Information about third-party services integrated into a response plan.</p>",
+      "union":true
+    },
+    "Integrations":{
+      "type":"list",
+      "member":{"shape":"Integration"},
+      "max":1,
+      "min":0
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ItemIdentifier":{
+      "type":"structure",
+      "required":[
+        "type",
+        "value"
+      ],
+      "members":{
+        "type":{
+          "shape":"ItemType",
+          "documentation":"<p>The type of related item. </p>"
+        },
+        "value":{
+          "shape":"ItemValue",
+          "documentation":"<p>Details about the related item.</p>"
+        }
+      },
+      "documentation":"<p>Details and type of a related item.</p>"
+    },
+    "ItemType":{
+      "type":"string",
+      "enum":[
+        "ANALYSIS",
+        "INCIDENT",
+        "METRIC",
+        "PARENT",
+        "ATTACHMENT",
+        "OTHER",
+        "AUTOMATION",
+        "INVOLVED_RESOURCE",
+        "TASK"
+      ]
+    },
+    "ItemValue":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the related item, if the related item is an Amazon resource.</p>"
+        },
+        "metricDefinition":{
+          "shape":"MetricDefinition",
+          "documentation":"<p>The metric definition, if the related item is a metric in Amazon CloudWatch.</p>"
+        },
+        "pagerDutyIncidentDetail":{
+          "shape":"PagerDutyIncidentDetail",
+          "documentation":"<p>Details about an incident that is associated with a PagerDuty incident.</p>"
+        },
+        "url":{
+          "shape":"Url",
+          "documentation":"<p>The URL, if the related item is a non-Amazon Web Services resource.</p>"
+        }
+      },
+      "documentation":"<p>Describes a related item.</p>",
+      "union":true
+    },
+    "ListIncidentFindingsInput":{
+      "type":"structure",
+      "required":["incidentRecordArn"],
+      "members":{
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident for which you want to view associated findings.</p>"
+        },
+        "maxResults":{
+          "shape":"ListIncidentFindingsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of findings to retrieve per call.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListIncidentFindingsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "ListIncidentFindingsOutput":{
+      "type":"structure",
+      "required":["findings"],
+      "members":{
+        "findings":{
+          "shape":"FindingSummaryList",
+          "documentation":"<p>A list of findings that represent deployments that might be the potential cause of the incident.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        }
+      }
+    },
+    "ListIncidentRecordsInput":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters the list of incident records you want to search through. You can filter on the following keys:</p> <ul> <li> <p> <code>creationTime</code> </p> </li> <li> <p> <code>impact</code> </p> </li> <li> <p> <code>status</code> </p> </li> <li> <p> <code>createdBy</code> </p> </li> </ul> <p>Note the following when when you use Filters:</p> <ul> <li> <p>If you don't specify a Filter, the response includes all incident records.</p> </li> <li> <p>If you specify more than one filter in a single request, the response returns incident records that match all filters.</p> </li> <li> <p>If you specify a filter with more than one value, the response returns incident records that match any of the values provided.</p> </li> </ul>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results per page.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListIncidentRecordsOutput":{
+      "type":"structure",
+      "required":["incidentRecordSummaries"],
+      "members":{
+        "incidentRecordSummaries":{
+          "shape":"IncidentRecordSummaryList",
+          "documentation":"<p>The details of each listed incident record.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        }
+      }
+    },
+    "ListRelatedItemsInput":{
+      "type":"structure",
+      "required":["incidentRecordArn"],
+      "members":{
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record containing the listed related items.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of related items per page.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListRelatedItemsOutput":{
+      "type":"structure",
+      "required":["relatedItems"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        },
+        "relatedItems":{
+          "shape":"RelatedItemList",
+          "documentation":"<p>Details about each related item.</p>"
+        }
+      }
+    },
+    "ListReplicationSetsInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results per page. </p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListReplicationSetsOutput":{
+      "type":"structure",
+      "required":["replicationSetArns"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        },
+        "replicationSetArns":{
+          "shape":"ReplicationSetArnList",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the list replication set.</p>"
+        }
+      }
+    },
+    "ListResponsePlansInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of response plans per page.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListResponsePlansOutput":{
+      "type":"structure",
+      "required":["responsePlanSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        },
+        "responsePlanSummaries":{
+          "shape":"ResponsePlanSummaryList",
+          "documentation":"<p>Details of each response plan.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan or incident.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags for the response plan or incident.</p>"
+        }
+      }
+    },
+    "ListTimelineEventsInput":{
+      "type":"structure",
+      "required":["incidentRecordArn"],
+      "members":{
+        "filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters the timeline events based on the provided conditional values. You can filter timeline events with the following keys:</p> <ul> <li> <p> <code>eventReference</code> </p> </li> <li> <p> <code>eventTime</code> </p> </li> <li> <p> <code>eventType</code> </p> </li> </ul> <p>Note the following when deciding how to use Filters:</p> <ul> <li> <p>If you don't specify a Filter, the response includes all timeline events.</p> </li> <li> <p>If you specify more than one filter in a single request, the response returns timeline events that match all filters.</p> </li> <li> <p>If you specify a filter with more than one value, the response returns timeline events that match any of the values provided.</p> </li> </ul>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that includes the timeline event.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results per page.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token for the next set of items to return. (You received this token from a previous call.)</p>"
+        },
+        "sortBy":{
+          "shape":"TimelineEventSort",
+          "documentation":"<p>Sort timeline events by the specified key value pair.</p>"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>Sorts the order of timeline events by the value specified in the <code>sortBy</code> field.</p>"
+        }
+      }
+    },
+    "ListTimelineEventsOutput":{
+      "type":"structure",
+      "required":["eventSummaries"],
+      "members":{
+        "eventSummaries":{
+          "shape":"EventSummaryList",
+          "documentation":"<p>Details about each event that occurred during the incident.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MetricDefinition":{
+      "type":"string",
+      "max":4000,
+      "min":0
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2000,
+      "min":0
+    },
+    "NotificationTargetItem":{
+      "type":"structure",
+      "members":{
+        "snsTopicArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SNS topic.</p>"
+        }
+      },
+      "documentation":"<p>The SNS targets that are notified when updates are made to an incident.</p>",
+      "union":true
+    },
+    "NotificationTargetSet":{
+      "type":"list",
+      "member":{"shape":"NotificationTargetItem"},
+      "max":10,
+      "min":0
+    },
+    "PagerDutyConfiguration":{
+      "type":"structure",
+      "required":[
+        "name",
+        "pagerDutyIncidentConfiguration",
+        "secretId"
+      ],
+      "members":{
+        "name":{
+          "shape":"PagerDutyConfigurationNameString",
+          "documentation":"<p>The name of the PagerDuty configuration.</p>"
+        },
+        "pagerDutyIncidentConfiguration":{
+          "shape":"PagerDutyIncidentConfiguration",
+          "documentation":"<p>Details about the PagerDuty service associated with the configuration.</p>"
+        },
+        "secretId":{
+          "shape":"PagerDutyConfigurationSecretIdString",
+          "documentation":"<p>The ID of the Amazon Web Services Secrets Manager secret that stores your PagerDuty key, either a General Access REST API Key or User Token REST API Key, and other user credentials.</p>"
+        }
+      },
+      "documentation":"<p>Details about the PagerDuty configuration for a response plan.</p>"
+    },
+    "PagerDutyConfigurationNameString":{
+      "type":"string",
+      "max":200,
+      "min":1
+    },
+    "PagerDutyConfigurationSecretIdString":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "PagerDutyIncidentConfiguration":{
+      "type":"structure",
+      "required":["serviceId"],
+      "members":{
+        "serviceId":{
+          "shape":"PagerDutyIncidentConfigurationServiceIdString",
+          "documentation":"<p>The ID of the PagerDuty service that the response plan associates with an incident when it launches.</p>"
+        }
+      },
+      "documentation":"<p>Details about the PagerDuty service where the response plan creates an incident.</p>"
+    },
+    "PagerDutyIncidentConfigurationServiceIdString":{
+      "type":"string",
+      "max":200,
+      "min":1
+    },
+    "PagerDutyIncidentDetail":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "autoResolve":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to resolve the PagerDuty incident when you resolve the associated Incident Manager incident.</p>"
+        },
+        "id":{
+          "shape":"PagerDutyIncidentDetailIdString",
+          "documentation":"<p>The ID of the incident associated with the PagerDuty service for the response plan.</p>"
+        },
+        "secretId":{
+          "shape":"PagerDutyIncidentDetailSecretIdString",
+          "documentation":"<p>The ID of the Amazon Web Services Secrets Manager secret that stores your PagerDuty key, either a General Access REST API Key or User Token REST API Key, and other user credentials.</p>"
+        }
+      },
+      "documentation":"<p>Details about the PagerDuty incident associated with an incident created by an Incident Manager response plan.</p>"
+    },
+    "PagerDutyIncidentDetailIdString":{
+      "type":"string",
+      "max":200,
+      "min":1
+    },
+    "PagerDutyIncidentDetailSecretIdString":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "Policy":{
+      "type":"string",
+      "max":4000,
+      "min":0
+    },
+    "PolicyId":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "PutResourcePolicyInput":{
+      "type":"structure",
+      "required":[
+        "policy",
+        "resourceArn"
+      ],
+      "members":{
+        "policy":{
+          "shape":"Policy",
+          "documentation":"<p>Details of the resource policy.</p>"
+        },
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan to add the resource policy to.</p>"
+        }
+      }
+    },
+    "PutResourcePolicyOutput":{
+      "type":"structure",
+      "required":["policyId"],
+      "members":{
+        "policyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The ID of the resource policy.</p>"
+        }
+      }
+    },
+    "RawData":{
+      "type":"string",
+      "max":10000,
+      "min":0
+    },
+    "RegionInfo":{
+      "type":"structure",
+      "required":[
+        "status",
+        "statusUpdateDateTime"
+      ],
+      "members":{
+        "sseKmsKeyId":{
+          "shape":"SseKmsKey",
+          "documentation":"<p>The ID of the KMS key used to encrypt the data in this Amazon Web Services Region.</p>"
+        },
+        "status":{
+          "shape":"RegionStatus",
+          "documentation":"<p>The status of the Amazon Web Services Region in the replication set.</p>"
+        },
+        "statusMessage":{
+          "shape":"String",
+          "documentation":"<p>Information displayed about the status of the Amazon Web Services Region.</p>"
+        },
+        "statusUpdateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when Incident Manager updated the status of the Amazon Web Services Region.</p>"
+        }
+      },
+      "documentation":"<p>Information about a Amazon Web Services Region in your replication set.</p>"
+    },
+    "RegionInfoMap":{
+      "type":"map",
+      "key":{"shape":"RegionName"},
+      "value":{"shape":"RegionInfo"}
+    },
+    "RegionMapInput":{
+      "type":"map",
+      "key":{"shape":"RegionName"},
+      "value":{"shape":"RegionMapInputValue"},
+      "max":3,
+      "min":1
+    },
+    "RegionMapInputValue":{
+      "type":"structure",
+      "members":{
+        "sseKmsKeyId":{
+          "shape":"SseKmsKey",
+          "documentation":"<p>The KMS key used to encrypt the data in your replication set.</p>"
+        }
+      },
+      "documentation":"<p>The mapping between a Amazon Web Services Region and the key that's used to encrypt the data.</p>"
+    },
+    "RegionName":{
+      "type":"string",
+      "max":20,
+      "min":0
+    },
+    "RegionStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CREATING",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "RelatedItem":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "generatedId":{
+          "shape":"GeneratedId",
+          "documentation":"<p>A unique ID for a <code>RelatedItem</code>.</p> <important> <p>Don't specify this parameter when you add a <code>RelatedItem</code> by using the <a>UpdateRelatedItems</a> API action.</p> </important>"
+        },
+        "identifier":{
+          "shape":"ItemIdentifier",
+          "documentation":"<p>Details about the related item.</p>"
+        },
+        "title":{
+          "shape":"RelatedItemTitleString",
+          "documentation":"<p>The title of the related item.</p>"
+        }
+      },
+      "documentation":"<p>Resources that responders use to triage and mitigate the incident.</p>"
+    },
+    "RelatedItemList":{
+      "type":"list",
+      "member":{"shape":"RelatedItem"},
+      "max":100,
+      "min":0
+    },
+    "RelatedItemTitleString":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "RelatedItemsUpdate":{
+      "type":"structure",
+      "members":{
+        "itemToAdd":{
+          "shape":"RelatedItem",
+          "documentation":"<p>Details about the related item you're adding.</p>"
+        },
+        "itemToRemove":{
+          "shape":"ItemIdentifier",
+          "documentation":"<p>Details about the related item you're deleting.</p>"
+        }
+      },
+      "documentation":"<p>Details about the related item you're adding.</p>",
+      "union":true
+    },
+    "ReplicationSet":{
+      "type":"structure",
+      "required":[
+        "createdBy",
+        "createdTime",
+        "deletionProtected",
+        "lastModifiedBy",
+        "lastModifiedTime",
+        "regionMap",
+        "status"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set.</p>"
+        },
+        "createdBy":{
+          "shape":"Arn",
+          "documentation":"<p>Details about who created the replication set.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the replication set was created.</p>"
+        },
+        "deletionProtected":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines if the replication set deletion protection is enabled or not. If deletion protection is enabled, you can't delete the last Amazon Web Services Region in the replication set. </p>"
+        },
+        "lastModifiedBy":{
+          "shape":"Arn",
+          "documentation":"<p>Who last modified the replication set.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the replication set was last updated.</p>"
+        },
+        "regionMap":{
+          "shape":"RegionInfoMap",
+          "documentation":"<p>The map between each Amazon Web Services Region in your replication set and the KMS key that's used to encrypt the data in that Region.</p>"
+        },
+        "status":{
+          "shape":"ReplicationSetStatus",
+          "documentation":"<p>The status of the replication set. If the replication set is still pending, you can't use Incident Manager functionality.</p>"
+        }
+      },
+      "documentation":"<p>The set of Amazon Web Services Region that your Incident Manager data will be replicated to and the KMS key used to encrypt the data. </p>"
+    },
+    "ReplicationSetArnList":{
+      "type":"list",
+      "member":{"shape":"Arn"}
+    },
+    "ReplicationSetStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CREATING",
+        "UPDATING",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "resourceIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the requested resource</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The resource type</p>"
+        }
+      },
+      "documentation":"<p>Request references a resource which doesn't exist. </p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourcePolicy":{
+      "type":"structure",
+      "required":[
+        "policyDocument",
+        "policyId",
+        "ramResourceShareRegion"
+      ],
+      "members":{
+        "policyDocument":{
+          "shape":"Policy",
+          "documentation":"<p>The JSON blob that describes the policy.</p>"
+        },
+        "policyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The ID of the resource policy.</p>"
+        },
+        "ramResourceShareRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region that policy allows resources to be used in.</p>"
+        }
+      },
+      "documentation":"<p>The resource policy that allows Incident Manager to perform actions on resources on your behalf.</p>"
+    },
+    "ResourcePolicyList":{
+      "type":"list",
+      "member":{"shape":"ResourcePolicy"},
+      "max":100,
+      "min":0
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "RESPONSE_PLAN",
+        "INCIDENT_RECORD",
+        "TIMELINE_EVENT",
+        "REPLICATION_SET",
+        "RESOURCE_POLICY"
+      ]
+    },
+    "ResponsePlanDisplayName":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "ResponsePlanName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-_]*$"
+    },
+    "ResponsePlanSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "name"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan.</p>"
+        },
+        "displayName":{
+          "shape":"ResponsePlanDisplayName",
+          "documentation":"<p>The human readable name of the response plan. This can include spaces.</p>"
+        },
+        "name":{
+          "shape":"ResponsePlanName",
+          "documentation":"<p>The name of the response plan. This can't include spaces.</p>"
+        }
+      },
+      "documentation":"<p>Details of the response plan that are used when creating an incident.</p>"
+    },
+    "ResponsePlanSummaryList":{
+      "type":"list",
+      "member":{"shape":"ResponsePlanSummary"},
+      "max":100,
+      "min":0
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":"^arn:aws(-cn|-us-gov)?:iam::([0-9]{12})?:role/.+$"
+    },
+    "ServiceCode":{
+      "type":"string",
+      "enum":["ssm-incidents"]
+    },
+    "ServicePrincipal":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "quotaCode",
+        "serviceCode"
+      ],
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Originating quota code</p>"
+        },
+        "resourceIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the requested resource</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The resource type</p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>Originating service code</p>"
+        }
+      },
+      "documentation":"<p>Request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnsArn":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "SseKmsKey":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "SsmAutomation":{
+      "type":"structure",
+      "required":[
+        "documentName",
+        "roleArn"
+      ],
+      "members":{
+        "documentName":{
+          "shape":"SsmAutomationDocumentNameString",
+          "documentation":"<p>The automation document's name.</p>"
+        },
+        "documentVersion":{
+          "shape":"SsmAutomationDocumentVersionString",
+          "documentation":"<p>The automation document's version to use when running.</p>"
+        },
+        "dynamicParameters":{
+          "shape":"DynamicSsmParameters",
+          "documentation":"<p>The key-value pair to resolve dynamic parameter values when processing a Systems Manager Automation runbook.</p>"
+        },
+        "parameters":{
+          "shape":"SsmParameters",
+          "documentation":"<p>The key-value pair parameters to use when running the automation document.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role that the automation document will assume when running commands.</p>"
+        },
+        "targetAccount":{
+          "shape":"SsmTargetAccount",
+          "documentation":"<p>The account that the automation document will be run in. This can be in either the management account or an application account.</p>"
+        }
+      },
+      "documentation":"<p>Details about the Systems Manager automation document that will be used as a runbook during an incident.</p>"
+    },
+    "SsmAutomationDocumentNameString":{
+      "type":"string",
+      "pattern":"^[a-zA-Z0-9_\\-.:/]{3,128}$"
+    },
+    "SsmAutomationDocumentVersionString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "SsmContactsArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"^arn:aws(-cn|-us-gov)?:ssm-contacts:[a-z0-9-]*:([0-9]{12}):contact/[a-z0-9_-]+$"
+    },
+    "SsmParameterValues":{
+      "type":"list",
+      "member":{"shape":"SsmParameterValuesMemberString"},
+      "max":100,
+      "min":0
+    },
+    "SsmParameterValuesMemberString":{
+      "type":"string",
+      "max":512,
+      "min":0
+    },
+    "SsmParameters":{
+      "type":"map",
+      "key":{"shape":"SsmParametersKeyString"},
+      "value":{"shape":"SsmParameterValues"},
+      "max":200,
+      "min":1
+    },
+    "SsmParametersKeyString":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "SsmTargetAccount":{
+      "type":"string",
+      "enum":[
+        "RESPONSE_PLAN_OWNER_ACCOUNT",
+        "IMPACTED_ACCOUNT"
+      ]
+    },
+    "StartIncidentInput":{
+      "type":"structure",
+      "required":["responsePlanArn"],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "impact":{
+          "shape":"Impact",
+          "documentation":"<p>Defines the impact to the customers. Providing an impact overwrites the impact provided by a response plan.</p> <p class=\"title\"> <b>Supported impact codes</b> </p> <ul> <li> <p> <code>1</code> - Critical</p> </li> <li> <p> <code>2</code> - High</p> </li> <li> <p> <code>3</code> - Medium</p> </li> <li> <p> <code>4</code> - Low</p> </li> <li> <p> <code>5</code> - No Impact</p> </li> </ul>"
+        },
+        "relatedItems":{
+          "shape":"RelatedItemList",
+          "documentation":"<p>Add related items to the incident for other responders to use. Related items are Amazon Web Services resources, external links, or files uploaded to an Amazon S3 bucket. </p>"
+        },
+        "responsePlanArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan that pre-defines summary, chat channels, Amazon SNS topics, runbooks, title, and impact of the incident. </p>"
+        },
+        "title":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>Provide a title for the incident. Providing a title overwrites the title provided by the response plan. </p>"
+        },
+        "triggerDetails":{
+          "shape":"TriggerDetails",
+          "documentation":"<p>Details of what created the incident record in Incident Manager.</p>"
+        }
+      }
+    },
+    "StartIncidentOutput":{
+      "type":"structure",
+      "required":["incidentRecordArn"],
+      "members":{
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the newly created incident record.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"StringListMemberString"},
+      "max":100,
+      "min":0
+    },
+    "StringListMemberString":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[A-Za-z0-9 _=@:.+-/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":1
+    },
+    "TagMapUpdate":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan you're adding the tags to.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags to add to the response plan.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^[A-Za-z0-9 _=@:.+-/]*$"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "quotaCode",
+        "serviceCode"
+      ],
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Originating quota code</p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>Originating service code</p>"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "TimelineEvent":{
+      "type":"structure",
+      "required":[
+        "eventData",
+        "eventId",
+        "eventTime",
+        "eventType",
+        "eventUpdatedTime",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "eventData":{
+          "shape":"EventData",
+          "documentation":"<p>A short description of the event.</p>"
+        },
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the timeline event.</p>"
+        },
+        "eventReferences":{
+          "shape":"EventReferenceList",
+          "documentation":"<p>A list of references in a <code>TimelineEvent</code>.</p>"
+        },
+        "eventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the event occurred.</p>"
+        },
+        "eventType":{
+          "shape":"TimelineEventType",
+          "documentation":"<p>The type of event that occurred. Currently Incident Manager supports only the <code>Custom Event</code> and <code>Note</code> types.</p>"
+        },
+        "eventUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the timeline event was last updated.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that the event occurred during.</p>"
+        }
+      },
+      "documentation":"<p>A significant event that happened during the incident. </p>"
+    },
+    "TimelineEventSort":{
+      "type":"string",
+      "enum":["EVENT_TIME"]
+    },
+    "TimelineEventType":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TriggerDetails":{
+      "type":"structure",
+      "required":[
+        "source",
+        "timestamp"
+      ],
+      "members":{
+        "rawData":{
+          "shape":"RawData",
+          "documentation":"<p>Raw data passed from either Amazon EventBridge, Amazon CloudWatch, or Incident Manager when an incident is created.</p>"
+        },
+        "source":{
+          "shape":"IncidentSource",
+          "documentation":"<p>Identifies the service that sourced the event. All events sourced from within Amazon Web Services begin with \"<code>aws.</code>\" Customer-generated events can have any value here, as long as it doesn't begin with \"<code>aws.</code>\" We recommend the use of Java package-name style reverse domain-name strings. </p>"
+        },
+        "timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the incident was detected.</p>"
+        },
+        "triggerArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the source that detected the incident.</p>"
+        }
+      },
+      "documentation":"<p>Details about what caused the incident to be created in Incident Manager.</p>"
+    },
+    "UUID":{
+      "type":"string",
+      "max":50,
+      "min":0
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan you're removing a tag from.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The name of the tag to remove from the response plan.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateDeletionProtectionInput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "deletionProtected"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set to update.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "deletionProtected":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies if deletion protection is turned on or off in your account. </p>"
+        }
+      }
+    },
+    "UpdateDeletionProtectionOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateIncidentRecordInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record you are updating.</p>"
+        },
+        "chatChannel":{
+          "shape":"ChatChannel",
+          "documentation":"<p>The Chatbot chat channel where responders can collaborate.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that a client calls the operation only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "impact":{
+          "shape":"Impact",
+          "documentation":"<p>Defines the impact of the incident to customers and applications. If you provide an impact for an incident, it overwrites the impact provided by the response plan.</p> <p class=\"title\"> <b>Supported impact codes</b> </p> <ul> <li> <p> <code>1</code> - Critical</p> </li> <li> <p> <code>2</code> - High</p> </li> <li> <p> <code>3</code> - Medium</p> </li> <li> <p> <code>4</code> - Low</p> </li> <li> <p> <code>5</code> - No Impact</p> </li> </ul>"
+        },
+        "notificationTargets":{
+          "shape":"NotificationTargetSet",
+          "documentation":"<p>The Amazon SNS targets that Incident Manager notifies when a client updates an incident.</p> <p>Using multiple SNS topics creates redundancy in the event that a Region is down during the incident.</p>"
+        },
+        "status":{
+          "shape":"IncidentRecordStatus",
+          "documentation":"<p>The status of the incident. Possible statuses are <code>Open</code> or <code>Resolved</code>.</p>"
+        },
+        "summary":{
+          "shape":"IncidentSummary",
+          "documentation":"<p>A longer description of what occurred during the incident.</p>"
+        },
+        "title":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>A brief description of the incident.</p>"
+        }
+      }
+    },
+    "UpdateIncidentRecordOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateRelatedItemsInput":{
+      "type":"structure",
+      "required":[
+        "incidentRecordArn",
+        "relatedItemsUpdate"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that a client calls the operation only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident record that contains the related items that you update.</p>"
+        },
+        "relatedItemsUpdate":{
+          "shape":"RelatedItemsUpdate",
+          "documentation":"<p>Details about the item that you are add to, or delete from, an incident.</p>"
+        }
+      }
+    },
+    "UpdateRelatedItemsOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateReplicationSetAction":{
+      "type":"structure",
+      "members":{
+        "addRegionAction":{
+          "shape":"AddRegionAction",
+          "documentation":"<p>Details about the Amazon Web Services Region that you're adding to the replication set.</p>"
+        },
+        "deleteRegionAction":{
+          "shape":"DeleteRegionAction",
+          "documentation":"<p>Details about the Amazon Web Services Region that you're deleting to the replication set.</p>"
+        }
+      },
+      "documentation":"<p>Details used when updating the replication set.</p>",
+      "union":true
+    },
+    "UpdateReplicationSetInput":{
+      "type":"structure",
+      "required":[
+        "actions",
+        "arn"
+      ],
+      "members":{
+        "actions":{
+          "shape":"UpdateReplicationSetInputActionsList",
+          "documentation":"<p>An action to add or delete a Region.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the replication set you're updating.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateReplicationSetInputActionsList":{
+      "type":"list",
+      "member":{"shape":"UpdateReplicationSetAction"},
+      "max":1,
+      "min":1
+    },
+    "UpdateReplicationSetOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateResponsePlanInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "actions":{
+          "shape":"ActionsList",
+          "documentation":"<p>The actions that this response plan takes at the beginning of an incident.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the response plan.</p>"
+        },
+        "chatChannel":{
+          "shape":"ChatChannel",
+          "documentation":"<p>The Chatbot chat channel used for collaboration during an incident.</p> <p>Use the empty structure to remove the chat channel from the response plan.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "displayName":{
+          "shape":"ResponsePlanDisplayName",
+          "documentation":"<p>The long format name of the response plan. The display name can't contain spaces.</p>"
+        },
+        "engagements":{
+          "shape":"EngagementSet",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the contacts and escalation plans that the response plan engages during an incident.</p>"
+        },
+        "incidentTemplateDedupeString":{
+          "shape":"DedupeString",
+          "documentation":"<p>The string Incident Manager uses to prevent duplicate incidents from being created by the same incident in the same account.</p>"
+        },
+        "incidentTemplateImpact":{
+          "shape":"Impact",
+          "documentation":"<p>Defines the impact to the customers. Providing an impact overwrites the impact provided by a response plan.</p> <p class=\"title\"> <b>Supported impact codes</b> </p> <ul> <li> <p> <code>1</code> - Critical</p> </li> <li> <p> <code>2</code> - High</p> </li> <li> <p> <code>3</code> - Medium</p> </li> <li> <p> <code>4</code> - Low</p> </li> <li> <p> <code>5</code> - No Impact</p> </li> </ul>"
+        },
+        "incidentTemplateNotificationTargets":{
+          "shape":"NotificationTargetSet",
+          "documentation":"<p>The Amazon SNS targets that are notified when updates are made to an incident.</p>"
+        },
+        "incidentTemplateSummary":{
+          "shape":"IncidentSummary",
+          "documentation":"<p>A brief summary of the incident. This typically contains what has happened, what's currently happening, and next steps.</p>"
+        },
+        "incidentTemplateTags":{
+          "shape":"TagMapUpdate",
+          "documentation":"<p>Tags to assign to the template. When the <code>StartIncident</code> API action is called, Incident Manager assigns the tags specified in the template to the incident. To call this action, you must also have permission to call the <code>TagResource</code> API action for the incident record resource.</p>"
+        },
+        "incidentTemplateTitle":{
+          "shape":"IncidentTitle",
+          "documentation":"<p>The short format name of the incident. The title can't contain spaces.</p>"
+        },
+        "integrations":{
+          "shape":"Integrations",
+          "documentation":"<p>Information about third-party services integrated into the response plan.</p>"
+        }
+      }
+    },
+    "UpdateResponsePlanOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateTimelineEventInput":{
+      "type":"structure",
+      "required":[
+        "eventId",
+        "incidentRecordArn"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A token that ensures that a client calls the operation only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "eventData":{
+          "shape":"EventData",
+          "documentation":"<p>A short description of the event.</p>"
+        },
+        "eventId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the event to update. You can use <code>ListTimelineEvents</code> to find an event's ID.</p>"
+        },
+        "eventReferences":{
+          "shape":"EventReferenceList",
+          "documentation":"<p>Updates all existing references in a <code>TimelineEvent</code>. A reference is an Amazon Web Services resource involved or associated with the incident. To specify a reference, enter its Amazon Resource Name (ARN). You can also specify a related item associated with that resource. For example, to specify an Amazon DynamoDB (DynamoDB) table as a resource, use its ARN. You can also specify an Amazon CloudWatch metric associated with the DynamoDB table as a related item.</p> <important> <p>This update action overrides all existing references. If you want to keep existing references, you must specify them in the call. If you don't, this action removes any existing references and enters only new references.</p> </important>"
+        },
+        "eventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for when the event occurred.</p>"
+        },
+        "eventType":{
+          "shape":"TimelineEventType",
+          "documentation":"<p>The type of event. You can update events of type <code>Custom Event</code> and <code>Note</code>.</p>"
+        },
+        "incidentRecordArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident that includes the timeline event.</p>"
+        }
+      }
+    },
+    "UpdateTimelineEventOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Url":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VariableType":{
+      "type":"string",
+      "enum":[
+        "INCIDENT_RECORD_ARN",
+        "INVOLVED_RESOURCES"
+      ]
+    }
+  },
+  "documentation":"<p>Systems Manager Incident Manager is an incident management console designed to help users mitigate and recover from incidents affecting their Amazon Web Services-hosted applications. An incident is any unplanned interruption or reduction in quality of services. </p> <p>Incident Manager increases incident resolution by notifying responders of impact, highlighting relevant troubleshooting data, and providing collaboration tools to get services back up and running. To achieve the primary goal of reducing the time-to-resolution of critical incidents, Incident Manager automates response plans and enables responder team escalation. </p>"
+}

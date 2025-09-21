@@ -1,0 +1,1469 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"backup-search",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Backup Search",
+    "serviceId":"BackupSearch",
+    "signatureVersion":"v4",
+    "signingName":"backup-search",
+    "uid":"backupsearch-2018-05-10"
+  },
+  "operations":{
+    "GetSearchJob":{
+      "name":"GetSearchJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/search-jobs/{SearchJobIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSearchJobInput"},
+      "output":{"shape":"GetSearchJobOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation retrieves metadata of a search job, including its progress.</p>"
+    },
+    "GetSearchResultExportJob":{
+      "name":"GetSearchResultExportJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/export-search-jobs/{ExportJobIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSearchResultExportJobInput"},
+      "output":{"shape":"GetSearchResultExportJobOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation retrieves the metadata of an export job.</p> <p>An export job is an operation that transmits the results of a search job to a specified S3 bucket in a .csv file.</p> <p>An export job allows you to retain results of a search beyond the search job's scheduled retention of 7 days.</p>"
+    },
+    "ListSearchJobBackups":{
+      "name":"ListSearchJobBackups",
+      "http":{
+        "method":"GET",
+        "requestUri":"/search-jobs/{SearchJobIdentifier}/backups",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSearchJobBackupsInput"},
+      "output":{"shape":"ListSearchJobBackupsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns a list of all backups (recovery points) in a paginated format that were included in the search job.</p> <p>If a search does not display an expected backup in the results, you can call this operation to display each backup included in the search. Any backups that were not included because they have a <code>FAILED</code> status from a permissions issue will be displayed, along with a status message.</p> <p>Only recovery points with a backup index that has a status of <code>ACTIVE</code> will be included in search results. If the index has any other status, its status will be displayed along with a status message.</p>"
+    },
+    "ListSearchJobResults":{
+      "name":"ListSearchJobResults",
+      "http":{
+        "method":"GET",
+        "requestUri":"/search-jobs/{SearchJobIdentifier}/search-results",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSearchJobResultsInput"},
+      "output":{"shape":"ListSearchJobResultsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns a list of a specified search job.</p>"
+    },
+    "ListSearchJobs":{
+      "name":"ListSearchJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/search-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSearchJobsInput"},
+      "output":{"shape":"ListSearchJobsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns a list of search jobs belonging to an account.</p>"
+    },
+    "ListSearchResultExportJobs":{
+      "name":"ListSearchResultExportJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/export-search-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSearchResultExportJobsInput"},
+      "output":{"shape":"ListSearchResultExportJobsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>This operation exports search results of a search job to a specified destination S3 bucket.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns the tags for a resource type.</p>"
+    },
+    "StartSearchJob":{
+      "name":"StartSearchJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/search-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartSearchJobInput"},
+      "output":{"shape":"StartSearchJobOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>This operation creates a search job which returns recovery points filtered by SearchScope and items filtered by ItemFilters.</p> <p>You can optionally include ClientToken, EncryptionKeyArn, Name, and/or Tags.</p>",
+      "idempotent":true
+    },
+    "StartSearchResultExportJob":{
+      "name":"StartSearchResultExportJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/export-search-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartSearchResultExportJobInput"},
+      "output":{"shape":"StartSearchResultExportJobOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>This operations starts a job to export the results of search job to a designated S3 bucket.</p>",
+      "idempotent":true
+    },
+    "StopSearchJob":{
+      "name":"StopSearchJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/search-jobs/{SearchJobIdentifier}/actions/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"StopSearchJobInput"},
+      "output":{"shape":"StopSearchJobOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>This operations ends a search job.</p> <p>Only a search job with a status of <code>RUNNING</code> can be stopped.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation puts tags on the resource you indicate.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation removes tags from the specified resource.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>User does not have sufficient access to perform this action.</p>"
+        }
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BackupCreationTimeFilter":{
+      "type":"structure",
+      "members":{
+        "CreatedAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>This timestamp includes recovery points only created after the specified time.</p>"
+        },
+        "CreatedBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>This timestamp includes recovery points only created before the specified time.</p>"
+        }
+      },
+      "documentation":"<p>This filters by recovery points within the CreatedAfter and CreatedBefore timestamps.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>This exception occurs when a conflict with a previous successful operation is detected. This generally occurs when the previous operation did not have time to propagate to the host serving the current request.</p> <p>A retry (with appropriate backoff logic) is the recommended response to this exception.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CurrentSearchProgress":{
+      "type":"structure",
+      "members":{
+        "RecoveryPointsScannedCount":{
+          "shape":"Integer",
+          "documentation":"<p>This number is the sum of all backups that have been scanned so far during a search job.</p>"
+        },
+        "ItemsScannedCount":{
+          "shape":"Long",
+          "documentation":"<p>This number is the sum of all items that have been scanned so far during a search job.</p>"
+        },
+        "ItemsMatchedCount":{
+          "shape":"Long",
+          "documentation":"<p>This number is the sum of all items that match the item filters in a search job in progress.</p>"
+        }
+      },
+      "documentation":"<p>This contains information results retrieved from a search job that may not have completed.</p>"
+    },
+    "EBSItemFilter":{
+      "type":"structure",
+      "members":{
+        "FilePaths":{
+          "shape":"StringConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one file path is included, the results will return only items that match the file path.</p> <p>If more than one file path is included, the results will return all items that match any of the file paths.</p>"
+        },
+        "Sizes":{
+          "shape":"LongConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one is included, the results will return only items that match.</p> <p>If more than one is included, the results will return all items that match any of the included values.</p>"
+        },
+        "CreationTimes":{
+          "shape":"TimeConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one is included, the results will return only items that match.</p> <p>If more than one is included, the results will return all items that match any of the included values.</p>"
+        },
+        "LastModificationTimes":{
+          "shape":"TimeConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one is included, the results will return only items that match.</p> <p>If more than one is included, the results will return all items that match any of the included values.</p>"
+        }
+      },
+      "documentation":"<p>This contains arrays of objects, which may include CreationTimes time condition objects, FilePaths string objects, LastModificationTimes time condition objects, </p>"
+    },
+    "EBSItemFilters":{
+      "type":"list",
+      "member":{"shape":"EBSItemFilter"},
+      "max":10,
+      "min":0
+    },
+    "EBSResultItem":{
+      "type":"structure",
+      "members":{
+        "BackupResourceArn":{
+          "shape":"String",
+          "documentation":"<p>These are one or more items in the results that match values for the Amazon Resource Name (ARN) of recovery points returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "SourceResourceArn":{
+          "shape":"String",
+          "documentation":"<p>These are one or more items in the results that match values for the Amazon Resource Name (ARN) of source resources returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "BackupVaultName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backup vault.</p>"
+        },
+        "FileSystemIdentifier":{
+          "shape":"String",
+          "documentation":"<p>These are one or more items in the results that match values for file systems returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "FilePath":{
+          "shape":"FilePath",
+          "documentation":"<p>These are one or more items in the results that match values for file paths returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "FileSize":{
+          "shape":"Long",
+          "documentation":"<p>These are one or more items in the results that match values for file sizes returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>These are one or more items in the results that match values for creation times returned in a search of Amazon EBS backup metadata.</p>"
+        },
+        "LastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>These are one or more items in the results that match values for Last Modified Time returned in a search of Amazon EBS backup metadata.</p>"
+        }
+      },
+      "documentation":"<p>These are the items returned in the results of a search of Amazon EBS backup metadata.</p>"
+    },
+    "EncryptionKeyArn":{"type":"string"},
+    "ExportJobArn":{"type":"string"},
+    "ExportJobStatus":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "FAILED",
+        "COMPLETED"
+      ]
+    },
+    "ExportJobSummaries":{
+      "type":"list",
+      "member":{"shape":"ExportJobSummary"}
+    },
+    "ExportJobSummary":{
+      "type":"structure",
+      "required":["ExportJobIdentifier"],
+      "members":{
+        "ExportJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>This is the unique string that identifies a specific export job.</p>"
+        },
+        "ExportJobArn":{
+          "shape":"ExportJobArn",
+          "documentation":"<p>This is the unique ARN (Amazon Resource Name) that belongs to the new export job.</p>"
+        },
+        "Status":{
+          "shape":"ExportJobStatus",
+          "documentation":"<p>The status of the export job is one of the following:</p> <p> <code>CREATED</code>; <code>RUNNING</code>; <code>FAILED</code>; or <code>COMPLETED</code>.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is a timestamp of the time the export job was created.</p>"
+        },
+        "CompletionTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is a timestamp of the time the export job compeleted.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>A status message is a string that is returned for an export job.</p> <p>A status message is included for any status other than <code>COMPLETED</code> without issues.</p>"
+        },
+        "SearchJobArn":{
+          "shape":"SearchJobArn",
+          "documentation":"<p>The unique string that identifies the Amazon Resource Name (ARN) of the specified search job.</p>"
+        }
+      },
+      "documentation":"<p>This is the summary of an export job.</p>"
+    },
+    "ExportSpecification":{
+      "type":"structure",
+      "members":{
+        "s3ExportSpecification":{
+          "shape":"S3ExportSpecification",
+          "documentation":"<p>This specifies the destination Amazon S3 bucket for the export job. And, if included, it also specifies the destination prefix.</p>"
+        }
+      },
+      "documentation":"<p>This contains the export specification object.</p>",
+      "union":true
+    },
+    "FilePath":{
+      "type":"string",
+      "sensitive":true
+    },
+    "GenericId":{"type":"string"},
+    "GetSearchJobInput":{
+      "type":"structure",
+      "required":["SearchJobIdentifier"],
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>Required unique string that specifies the search job.</p>",
+          "location":"uri",
+          "locationName":"SearchJobIdentifier"
+        }
+      }
+    },
+    "GetSearchJobOutput":{
+      "type":"structure",
+      "required":[
+        "Status",
+        "SearchScope",
+        "ItemFilters",
+        "CreationTime",
+        "SearchJobIdentifier",
+        "SearchJobArn"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Returned name of the specified search job.</p>"
+        },
+        "SearchScopeSummary":{
+          "shape":"SearchScopeSummary",
+          "documentation":"<p>Returned summary of the specified search job scope, including: </p> <ul> <li> <p>TotalBackupsToScanCount, the number of recovery points returned by the search.</p> </li> <li> <p>TotalItemsToScanCount, the number of items returned by the search.</p> </li> </ul>"
+        },
+        "CurrentSearchProgress":{
+          "shape":"CurrentSearchProgress",
+          "documentation":"<p>Returns numbers representing BackupsScannedCount, ItemsScanned, and ItemsMatched.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>A status message will be returned for either a earch job with a status of <code>ERRORED</code> or a status of <code>COMPLETED</code> jobs with issues.</p> <p>For example, a message may say that a search contained recovery points unable to be scanned because of a permissions issue.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The encryption key for the specified search job.</p> <p>Example: <code>arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab</code>.</p>"
+        },
+        "CompletionTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that a search job completed, in Unix format and Coordinated Universal Time (UTC). The value of <code>CompletionTime</code> is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM.</p>"
+        },
+        "Status":{
+          "shape":"SearchJobState",
+          "documentation":"<p>The current status of the specified search job.</p> <p>A search job may have one of the following statuses: <code>RUNNING</code>; <code>COMPLETED</code>; <code>STOPPED</code>; <code>FAILED</code>; <code>TIMED_OUT</code>; or <code>EXPIRED</code> .</p>"
+        },
+        "SearchScope":{
+          "shape":"SearchScope",
+          "documentation":"<p>The search scope is all backup properties input into a search.</p>"
+        },
+        "ItemFilters":{
+          "shape":"ItemFilters",
+          "documentation":"<p>Item Filters represent all input item properties specified when the search was created.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that a search job was created, in Unix format and Coordinated Universal Time (UTC). The value of <code>CompletionTime</code> is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM.</p>"
+        },
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that identifies the specified search job.</p>"
+        },
+        "SearchJobArn":{
+          "shape":"SearchJobArn",
+          "documentation":"<p>The unique string that identifies the Amazon Resource Name (ARN) of the specified search job.</p>"
+        }
+      }
+    },
+    "GetSearchResultExportJobInput":{
+      "type":"structure",
+      "required":["ExportJobIdentifier"],
+      "members":{
+        "ExportJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>This is the unique string that identifies a specific export job.</p> <p>Required for this operation.</p>",
+          "location":"uri",
+          "locationName":"ExportJobIdentifier"
+        }
+      }
+    },
+    "GetSearchResultExportJobOutput":{
+      "type":"structure",
+      "required":["ExportJobIdentifier"],
+      "members":{
+        "ExportJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>This is the unique string that identifies the specified export job.</p>"
+        },
+        "ExportJobArn":{
+          "shape":"ExportJobArn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) that uniquely identifies the export job.</p>"
+        },
+        "Status":{
+          "shape":"ExportJobStatus",
+          "documentation":"<p>This is the current status of the export job.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that an export job was created, in Unix format and Coordinated Universal Time (UTC). The value of <code>CreationTime</code> is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM.</p>"
+        },
+        "CompletionTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that an export job completed, in Unix format and Coordinated Universal Time (UTC). The value of <code>CreationTime</code> is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>A status message is a string that is returned for search job with a status of <code>FAILED</code>, along with steps to remedy and retry the operation.</p>"
+        },
+        "ExportSpecification":{
+          "shape":"ExportSpecification",
+          "documentation":"<p>The export specification consists of the destination S3 bucket to which the search results were exported, along with the destination prefix.</p>"
+        },
+        "SearchJobArn":{
+          "shape":"SearchJobArn",
+          "documentation":"<p>The unique string that identifies the Amazon Resource Name (ARN) of the specified search job.</p>"
+        }
+      }
+    },
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:(?:aws|aws-cn|aws-us-gov):iam::[a-z0-9-]+:role/(.+)"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Unexpected error during processing of request.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Retry the call after number of seconds.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An internal server error occurred. Retry your request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ItemFilters":{
+      "type":"structure",
+      "members":{
+        "S3ItemFilters":{
+          "shape":"S3ItemFilters",
+          "documentation":"<p>This array can contain CreationTimes, ETags, ObjectKeys, Sizes, or VersionIds objects.</p>"
+        },
+        "EBSItemFilters":{
+          "shape":"EBSItemFilters",
+          "documentation":"<p>This array can contain CreationTimes, FilePaths, LastModificationTimes, or Sizes objects.</p>"
+        }
+      },
+      "documentation":"<p>Item Filters represent all input item properties specified when the search was created.</p> <p>Contains either EBSItemFilters or S3ItemFilters</p>"
+    },
+    "ListSearchJobBackupsInput":{
+      "type":"structure",
+      "required":["SearchJobIdentifier"],
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>",
+          "location":"uri",
+          "locationName":"SearchJobIdentifier"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned backups included in a search job.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"ListSearchJobBackupsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of resource list items to be returned.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListSearchJobBackupsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListSearchJobBackupsOutput":{
+      "type":"structure",
+      "required":["Results"],
+      "members":{
+        "Results":{
+          "shape":"SearchJobBackupsResults",
+          "documentation":"<p>The recovery points returned the results of a search job</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned backups included in a search job.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>"
+        }
+      }
+    },
+    "ListSearchJobResultsInput":{
+      "type":"structure",
+      "required":["SearchJobIdentifier"],
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>",
+          "location":"uri",
+          "locationName":"SearchJobIdentifier"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned search job results.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of search job results, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"ListSearchJobResultsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of resource list items to be returned.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListSearchJobResultsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListSearchJobResultsOutput":{
+      "type":"structure",
+      "required":["Results"],
+      "members":{
+        "Results":{
+          "shape":"Results",
+          "documentation":"<p>The results consist of either EBSResultItem or S3ResultItem.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of search job results.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>"
+        }
+      }
+    },
+    "ListSearchJobsInput":{
+      "type":"structure",
+      "members":{
+        "ByStatus":{
+          "shape":"SearchJobState",
+          "documentation":"<p>Include this parameter to filter list by search job status.</p>",
+          "location":"querystring",
+          "locationName":"Status"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned search jobs.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "MaxResults":{
+          "shape":"ListSearchJobsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of resource list items to be returned.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        }
+      }
+    },
+    "ListSearchJobsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListSearchJobsOutput":{
+      "type":"structure",
+      "required":["SearchJobs"],
+      "members":{
+        "SearchJobs":{
+          "shape":"SearchJobs",
+          "documentation":"<p>The search jobs among the list, with details of the returned search jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned backups included in a search job.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>"
+        }
+      }
+    },
+    "ListSearchResultExportJobsInput":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"ExportJobStatus",
+          "documentation":"<p>The search jobs to be included in the export job can be filtered by including this parameter.</p>",
+          "location":"querystring",
+          "locationName":"Status"
+        },
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>",
+          "location":"querystring",
+          "locationName":"SearchJobIdentifier"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned backups included in a search job.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "MaxResults":{
+          "shape":"ListSearchResultExportJobsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of resource list items to be returned.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        }
+      }
+    },
+    "ListSearchResultExportJobsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListSearchResultExportJobsOutput":{
+      "type":"structure",
+      "required":["ExportJobs"],
+      "members":{
+        "ExportJobs":{
+          "shape":"ExportJobSummaries",
+          "documentation":"<p>The operation returns the included export jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next item following a partial list of returned backups included in a search job.</p> <p>For example, if a request is made to return <code>MaxResults</code> number of backups, <code>NextToken</code> allows you to return more items in your list starting at the location pointed to by the next token.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the resource.&gt;</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>List of tags returned by the operation.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "LongCondition":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "Value":{
+          "shape":"Long",
+          "documentation":"<p>The value of an item included in one of the search item filters.</p>"
+        },
+        "Operator":{
+          "shape":"LongConditionOperator",
+          "documentation":"<p>A string that defines what values will be returned.</p> <p>If this is included, avoid combinations of operators that will return all possible values. For example, including both <code>EQUALS_TO</code> and <code>NOT_EQUALS_TO</code> with a value of <code>4</code> will return all values.</p>"
+        }
+      },
+      "documentation":"<p>The long condition contains a <code>Value</code> and can optionally contain an <code>Operator</code>.</p>"
+    },
+    "LongConditionList":{
+      "type":"list",
+      "member":{"shape":"LongCondition"},
+      "max":10,
+      "min":1
+    },
+    "LongConditionOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS_TO",
+        "NOT_EQUALS_TO",
+        "LESS_THAN_EQUAL_TO",
+        "GREATER_THAN_EQUAL_TO"
+      ]
+    },
+    "ObjectKey":{
+      "type":"string",
+      "sensitive":true
+    },
+    "RecoveryPoint":{"type":"string"},
+    "RecoveryPointArnList":{
+      "type":"list",
+      "member":{"shape":"RecoveryPoint"},
+      "max":50,
+      "min":0
+    },
+    "ResourceArnList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":50,
+      "min":0
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Request references a resource which does not exist.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Hypothetical identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Hypothetical type of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>The resource was not found for this request.</p> <p>Confirm the resource information, such as the ARN or type is correct and exists, then retry the request.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "S3",
+        "EBS"
+      ]
+    },
+    "ResourceTypeList":{
+      "type":"list",
+      "member":{"shape":"ResourceType"},
+      "max":1,
+      "min":1
+    },
+    "ResultItem":{
+      "type":"structure",
+      "members":{
+        "S3ResultItem":{
+          "shape":"S3ResultItem",
+          "documentation":"<p>These are items returned in the search results of an Amazon S3 search.</p>"
+        },
+        "EBSResultItem":{
+          "shape":"EBSResultItem",
+          "documentation":"<p>These are items returned in the search results of an Amazon EBS search.</p>"
+        }
+      },
+      "documentation":"<p>This is an object representing the item returned in the results of a search for a specific resource type.</p>",
+      "union":true
+    },
+    "Results":{
+      "type":"list",
+      "member":{"shape":"ResultItem"}
+    },
+    "S3ExportSpecification":{
+      "type":"structure",
+      "required":["DestinationBucket"],
+      "members":{
+        "DestinationBucket":{
+          "shape":"String",
+          "documentation":"<p>This specifies the destination Amazon S3 bucket for the export job.</p>"
+        },
+        "DestinationPrefix":{
+          "shape":"String",
+          "documentation":"<p>This specifies the prefix for the destination Amazon S3 bucket for the export job.</p>"
+        }
+      },
+      "documentation":"<p>This specification contains a required string of the destination bucket; optionally, you can include the destination prefix.</p>"
+    },
+    "S3ItemFilter":{
+      "type":"structure",
+      "members":{
+        "ObjectKeys":{
+          "shape":"StringConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one value is included, the results will return only items that match the value.</p> <p>If more than one value is included, the results will return all items that match any of the values.</p>"
+        },
+        "Sizes":{
+          "shape":"LongConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one value is included, the results will return only items that match the value.</p> <p>If more than one value is included, the results will return all items that match any of the values.</p>"
+        },
+        "CreationTimes":{
+          "shape":"TimeConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one value is included, the results will return only items that match the value.</p> <p>If more than one value is included, the results will return all items that match any of the values.</p>"
+        },
+        "VersionIds":{
+          "shape":"StringConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one value is included, the results will return only items that match the value.</p> <p>If more than one value is included, the results will return all items that match any of the values.</p>"
+        },
+        "ETags":{
+          "shape":"StringConditionList",
+          "documentation":"<p>You can include 1 to 10 values.</p> <p>If one value is included, the results will return only items that match the value.</p> <p>If more than one value is included, the results will return all items that match any of the values.</p>"
+        }
+      },
+      "documentation":"<p>This contains arrays of objects, which may include ObjectKeys, Sizes, CreationTimes, VersionIds, and/or Etags.</p>"
+    },
+    "S3ItemFilters":{
+      "type":"list",
+      "member":{"shape":"S3ItemFilter"},
+      "max":10,
+      "min":0
+    },
+    "S3ResultItem":{
+      "type":"structure",
+      "members":{
+        "BackupResourceArn":{
+          "shape":"String",
+          "documentation":"<p>These are items in the returned results that match recovery point Amazon Resource Names (ARN) input during a search of Amazon S3 backup metadata.</p>"
+        },
+        "SourceResourceArn":{
+          "shape":"String",
+          "documentation":"<p>These are items in the returned results that match source Amazon Resource Names (ARN) input during a search of Amazon S3 backup metadata.</p>"
+        },
+        "BackupVaultName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backup vault.</p>"
+        },
+        "ObjectKey":{
+          "shape":"ObjectKey",
+          "documentation":"<p>This is one or more items returned in the results of a search of Amazon S3 backup metadata that match the values input for object key.</p>"
+        },
+        "ObjectSize":{
+          "shape":"Long",
+          "documentation":"<p>These are items in the returned results that match values for object size(s) input during a search of Amazon S3 backup metadata.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>These are one or more items in the returned results that match values for item creation time input during a search of Amazon S3 backup metadata.</p>"
+        },
+        "ETag":{
+          "shape":"String",
+          "documentation":"<p>These are one or more items in the returned results that match values for ETags input during a search of Amazon S3 backup metadata.</p>"
+        },
+        "VersionId":{
+          "shape":"String",
+          "documentation":"<p>These are one or more items in the returned results that match values for version IDs input during a search of Amazon S3 backup metadata.</p>"
+        }
+      },
+      "documentation":"<p>These are the items returned in the results of a search of Amazon S3 backup metadata.</p>"
+    },
+    "SearchJobArn":{"type":"string"},
+    "SearchJobBackupsResult":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"SearchJobState",
+          "documentation":"<p>This is the status of the search job backup result.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>This is the status message included with the results.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>This is the resource type of the search.</p>"
+        },
+        "BackupResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the backup resources.</p>"
+        },
+        "SourceResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the source resources.</p>"
+        },
+        "IndexCreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is the creation time of the backup index.</p>"
+        },
+        "BackupCreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is the creation time of the backup (recovery point).</p>"
+        }
+      },
+      "documentation":"<p>This contains the information about recovery points returned in results of a search job.</p>"
+    },
+    "SearchJobBackupsResults":{
+      "type":"list",
+      "member":{"shape":"SearchJobBackupsResult"}
+    },
+    "SearchJobState":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "COMPLETED",
+        "STOPPING",
+        "STOPPED",
+        "FAILED"
+      ]
+    },
+    "SearchJobSummary":{
+      "type":"structure",
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>"
+        },
+        "SearchJobArn":{
+          "shape":"SearchJobArn",
+          "documentation":"<p>The unique string that identifies the Amazon Resource Name (ARN) of the specified search job.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>This is the name of the search job.</p>"
+        },
+        "Status":{
+          "shape":"SearchJobState",
+          "documentation":"<p>This is the status of the search job.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is the creation time of the search job.</p>"
+        },
+        "CompletionTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is the completion time of the search job.</p>"
+        },
+        "SearchScopeSummary":{
+          "shape":"SearchScopeSummary",
+          "documentation":"<p>Returned summary of the specified search job scope, including: </p> <ul> <li> <p>TotalBackupsToScanCount, the number of recovery points returned by the search.</p> </li> <li> <p>TotalItemsToScanCount, the number of items returned by the search.</p> </li> </ul>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>A status message will be returned for either a earch job with a status of <code>ERRORED</code> or a status of <code>COMPLETED</code> jobs with issues.</p> <p>For example, a message may say that a search contained recovery points unable to be scanned because of a permissions issue.</p>"
+        }
+      },
+      "documentation":"<p>This is information pertaining to a search job.</p>"
+    },
+    "SearchJobs":{
+      "type":"list",
+      "member":{"shape":"SearchJobSummary"}
+    },
+    "SearchScope":{
+      "type":"structure",
+      "required":["BackupResourceTypes"],
+      "members":{
+        "BackupResourceTypes":{
+          "shape":"ResourceTypeList",
+          "documentation":"<p>The resource types included in a search.</p> <p>Eligible resource types include S3 and EBS.</p>"
+        },
+        "BackupResourceCreationTime":{
+          "shape":"BackupCreationTimeFilter",
+          "documentation":"<p>This is the time a backup resource was created.</p>"
+        },
+        "SourceResourceArns":{
+          "shape":"ResourceArnList",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the source resources.</p>"
+        },
+        "BackupResourceArns":{
+          "shape":"RecoveryPointArnList",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the backup resources.</p>"
+        },
+        "BackupResourceTags":{
+          "shape":"TagMap",
+          "documentation":"<p>These are one or more tags on the backup (recovery point).</p>"
+        }
+      },
+      "documentation":"<p>The search scope is all backup properties input into a search.</p>"
+    },
+    "SearchScopeSummary":{
+      "type":"structure",
+      "members":{
+        "TotalRecoveryPointsToScanCount":{
+          "shape":"Integer",
+          "documentation":"<p>This is the count of the total number of backups that will be scanned in a search.</p>"
+        },
+        "TotalItemsToScanCount":{
+          "shape":"Long",
+          "documentation":"<p>This is the count of the total number of items that will be scanned in a search.</p>"
+        }
+      },
+      "documentation":"<p>The summary of the specified search job scope, including: </p> <ul> <li> <p>TotalBackupsToScanCount, the number of recovery points returned by the search.</p> </li> <li> <p>TotalItemsToScanCount, the number of items returned by the search.</p> </li> </ul>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>This request was not successful due to a service quota exceeding limits.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of resource.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>This is the code unique to the originating service with the quota.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>This is the code specific to the quota type.</p>"
+        }
+      },
+      "documentation":"<p>The request denied due to exceeding the quota limits permitted.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "StartSearchJobInput":{
+      "type":"structure",
+      "required":["SearchScope"],
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>List of tags returned by the operation.</p>"
+        },
+        "Name":{
+          "shape":"StartSearchJobInputNameString",
+          "documentation":"<p>Include alphanumeric characters to create a name for this search job.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The encryption key for the specified search job.</p>"
+        },
+        "ClientToken":{
+          "shape":"String",
+          "documentation":"<p>Include this parameter to allow multiple identical calls for idempotency.</p> <p>A client token is valid for 8 hours after the first request that uses it is completed. After this time, any request with the same token is treated as a new request.</p>"
+        },
+        "SearchScope":{
+          "shape":"SearchScope",
+          "documentation":"<p>This object can contain BackupResourceTypes, BackupResourceArns, BackupResourceCreationTime, BackupResourceTags, and SourceResourceArns to filter the recovery points returned by the search job.</p>"
+        },
+        "ItemFilters":{
+          "shape":"ItemFilters",
+          "documentation":"<p>Item Filters represent all input item properties specified when the search was created.</p> <p>Contains either EBSItemFilters or S3ItemFilters</p>"
+        }
+      }
+    },
+    "StartSearchJobInputNameString":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "StartSearchJobOutput":{
+      "type":"structure",
+      "members":{
+        "SearchJobArn":{
+          "shape":"SearchJobArn",
+          "documentation":"<p>The unique string that identifies the Amazon Resource Name (ARN) of the specified search job.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that a job was created, in Unix format and Coordinated Universal Time (UTC). The value of <code>CompletionTime</code> is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM.</p>"
+        },
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>"
+        }
+      }
+    },
+    "StartSearchResultExportJobInput":{
+      "type":"structure",
+      "required":[
+        "SearchJobIdentifier",
+        "ExportSpecification"
+      ],
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>"
+        },
+        "ExportSpecification":{
+          "shape":"ExportSpecification",
+          "documentation":"<p>This specification contains a required string of the destination bucket; optionally, you can include the destination prefix.</p>"
+        },
+        "ClientToken":{
+          "shape":"String",
+          "documentation":"<p>Include this parameter to allow multiple identical calls for idempotency.</p> <p>A client token is valid for 8 hours after the first request that uses it is completed. After this time, any request with the same token is treated as a new request.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional tags to include. A tag is a key-value pair you can use to manage, filter, and search for your resources. Allowed characters include UTF-8 letters, numbers, spaces, and the following characters: + - = . _ : /. </p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>This parameter specifies the role ARN used to start the search results export jobs.</p>"
+        }
+      }
+    },
+    "StartSearchResultExportJobOutput":{
+      "type":"structure",
+      "required":["ExportJobIdentifier"],
+      "members":{
+        "ExportJobArn":{
+          "shape":"ExportJobArn",
+          "documentation":"<p>This is the unique ARN (Amazon Resource Name) that belongs to the new export job.</p>"
+        },
+        "ExportJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>This is the unique identifier that specifies the new export job.</p>"
+        }
+      }
+    },
+    "StopSearchJobInput":{
+      "type":"structure",
+      "required":["SearchJobIdentifier"],
+      "members":{
+        "SearchJobIdentifier":{
+          "shape":"GenericId",
+          "documentation":"<p>The unique string that specifies the search job.</p>",
+          "location":"uri",
+          "locationName":"SearchJobIdentifier"
+        }
+      }
+    },
+    "StopSearchJobOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "String":{"type":"string"},
+    "StringCondition":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The value of the string.</p>"
+        },
+        "Operator":{
+          "shape":"StringConditionOperator",
+          "documentation":"<p>A string that defines what values will be returned.</p> <p>If this is included, avoid combinations of operators that will return all possible values. For example, including both <code>EQUALS_TO</code> and <code>NOT_EQUALS_TO</code> with a value of <code>4</code> will return all values.</p>"
+        }
+      },
+      "documentation":"<p>This contains the value of the string and can contain one or more operators.</p>"
+    },
+    "StringConditionList":{
+      "type":"list",
+      "member":{"shape":"StringCondition"},
+      "max":10,
+      "min":1
+    },
+    "StringConditionOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS_TO",
+        "NOT_EQUALS_TO",
+        "CONTAINS",
+        "DOES_NOT_CONTAIN",
+        "BEGINS_WITH",
+        "ENDS_WITH",
+        "DOES_NOT_BEGIN_WITH",
+        "DOES_NOT_END_WITH"
+      ]
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the resource.</p> <p>This is the resource that will have the indicated tags.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Required tags to include. A tag is a key-value pair you can use to manage, filter, and search for your resources. Allowed characters include UTF-8 letters, numbers, spaces, and the following characters: + - = . _ : /. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Request was unsuccessful due to request throttling.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>This is the code unique to the originating service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>This is the code unique to the originating service with the quota.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Retry the call after number of seconds.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "TimeCondition":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "Value":{
+          "shape":"Timestamp",
+          "documentation":"<p>This is the timestamp value of the time condition.</p>"
+        },
+        "Operator":{
+          "shape":"TimeConditionOperator",
+          "documentation":"<p>A string that defines what values will be returned.</p> <p>If this is included, avoid combinations of operators that will return all possible values. For example, including both <code>EQUALS_TO</code> and <code>NOT_EQUALS_TO</code> with a value of <code>4</code> will return all values.</p>"
+        }
+      },
+      "documentation":"<p>A time condition denotes a creation time, last modification time, or other time.</p>"
+    },
+    "TimeConditionList":{
+      "type":"list",
+      "member":{"shape":"TimeCondition"},
+      "max":10,
+      "min":1
+    },
+    "TimeConditionOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS_TO",
+        "NOT_EQUALS_TO",
+        "LESS_THAN_EQUAL_TO",
+        "GREATER_THAN_EQUAL_TO"
+      ]
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the resource where you want to remove tags.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>This required parameter contains the tag keys you want to remove from the source.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon service.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by a service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p><fullname>Backup Search</fullname> <p>Backup Search is the recovery point and item level search for Backup.</p> <p>For additional information, see:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/api-reference.html\">Backup API Reference</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html\">Backup Developer Guide</a> </p> </li> </ul></p>"
+}

@@ -1,0 +1,4032 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-06-19",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"bcm-pricing-calculator",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Billing and Cost Management Pricing Calculator",
+    "serviceId":"BCM Pricing Calculator",
+    "signatureVersion":"v4",
+    "signingName":"bcm-pricing-calculator",
+    "targetPrefix":"AWSBCMPricingCalculator",
+    "uid":"bcm-pricing-calculator-2024-06-19"
+  },
+  "operations":{
+    "BatchCreateBillScenarioCommitmentModification":{
+      "name":"BatchCreateBillScenarioCommitmentModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchCreateBillScenarioCommitmentModificationRequest"},
+      "output":{"shape":"BatchCreateBillScenarioCommitmentModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Create Compute Savings Plans, EC2 Instance Savings Plans, or EC2 Reserved Instances commitments that you want to model in a Bill Scenario. </p> <note> <p>The <code>BatchCreateBillScenarioCommitmentModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:CreateBillScenarioCommitmentModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchCreateBillScenarioUsageModification":{
+      "name":"BatchCreateBillScenarioUsageModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchCreateBillScenarioUsageModificationRequest"},
+      "output":{"shape":"BatchCreateBillScenarioUsageModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Create Amazon Web Services service usage that you want to model in a Bill Scenario. </p> <note> <p>The <code>BatchCreateBillScenarioUsageModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:CreateBillScenarioUsageModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchCreateWorkloadEstimateUsage":{
+      "name":"BatchCreateWorkloadEstimateUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchCreateWorkloadEstimateUsageRequest"},
+      "output":{"shape":"BatchCreateWorkloadEstimateUsageResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Create Amazon Web Services service usage that you want to model in a Workload Estimate. </p> <note> <p>The <code>BatchCreateWorkloadEstimateUsage</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:CreateWorkloadEstimateUsage</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchDeleteBillScenarioCommitmentModification":{
+      "name":"BatchDeleteBillScenarioCommitmentModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchDeleteBillScenarioCommitmentModificationRequest"},
+      "output":{"shape":"BatchDeleteBillScenarioCommitmentModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Delete commitment that you have created in a Bill Scenario. You can only delete a commitment that you had added and cannot model deletion (or removal) of a existing commitment. If you want model deletion of an existing commitment, see the negate <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_AWSBCMPricingCalculator_BillScenarioCommitmentModificationAction.html\"> BillScenarioCommitmentModificationAction</a> of <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_AWSBCMPricingCalculator_BatchCreateBillScenarioUsageModification.html\"> BatchCreateBillScenarioCommitmentModification</a> operation. </p> <note> <p>The <code>BatchDeleteBillScenarioCommitmentModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:DeleteBillScenarioCommitmentModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchDeleteBillScenarioUsageModification":{
+      "name":"BatchDeleteBillScenarioUsageModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchDeleteBillScenarioUsageModificationRequest"},
+      "output":{"shape":"BatchDeleteBillScenarioUsageModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Delete usage that you have created in a Bill Scenario. You can only delete usage that you had added and cannot model deletion (or removal) of a existing usage. If you want model removal of an existing usage, see <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_AWSBCMPricingCalculator_BatchUpdateBillScenarioUsageModification.html\"> BatchUpdateBillScenarioUsageModification</a>. </p> <note> <p>The <code>BatchDeleteBillScenarioUsageModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:DeleteBillScenarioUsageModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchDeleteWorkloadEstimateUsage":{
+      "name":"BatchDeleteWorkloadEstimateUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchDeleteWorkloadEstimateUsageRequest"},
+      "output":{"shape":"BatchDeleteWorkloadEstimateUsageResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Delete usage that you have created in a Workload estimate. You can only delete usage that you had added and cannot model deletion (or removal) of a existing usage. If you want model removal of an existing usage, see <a href=\"https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_AWSBCMPricingCalculator_BatchUpdateWorkloadEstimateUsage.html\"> BatchUpdateWorkloadEstimateUsage</a>. </p> <note> <p>The <code>BatchDeleteWorkloadEstimateUsage</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:DeleteWorkloadEstimateUsage</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchUpdateBillScenarioCommitmentModification":{
+      "name":"BatchUpdateBillScenarioCommitmentModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchUpdateBillScenarioCommitmentModificationRequest"},
+      "output":{"shape":"BatchUpdateBillScenarioCommitmentModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Update a newly added or existing commitment. You can update the commitment group based on a commitment ID and a Bill scenario ID. </p> <note> <p>The <code>BatchUpdateBillScenarioCommitmentModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:UpdateBillScenarioCommitmentModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchUpdateBillScenarioUsageModification":{
+      "name":"BatchUpdateBillScenarioUsageModification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchUpdateBillScenarioUsageModificationRequest"},
+      "output":{"shape":"BatchUpdateBillScenarioUsageModificationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Update a newly added or existing usage lines. You can update the usage amounts, usage hour, and usage group based on a usage ID and a Bill scenario ID. </p> <note> <p>The <code>BatchUpdateBillScenarioUsageModification</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:UpdateBillScenarioUsageModification</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "BatchUpdateWorkloadEstimateUsage":{
+      "name":"BatchUpdateWorkloadEstimateUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchUpdateWorkloadEstimateUsageRequest"},
+      "output":{"shape":"BatchUpdateWorkloadEstimateUsageResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Update a newly added or existing usage lines. You can update the usage amounts and usage group based on a usage ID and a Workload estimate ID. </p> <note> <p>The <code>BatchUpdateWorkloadEstimateUsage</code> operation doesn't have its own IAM permission. To authorize this operation for Amazon Web Services principals, include the permission <code>bcm-pricing-calculator:UpdateWorkloadEstimateUsage</code> in your policies.</p> </note>",
+      "idempotent":true
+    },
+    "CreateBillEstimate":{
+      "name":"CreateBillEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateBillEstimateRequest"},
+      "output":{"shape":"CreateBillEstimateResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Create a Bill estimate from a Bill scenario. In the Bill scenario you can model usage addition, usage changes, and usage removal. You can also model commitment addition and commitment removal. After all changes in a Bill scenario is made satisfactorily, you can call this API with a Bill scenario ID to generate the Bill estimate. Bill estimate calculates the pre-tax cost for your consolidated billing family, incorporating all modeled usage and commitments alongside existing usage and commitments from your most recent completed anniversary bill, with any applicable discounts applied. </p>",
+      "idempotent":true
+    },
+    "CreateBillScenario":{
+      "name":"CreateBillScenario",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateBillScenarioRequest"},
+      "output":{"shape":"CreateBillScenarioResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Creates a new bill scenario to model potential changes to Amazon Web Services usage and costs. </p>",
+      "idempotent":true
+    },
+    "CreateWorkloadEstimate":{
+      "name":"CreateWorkloadEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateWorkloadEstimateRequest"},
+      "output":{"shape":"CreateWorkloadEstimateResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Creates a new workload estimate to model costs for a specific workload. </p>",
+      "idempotent":true
+    },
+    "DeleteBillEstimate":{
+      "name":"DeleteBillEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteBillEstimateRequest"},
+      "output":{"shape":"DeleteBillEstimateResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Deletes an existing bill estimate. </p>",
+      "idempotent":true
+    },
+    "DeleteBillScenario":{
+      "name":"DeleteBillScenario",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteBillScenarioRequest"},
+      "output":{"shape":"DeleteBillScenarioResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Deletes an existing bill scenario. </p>",
+      "idempotent":true
+    },
+    "DeleteWorkloadEstimate":{
+      "name":"DeleteWorkloadEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteWorkloadEstimateRequest"},
+      "output":{"shape":"DeleteWorkloadEstimateResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Deletes an existing workload estimate. </p>",
+      "idempotent":true
+    },
+    "GetBillEstimate":{
+      "name":"GetBillEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetBillEstimateRequest"},
+      "output":{"shape":"GetBillEstimateResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Retrieves details of a specific bill estimate. </p>"
+    },
+    "GetBillScenario":{
+      "name":"GetBillScenario",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetBillScenarioRequest"},
+      "output":{"shape":"GetBillScenarioResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Retrieves details of a specific bill scenario. </p>"
+    },
+    "GetPreferences":{
+      "name":"GetPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPreferencesRequest"},
+      "output":{"shape":"GetPreferencesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Retrieves the current preferences for Pricing Calculator. </p>"
+    },
+    "GetWorkloadEstimate":{
+      "name":"GetWorkloadEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetWorkloadEstimateRequest"},
+      "output":{"shape":"GetWorkloadEstimateResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Retrieves details of a specific workload estimate. </p>"
+    },
+    "ListBillEstimateCommitments":{
+      "name":"ListBillEstimateCommitments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillEstimateCommitmentsRequest"},
+      "output":{"shape":"ListBillEstimateCommitmentsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the commitments associated with a bill estimate. </p>"
+    },
+    "ListBillEstimateInputCommitmentModifications":{
+      "name":"ListBillEstimateInputCommitmentModifications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillEstimateInputCommitmentModificationsRequest"},
+      "output":{"shape":"ListBillEstimateInputCommitmentModificationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the input commitment modifications associated with a bill estimate. </p>"
+    },
+    "ListBillEstimateInputUsageModifications":{
+      "name":"ListBillEstimateInputUsageModifications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillEstimateInputUsageModificationsRequest"},
+      "output":{"shape":"ListBillEstimateInputUsageModificationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the input usage modifications associated with a bill estimate. </p>"
+    },
+    "ListBillEstimateLineItems":{
+      "name":"ListBillEstimateLineItems",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillEstimateLineItemsRequest"},
+      "output":{"shape":"ListBillEstimateLineItemsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the line items associated with a bill estimate. </p>"
+    },
+    "ListBillEstimates":{
+      "name":"ListBillEstimates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillEstimatesRequest"},
+      "output":{"shape":"ListBillEstimatesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists all bill estimates for the account. </p>"
+    },
+    "ListBillScenarioCommitmentModifications":{
+      "name":"ListBillScenarioCommitmentModifications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillScenarioCommitmentModificationsRequest"},
+      "output":{"shape":"ListBillScenarioCommitmentModificationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the commitment modifications associated with a bill scenario. </p>"
+    },
+    "ListBillScenarioUsageModifications":{
+      "name":"ListBillScenarioUsageModifications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillScenarioUsageModificationsRequest"},
+      "output":{"shape":"ListBillScenarioUsageModificationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the usage modifications associated with a bill scenario. </p>"
+    },
+    "ListBillScenarios":{
+      "name":"ListBillScenarios",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListBillScenariosRequest"},
+      "output":{"shape":"ListBillScenariosResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists all bill scenarios for the account. </p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists all tags associated with a specified resource. </p>"
+    },
+    "ListWorkloadEstimateUsage":{
+      "name":"ListWorkloadEstimateUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWorkloadEstimateUsageRequest"},
+      "output":{"shape":"ListWorkloadEstimateUsageResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists the usage associated with a workload estimate. </p>"
+    },
+    "ListWorkloadEstimates":{
+      "name":"ListWorkloadEstimates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWorkloadEstimatesRequest"},
+      "output":{"shape":"ListWorkloadEstimatesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists all workload estimates for the account. </p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Adds one or more tags to a specified resource. </p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Removes one or more tags from a specified resource. </p>"
+    },
+    "UpdateBillEstimate":{
+      "name":"UpdateBillEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateBillEstimateRequest"},
+      "output":{"shape":"UpdateBillEstimateResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates an existing bill estimate. </p>",
+      "idempotent":true
+    },
+    "UpdateBillScenario":{
+      "name":"UpdateBillScenario",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateBillScenarioRequest"},
+      "output":{"shape":"UpdateBillScenarioResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates an existing bill scenario. </p>",
+      "idempotent":true
+    },
+    "UpdatePreferences":{
+      "name":"UpdatePreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePreferencesRequest"},
+      "output":{"shape":"UpdatePreferencesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates the preferences for Pricing Calculator. </p>",
+      "idempotent":true
+    },
+    "UpdateWorkloadEstimate":{
+      "name":"UpdateWorkloadEstimate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateWorkloadEstimateRequest"},
+      "output":{"shape":"UpdateWorkloadEstimateResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataUnavailableException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates an existing workload estimate. </p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p> You do not have sufficient access to perform this action. </p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"\\d{12}"
+    },
+    "AddReservedInstanceAction":{
+      "type":"structure",
+      "members":{
+        "reservedInstancesOfferingId":{
+          "shape":"Uuid",
+          "documentation":"<p> The ID of the Reserved Instance offering to add. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeReservedInstancesOfferings.html\"> DescribeReservedInstancesOfferings</a>. </p>"
+        },
+        "instanceCount":{
+          "shape":"ReservedInstanceInstanceCount",
+          "documentation":"<p> The number of instances to add for this Reserved Instance offering. </p>"
+        }
+      },
+      "documentation":"<p> Represents an action to add a Reserved Instance to a bill scenario. </p>"
+    },
+    "AddSavingsPlanAction":{
+      "type":"structure",
+      "members":{
+        "savingsPlanOfferingId":{
+          "shape":"Uuid",
+          "documentation":"<p> The ID of the Savings Plan offering to add. For more information, see <a href=\"https://docs.aws.amazon.com/savingsplans/latest/APIReference/API_DescribeSavingsPlansOfferings.html\"> DescribeSavingsPlansOfferings</a>. </p>"
+        },
+        "commitment":{
+          "shape":"SavingsPlanCommitment",
+          "documentation":"<p> The hourly commitment, in the same currency of the <code>savingsPlanOfferingId</code>. This is a value between 0.001 and 1 million. You cannot specify more than five digits after the decimal point. </p>"
+        }
+      },
+      "documentation":"<p> Represents an action to add a Savings Plan to a bill scenario. </p>"
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws[-a-z0-9]*:bcm-pricing-calculator:[-a-z0-9]*:[0-9]{12}:[-a-z0-9/:_]+"
+    },
+    "AvailabilityZone":{
+      "type":"string",
+      "max":32,
+      "min":0,
+      "pattern":"[-a-zA-Z0-9\\.\\-_:, \\/()]*"
+    },
+    "BatchCreateBillScenarioCommitmentModificationEntries":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioCommitmentModificationEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchCreateBillScenarioCommitmentModificationEntry":{
+      "type":"structure",
+      "required":[
+        "key",
+        "usageAccountId",
+        "commitmentAction"
+      ],
+      "members":{
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> A unique identifier for this entry in the batch operation. This can be any valid string. This key is useful to identify errors associated with any commitment entry as any error is returned with this key. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> An optional group identifier for the commitment modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID to which this commitment will be applied to. </p>"
+        },
+        "commitmentAction":{
+          "shape":"BillScenarioCommitmentModificationAction",
+          "documentation":"<p> The specific commitment action to be taken (e.g., adding a Reserved Instance or Savings Plan). </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry object in the batch operation to create bill scenario commitment modifications. </p>"
+    },
+    "BatchCreateBillScenarioCommitmentModificationError":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the entry that caused the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> A descriptive message for the error that occurred. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchCreateBillScenarioCommitmentModificationErrorCode",
+          "documentation":"<p> The error code associated with the failed operation. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred during a batch create operation for bill scenario commitment modifications. </p>"
+    },
+    "BatchCreateBillScenarioCommitmentModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR",
+        "INVALID_ACCOUNT"
+      ]
+    },
+    "BatchCreateBillScenarioCommitmentModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioCommitmentModificationError"}
+    },
+    "BatchCreateBillScenarioCommitmentModificationItem":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the successfully created entry. This can be any valid string. This key is useful to identify errors associated with any commitment entry as any error is returned with this key. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier assigned to the created commitment modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the created commitment modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with the created commitment modification. </p>"
+        },
+        "commitmentAction":{
+          "shape":"BillScenarioCommitmentModificationAction",
+          "documentation":"<p> The specific commitment action that was taken. </p>"
+        }
+      },
+      "documentation":"<p> Represents a successfully created item in a batch operation for bill scenario commitment modifications. </p>"
+    },
+    "BatchCreateBillScenarioCommitmentModificationItems":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioCommitmentModificationItem"}
+    },
+    "BatchCreateBillScenarioCommitmentModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "commitmentModifications"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to create the modeled commitment. </p>"
+        },
+        "commitmentModifications":{
+          "shape":"BatchCreateBillScenarioCommitmentModificationEntries",
+          "documentation":"<p> List of commitments that you want to model in the Bill Scenario. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "BatchCreateBillScenarioCommitmentModificationResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BatchCreateBillScenarioCommitmentModificationItems",
+          "documentation":"<p> Returns the list of successful commitment line items that were created for the Bill Scenario. </p>"
+        },
+        "errors":{
+          "shape":"BatchCreateBillScenarioCommitmentModificationErrors",
+          "documentation":"<p> Returns the list of errors reason and the commitment item keys that cannot be created in the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchCreateBillScenarioUsageModificationEntries":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioUsageModificationEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchCreateBillScenarioUsageModificationEntry":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation",
+        "key",
+        "usageAccountId"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage modification. This identifies the specific Amazon Web Services service to the customer as a unique short abbreviation. For example, <code>AmazonEC2</code> and <code>AWSKMS</code>. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> Describes the usage details of the usage line item. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage modification. Describes the specific Amazon Web Services operation that this usage line models. For example, <code>RunInstances</code> indicates the operation of an Amazon EC2 instance. </p>"
+        },
+        "availabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p> The Availability Zone that this usage line uses. </p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> A unique identifier for this entry in the batch operation. This can be any valid string. This key is useful to identify errors associated with any usage entry as any error is returned with this key. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> An optional group identifier for the usage modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID to which this usage will be applied to. </p>"
+        },
+        "amounts":{
+          "shape":"UsageAmounts",
+          "documentation":"<p> The amount of usage you want to create for the service use you are modeling. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this modification, if available. </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry in a batch operation to create bill scenario usage modifications. </p>"
+    },
+    "BatchCreateBillScenarioUsageModificationError":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the entry that caused the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> A descriptive message for the error that occurred. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchCreateBillScenarioUsageModificationErrorCode",
+          "documentation":"<p> The error code associated with the failed operation. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred during a batch create operation for bill scenario usage modifications. </p>"
+    },
+    "BatchCreateBillScenarioUsageModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "NOT_FOUND",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchCreateBillScenarioUsageModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioUsageModificationError"}
+    },
+    "BatchCreateBillScenarioUsageModificationItem":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage modification. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage that was modified. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage modification. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this usage modification. </p>"
+        },
+        "availabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p> The availability zone associated with this usage modification, if applicable. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier assigned to the created usage modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the created usage modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with the created usage modification. </p>"
+        },
+        "quantities":{
+          "shape":"UsageQuantities",
+          "documentation":"<p> The modified usage quantities. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this modification, if available. </p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the successfully created entry. </p>"
+        }
+      },
+      "documentation":"<p> Represents a successfully created item in a batch operation for bill scenario usage modifications. </p>"
+    },
+    "BatchCreateBillScenarioUsageModificationItems":{
+      "type":"list",
+      "member":{"shape":"BatchCreateBillScenarioUsageModificationItem"}
+    },
+    "BatchCreateBillScenarioUsageModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "usageModifications"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to create the modeled usage. </p>"
+        },
+        "usageModifications":{
+          "shape":"BatchCreateBillScenarioUsageModificationEntries",
+          "documentation":"<p> List of usage that you want to model in the Bill Scenario. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "BatchCreateBillScenarioUsageModificationResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BatchCreateBillScenarioUsageModificationItems",
+          "documentation":"<p> Returns the list of successful usage line items that were created for the Bill Scenario. </p>"
+        },
+        "errors":{
+          "shape":"BatchCreateBillScenarioUsageModificationErrors",
+          "documentation":"<p> Returns the list of errors reason and the usage item keys that cannot be created in the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchCreateWorkloadEstimateUsageCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "NOT_FOUND",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchCreateWorkloadEstimateUsageEntries":{
+      "type":"list",
+      "member":{"shape":"BatchCreateWorkloadEstimateUsageEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchCreateWorkloadEstimateUsageEntry":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation",
+        "key",
+        "usageAccountId",
+        "amount"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage estimate. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage being estimated. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage estimate. </p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> A unique identifier for this entry in the batch operation. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> An optional group identifier for the usage estimate. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this usage estimate. </p>"
+        },
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The estimated usage amount. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this estimate, if available. </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry in a batch operation to create workload estimate usage. </p>"
+    },
+    "BatchCreateWorkloadEstimateUsageError":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the entry that caused the error. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchCreateWorkloadEstimateUsageCode",
+          "documentation":"<p> The error code associated with the failed operation. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> A descriptive message for the error that occurred. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred during a batch create operation for workload estimate usage. </p>"
+    },
+    "BatchCreateWorkloadEstimateUsageErrors":{
+      "type":"list",
+      "member":{"shape":"BatchCreateWorkloadEstimateUsageError"}
+    },
+    "BatchCreateWorkloadEstimateUsageItem":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage estimate. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage that was estimated. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage estimate. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this usage estimate. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier assigned to the created usage estimate. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with the created usage estimate. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the created usage estimate. </p>"
+        },
+        "quantity":{
+          "shape":"WorkloadEstimateUsageQuantity",
+          "documentation":"<p> The estimated usage quantity. </p>"
+        },
+        "cost":{
+          "shape":"Double",
+          "documentation":"<p> The estimated cost associated with this usage. </p>"
+        },
+        "currency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the estimated cost. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateCostStatus",
+          "documentation":"<p> The current status of the created usage estimate. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this estimate, if available. </p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p> The key of the successfully created entry. </p>"
+        }
+      },
+      "documentation":"<p> Represents a successfully created item in a batch operation for workload estimate usage. </p>"
+    },
+    "BatchCreateWorkloadEstimateUsageItems":{
+      "type":"list",
+      "member":{"shape":"BatchCreateWorkloadEstimateUsageItem"}
+    },
+    "BatchCreateWorkloadEstimateUsageRequest":{
+      "type":"structure",
+      "required":[
+        "workloadEstimateId",
+        "usage"
+      ],
+      "members":{
+        "workloadEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Workload estimate for which you want to create the modeled usage. </p>"
+        },
+        "usage":{
+          "shape":"BatchCreateWorkloadEstimateUsageEntries",
+          "documentation":"<p> List of usage that you want to model in the Workload estimate. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. </p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "BatchCreateWorkloadEstimateUsageResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BatchCreateWorkloadEstimateUsageItems",
+          "documentation":"<p> Returns the list of successful usage line items that were created for the Workload estimate. </p>"
+        },
+        "errors":{
+          "shape":"BatchCreateWorkloadEstimateUsageErrors",
+          "documentation":"<p> Returns the list of errors reason and the usage item keys that cannot be created in the Workload estimate. </p>"
+        }
+      }
+    },
+    "BatchDeleteBillScenarioCommitmentModificationEntries":{
+      "type":"list",
+      "member":{"shape":"ResourceId"},
+      "max":25,
+      "min":1
+    },
+    "BatchDeleteBillScenarioCommitmentModificationError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchDeleteBillScenarioCommitmentModificationErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when deleting a commitment in a Bill Scenario. </p>"
+    },
+    "BatchDeleteBillScenarioCommitmentModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchDeleteBillScenarioCommitmentModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchDeleteBillScenarioCommitmentModificationError"}
+    },
+    "BatchDeleteBillScenarioCommitmentModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "ids"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to delete the modeled commitment. </p>"
+        },
+        "ids":{
+          "shape":"BatchDeleteBillScenarioCommitmentModificationEntries",
+          "documentation":"<p> List of commitments that you want to delete from the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchDeleteBillScenarioCommitmentModificationResponse":{
+      "type":"structure",
+      "members":{
+        "errors":{
+          "shape":"BatchDeleteBillScenarioCommitmentModificationErrors",
+          "documentation":"<p> Returns the list of errors reason and the commitment item keys that cannot be deleted from the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchDeleteBillScenarioUsageModificationEntries":{
+      "type":"list",
+      "member":{"shape":"ResourceId"},
+      "max":25,
+      "min":1
+    },
+    "BatchDeleteBillScenarioUsageModificationError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchDeleteBillScenarioUsageModificationErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when deleting usage in a Bill Scenario. </p>"
+    },
+    "BatchDeleteBillScenarioUsageModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchDeleteBillScenarioUsageModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchDeleteBillScenarioUsageModificationError"}
+    },
+    "BatchDeleteBillScenarioUsageModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "ids"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to delete the modeled usage. </p>"
+        },
+        "ids":{
+          "shape":"BatchDeleteBillScenarioUsageModificationEntries",
+          "documentation":"<p> List of usage that you want to delete from the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchDeleteBillScenarioUsageModificationResponse":{
+      "type":"structure",
+      "members":{
+        "errors":{
+          "shape":"BatchDeleteBillScenarioUsageModificationErrors",
+          "documentation":"<p> Returns the list of errors reason and the usage item keys that cannot be deleted from the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchDeleteWorkloadEstimateUsageEntries":{
+      "type":"list",
+      "member":{"shape":"ResourceId"},
+      "max":25,
+      "min":1
+    },
+    "BatchDeleteWorkloadEstimateUsageError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        },
+        "errorCode":{
+          "shape":"WorkloadEstimateUpdateUsageErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when deleting usage in a workload estimate. </p>"
+    },
+    "BatchDeleteWorkloadEstimateUsageErrors":{
+      "type":"list",
+      "member":{"shape":"BatchDeleteWorkloadEstimateUsageError"}
+    },
+    "BatchDeleteWorkloadEstimateUsageRequest":{
+      "type":"structure",
+      "required":[
+        "workloadEstimateId",
+        "ids"
+      ],
+      "members":{
+        "workloadEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Workload estimate for which you want to delete the modeled usage. </p>"
+        },
+        "ids":{
+          "shape":"BatchDeleteWorkloadEstimateUsageEntries",
+          "documentation":"<p> List of usage that you want to delete from the Workload estimate. </p>"
+        }
+      }
+    },
+    "BatchDeleteWorkloadEstimateUsageResponse":{
+      "type":"structure",
+      "members":{
+        "errors":{
+          "shape":"BatchDeleteWorkloadEstimateUsageErrors",
+          "documentation":"<p> Returns the list of errors reason and the usage item keys that cannot be deleted from the Workload estimate. </p>"
+        }
+      }
+    },
+    "BatchUpdateBillScenarioCommitmentModificationEntries":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateBillScenarioCommitmentModificationEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchUpdateBillScenarioCommitmentModificationEntry":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the commitment modification to update. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The updated group identifier for the commitment modification. </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry in a batch operation to update bill scenario commitment modifications. </p>"
+    },
+    "BatchUpdateBillScenarioCommitmentModificationError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchUpdateBillScenarioCommitmentModificationErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when updating a commitment in a Bill Scenario. </p>"
+    },
+    "BatchUpdateBillScenarioCommitmentModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "NOT_FOUND",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchUpdateBillScenarioCommitmentModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateBillScenarioCommitmentModificationError"}
+    },
+    "BatchUpdateBillScenarioCommitmentModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "commitmentModifications"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to modify the commitment group of a modeled commitment. </p>"
+        },
+        "commitmentModifications":{
+          "shape":"BatchUpdateBillScenarioCommitmentModificationEntries",
+          "documentation":"<p> List of commitments that you want to update in a Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchUpdateBillScenarioCommitmentModificationResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillScenarioCommitmentModificationItems",
+          "documentation":"<p> Returns the list of successful commitment line items that were updated for a Bill Scenario. </p>"
+        },
+        "errors":{
+          "shape":"BatchUpdateBillScenarioCommitmentModificationErrors",
+          "documentation":"<p> Returns the list of error reasons and commitment line item IDs that could not be updated for the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchUpdateBillScenarioUsageModificationEntries":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateBillScenarioUsageModificationEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchUpdateBillScenarioUsageModificationEntry":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the usage modification to update. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The updated group identifier for the usage modification. </p>"
+        },
+        "amounts":{
+          "shape":"UsageAmounts",
+          "documentation":"<p> The updated usage amounts for the modification. </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry in a batch operation to update bill scenario usage modifications. </p>"
+    },
+    "BatchUpdateBillScenarioUsageModificationError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        },
+        "errorCode":{
+          "shape":"BatchUpdateBillScenarioUsageModificationErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when updating usage in a Bill Scenario. </p>"
+    },
+    "BatchUpdateBillScenarioUsageModificationErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "NOT_FOUND",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "BatchUpdateBillScenarioUsageModificationErrors":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateBillScenarioUsageModificationError"}
+    },
+    "BatchUpdateBillScenarioUsageModificationRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "usageModifications"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to modify the usage lines. </p>"
+        },
+        "usageModifications":{
+          "shape":"BatchUpdateBillScenarioUsageModificationEntries",
+          "documentation":"<p> List of usage lines that you want to update in a Bill Scenario identified by the usage ID. </p>"
+        }
+      }
+    },
+    "BatchUpdateBillScenarioUsageModificationResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillScenarioUsageModificationItems",
+          "documentation":"<p> Returns the list of successful usage line items that were updated for a Bill Scenario. </p>"
+        },
+        "errors":{
+          "shape":"BatchUpdateBillScenarioUsageModificationErrors",
+          "documentation":"<p> Returns the list of error reasons and usage line item IDs that could not be updated for the Bill Scenario. </p>"
+        }
+      }
+    },
+    "BatchUpdateWorkloadEstimateUsageEntries":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateWorkloadEstimateUsageEntry"},
+      "max":25,
+      "min":1
+    },
+    "BatchUpdateWorkloadEstimateUsageEntry":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the usage estimate to update. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The updated group identifier for the usage estimate. </p>"
+        },
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The updated estimated usage amount. </p>"
+        }
+      },
+      "documentation":"<p> Represents an entry in a batch operation to update workload estimate usage. </p>"
+    },
+    "BatchUpdateWorkloadEstimateUsageError":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the error. </p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p> The message that describes the error. </p>"
+        },
+        "errorCode":{
+          "shape":"WorkloadEstimateUpdateUsageErrorCode",
+          "documentation":"<p> The code associated with the error. </p>"
+        }
+      },
+      "documentation":"<p> Represents an error that occurred when updating usage in a workload estimate. </p>"
+    },
+    "BatchUpdateWorkloadEstimateUsageErrors":{
+      "type":"list",
+      "member":{"shape":"BatchUpdateWorkloadEstimateUsageError"}
+    },
+    "BatchUpdateWorkloadEstimateUsageRequest":{
+      "type":"structure",
+      "required":[
+        "workloadEstimateId",
+        "usage"
+      ],
+      "members":{
+        "workloadEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Workload estimate for which you want to modify the usage lines. </p>"
+        },
+        "usage":{
+          "shape":"BatchUpdateWorkloadEstimateUsageEntries",
+          "documentation":"<p> List of usage line amounts and usage group that you want to update in a Workload estimate identified by the usage ID. </p>"
+        }
+      }
+    },
+    "BatchUpdateWorkloadEstimateUsageResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"WorkloadEstimateUsageItems",
+          "documentation":"<p> Returns the list of successful usage line items that were updated for a Workload estimate. </p>"
+        },
+        "errors":{
+          "shape":"BatchUpdateWorkloadEstimateUsageErrors",
+          "documentation":"<p> Returns the list of error reasons and usage line item IDs that could not be updated for the Workload estimate. </p>"
+        }
+      }
+    },
+    "BillEstimateCommitmentSummaries":{
+      "type":"list",
+      "member":{"shape":"BillEstimateCommitmentSummary"}
+    },
+    "BillEstimateCommitmentSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the commitment. </p>"
+        },
+        "purchaseAgreementType":{
+          "shape":"PurchaseAgreementType",
+          "documentation":"<p> The type of purchase agreement (e.g., Reserved Instance, Savings Plan). </p>"
+        },
+        "offeringId":{
+          "shape":"Uuid",
+          "documentation":"<p> The identifier of the specific offering associated with this commitment. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this commitment. </p>"
+        },
+        "region":{
+          "shape":"String",
+          "documentation":"<p> The Amazon Web Services region associated with this commitment. </p>"
+        },
+        "termLength":{
+          "shape":"String",
+          "documentation":"<p> The length of the commitment term. </p>"
+        },
+        "paymentOption":{
+          "shape":"String",
+          "documentation":"<p> The payment option chosen for this commitment (e.g., All Upfront, Partial Upfront, No Upfront). </p>"
+        },
+        "upfrontPayment":{
+          "shape":"CostAmount",
+          "documentation":"<p> The upfront payment amount for this commitment, if applicable. </p>"
+        },
+        "monthlyPayment":{
+          "shape":"CostAmount",
+          "documentation":"<p> The monthly payment amount for this commitment, if applicable. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of commitment-related information for a bill estimate. </p>"
+    },
+    "BillEstimateCostSummary":{
+      "type":"structure",
+      "members":{
+        "totalCostDifference":{
+          "shape":"CostDifference",
+          "documentation":"<p> The total difference in cost between the estimated and historical costs. </p>"
+        },
+        "serviceCostDifferences":{
+          "shape":"ServiceCostDifferenceMap",
+          "documentation":"<p> A breakdown of cost differences by Amazon Web Services service. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of cost-related information for a bill estimate. </p>"
+    },
+    "BillEstimateInputCommitmentModificationSummaries":{
+      "type":"list",
+      "member":{"shape":"BillEstimateInputCommitmentModificationSummary"}
+    },
+    "BillEstimateInputCommitmentModificationSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the commitment modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the commitment modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this commitment modification. </p>"
+        },
+        "commitmentAction":{
+          "shape":"BillScenarioCommitmentModificationAction",
+          "documentation":"<p> The specific commitment action taken in this modification. </p>"
+        }
+      },
+      "documentation":"<p> Summarizes an input commitment modification for a bill estimate. </p>"
+    },
+    "BillEstimateInputUsageModificationSummaries":{
+      "type":"list",
+      "member":{"shape":"BillEstimateInputUsageModificationSummary"}
+    },
+    "BillEstimateInputUsageModificationSummary":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage modification. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage being modified. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage modification. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this usage modification. </p>"
+        },
+        "availabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p> The availability zone associated with this usage modification, if applicable. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the usage modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the usage modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this usage modification. </p>"
+        },
+        "quantities":{
+          "shape":"UsageQuantities",
+          "documentation":"<p> The modified usage quantities. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this modification, if available. </p>"
+        }
+      },
+      "documentation":"<p> Summarizes an input usage modification for a bill estimate. </p>"
+    },
+    "BillEstimateLineItemSummaries":{
+      "type":"list",
+      "member":{"shape":"BillEstimateLineItemSummary"}
+    },
+    "BillEstimateLineItemSummary":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code associated with this line item. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage for this line item. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this line item. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this line item. </p>"
+        },
+        "availabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p> The availability zone associated with this line item, if applicable. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of this line item. </p>"
+        },
+        "lineItemId":{
+          "shape":"String",
+          "documentation":"<p> The line item identifier from the original bill. </p>"
+        },
+        "lineItemType":{
+          "shape":"String",
+          "documentation":"<p> The type of this line item (e.g., Usage, Tax, Credit). </p>"
+        },
+        "payerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID of the payer for this line item. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with the usage for this line item. </p>"
+        },
+        "estimatedUsageQuantity":{
+          "shape":"UsageQuantityResult",
+          "documentation":"<p> The estimated usage quantity for this line item. </p>"
+        },
+        "estimatedCost":{
+          "shape":"CostAmount",
+          "documentation":"<p> The estimated cost for this line item. </p>"
+        },
+        "historicalUsageQuantity":{
+          "shape":"UsageQuantityResult",
+          "documentation":"<p> The historical usage quantity for this line item. </p>"
+        },
+        "historicalCost":{
+          "shape":"CostAmount",
+          "documentation":"<p> The historical cost for this line item. </p>"
+        },
+        "savingsPlanArns":{
+          "shape":"SavingsPlanArns",
+          "documentation":"<p> The Amazon Resource Names (ARNs) of any Savings Plans applied to this line item. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of a line item in a bill estimate. </p>"
+    },
+    "BillEstimateName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "BillEstimateStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "COMPLETE",
+        "FAILED"
+      ]
+    },
+    "BillEstimateSummaries":{
+      "type":"list",
+      "member":{"shape":"BillEstimateSummary"}
+    },
+    "BillEstimateSummary":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The name of the bill estimate. </p>"
+        },
+        "status":{
+          "shape":"BillEstimateStatus",
+          "documentation":"<p> The current status of the bill estimate. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the bill estimate. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill estimate was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill estimate will expire. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of a bill estimate. </p>"
+    },
+    "BillInterval":{
+      "type":"structure",
+      "members":{
+        "start":{
+          "shape":"Timestamp",
+          "documentation":"<p> The start date and time of the interval. </p>"
+        },
+        "end":{
+          "shape":"Timestamp",
+          "documentation":"<p> The end date and time of the interval. </p>"
+        }
+      },
+      "documentation":"<p> Represents a time interval for a bill or estimate. </p>"
+    },
+    "BillScenarioCommitmentModificationAction":{
+      "type":"structure",
+      "members":{
+        "addReservedInstanceAction":{
+          "shape":"AddReservedInstanceAction",
+          "documentation":"<p> Action to add a Reserved Instance to the scenario. </p>"
+        },
+        "addSavingsPlanAction":{
+          "shape":"AddSavingsPlanAction",
+          "documentation":"<p> Action to add a Savings Plan to the scenario. </p>"
+        },
+        "negateReservedInstanceAction":{
+          "shape":"NegateReservedInstanceAction",
+          "documentation":"<p> Action to remove a Reserved Instance from the scenario. </p>"
+        },
+        "negateSavingsPlanAction":{
+          "shape":"NegateSavingsPlanAction",
+          "documentation":"<p> Action to remove a Savings Plan from the scenario. </p>"
+        }
+      },
+      "documentation":"<p> Represents an action to modify commitments in a bill scenario. </p>",
+      "union":true
+    },
+    "BillScenarioCommitmentModificationItem":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the commitment modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this commitment modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the commitment modification. </p>"
+        },
+        "commitmentAction":{
+          "shape":"BillScenarioCommitmentModificationAction",
+          "documentation":"<p> The specific commitment action taken in this modification. </p>"
+        }
+      },
+      "documentation":"<p> Represents a commitment modification item in a bill scenario. </p>"
+    },
+    "BillScenarioCommitmentModificationItems":{
+      "type":"list",
+      "member":{"shape":"BillScenarioCommitmentModificationItem"}
+    },
+    "BillScenarioName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "BillScenarioStatus":{
+      "type":"string",
+      "enum":[
+        "READY",
+        "LOCKED",
+        "FAILED",
+        "STALE"
+      ]
+    },
+    "BillScenarioSummaries":{
+      "type":"list",
+      "member":{"shape":"BillScenarioSummary"}
+    },
+    "BillScenarioSummary":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario. </p>"
+        },
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> The name of the bill scenario. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the bill scenario. </p>"
+        },
+        "status":{
+          "shape":"BillScenarioStatus",
+          "documentation":"<p> The current status of the bill scenario. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario will expire. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill scenario creation or processing failed. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of a bill scenario. </p>"
+    },
+    "BillScenarioUsageModificationItem":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code for this usage modification. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage being modified. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage modification. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this usage modification. </p>"
+        },
+        "availabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p> The availability zone associated with this usage modification, if applicable. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the usage modification. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for the usage modification. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this usage modification. </p>"
+        },
+        "quantities":{
+          "shape":"UsageQuantities",
+          "documentation":"<p> The modified usage quantities. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this modification, if available. </p>"
+        }
+      },
+      "documentation":"<p> Represents a usage modification item in a bill scenario. </p>"
+    },
+    "BillScenarioUsageModificationItems":{
+      "type":"list",
+      "member":{"shape":"BillScenarioUsageModificationItem"}
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[\\u0021-\\u007E]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The identifier of the resource that was not found. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type of the resource that was not found. </p>"
+        }
+      },
+      "documentation":"<p> The request could not be processed because of conflict in the current state of the resource. </p>",
+      "exception":true
+    },
+    "CostAmount":{
+      "type":"structure",
+      "members":{
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The numeric value of the cost. </p>"
+        },
+        "currency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency code for the cost amount. </p>"
+        }
+      },
+      "documentation":"<p> Represents a monetary amount with associated currency. </p>"
+    },
+    "CostDifference":{
+      "type":"structure",
+      "members":{
+        "historicalCost":{
+          "shape":"CostAmount",
+          "documentation":"<p> The historical cost amount. </p>"
+        },
+        "estimatedCost":{
+          "shape":"CostAmount",
+          "documentation":"<p> The estimated cost amount. </p>"
+        }
+      },
+      "documentation":"<p> Represents the difference between historical and estimated costs. </p>"
+    },
+    "CreateBillEstimateRequest":{
+      "type":"structure",
+      "required":[
+        "billScenarioId",
+        "name"
+      ],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The ID of the Bill Scenario for which you want to create a Bill estimate. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The name of the Bill estimate that will be created. Names must be unique for an account. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. </p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p> An optional list of tags to associate with the specified BillEstimate. You can use resource tags to control access to your BillEstimate using IAM policies. Each tag consists of a key and a value, and each key must be unique for the resource. The following restrictions apply to resource tags: </p> <ul> <li> <p>Although the maximum number of array members is 200, you can assign a maximum of 50 user-tags to one resource. The remaining are reserved for Amazon Web Services. </p> </li> <li> <p>The maximum length of a key is 128 characters.</p> </li> <li> <p>The maximum length of a value is 256 characters.</p> </li> <li> <p>Keys and values can only contain alphanumeric characters, spaces, and any of the following: <code>_.:/=+@-</code>.</p> </li> <li> <p>Keys and values are case sensitive.</p> </li> <li> <p>Keys and values are trimmed for any leading or trailing whitespaces.</p> </li> <li> <p>Don't use <code>aws:</code> as a prefix for your keys. This prefix is reserved for Amazon Web Services.</p> </li> </ul>"
+        }
+      }
+    },
+    "CreateBillEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of your newly created Bill estimate. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The name of your newly created Bill estimate. </p>"
+        },
+        "status":{
+          "shape":"BillEstimateStatus",
+          "documentation":"<p> The status of your newly created Bill estimate. Bill estimate creation can take anywhere between 8 to 12 hours. The status will allow you to identify when the Bill estimate is complete or has failed. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> This attribute provides the reason if a Bill estimate result generation fails. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The bill month start and end timestamp that was used to create the Bill estimate. This is set to the last complete anniversary bill month start and end timestamp. </p>"
+        },
+        "costSummary":{
+          "shape":"BillEstimateCostSummary",
+          "documentation":"<p> Returns summary-level cost information once a Bill estimate is successfully generated. This summary includes: 1) the total cost difference, showing the pre-tax cost change for the consolidated billing family between the completed anniversary bill and the estimated bill, and 2) total cost differences per service, detailing the pre-tax cost of each service, comparing the completed anniversary bill to the estimated bill on a per-service basis. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of when the Bill estimate create process was started (not when it successfully completed or failed). </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of when the Bill estimate will expire. A Bill estimate becomes inaccessible after expiration. </p>"
+        }
+      }
+    },
+    "CreateBillScenarioRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> A descriptive name for the bill scenario. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier to ensure idempotency of the request. </p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p> The tags to apply to the bill scenario. </p>"
+        }
+      }
+    },
+    "CreateBillScenarioResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier for the created bill scenario. </p>"
+        },
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> The name of the created bill scenario. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the bill scenario. </p>"
+        },
+        "status":{
+          "shape":"BillScenarioStatus",
+          "documentation":"<p> The current status of the bill scenario. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario will expire. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill scenario creation failed. </p>"
+        }
+      }
+    },
+    "CreateWorkloadEstimateRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> A descriptive name for the workload estimate. </p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> A unique, case-sensitive identifier to ensure idempotency of the request. </p>",
+          "idempotencyToken":true
+        },
+        "rateType":{
+          "shape":"WorkloadEstimateRateType",
+          "documentation":"<p> The type of pricing rates to use for the estimate. </p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p> The tags to apply to the workload estimate. </p>"
+        }
+      }
+    },
+    "CreateWorkloadEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier for the created workload estimate. </p>"
+        },
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> The name of the created workload estimate. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate will expire. </p>"
+        },
+        "rateType":{
+          "shape":"WorkloadEstimateRateType",
+          "documentation":"<p> The type of pricing rates used for the estimate. </p>"
+        },
+        "rateTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of the pricing rates used for the estimate. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateStatus",
+          "documentation":"<p> The current status of the workload estimate. </p>"
+        },
+        "totalCost":{
+          "shape":"Double",
+          "documentation":"<p> The total estimated cost for the workload. </p>"
+        },
+        "costCurrency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the estimated cost. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the workload estimate creation failed. </p>"
+        }
+      },
+      "documentation":"<p>Mixin for common fields returned by CRUD APIs</p>"
+    },
+    "CurrencyCode":{
+      "type":"string",
+      "enum":["USD"]
+    },
+    "DataUnavailableException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p> The requested data is currently unavailable. </p>",
+      "exception":true
+    },
+    "DeleteBillEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to delete. </p>"
+        }
+      }
+    },
+    "DeleteBillEstimateResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteBillScenarioRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario to delete. </p>"
+        }
+      }
+    },
+    "DeleteBillScenarioResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteWorkloadEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the workload estimate to delete. </p>"
+        }
+      }
+    },
+    "DeleteWorkloadEstimateResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "Expression":{
+      "type":"structure",
+      "members":{
+        "and":{
+          "shape":"ExpressionList",
+          "documentation":"<p> A list of expressions to be combined with AND logic. </p>"
+        },
+        "or":{
+          "shape":"ExpressionList",
+          "documentation":"<p> A list of expressions to be combined with OR logic. </p>"
+        },
+        "not":{
+          "shape":"Expression",
+          "documentation":"<p> An expression to be negated. </p>"
+        },
+        "costCategories":{
+          "shape":"ExpressionFilter",
+          "documentation":"<p> Filters based on cost categories. </p>"
+        },
+        "dimensions":{
+          "shape":"ExpressionFilter",
+          "documentation":"<p> Filters based on dimensions (e.g., service, operation). </p>"
+        },
+        "tags":{
+          "shape":"ExpressionFilter",
+          "documentation":"<p> Filters based on resource tags. </p>"
+        }
+      },
+      "documentation":"<p> Represents a complex filtering expression for cost and usage data. </p>"
+    },
+    "ExpressionFilter":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"String",
+          "documentation":"<p> The key or attribute to filter on. </p>"
+        },
+        "matchOptions":{
+          "shape":"StringList",
+          "documentation":"<p> The match options for the filter (e.g., equals, contains). </p>"
+        },
+        "values":{
+          "shape":"StringList",
+          "documentation":"<p> The values to match against. </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter used within an expression. </p>"
+    },
+    "ExpressionList":{
+      "type":"list",
+      "member":{"shape":"Expression"}
+    },
+    "FilterTimestamp":{
+      "type":"structure",
+      "members":{
+        "afterTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> Include results after this timestamp. </p>"
+        },
+        "beforeTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> Include results before this timestamp. </p>"
+        }
+      },
+      "documentation":"<p> Represents a time-based filter. </p>"
+    },
+    "GetBillEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to retrieve. </p>"
+        }
+      }
+    },
+    "GetBillEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the retrieved bill estimate. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The name of the retrieved bill estimate. </p>"
+        },
+        "status":{
+          "shape":"BillEstimateStatus",
+          "documentation":"<p> The current status of the bill estimate. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill estimate retrieval failed. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the bill estimate. </p>"
+        },
+        "costSummary":{
+          "shape":"BillEstimateCostSummary",
+          "documentation":"<p> A summary of the estimated costs. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill estimate was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill estimate will expire. </p>"
+        }
+      }
+    },
+    "GetBillScenarioRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario to retrieve. </p>"
+        }
+      }
+    },
+    "GetBillScenarioResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the retrieved bill scenario. </p>"
+        },
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> The name of the retrieved bill scenario. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the bill scenario. </p>"
+        },
+        "status":{
+          "shape":"BillScenarioStatus",
+          "documentation":"<p> The current status of the bill scenario. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario will expire. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill scenario retrieval failed. </p>"
+        }
+      }
+    },
+    "GetPreferencesRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetPreferencesResponse":{
+      "type":"structure",
+      "members":{
+        "managementAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The preferred rate types for the management account. </p>"
+        },
+        "memberAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The preferred rate types for member accounts. </p>"
+        },
+        "standaloneAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The preferred rate types for a standalone account. </p>"
+        }
+      }
+    },
+    "GetWorkloadEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the workload estimate to retrieve. </p>"
+        }
+      }
+    },
+    "GetWorkloadEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the retrieved workload estimate. </p>"
+        },
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> The name of the retrieved workload estimate. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate will expire. </p>"
+        },
+        "rateType":{
+          "shape":"WorkloadEstimateRateType",
+          "documentation":"<p> The type of pricing rates used for the estimate. </p>"
+        },
+        "rateTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of the pricing rates used for the estimate. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateStatus",
+          "documentation":"<p> The current status of the workload estimate. </p>"
+        },
+        "totalCost":{
+          "shape":"Double",
+          "documentation":"<p> The total estimated cost for the workload. </p>"
+        },
+        "costCurrency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the estimated cost. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the workload estimate retrieval failed. </p>"
+        }
+      },
+      "documentation":"<p>Mixin for common fields returned by CRUD APIs</p>"
+    },
+    "HistoricalUsageEntity":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation",
+        "usageAccountId",
+        "billInterval",
+        "filterExpression"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code associated with the usage. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with the usage. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with the usage. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with the usage. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time interval for the historical usage data. </p>"
+        },
+        "filterExpression":{
+          "shape":"Expression",
+          "documentation":"<p> An optional filter expression to apply to the historical usage data. </p>"
+        }
+      },
+      "documentation":"<p> Represents historical usage data for a specific entity. </p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p> An internal error has occurred. Retry your request, but if the problem persists, contact Amazon Web Services support. </p>"
+        }
+      },
+      "documentation":"<p> An internal error has occurred. Retry your request, but if the problem persists, contact Amazon Web Services support. </p>",
+      "exception":true,
+      "fault":true
+    },
+    "Key":{
+      "type":"string",
+      "max":10,
+      "min":0,
+      "pattern":"[a-zA-Z0-9]*"
+    },
+    "ListBillEstimateCommitmentsRequest":{
+      "type":"structure",
+      "required":["billEstimateId"],
+      "members":{
+        "billEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to list commitments for. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillEstimateCommitmentsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillEstimateCommitmentSummaries",
+          "documentation":"<p> The list of commitments associated with the bill estimate. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillEstimateInputCommitmentModificationsRequest":{
+      "type":"structure",
+      "required":["billEstimateId"],
+      "members":{
+        "billEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to list input commitment modifications for. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillEstimateInputCommitmentModificationsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillEstimateInputCommitmentModificationSummaries",
+          "documentation":"<p> The list of input commitment modifications associated with the bill estimate. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillEstimateInputUsageModificationsRequest":{
+      "type":"structure",
+      "required":["billEstimateId"],
+      "members":{
+        "billEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to list input usage modifications for. </p>"
+        },
+        "filters":{
+          "shape":"ListUsageFilters",
+          "documentation":"<p> Filters to apply to the list of input usage modifications. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillEstimateInputUsageModificationsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillEstimateInputUsageModificationSummaries",
+          "documentation":"<p> The list of input usage modifications associated with the bill estimate. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillEstimateLineItemsFilter":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ListBillEstimateLineItemsFilterName",
+          "documentation":"<p> The name of the filter attribute. </p>"
+        },
+        "values":{
+          "shape":"ListBillEstimateLineItemsFilterValues",
+          "documentation":"<p> The values to filter by. </p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p> The match option for the filter (e.g., equals, contains). </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter for listing bill estimate line items. </p>"
+    },
+    "ListBillEstimateLineItemsFilterName":{
+      "type":"string",
+      "enum":[
+        "USAGE_ACCOUNT_ID",
+        "SERVICE_CODE",
+        "USAGE_TYPE",
+        "OPERATION",
+        "LOCATION",
+        "LINE_ITEM_TYPE"
+      ]
+    },
+    "ListBillEstimateLineItemsFilterValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListBillEstimateLineItemsFilters":{
+      "type":"list",
+      "member":{"shape":"ListBillEstimateLineItemsFilter"}
+    },
+    "ListBillEstimateLineItemsRequest":{
+      "type":"structure",
+      "required":["billEstimateId"],
+      "members":{
+        "billEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to list line items for. </p>"
+        },
+        "filters":{
+          "shape":"ListBillEstimateLineItemsFilters",
+          "documentation":"<p> Filters to apply to the list of line items. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillEstimateLineItemsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillEstimateLineItemSummaries",
+          "documentation":"<p> The list of line items associated with the bill estimate. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillEstimatesFilter":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ListBillEstimatesFilterName",
+          "documentation":"<p> The name of the filter attribute. </p>"
+        },
+        "values":{
+          "shape":"ListBillEstimatesFilterValues",
+          "documentation":"<p> The values to filter by. </p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p> The match option for the filter (e.g., equals, contains). </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter for listing bill estimates. </p>"
+    },
+    "ListBillEstimatesFilterName":{
+      "type":"string",
+      "enum":[
+        "STATUS",
+        "NAME"
+      ]
+    },
+    "ListBillEstimatesFilterValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListBillEstimatesFilters":{
+      "type":"list",
+      "member":{"shape":"ListBillEstimatesFilter"}
+    },
+    "ListBillEstimatesRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"ListBillEstimatesFilters",
+          "documentation":"<p> Filters to apply to the list of bill estimates. </p>"
+        },
+        "createdAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter bill estimates based on the creation date. </p>"
+        },
+        "expiresAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter bill estimates based on the expiration date. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillEstimatesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillEstimateSummaries",
+          "documentation":"<p> The list of bill estimates for the account. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillScenarioCommitmentModificationsRequest":{
+      "type":"structure",
+      "required":["billScenarioId"],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario to list commitment modifications for. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillScenarioCommitmentModificationsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillScenarioCommitmentModificationItems",
+          "documentation":"<p> The list of commitment modifications associated with the bill scenario. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillScenarioUsageModificationsRequest":{
+      "type":"structure",
+      "required":["billScenarioId"],
+      "members":{
+        "billScenarioId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario to list usage modifications for. </p>"
+        },
+        "filters":{
+          "shape":"ListUsageFilters",
+          "documentation":"<p> Filters to apply to the list of usage modifications. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillScenarioUsageModificationsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillScenarioUsageModificationItems",
+          "documentation":"<p> The list of usage modifications associated with the bill scenario. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListBillScenariosFilter":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ListBillScenariosFilterName",
+          "documentation":"<p> The name of the filter attribute. </p>"
+        },
+        "values":{
+          "shape":"ListBillScenariosFilterValues",
+          "documentation":"<p> The values to filter by. </p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p> The match option for the filter (e.g., equals, contains). </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter for listing bill scenarios. </p>"
+    },
+    "ListBillScenariosFilterName":{
+      "type":"string",
+      "enum":[
+        "STATUS",
+        "NAME"
+      ]
+    },
+    "ListBillScenariosFilterValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListBillScenariosFilters":{
+      "type":"list",
+      "member":{"shape":"ListBillScenariosFilter"}
+    },
+    "ListBillScenariosRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"ListBillScenariosFilters",
+          "documentation":"<p> Filters to apply to the list of bill scenarios. </p>"
+        },
+        "createdAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter bill scenarios based on the creation date. </p>"
+        },
+        "expiresAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter bill scenarios based on the expiration date. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListBillScenariosResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"BillScenarioSummaries",
+          "documentation":"<p> The list of bill scenarios for the account. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource to list tags for. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p> The list of tags associated with the specified resource. </p>"
+        }
+      }
+    },
+    "ListUsageFilter":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ListUsageFilterName",
+          "documentation":"<p> The name of the filter attribute. </p>"
+        },
+        "values":{
+          "shape":"ListUsageFilterValues",
+          "documentation":"<p> The values to filter by. </p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p> The match option for the filter (e.g., equals, contains). </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter for listing usage data. </p>"
+    },
+    "ListUsageFilterName":{
+      "type":"string",
+      "enum":[
+        "USAGE_ACCOUNT_ID",
+        "SERVICE_CODE",
+        "USAGE_TYPE",
+        "OPERATION",
+        "LOCATION",
+        "USAGE_GROUP",
+        "HISTORICAL_USAGE_ACCOUNT_ID",
+        "HISTORICAL_SERVICE_CODE",
+        "HISTORICAL_USAGE_TYPE",
+        "HISTORICAL_OPERATION",
+        "HISTORICAL_LOCATION"
+      ]
+    },
+    "ListUsageFilterValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListUsageFilters":{
+      "type":"list",
+      "member":{"shape":"ListUsageFilter"}
+    },
+    "ListWorkloadEstimateUsageRequest":{
+      "type":"structure",
+      "required":["workloadEstimateId"],
+      "members":{
+        "workloadEstimateId":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the workload estimate to list usage for. </p>"
+        },
+        "filters":{
+          "shape":"ListUsageFilters",
+          "documentation":"<p> Filters to apply to the list of usage items. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"WorkloadEstimateUsageMaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListWorkloadEstimateUsageResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"WorkloadEstimateUsageItems",
+          "documentation":"<p> The list of usage items associated with the workload estimate. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "ListWorkloadEstimatesFilter":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ListWorkloadEstimatesFilterName",
+          "documentation":"<p> The name of the filter attribute. </p>"
+        },
+        "values":{
+          "shape":"ListWorkloadEstimatesFilterValues",
+          "documentation":"<p> The values to filter by. </p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p> The match option for the filter (e.g., equals, contains). </p>"
+        }
+      },
+      "documentation":"<p> Represents a filter for listing workload estimates. </p>"
+    },
+    "ListWorkloadEstimatesFilterName":{
+      "type":"string",
+      "enum":[
+        "STATUS",
+        "NAME"
+      ]
+    },
+    "ListWorkloadEstimatesFilterValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListWorkloadEstimatesFilters":{
+      "type":"list",
+      "member":{"shape":"ListWorkloadEstimatesFilter"}
+    },
+    "ListWorkloadEstimatesRequest":{
+      "type":"structure",
+      "members":{
+        "createdAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter workload estimates based on the creation date. </p>"
+        },
+        "expiresAtFilter":{
+          "shape":"FilterTimestamp",
+          "documentation":"<p> Filter workload estimates based on the expiration date. </p>"
+        },
+        "filters":{
+          "shape":"ListWorkloadEstimatesFilters",
+          "documentation":"<p> Filters to apply to the list of workload estimates. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The maximum number of results to return per page. </p>"
+        }
+      }
+    },
+    "ListWorkloadEstimatesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"WorkloadEstimateSummaries",
+          "documentation":"<p> The list of workload estimates for the account. </p>"
+        },
+        "nextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p> A token to retrieve the next page of results, if any. </p>"
+        }
+      }
+    },
+    "MatchOption":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "STARTS_WITH",
+        "CONTAINS"
+      ]
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "NegateReservedInstanceAction":{
+      "type":"structure",
+      "members":{
+        "reservedInstancesId":{
+          "shape":"Uuid",
+          "documentation":"<p> The ID of the Reserved Instance to remove. </p>"
+        }
+      },
+      "documentation":"<p> Represents an action to remove a Reserved Instance from a bill scenario. </p> <p> This is the ID of an existing Reserved Instance in your account. </p>"
+    },
+    "NegateSavingsPlanAction":{
+      "type":"structure",
+      "members":{
+        "savingsPlanId":{
+          "shape":"Uuid",
+          "documentation":"<p> The ID of the Savings Plan to remove. </p>"
+        }
+      },
+      "documentation":"<p> Represents an action to remove a Savings Plan from a bill scenario. </p> <p> This is the ID of an existing Savings Plan in your account. </p>"
+    },
+    "NextPageToken":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "Operation":{
+      "type":"string",
+      "max":32,
+      "min":0,
+      "pattern":"[-a-zA-Z0-9\\.\\-_:, \\/()]*"
+    },
+    "PurchaseAgreementType":{
+      "type":"string",
+      "enum":[
+        "SAVINGS_PLANS",
+        "RESERVED_INSTANCE"
+      ]
+    },
+    "RateType":{
+      "type":"string",
+      "enum":[
+        "BEFORE_DISCOUNTS",
+        "AFTER_DISCOUNTS",
+        "AFTER_DISCOUNTS_AND_COMMITMENTS"
+      ]
+    },
+    "RateTypes":{
+      "type":"list",
+      "member":{"shape":"RateType"},
+      "max":3,
+      "min":1
+    },
+    "ReservedInstanceInstanceCount":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ResourceId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The identifier of the resource that was not found. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type of the resource that was not found. </p>"
+        }
+      },
+      "documentation":"<p> The specified resource was not found. </p>",
+      "exception":true
+    },
+    "ResourceTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\w\\s:+=@/-]+"
+    },
+    "ResourceTagKeys":{
+      "type":"list",
+      "member":{"shape":"ResourceTagKey"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[\\w\\s:+=@/-]*"
+    },
+    "SavingsPlanArns":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SavingsPlanCommitment":{
+      "type":"double",
+      "box":true,
+      "max":1000000,
+      "min":0.001
+    },
+    "ServiceCode":{
+      "type":"string",
+      "max":32,
+      "min":0,
+      "pattern":"[-a-zA-Z0-9\\.\\-_:, \\/()]*"
+    },
+    "ServiceCostDifferenceMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CostDifference"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The identifier of the resource that exceeded quota. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type of the resource that exceeded quota. </p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p> The service code that exceeded quota. </p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p> The quota code that was exceeded. </p>"
+        }
+      },
+      "documentation":"<p> The request would cause you to exceed your service quota. </p>",
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "tags"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource to add tags to. </p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p> The tags to add to the resource. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"ResourceTagKey"},
+      "value":{"shape":"ResourceTagValue"},
+      "max":200,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The service code that exceeded the throttling limit.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The quota code that exceeded the throttling limit.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The service code that exceeded the throttling limit. Retry your request, but if the problem persists, contact Amazon Web Services support.</p>"
+        }
+      },
+      "documentation":"<p> The request was denied due to request throttling. </p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "tagKeys"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource to remove tags from. </p>"
+        },
+        "tagKeys":{
+          "shape":"ResourceTagKeys",
+          "documentation":"<p> The keys of the tags to remove from the resource. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateBillEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill estimate to update. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The new name for the bill estimate. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The new expiration date for the bill estimate. </p>"
+        }
+      }
+    },
+    "UpdateBillEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the updated bill estimate. </p>"
+        },
+        "name":{
+          "shape":"BillEstimateName",
+          "documentation":"<p> The updated name of the bill estimate. </p>"
+        },
+        "status":{
+          "shape":"BillEstimateStatus",
+          "documentation":"<p> The current status of the updated bill estimate. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill estimate update failed. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the updated bill estimate. </p>"
+        },
+        "costSummary":{
+          "shape":"BillEstimateCostSummary",
+          "documentation":"<p> A summary of the updated estimated costs. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill estimate was originally created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The updated expiration timestamp for the bill estimate. </p>"
+        }
+      }
+    },
+    "UpdateBillScenarioRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the bill scenario to update. </p>"
+        },
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> The new name for the bill scenario. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The new expiration date for the bill scenario. </p>"
+        }
+      }
+    },
+    "UpdateBillScenarioResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the updated bill scenario. </p>"
+        },
+        "name":{
+          "shape":"BillScenarioName",
+          "documentation":"<p> The updated name of the bill scenario. </p>"
+        },
+        "billInterval":{
+          "shape":"BillInterval",
+          "documentation":"<p> The time period covered by the updated bill scenario. </p>"
+        },
+        "status":{
+          "shape":"BillScenarioStatus",
+          "documentation":"<p> The current status of the updated bill scenario. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the bill scenario was originally created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The updated expiration timestamp for the bill scenario. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the bill scenario update failed. </p>"
+        }
+      }
+    },
+    "UpdatePreferencesRequest":{
+      "type":"structure",
+      "members":{
+        "managementAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for the management account. </p>"
+        },
+        "memberAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for member accounts. </p>"
+        },
+        "standaloneAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for a standalone account. </p>"
+        }
+      }
+    },
+    "UpdatePreferencesResponse":{
+      "type":"structure",
+      "members":{
+        "managementAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for the management account. </p>"
+        },
+        "memberAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for member accounts. </p>"
+        },
+        "standaloneAccountRateTypeSelections":{
+          "shape":"RateTypes",
+          "documentation":"<p> The updated preferred rate types for a standalone account. </p>"
+        }
+      }
+    },
+    "UpdateWorkloadEstimateRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the workload estimate to update. </p>"
+        },
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> The new name for the workload estimate. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The new expiration date for the workload estimate. </p>"
+        }
+      }
+    },
+    "UpdateWorkloadEstimateResponse":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the updated workload estimate. </p>"
+        },
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> The updated name of the workload estimate. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate was originally created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The updated expiration timestamp for the workload estimate. </p>"
+        },
+        "rateType":{
+          "shape":"WorkloadEstimateRateType",
+          "documentation":"<p> The type of pricing rates used for the updated estimate. </p>"
+        },
+        "rateTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of the pricing rates used for the updated estimate. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateStatus",
+          "documentation":"<p> The current status of the updated workload estimate. </p>"
+        },
+        "totalCost":{
+          "shape":"Double",
+          "documentation":"<p> The updated total estimated cost for the workload. </p>"
+        },
+        "costCurrency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the updated estimated cost. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the workload estimate update failed. </p>"
+        }
+      },
+      "documentation":"<p>Mixin for common fields returned by CRUD APIs</p>"
+    },
+    "UsageAmount":{
+      "type":"structure",
+      "required":[
+        "startHour",
+        "amount"
+      ],
+      "members":{
+        "startHour":{
+          "shape":"Timestamp",
+          "documentation":"<p> The start hour of the usage period. </p>"
+        },
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The usage amount for the period. </p>"
+        }
+      },
+      "documentation":"<p> Represents a usage amount for a specific time period. </p>"
+    },
+    "UsageAmounts":{
+      "type":"list",
+      "member":{"shape":"UsageAmount"}
+    },
+    "UsageGroup":{
+      "type":"string",
+      "max":30,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-]*"
+    },
+    "UsageQuantities":{
+      "type":"list",
+      "member":{"shape":"UsageQuantity"}
+    },
+    "UsageQuantity":{
+      "type":"structure",
+      "members":{
+        "startHour":{
+          "shape":"Timestamp",
+          "documentation":"<p> The start hour of the usage period. </p>"
+        },
+        "unit":{
+          "shape":"String",
+          "documentation":"<p> The unit of measurement for the usage quantity. </p>"
+        },
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The numeric value of the usage quantity. </p>"
+        }
+      },
+      "documentation":"<p> Represents a usage quantity with associated unit and time period. </p>"
+    },
+    "UsageQuantityResult":{
+      "type":"structure",
+      "members":{
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The numeric value of the usage quantity result. </p>"
+        },
+        "unit":{
+          "shape":"String",
+          "documentation":"<p> The unit of measurement for the usage quantity result. </p>"
+        }
+      },
+      "documentation":"<p> Represents the result of a usage quantity calculation. </p>"
+    },
+    "UsageType":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "pattern":"[-a-zA-Z0-9\\.\\-_:, \\/()]*"
+    },
+    "Uuid":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p> The reason for the validation exception. </p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p> The list of fields that are invalid. </p>"
+        }
+      },
+      "documentation":"<p> The input provided fails to satisfy the constraints specified by an Amazon Web Services service. </p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p> The name of the field that failed validation. </p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p> The error message describing why the field failed validation. </p>"
+        }
+      },
+      "documentation":"<p> Represents a field that failed validation in a request. </p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "invalidRequestFromMember",
+        "disallowedRate",
+        "other"
+      ]
+    },
+    "WorkloadEstimateCostStatus":{
+      "type":"string",
+      "enum":[
+        "VALID",
+        "INVALID",
+        "STALE"
+      ]
+    },
+    "WorkloadEstimateName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "WorkloadEstimateRateType":{
+      "type":"string",
+      "enum":[
+        "BEFORE_DISCOUNTS",
+        "AFTER_DISCOUNTS",
+        "AFTER_DISCOUNTS_AND_COMMITMENTS"
+      ]
+    },
+    "WorkloadEstimateStatus":{
+      "type":"string",
+      "enum":[
+        "UPDATING",
+        "VALID",
+        "INVALID",
+        "ACTION_NEEDED"
+      ]
+    },
+    "WorkloadEstimateSummaries":{
+      "type":"list",
+      "member":{"shape":"WorkloadEstimateSummary"}
+    },
+    "WorkloadEstimateSummary":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of the workload estimate. </p>"
+        },
+        "name":{
+          "shape":"WorkloadEstimateName",
+          "documentation":"<p> The name of the workload estimate. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate was created. </p>"
+        },
+        "expiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp when the workload estimate will expire. </p>"
+        },
+        "rateType":{
+          "shape":"WorkloadEstimateRateType",
+          "documentation":"<p> The type of pricing rates used for the estimate. </p>"
+        },
+        "rateTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp of the pricing rates used for the estimate. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateStatus",
+          "documentation":"<p> The current status of the workload estimate. </p>"
+        },
+        "totalCost":{
+          "shape":"Double",
+          "documentation":"<p> The total estimated cost for the workload. </p>"
+        },
+        "costCurrency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the estimated cost. </p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p> An error message if the workload estimate creation or processing failed. </p>"
+        }
+      },
+      "documentation":"<p> Provides a summary of a workload estimate. </p>"
+    },
+    "WorkloadEstimateUpdateUsageErrorCode":{
+      "type":"string",
+      "enum":[
+        "BAD_REQUEST",
+        "NOT_FOUND",
+        "CONFLICT",
+        "INTERNAL_SERVER_ERROR"
+      ]
+    },
+    "WorkloadEstimateUsageItem":{
+      "type":"structure",
+      "required":[
+        "serviceCode",
+        "usageType",
+        "operation"
+      ],
+      "members":{
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p> The Amazon Web Services service code associated with this usage item. </p>"
+        },
+        "usageType":{
+          "shape":"UsageType",
+          "documentation":"<p> The type of usage for this item. </p>"
+        },
+        "operation":{
+          "shape":"Operation",
+          "documentation":"<p> The specific operation associated with this usage item. </p>"
+        },
+        "location":{
+          "shape":"String",
+          "documentation":"<p> The location associated with this usage item. </p>"
+        },
+        "id":{
+          "shape":"ResourceId",
+          "documentation":"<p> The unique identifier of this usage item. </p>"
+        },
+        "usageAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p> The Amazon Web Services account ID associated with this usage item. </p>"
+        },
+        "group":{
+          "shape":"UsageGroup",
+          "documentation":"<p> The group identifier for this usage item. </p>"
+        },
+        "quantity":{
+          "shape":"WorkloadEstimateUsageQuantity",
+          "documentation":"<p> The estimated usage quantity for this item. </p>"
+        },
+        "cost":{
+          "shape":"Double",
+          "documentation":"<p> The estimated cost for this usage item. </p>"
+        },
+        "currency":{
+          "shape":"CurrencyCode",
+          "documentation":"<p> The currency of the estimated cost. </p>"
+        },
+        "status":{
+          "shape":"WorkloadEstimateCostStatus",
+          "documentation":"<p> The current status of this usage item. </p>"
+        },
+        "historicalUsage":{
+          "shape":"HistoricalUsageEntity",
+          "documentation":"<p> Historical usage data associated with this item, if available. </p>"
+        }
+      },
+      "documentation":"<p> Represents a usage item in a workload estimate. </p>"
+    },
+    "WorkloadEstimateUsageItems":{
+      "type":"list",
+      "member":{"shape":"WorkloadEstimateUsageItem"}
+    },
+    "WorkloadEstimateUsageMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":300,
+      "min":1
+    },
+    "WorkloadEstimateUsageQuantity":{
+      "type":"structure",
+      "members":{
+        "unit":{
+          "shape":"String",
+          "documentation":"<p> The unit of measurement for the usage quantity. </p>"
+        },
+        "amount":{
+          "shape":"Double",
+          "documentation":"<p> The numeric value of the usage quantity. </p>"
+        }
+      },
+      "documentation":"<p> Represents a usage quantity for a workload estimate. </p>"
+    }
+  },
+  "documentation":"<p> You can use the Pricing Calculator API to programmatically create estimates for your planned cloud use. You can model usage and commitments such as Savings Plans and Reserved Instances, and generate estimated costs using your discounts and benefit sharing preferences. </p> <p>The Pricing Calculator API provides the following endpoint:</p> <ul> <li> <p> <code>https://bcm-pricing-calculator.us-east-1.api.aws</code> </p> </li> </ul>"
+}

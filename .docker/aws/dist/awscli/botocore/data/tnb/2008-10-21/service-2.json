@@ -1,0 +1,3042 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2008-10-21",
+    "endpointPrefix":"tnb",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Telco Network Builder",
+    "serviceId":"tnb",
+    "signatureVersion":"v4",
+    "signingName":"tnb",
+    "uid":"tnb-2008-10-21",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CancelSolNetworkOperation":{
+      "name":"CancelSolNetworkOperation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nslcm/v1/ns_lcm_op_occs/{nsLcmOpOccId}/cancel",
+        "responseCode":202
+      },
+      "input":{"shape":"CancelSolNetworkOperationInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Cancels a network operation.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "CreateSolFunctionPackage":{
+      "name":"CreateSolFunctionPackage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSolFunctionPackageInput"},
+      "output":{"shape":"CreateSolFunctionPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network. For more information, see <a href=\"https://docs.aws.amazon.com/tnb/latest/ug/function-packages.html\">Function packages</a> in the <i>Amazon Web Services Telco Network Builder User Guide</i>. </p> <p>Creating a function package is the first step for creating a network in AWS TNB. This request creates an empty container with an ID. The next step is to upload the actual CSAR zip file into that empty container. To upload function package content, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_PutSolFunctionPackageContent.html\">PutSolFunctionPackageContent</a>.</p>"
+    },
+    "CreateSolNetworkInstance":{
+      "name":"CreateSolNetworkInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nslcm/v1/ns_instances",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSolNetworkInstanceInput"},
+      "output":{"shape":"CreateSolNetworkInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed. Creating a network instance is the third step after creating a network package. For more information about network instances, <a href=\"https://docs.aws.amazon.com/tnb/latest/ug/network-instances.html\">Network instances</a> in the <i>Amazon Web Services Telco Network Builder User Guide</i>.</p> <p>Once you create a network instance, you can instantiate it. To instantiate a network, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_InstantiateSolNetworkInstance.html\">InstantiateSolNetworkInstance</a>.</p>"
+    },
+    "CreateSolNetworkPackage":{
+      "name":"CreateSolNetworkPackage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nsd/v1/ns_descriptors",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSolNetworkPackageInput"},
+      "output":{"shape":"CreateSolNetworkPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on. For more information, see <a href=\"https://docs.aws.amazon.com/tnb/latest/ug/network-instances.html\">Network instances</a> in the <i>Amazon Web Services Telco Network Builder User Guide</i>. </p> <p>A network package consists of a network service descriptor (NSD) file (required) and any additional files (optional), such as scripts specific to your needs. For example, if you have multiple function packages in your network package, you can use the NSD to define which network functions should run in certain VPCs, subnets, or EKS clusters.</p> <p>This request creates an empty network package container with an ID. Once you create a network package, you can upload the network package content using <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_PutSolNetworkPackageContent.html\">PutSolNetworkPackageContent</a>.</p>"
+    },
+    "DeleteSolFunctionPackage":{
+      "name":"DeleteSolFunctionPackage",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSolFunctionPackageInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p> <p>To delete a function package, the package must be in a disabled state. To disable a function package, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_UpdateSolFunctionPackage.html\">UpdateSolFunctionPackage</a>. </p>",
+      "idempotent":true
+    },
+    "DeleteSolNetworkInstance":{
+      "name":"DeleteSolNetworkInstance",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/sol/nslcm/v1/ns_instances/{nsInstanceId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSolNetworkInstanceInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p> <p>To delete a network instance, the instance must be in a stopped or terminated state. To terminate a network instance, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_TerminateSolNetworkInstance.html\">TerminateSolNetworkInstance</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteSolNetworkPackage":{
+      "name":"DeleteSolNetworkPackage",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSolNetworkPackageInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p> <p>To delete a network package, the package must be in a disable state. To disable a network package, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_UpdateSolNetworkPackage.html\">UpdateSolNetworkPackage</a>.</p>",
+      "idempotent":true
+    },
+    "GetSolFunctionInstance":{
+      "name":"GetSolFunctionInstance",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnflcm/v1/vnf_instances/{vnfInstanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolFunctionInstanceInput"},
+      "output":{"shape":"GetSolFunctionInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the details of a network function instance, including the instantiation state and metadata from the function package descriptor in the network function package.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "GetSolFunctionPackage":{
+      "name":"GetSolFunctionPackage",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolFunctionPackageInput"},
+      "output":{"shape":"GetSolFunctionPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the details of an individual function package, such as the operational state and whether the package is in use.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network..</p>"
+    },
+    "GetSolFunctionPackageContent":{
+      "name":"GetSolFunctionPackageContent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}/package_content",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolFunctionPackageContentInput"},
+      "output":{"shape":"GetSolFunctionPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the contents of a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "GetSolFunctionPackageDescriptor":{
+      "name":"GetSolFunctionPackageDescriptor",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}/vnfd",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolFunctionPackageDescriptorInput"},
+      "output":{"shape":"GetSolFunctionPackageDescriptorOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets a function package descriptor in a function package.</p> <p>A function package descriptor is a .yaml file in a function package that uses the TOSCA standard to describe how the network function in the function package should run on your network.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "GetSolNetworkInstance":{
+      "name":"GetSolNetworkInstance",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nslcm/v1/ns_instances/{nsInstanceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolNetworkInstanceInput"},
+      "output":{"shape":"GetSolNetworkInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the details of the network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "GetSolNetworkOperation":{
+      "name":"GetSolNetworkOperation",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nslcm/v1/ns_lcm_op_occs/{nsLcmOpOccId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolNetworkOperationInput"},
+      "output":{"shape":"GetSolNetworkOperationOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the details of a network operation, including the tasks involved in the network operation and the status of the tasks.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "GetSolNetworkPackage":{
+      "name":"GetSolNetworkPackage",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolNetworkPackageInput"},
+      "output":{"shape":"GetSolNetworkPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the details of a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "GetSolNetworkPackageContent":{
+      "name":"GetSolNetworkPackageContent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}/nsd_content",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolNetworkPackageContentInput"},
+      "output":{"shape":"GetSolNetworkPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the contents of a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "GetSolNetworkPackageDescriptor":{
+      "name":"GetSolNetworkPackageDescriptor",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}/nsd",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSolNetworkPackageDescriptorInput"},
+      "output":{"shape":"GetSolNetworkPackageDescriptorOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the content of the network service descriptor.</p> <p>A network service descriptor is a .yaml file in a network package that uses the TOSCA standard to describe the network functions you want to deploy and the Amazon Web Services infrastructure you want to deploy the network functions on.</p>"
+    },
+    "InstantiateSolNetworkInstance":{
+      "name":"InstantiateSolNetworkInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nslcm/v1/ns_instances/{nsInstanceId}/instantiate",
+        "responseCode":201
+      },
+      "input":{"shape":"InstantiateSolNetworkInstanceInput"},
+      "output":{"shape":"InstantiateSolNetworkInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Instantiates a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p> <p>Before you can instantiate a network instance, you have to create a network instance. For more information, see <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_CreateSolNetworkInstance.html\">CreateSolNetworkInstance</a>.</p>"
+    },
+    "ListSolFunctionInstances":{
+      "name":"ListSolFunctionInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnflcm/v1/vnf_instances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSolFunctionInstancesInput"},
+      "output":{"shape":"ListSolFunctionInstancesOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists network function instances.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "ListSolFunctionPackages":{
+      "name":"ListSolFunctionPackages",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSolFunctionPackagesInput"},
+      "output":{"shape":"ListSolFunctionPackagesOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists information about function packages.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "ListSolNetworkInstances":{
+      "name":"ListSolNetworkInstances",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nslcm/v1/ns_instances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSolNetworkInstancesInput"},
+      "output":{"shape":"ListSolNetworkInstancesOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists your network instances.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "ListSolNetworkOperations":{
+      "name":"ListSolNetworkOperations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nslcm/v1/ns_lcm_op_occs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSolNetworkOperationsInput"},
+      "output":{"shape":"ListSolNetworkOperationsOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists details for a network operation, including when the operation started and the status of the operation.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "ListSolNetworkPackages":{
+      "name":"ListSolNetworkPackages",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sol/nsd/v1/ns_descriptors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSolNetworkPackagesInput"},
+      "output":{"shape":"ListSolNetworkPackagesOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists network packages.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists tags for AWS TNB resources.</p>"
+    },
+    "PutSolFunctionPackageContent":{
+      "name":"PutSolFunctionPackageContent",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}/package_content",
+        "responseCode":202
+      },
+      "input":{"shape":"PutSolFunctionPackageContentInput"},
+      "output":{"shape":"PutSolFunctionPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Uploads the contents of a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>",
+      "idempotent":true
+    },
+    "PutSolNetworkPackageContent":{
+      "name":"PutSolNetworkPackageContent",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}/nsd_content",
+        "responseCode":200
+      },
+      "input":{"shape":"PutSolNetworkPackageContentInput"},
+      "output":{"shape":"PutSolNetworkPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Uploads the contents of a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Tags an AWS TNB resource.</p> <p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>",
+      "idempotent":true
+    },
+    "TerminateSolNetworkInstance":{
+      "name":"TerminateSolNetworkInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nslcm/v1/ns_instances/{nsInstanceId}/terminate",
+        "responseCode":201
+      },
+      "input":{"shape":"TerminateSolNetworkInstanceInput"},
+      "output":{"shape":"TerminateSolNetworkInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Terminates a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p> <p>You must terminate a network instance before you can delete it.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Untags an AWS TNB resource.</p> <p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>",
+      "idempotent":true
+    },
+    "UpdateSolFunctionPackage":{
+      "name":"UpdateSolFunctionPackage",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSolFunctionPackageInput"},
+      "output":{"shape":"UpdateSolFunctionPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the operational state of function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "UpdateSolNetworkInstance":{
+      "name":"UpdateSolNetworkInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/sol/nslcm/v1/ns_instances/{nsInstanceId}/update",
+        "responseCode":201
+      },
+      "input":{"shape":"UpdateSolNetworkInstanceInput"},
+      "output":{"shape":"UpdateSolNetworkInstanceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Update a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p> <p>Choose the <i>updateType</i> parameter to target the necessary update of the network instance.</p>"
+    },
+    "UpdateSolNetworkPackage":{
+      "name":"UpdateSolNetworkPackage",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSolNetworkPackageInput"},
+      "output":{"shape":"UpdateSolNetworkPackageOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the operational state of a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p> <p>A network service descriptor is a .yaml file in a network package that uses the TOSCA standard to describe the network functions you want to deploy and the Amazon Web Services infrastructure you want to deploy the network functions on.</p>"
+    },
+    "ValidateSolFunctionPackageContent":{
+      "name":"ValidateSolFunctionPackageContent",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/sol/vnfpkgm/v1/vnf_packages/{vnfPkgId}/package_content/validate",
+        "responseCode":202
+      },
+      "input":{"shape":"ValidateSolFunctionPackageContentInput"},
+      "output":{"shape":"ValidateSolFunctionPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Validates function package content. This can be used as a dry run before uploading function package content with <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_PutSolFunctionPackageContent.html\">PutSolFunctionPackageContent</a>.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>",
+      "idempotent":true
+    },
+    "ValidateSolNetworkPackageContent":{
+      "name":"ValidateSolNetworkPackageContent",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/sol/nsd/v1/ns_descriptors/{nsdInfoId}/nsd_content/validate",
+        "responseCode":200
+      },
+      "input":{"shape":"ValidateSolNetworkPackageContentInput"},
+      "output":{"shape":"ValidateSolNetworkPackageContentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Validates network package content. This can be used as a dry run before uploading network package content with <a href=\"https://docs.aws.amazon.com/tnb/latest/APIReference/API_PutSolNetworkPackageContent.html\">PutSolNetworkPackageContent</a>.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Insufficient permissions to make request.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Blob":{"type":"blob"},
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CancelSolNetworkOperationInput":{
+      "type":"structure",
+      "required":["nsLcmOpOccId"],
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>",
+          "location":"uri",
+          "locationName":"nsLcmOpOccId"
+        }
+      }
+    },
+    "CreateSolFunctionPackageInput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "CreateSolFunctionPackageOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "onboardingState",
+        "operationalState",
+        "usageState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VnfPkgArn",
+          "documentation":"<p>Function package ARN.</p>"
+        },
+        "id":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>"
+        },
+        "onboardingState":{
+          "shape":"OnboardingState",
+          "documentation":"<p>Onboarding state of the function package.</p>"
+        },
+        "operationalState":{
+          "shape":"OperationalState",
+          "documentation":"<p>Operational state of the function package.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "usageState":{
+          "shape":"UsageState",
+          "documentation":"<p>Usage state of the function package.</p>"
+        }
+      }
+    },
+    "CreateSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":[
+        "nsName",
+        "nsdInfoId"
+      ],
+      "members":{
+        "nsDescription":{
+          "shape":"CreateSolNetworkInstanceInputNsDescriptionString",
+          "documentation":"<p>Network instance description.</p>"
+        },
+        "nsName":{
+          "shape":"CreateSolNetworkInstanceInputNsNameString",
+          "documentation":"<p>Network instance name.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID for network service descriptor.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "CreateSolNetworkInstanceInputNsDescriptionString":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "CreateSolNetworkInstanceInputNsNameString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "CreateSolNetworkInstanceOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "nsInstanceName",
+        "nsdInfoId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsInstanceArn",
+          "documentation":"<p>Network instance ARN.</p>"
+        },
+        "id":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance ID.</p>"
+        },
+        "nsInstanceName":{
+          "shape":"String",
+          "documentation":"<p>Network instance name.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network service descriptor ID.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "CreateSolNetworkPackageInput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "CreateSolNetworkPackageOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "nsdOnboardingState",
+        "nsdOperationalState",
+        "nsdUsageState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsdInfoArn",
+          "documentation":"<p>Network package ARN.</p>"
+        },
+        "id":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network package.</p>"
+        },
+        "nsdOnboardingState":{
+          "shape":"NsdOnboardingState",
+          "documentation":"<p>Onboarding state of the network service descriptor in the network package.</p>"
+        },
+        "nsdOperationalState":{
+          "shape":"NsdOperationalState",
+          "documentation":"<p>Operational state of the network service descriptor in the network package.</p>"
+        },
+        "nsdUsageState":{
+          "shape":"NsdUsageState",
+          "documentation":"<p>Usage state of the network service descriptor in the network package.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "DeleteSolFunctionPackageInput":{
+      "type":"structure",
+      "required":["vnfPkgId"],
+      "members":{
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      }
+    },
+    "DeleteSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":["nsInstanceId"],
+      "members":{
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance ID.</p>",
+          "location":"uri",
+          "locationName":"nsInstanceId"
+        }
+      }
+    },
+    "DeleteSolNetworkPackageInput":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      }
+    },
+    "DescriptorContentType":{
+      "type":"string",
+      "enum":["text/plain"]
+    },
+    "Document":{
+      "type":"structure",
+      "members":{
+      },
+      "document":true
+    },
+    "ErrorCause":{
+      "type":"string",
+      "max":200,
+      "min":1
+    },
+    "ErrorDetails":{
+      "type":"string",
+      "max":10240,
+      "min":0
+    },
+    "ErrorInfo":{
+      "type":"structure",
+      "members":{
+        "cause":{
+          "shape":"ErrorCause",
+          "documentation":"<p>Error cause.</p>"
+        },
+        "details":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>Error details.</p>"
+        }
+      },
+      "documentation":"<p>Provides error information.</p>"
+    },
+    "FunctionArtifactMeta":{
+      "type":"structure",
+      "members":{
+        "overrides":{
+          "shape":"OverrideList",
+          "documentation":"<p>Lists of function package overrides.</p>"
+        }
+      },
+      "documentation":"<p>Metadata for function package artifacts.</p> <p>Artifacts are the contents of the package descriptor file and the state of the package.</p>"
+    },
+    "GetSolFunctionInstanceInput":{
+      "type":"structure",
+      "required":["vnfInstanceId"],
+      "members":{
+        "vnfInstanceId":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>ID of the network function.</p>",
+          "location":"uri",
+          "locationName":"vnfInstanceId"
+        }
+      }
+    },
+    "GetSolFunctionInstanceMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        }
+      },
+      "documentation":"<p>The metadata of a network function instance.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "GetSolFunctionInstanceOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "instantiationState",
+        "metadata",
+        "nsInstanceId",
+        "vnfPkgId",
+        "vnfdId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VnfInstanceArn",
+          "documentation":"<p>Network function instance ARN.</p>"
+        },
+        "id":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>Network function instance ID.</p>"
+        },
+        "instantiatedVnfInfo":{"shape":"GetSolVnfInfo"},
+        "instantiationState":{
+          "shape":"VnfInstantiationState",
+          "documentation":"<p>Network function instantiation state.</p>"
+        },
+        "metadata":{"shape":"GetSolFunctionInstanceMetadata"},
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance ID.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>"
+        },
+        "vnfProductName":{
+          "shape":"String",
+          "documentation":"<p>Network function product name.</p>"
+        },
+        "vnfProvider":{
+          "shape":"String",
+          "documentation":"<p>Network function provider.</p>"
+        },
+        "vnfdId":{
+          "shape":"VnfdId",
+          "documentation":"<p>Function package descriptor ID.</p>"
+        },
+        "vnfdVersion":{
+          "shape":"String",
+          "documentation":"<p>Function package descriptor version.</p>"
+        }
+      }
+    },
+    "GetSolFunctionPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "accept",
+        "vnfPkgId"
+      ],
+      "members":{
+        "accept":{
+          "shape":"PackageContentType",
+          "documentation":"<p>The format of the package that you want to download from the function packages.</p>",
+          "location":"header",
+          "locationName":"Accept"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      }
+    },
+    "GetSolFunctionPackageContentOutput":{
+      "type":"structure",
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Indicates the media type of the resource.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "packageContent":{
+          "shape":"Blob",
+          "documentation":"<p>Contents of the function package.</p>"
+        }
+      },
+      "payload":"packageContent"
+    },
+    "GetSolFunctionPackageDescriptorInput":{
+      "type":"structure",
+      "required":[
+        "accept",
+        "vnfPkgId"
+      ],
+      "members":{
+        "accept":{
+          "shape":"DescriptorContentType",
+          "documentation":"<p>Indicates which content types, expressed as MIME types, the client is able to understand.</p>",
+          "location":"header",
+          "locationName":"Accept"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      }
+    },
+    "GetSolFunctionPackageDescriptorOutput":{
+      "type":"structure",
+      "members":{
+        "contentType":{
+          "shape":"DescriptorContentType",
+          "documentation":"<p>Indicates the media type of the resource.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "vnfd":{
+          "shape":"Blob",
+          "documentation":"<p>Contents of the function package descriptor.</p>"
+        }
+      },
+      "payload":"vnfd"
+    },
+    "GetSolFunctionPackageInput":{
+      "type":"structure",
+      "required":["vnfPkgId"],
+      "members":{
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      }
+    },
+    "GetSolFunctionPackageMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        },
+        "vnfd":{
+          "shape":"FunctionArtifactMeta",
+          "documentation":"<p>Metadata related to the function package descriptor of the function package.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to the function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "GetSolFunctionPackageOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "onboardingState",
+        "operationalState",
+        "usageState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VnfPkgArn",
+          "documentation":"<p>Function package ARN.</p>"
+        },
+        "id":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>"
+        },
+        "metadata":{"shape":"GetSolFunctionPackageMetadata"},
+        "onboardingState":{
+          "shape":"OnboardingState",
+          "documentation":"<p>Function package onboarding state.</p>"
+        },
+        "operationalState":{
+          "shape":"OperationalState",
+          "documentation":"<p>Function package operational state.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "usageState":{
+          "shape":"UsageState",
+          "documentation":"<p>Function package usage state.</p>"
+        },
+        "vnfProductName":{
+          "shape":"String",
+          "documentation":"<p>Network function product name.</p>"
+        },
+        "vnfProvider":{
+          "shape":"String",
+          "documentation":"<p>Network function provider.</p>"
+        },
+        "vnfdId":{
+          "shape":"String",
+          "documentation":"<p>Function package descriptor ID.</p>"
+        },
+        "vnfdVersion":{
+          "shape":"String",
+          "documentation":"<p>Function package descriptor version.</p>"
+        }
+      }
+    },
+    "GetSolInstantiatedVnfInfo":{
+      "type":"structure",
+      "members":{
+        "vnfState":{
+          "shape":"VnfOperationalState",
+          "documentation":"<p>State of the network function.</p>"
+        }
+      },
+      "documentation":"<p>Information about a network function.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "GetSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":["nsInstanceId"],
+      "members":{
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance.</p>",
+          "location":"uri",
+          "locationName":"nsInstanceId"
+        }
+      }
+    },
+    "GetSolNetworkInstanceMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        }
+      },
+      "documentation":"<p>The metadata of a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "GetSolNetworkInstanceOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsInstanceDescription",
+        "nsInstanceName",
+        "nsdId",
+        "nsdInfoId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsInstanceArn",
+          "documentation":"<p>Network instance ARN.</p>"
+        },
+        "id":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance ID.</p>"
+        },
+        "lcmOpInfo":{"shape":"LcmOperationInfo"},
+        "metadata":{"shape":"GetSolNetworkInstanceMetadata"},
+        "nsInstanceDescription":{
+          "shape":"String",
+          "documentation":"<p>Network instance description.</p>"
+        },
+        "nsInstanceName":{
+          "shape":"String",
+          "documentation":"<p>Network instance name.</p>"
+        },
+        "nsState":{
+          "shape":"NsState",
+          "documentation":"<p>Network instance state.</p>"
+        },
+        "nsdId":{
+          "shape":"NsdId",
+          "documentation":"<p>Network service descriptor ID.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network service descriptor info ID.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "GetSolNetworkOperationInput":{
+      "type":"structure",
+      "required":["nsLcmOpOccId"],
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>",
+          "location":"uri",
+          "locationName":"nsLcmOpOccId"
+        }
+      }
+    },
+    "GetSolNetworkOperationMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "instantiateMetadata":{
+          "shape":"InstantiateMetadata",
+          "documentation":"<p>Metadata related to the network operation occurrence for network instantiation. This is populated only if the lcmOperationType is <code>INSTANTIATE</code>.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        },
+        "modifyVnfInfoMetadata":{
+          "shape":"ModifyVnfInfoMetadata",
+          "documentation":"<p>Metadata related to the network operation occurrence for network function updates in a network instance. This is populated only if the lcmOperationType is <code>UPDATE</code> and the updateType is <code>MODIFY_VNF_INFORMATION</code>.</p>"
+        },
+        "updateNsMetadata":{
+          "shape":"UpdateNsMetadata",
+          "documentation":"<p>Metadata related to the network operation occurrence for network instance updates. This is populated only if the lcmOperationType is <code>UPDATE</code> and the updateType is <code>UPDATE_NS</code>.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to a network operation occurrence.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "GetSolNetworkOperationOutput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"NsLcmOpOccArn",
+          "documentation":"<p>Network operation ARN.</p>"
+        },
+        "error":{
+          "shape":"ProblemDetails",
+          "documentation":"<p>Error related to this specific network operation occurrence.</p>"
+        },
+        "id":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>ID of this network operation occurrence.</p>"
+        },
+        "lcmOperationType":{
+          "shape":"LcmOperationType",
+          "documentation":"<p>Type of the operation represented by this occurrence.</p>"
+        },
+        "metadata":{
+          "shape":"GetSolNetworkOperationMetadata",
+          "documentation":"<p>Metadata of this network operation occurrence.</p>"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network operation instance.</p>"
+        },
+        "operationState":{
+          "shape":"NsLcmOperationState",
+          "documentation":"<p>The state of the network operation.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "tasks":{
+          "shape":"GetSolNetworkOperationTasksList",
+          "documentation":"<p>All tasks associated with this operation occurrence.</p>"
+        },
+        "updateType":{
+          "shape":"UpdateSolNetworkType",
+          "documentation":"<p>Type of the update. Only present if the network operation lcmOperationType is <code>UPDATE</code>.</p>"
+        }
+      }
+    },
+    "GetSolNetworkOperationTaskDetails":{
+      "type":"structure",
+      "members":{
+        "taskContext":{
+          "shape":"StringMap",
+          "documentation":"<p>Context for the network operation task.</p>"
+        },
+        "taskEndTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>Task end time.</p>"
+        },
+        "taskErrorDetails":{
+          "shape":"ErrorInfo",
+          "documentation":"<p>Task error details.</p>"
+        },
+        "taskName":{
+          "shape":"String",
+          "documentation":"<p>Task name.</p>"
+        },
+        "taskStartTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>Task start time.</p>"
+        },
+        "taskStatus":{
+          "shape":"TaskStatus",
+          "documentation":"<p>Task status.</p>"
+        }
+      },
+      "documentation":"<p>Gets the details of a network operation.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "GetSolNetworkOperationTasksList":{
+      "type":"list",
+      "member":{"shape":"GetSolNetworkOperationTaskDetails"}
+    },
+    "GetSolNetworkPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "accept",
+        "nsdInfoId"
+      ],
+      "members":{
+        "accept":{
+          "shape":"PackageContentType",
+          "documentation":"<p>The format of the package you want to download from the network package.</p>",
+          "location":"header",
+          "locationName":"Accept"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      }
+    },
+    "GetSolNetworkPackageContentOutput":{
+      "type":"structure",
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Indicates the media type of the resource.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "nsdContent":{
+          "shape":"Blob",
+          "documentation":"<p>Content of the network service descriptor in the network package.</p>"
+        }
+      },
+      "payload":"nsdContent"
+    },
+    "GetSolNetworkPackageDescriptorInput":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      }
+    },
+    "GetSolNetworkPackageDescriptorOutput":{
+      "type":"structure",
+      "members":{
+        "contentType":{
+          "shape":"DescriptorContentType",
+          "documentation":"<p>Indicates the media type of the resource.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "nsd":{
+          "shape":"Blob",
+          "documentation":"<p>Contents of the network service descriptor in the network package.</p>"
+        }
+      },
+      "payload":"nsd"
+    },
+    "GetSolNetworkPackageInput":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      }
+    },
+    "GetSolNetworkPackageMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        },
+        "nsd":{
+          "shape":"NetworkArtifactMeta",
+          "documentation":"<p>Metadata related to the onboarded network service descriptor in the network package.</p>"
+        }
+      },
+      "documentation":"<p>Metadata associated with a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "GetSolNetworkPackageOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsdId",
+        "nsdName",
+        "nsdOnboardingState",
+        "nsdOperationalState",
+        "nsdUsageState",
+        "nsdVersion",
+        "vnfPkgIds"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsdInfoArn",
+          "documentation":"<p>Network package ARN.</p>"
+        },
+        "id":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network package ID.</p>"
+        },
+        "metadata":{"shape":"GetSolNetworkPackageMetadata"},
+        "nsdId":{
+          "shape":"NsdId",
+          "documentation":"<p>Network service descriptor ID.</p>"
+        },
+        "nsdName":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor name.</p>"
+        },
+        "nsdOnboardingState":{
+          "shape":"NsdOnboardingState",
+          "documentation":"<p>Network service descriptor onboarding state.</p>"
+        },
+        "nsdOperationalState":{
+          "shape":"NsdOperationalState",
+          "documentation":"<p>Network service descriptor operational state.</p>"
+        },
+        "nsdUsageState":{
+          "shape":"NsdUsageState",
+          "documentation":"<p>Network service descriptor usage state.</p>"
+        },
+        "nsdVersion":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor version.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "vnfPkgIds":{
+          "shape":"VnfPkgIdList",
+          "documentation":"<p>Identifies the function package for the function package descriptor referenced by the onboarded network package.</p>"
+        }
+      }
+    },
+    "GetSolVnfInfo":{
+      "type":"structure",
+      "members":{
+        "vnfState":{
+          "shape":"VnfOperationalState",
+          "documentation":"<p>State of the network function instance.</p>"
+        },
+        "vnfcResourceInfo":{
+          "shape":"GetSolVnfcResourceInfoList",
+          "documentation":"<p>Compute info used by the network function instance.</p>"
+        }
+      },
+      "documentation":"<p>Information about the network function.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "GetSolVnfcResourceInfo":{
+      "type":"structure",
+      "members":{
+        "metadata":{
+          "shape":"GetSolVnfcResourceInfoMetadata",
+          "documentation":"<p>The metadata of the network function compute.</p>"
+        }
+      },
+      "documentation":"<p>Details of resource associated with a network function.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "GetSolVnfcResourceInfoList":{
+      "type":"list",
+      "member":{"shape":"GetSolVnfcResourceInfo"}
+    },
+    "GetSolVnfcResourceInfoMetadata":{
+      "type":"structure",
+      "members":{
+        "cluster":{
+          "shape":"String",
+          "documentation":"<p>Information about the cluster.</p>"
+        },
+        "helmChart":{
+          "shape":"String",
+          "documentation":"<p>Information about the helm chart.</p>"
+        },
+        "nodeGroup":{
+          "shape":"String",
+          "documentation":"<p>Information about the node group.</p>"
+        }
+      },
+      "documentation":"<p>The metadata of a network function.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "InstantiateMetadata":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "additionalParamsForNs":{
+          "shape":"Document",
+          "documentation":"<p>The configurable properties used during instantiation.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>The network service descriptor used for instantiating the network instance.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to the configuration properties used during instantiation of the network instance.</p>"
+    },
+    "InstantiateSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":["nsInstanceId"],
+      "members":{
+        "additionalParamsForNs":{
+          "shape":"Document",
+          "documentation":"<p>Provides values for the configurable properties.</p>"
+        },
+        "dryRun":{
+          "shape":"Boolean",
+          "documentation":"<p>A check for whether you have the required permissions for the action without actually making the request and provides an error response. If you have the required permissions, the error response is <code>DryRunOperation</code>. Otherwise, it is <code>UnauthorizedOperation</code>.</p>",
+          "location":"querystring",
+          "locationName":"dry_run"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance.</p>",
+          "location":"uri",
+          "locationName":"nsInstanceId"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "InstantiateSolNetworkInstanceOutput":{
+      "type":"structure",
+      "required":["nsLcmOpOccId"],
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Unexpected error occurred. Problem on the server.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "LcmOperationInfo":{
+      "type":"structure",
+      "required":["nsLcmOpOccId"],
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>"
+        }
+      },
+      "documentation":"<p>Lifecycle management operation details on the network instance.</p> <p>Lifecycle management operations are deploy, update, or delete operations.</p>"
+    },
+    "LcmOperationType":{
+      "type":"string",
+      "enum":[
+        "INSTANTIATE",
+        "UPDATE",
+        "TERMINATE"
+      ]
+    },
+    "ListSolFunctionInstanceInfo":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "instantiationState",
+        "metadata",
+        "nsInstanceId",
+        "vnfPkgId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VnfInstanceArn",
+          "documentation":"<p>Network function instance ARN.</p>"
+        },
+        "id":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>Network function instance ID.</p>"
+        },
+        "instantiatedVnfInfo":{"shape":"GetSolInstantiatedVnfInfo"},
+        "instantiationState":{
+          "shape":"VnfInstantiationState",
+          "documentation":"<p>Network function instance instantiation state.</p>"
+        },
+        "metadata":{
+          "shape":"ListSolFunctionInstanceMetadata",
+          "documentation":"<p>Network function instance metadata.</p>"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance ID.</p>"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>"
+        },
+        "vnfPkgName":{
+          "shape":"String",
+          "documentation":"<p>Function package name.</p>"
+        }
+      },
+      "documentation":"<p>Lists information about a network function instance.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "ListSolFunctionInstanceMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the network function instance was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the network function instance was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Lists network function instance metadata.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "ListSolFunctionInstanceResources":{
+      "type":"list",
+      "member":{"shape":"ListSolFunctionInstanceInfo"}
+    },
+    "ListSolFunctionInstancesInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSolFunctionInstancesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"max_results"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextpage_opaque_marker"
+        }
+      }
+    },
+    "ListSolFunctionInstancesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSolFunctionInstancesOutput":{
+      "type":"structure",
+      "members":{
+        "functionInstances":{
+          "shape":"ListSolFunctionInstanceResources",
+          "documentation":"<p>Network function instances.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListSolFunctionPackageInfo":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "onboardingState",
+        "operationalState",
+        "usageState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VnfPkgArn",
+          "documentation":"<p>Function package ARN.</p>"
+        },
+        "id":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>"
+        },
+        "metadata":{
+          "shape":"ListSolFunctionPackageMetadata",
+          "documentation":"<p>The metadata of the function package.</p>"
+        },
+        "onboardingState":{
+          "shape":"OnboardingState",
+          "documentation":"<p>Onboarding state of the function package.</p>"
+        },
+        "operationalState":{
+          "shape":"OperationalState",
+          "documentation":"<p>Operational state of the function package.</p>"
+        },
+        "usageState":{
+          "shape":"UsageState",
+          "documentation":"<p>Usage state of the function package.</p>"
+        },
+        "vnfProductName":{
+          "shape":"String",
+          "documentation":"<p>The product name for the network function.</p>"
+        },
+        "vnfProvider":{
+          "shape":"String",
+          "documentation":"<p>Provider of the function package and the function package descriptor.</p>"
+        },
+        "vnfdId":{
+          "shape":"String",
+          "documentation":"<p>Identifies the function package and the function package descriptor.</p>"
+        },
+        "vnfdVersion":{
+          "shape":"String",
+          "documentation":"<p>Identifies the version of the function package descriptor.</p>"
+        }
+      },
+      "documentation":"<p>Information about a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "ListSolFunctionPackageMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details for the function package metadata.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "ListSolFunctionPackageResources":{
+      "type":"list",
+      "member":{"shape":"ListSolFunctionPackageInfo"}
+    },
+    "ListSolFunctionPackagesInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSolFunctionPackagesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"max_results"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextpage_opaque_marker"
+        }
+      }
+    },
+    "ListSolFunctionPackagesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSolFunctionPackagesOutput":{
+      "type":"structure",
+      "required":["functionPackages"],
+      "members":{
+        "functionPackages":{
+          "shape":"ListSolFunctionPackageResources",
+          "documentation":"<p>Function packages. A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListSolNetworkInstanceInfo":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsInstanceDescription",
+        "nsInstanceName",
+        "nsState",
+        "nsdId",
+        "nsdInfoId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsInstanceArn",
+          "documentation":"<p>Network instance ARN.</p>"
+        },
+        "id":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance.</p>"
+        },
+        "metadata":{
+          "shape":"ListSolNetworkInstanceMetadata",
+          "documentation":"<p>The metadata of the network instance.</p>"
+        },
+        "nsInstanceDescription":{
+          "shape":"String",
+          "documentation":"<p>Human-readable description of the network instance.</p>"
+        },
+        "nsInstanceName":{
+          "shape":"String",
+          "documentation":"<p>Human-readable name of the network instance.</p>"
+        },
+        "nsState":{
+          "shape":"NsState",
+          "documentation":"<p>The state of the network instance.</p>"
+        },
+        "nsdId":{
+          "shape":"NsdId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>"
+        }
+      },
+      "documentation":"<p>Info about the specific network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "ListSolNetworkInstanceMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Metadata details for a network instance.</p> <p>A network instance is a single network created in Amazon Web Services TNB that can be deployed and on which life-cycle operations (like terminate, update, and delete) can be performed.</p>"
+    },
+    "ListSolNetworkInstanceResources":{
+      "type":"list",
+      "member":{"shape":"ListSolNetworkInstanceInfo"}
+    },
+    "ListSolNetworkInstancesInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSolNetworkInstancesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"max_results"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextpage_opaque_marker"
+        }
+      }
+    },
+    "ListSolNetworkInstancesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSolNetworkInstancesOutput":{
+      "type":"structure",
+      "members":{
+        "networkInstances":{
+          "shape":"ListSolNetworkInstanceResources",
+          "documentation":"<p>Lists network instances.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListSolNetworkOperationsInfo":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "lcmOperationType",
+        "nsInstanceId",
+        "operationState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsLcmOpOccArn",
+          "documentation":"<p>Network operation ARN.</p>"
+        },
+        "error":{
+          "shape":"ProblemDetails",
+          "documentation":"<p>Error related to this specific network operation.</p>"
+        },
+        "id":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>ID of this network operation.</p>"
+        },
+        "lcmOperationType":{
+          "shape":"LcmOperationType",
+          "documentation":"<p>Type of lifecycle management network operation.</p>"
+        },
+        "metadata":{
+          "shape":"ListSolNetworkOperationsMetadata",
+          "documentation":"<p>Metadata related to this network operation.</p>"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance related to this operation.</p>"
+        },
+        "operationState":{
+          "shape":"NsLcmOperationState",
+          "documentation":"<p>The state of the network operation.</p>"
+        },
+        "updateType":{
+          "shape":"UpdateSolNetworkType",
+          "documentation":"<p>Type of the update. Only present if the network operation lcmOperationType is <code>UPDATE</code>.</p>"
+        }
+      },
+      "documentation":"<p>Information parameters for a network operation.</p>"
+    },
+    "ListSolNetworkOperationsInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSolNetworkOperationsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"max_results"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextpage_opaque_marker"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>Network instance id filter, to retrieve network operations associated to a network instance.</p>",
+          "location":"querystring",
+          "locationName":"nsInstanceId"
+        }
+      }
+    },
+    "ListSolNetworkOperationsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSolNetworkOperationsMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>The network service descriptor id used for the operation.</p> <p>Only present if the updateType is <code>UPDATE_NS</code>.</p>"
+        },
+        "vnfInstanceId":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>The network function id used for the operation.</p> <p>Only present if the updateType is <code>MODIFY_VNF_INFO</code>.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to a network operation.</p> <p>A network operation is any operation that is done to your network, such as network instance instantiation or termination.</p>"
+    },
+    "ListSolNetworkOperationsOutput":{
+      "type":"structure",
+      "members":{
+        "networkOperations":{
+          "shape":"ListSolNetworkOperationsResources",
+          "documentation":"<p>Lists network operation occurrences. Lifecycle management operations are deploy, update, or delete operations.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListSolNetworkOperationsResources":{
+      "type":"list",
+      "member":{"shape":"ListSolNetworkOperationsInfo"}
+    },
+    "ListSolNetworkPackageInfo":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsdOnboardingState",
+        "nsdOperationalState",
+        "nsdUsageState"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsdInfoArn",
+          "documentation":"<p>Network package ARN.</p>"
+        },
+        "id":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the individual network package.</p>"
+        },
+        "metadata":{
+          "shape":"ListSolNetworkPackageMetadata",
+          "documentation":"<p>The metadata of the network package.</p>"
+        },
+        "nsdDesigner":{
+          "shape":"String",
+          "documentation":"<p>Designer of the onboarded network service descriptor in the network package.</p>"
+        },
+        "nsdId":{
+          "shape":"String",
+          "documentation":"<p>ID of the network service descriptor on which the network package is based.</p>"
+        },
+        "nsdInvariantId":{
+          "shape":"String",
+          "documentation":"<p>Identifies a network service descriptor in a version independent manner.</p>"
+        },
+        "nsdName":{
+          "shape":"String",
+          "documentation":"<p>Name of the onboarded network service descriptor in the network package.</p>"
+        },
+        "nsdOnboardingState":{
+          "shape":"NsdOnboardingState",
+          "documentation":"<p>Onboarding state of the network service descriptor in the network package.</p>"
+        },
+        "nsdOperationalState":{
+          "shape":"NsdOperationalState",
+          "documentation":"<p>Operational state of the network service descriptor in the network package.</p>"
+        },
+        "nsdUsageState":{
+          "shape":"NsdUsageState",
+          "documentation":"<p>Usage state of the network service descriptor in the network package.</p>"
+        },
+        "nsdVersion":{
+          "shape":"String",
+          "documentation":"<p>Version of the onboarded network service descriptor in the network package.</p>"
+        },
+        "vnfPkgIds":{
+          "shape":"VnfPkgIdList",
+          "documentation":"<p>Identifies the function package for the function package descriptor referenced by the onboarded network package.</p>"
+        }
+      },
+      "documentation":"<p>Details of a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "ListSolNetworkPackageMetadata":{
+      "type":"structure",
+      "required":[
+        "createdAt",
+        "lastModified"
+      ],
+      "members":{
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was created.</p>"
+        },
+        "lastModified":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date that the resource was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "ListSolNetworkPackageResources":{
+      "type":"list",
+      "member":{"shape":"ListSolNetworkPackageInfo"}
+    },
+    "ListSolNetworkPackagesInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSolNetworkPackagesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"max_results"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextpage_opaque_marker"
+        }
+      }
+    },
+    "ListSolNetworkPackagesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSolNetworkPackagesOutput":{
+      "type":"structure",
+      "required":["networkPackages"],
+      "members":{
+        "networkPackages":{
+          "shape":"ListSolNetworkPackageResources",
+          "documentation":"<p>Network packages. A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"TNBResourceArn",
+          "documentation":"<p>Resource ARN.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "ModifyVnfInfoMetadata":{
+      "type":"structure",
+      "required":[
+        "vnfConfigurableProperties",
+        "vnfInstanceId"
+      ],
+      "members":{
+        "vnfConfigurableProperties":{
+          "shape":"Document",
+          "documentation":"<p>The configurable properties used during update of the network function instance.</p>"
+        },
+        "vnfInstanceId":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>The network function instance that was updated in the network instance.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to the configuration properties used during update of a specific network function in a network instance.</p>"
+    },
+    "NetworkArtifactMeta":{
+      "type":"structure",
+      "members":{
+        "overrides":{
+          "shape":"OverrideList",
+          "documentation":"<p>Lists network package overrides.</p>"
+        }
+      },
+      "documentation":"<p>Metadata for network package artifacts.</p> <p>Artifacts are the contents of the package descriptor file and the state of the package.</p>"
+    },
+    "NsInstanceArn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-b|aws-us-gov):tnb:([a-z]{2}(-(gov|isob|iso))?-(east|west|north|south|central){1,2}-[0-9]):\\d{12}:(network-instance/ni-[a-f0-9]{17})$"
+    },
+    "NsInstanceId":{
+      "type":"string",
+      "pattern":"^ni-[a-f0-9]{17}$"
+    },
+    "NsLcmOpOccArn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-b|aws-us-gov):tnb:([a-z]{2}(-(gov|isob|iso))?-(east|west|north|south|central){1,2}-[0-9]):\\d{12}:(network-operation/no-[a-f0-9]{17})$"
+    },
+    "NsLcmOpOccId":{
+      "type":"string",
+      "pattern":"^no-[a-f0-9]{17}$"
+    },
+    "NsLcmOperationState":{
+      "type":"string",
+      "enum":[
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLING",
+        "CANCELLED"
+      ]
+    },
+    "NsState":{
+      "type":"string",
+      "enum":[
+        "INSTANTIATED",
+        "NOT_INSTANTIATED",
+        "UPDATED",
+        "IMPAIRED",
+        "UPDATE_FAILED",
+        "STOPPED",
+        "DELETED",
+        "INSTANTIATE_IN_PROGRESS",
+        "INTENT_TO_UPDATE_IN_PROGRESS",
+        "UPDATE_IN_PROGRESS",
+        "TERMINATE_IN_PROGRESS"
+      ]
+    },
+    "NsdId":{
+      "type":"string",
+      "pattern":"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "NsdInfoArn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-b|aws-us-gov):tnb:([a-z]{2}(-(gov|isob|iso))?-(east|west|north|south|central){1,2}-[0-9]):\\d{12}:(network-package/np-[a-f0-9]{17})$"
+    },
+    "NsdInfoId":{
+      "type":"string",
+      "pattern":"^np-[a-f0-9]{17}$"
+    },
+    "NsdOnboardingState":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "ONBOARDED",
+        "ERROR"
+      ]
+    },
+    "NsdOperationalState":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "NsdUsageState":{
+      "type":"string",
+      "enum":[
+        "IN_USE",
+        "NOT_IN_USE"
+      ]
+    },
+    "OnboardingState":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "ONBOARDED",
+        "ERROR"
+      ]
+    },
+    "OperationalState":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "OverrideList":{
+      "type":"list",
+      "member":{"shape":"ToscaOverride"}
+    },
+    "PackageContentType":{
+      "type":"string",
+      "enum":["application/zip"]
+    },
+    "PaginationToken":{"type":"string"},
+    "ProblemDetails":{
+      "type":"structure",
+      "required":["detail"],
+      "members":{
+        "detail":{
+          "shape":"String",
+          "documentation":"<p>A human-readable explanation specific to this occurrence of the problem.</p>"
+        },
+        "title":{
+          "shape":"String",
+          "documentation":"<p>A human-readable title of the problem type.</p>"
+        }
+      },
+      "documentation":"<p>Details related to problems with AWS TNB resources.</p>"
+    },
+    "PutSolFunctionPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "file",
+        "vnfPkgId"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Function package content type.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "file":{
+          "shape":"SensitiveBlob",
+          "documentation":"<p>Function package file.</p>"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      },
+      "payload":"file"
+    },
+    "PutSolFunctionPackageContentMetadata":{
+      "type":"structure",
+      "members":{
+        "vnfd":{"shape":"FunctionArtifactMeta"}
+      },
+      "documentation":"<p>Update metadata in a function package.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "PutSolFunctionPackageContentOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "metadata",
+        "vnfProductName",
+        "vnfProvider",
+        "vnfdId",
+        "vnfdVersion"
+      ],
+      "members":{
+        "id":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>"
+        },
+        "metadata":{
+          "shape":"PutSolFunctionPackageContentMetadata",
+          "documentation":"<p>Function package metadata.</p>"
+        },
+        "vnfProductName":{
+          "shape":"String",
+          "documentation":"<p>Function product name.</p>"
+        },
+        "vnfProvider":{
+          "shape":"String",
+          "documentation":"<p>Function provider.</p>"
+        },
+        "vnfdId":{
+          "shape":"VnfdId",
+          "documentation":"<p>Function package descriptor ID.</p>"
+        },
+        "vnfdVersion":{
+          "shape":"String",
+          "documentation":"<p>Function package descriptor version.</p>"
+        }
+      }
+    },
+    "PutSolNetworkPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "file",
+        "nsdInfoId"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Network package content type.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "file":{
+          "shape":"SensitiveBlob",
+          "documentation":"<p>Network package file.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network service descriptor info ID.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      },
+      "payload":"file"
+    },
+    "PutSolNetworkPackageContentMetadata":{
+      "type":"structure",
+      "members":{
+        "nsd":{"shape":"NetworkArtifactMeta"}
+      },
+      "documentation":"<p>Update metadata in a network package.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "PutSolNetworkPackageContentOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsdId",
+        "nsdName",
+        "nsdVersion",
+        "vnfPkgIds"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsdInfoArn",
+          "documentation":"<p>Network package ARN.</p>"
+        },
+        "id":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network package ID.</p>"
+        },
+        "metadata":{
+          "shape":"PutSolNetworkPackageContentMetadata",
+          "documentation":"<p>Network package metadata.</p>"
+        },
+        "nsdId":{
+          "shape":"NsdId",
+          "documentation":"<p>Network service descriptor ID.</p>"
+        },
+        "nsdName":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor name.</p>"
+        },
+        "nsdVersion":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor version.</p>"
+        },
+        "vnfPkgIds":{
+          "shape":"VnfPkgIdList",
+          "documentation":"<p>Function package IDs.</p>"
+        }
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Request references a resource that doesn't exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SensitiveBlob":{
+      "type":"blob",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Service quotas have been exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "StringMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TNBResourceArn":{
+      "type":"string",
+      "pattern":"^arn:aws:tnb:[a-z0-9-]+:[^:]*:.*$"
+    },
+    "TagKey":{
+      "type":"string",
+      "pattern":"^(?!aws:).{1,128}$"
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0,
+      "sensitive":true
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"TNBResourceArn",
+          "documentation":"<p>Resource ARN.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. You can use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TaskStatus":{
+      "type":"string",
+      "enum":[
+        "SCHEDULED",
+        "STARTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "ERROR",
+        "SKIPPED",
+        "CANCELLED"
+      ]
+    },
+    "TerminateSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":["nsInstanceId"],
+      "members":{
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance.</p>",
+          "location":"uri",
+          "locationName":"nsInstanceId"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "TerminateSolNetworkInstanceOutput":{
+      "type":"structure",
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception caused by throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ToscaOverride":{
+      "type":"structure",
+      "members":{
+        "defaultValue":{
+          "shape":"String",
+          "documentation":"<p>Default value for the override.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>Name of the TOSCA override.</p>"
+        }
+      },
+      "documentation":"<p>Overrides of the TOSCA node.</p>"
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"TNBResourceArn",
+          "documentation":"<p>Resource ARN.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>Tag keys.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateNsMetadata":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "additionalParamsForNs":{
+          "shape":"Document",
+          "documentation":"<p>The configurable properties used during update.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>The network service descriptor used for updating the network instance.</p>"
+        }
+      },
+      "documentation":"<p>Metadata related to the configuration properties used during update of a network instance.</p>"
+    },
+    "UpdateSolFunctionPackageInput":{
+      "type":"structure",
+      "required":[
+        "operationalState",
+        "vnfPkgId"
+      ],
+      "members":{
+        "operationalState":{
+          "shape":"OperationalState",
+          "documentation":"<p>Operational state of the function package.</p>"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>ID of the function package.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      }
+    },
+    "UpdateSolFunctionPackageOutput":{
+      "type":"structure",
+      "required":["operationalState"],
+      "members":{
+        "operationalState":{
+          "shape":"OperationalState",
+          "documentation":"<p>Operational state of the function package.</p>"
+        }
+      }
+    },
+    "UpdateSolNetworkInstanceInput":{
+      "type":"structure",
+      "required":[
+        "nsInstanceId",
+        "updateType"
+      ],
+      "members":{
+        "modifyVnfInfoData":{
+          "shape":"UpdateSolNetworkModify",
+          "documentation":"<p>Identifies the network function information parameters and/or the configurable properties of the network function to be modified.</p> <p>Include this property only if the update type is <code>MODIFY_VNF_INFORMATION</code>.</p>"
+        },
+        "nsInstanceId":{
+          "shape":"NsInstanceId",
+          "documentation":"<p>ID of the network instance.</p>",
+          "location":"uri",
+          "locationName":"nsInstanceId"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        },
+        "updateNs":{
+          "shape":"UpdateSolNetworkServiceData",
+          "documentation":"<p>Identifies the network service descriptor and the configurable properties of the descriptor, to be used for the update.</p> <p>Include this property only if the update type is <code>UPDATE_NS</code>.</p>"
+        },
+        "updateType":{
+          "shape":"UpdateSolNetworkType",
+          "documentation":"<p>The type of update.</p> <ul> <li> <p>Use the <code>MODIFY_VNF_INFORMATION</code> update type, to update a specific network function configuration, in the network instance.</p> </li> <li> <p>Use the <code>UPDATE_NS</code> update type, to update the network instance to a new network service descriptor.</p> </li> </ul>"
+        }
+      }
+    },
+    "UpdateSolNetworkInstanceOutput":{
+      "type":"structure",
+      "members":{
+        "nsLcmOpOccId":{
+          "shape":"NsLcmOpOccId",
+          "documentation":"<p>The identifier of the network operation.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key and an optional value. When you use this API, the tags are only applied to the network operation that is created. These tags are not applied to the network instance. Use tags to search and filter your resources or track your Amazon Web Services costs.</p>"
+        }
+      }
+    },
+    "UpdateSolNetworkModify":{
+      "type":"structure",
+      "required":[
+        "vnfConfigurableProperties",
+        "vnfInstanceId"
+      ],
+      "members":{
+        "vnfConfigurableProperties":{
+          "shape":"Document",
+          "documentation":"<p>Provides values for the configurable properties declared in the function package descriptor.</p>"
+        },
+        "vnfInstanceId":{
+          "shape":"VnfInstanceId",
+          "documentation":"<p>ID of the network function instance.</p> <p>A network function instance is a function in a function package .</p>"
+        }
+      },
+      "documentation":"<p>Information parameters and/or the configurable properties for a network function.</p> <p>A network function instance is a function in a function package .</p>"
+    },
+    "UpdateSolNetworkPackageInput":{
+      "type":"structure",
+      "required":[
+        "nsdInfoId",
+        "nsdOperationalState"
+      ],
+      "members":{
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor in the network package.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        },
+        "nsdOperationalState":{
+          "shape":"NsdOperationalState",
+          "documentation":"<p>Operational state of the network service descriptor in the network package.</p>"
+        }
+      }
+    },
+    "UpdateSolNetworkPackageOutput":{
+      "type":"structure",
+      "required":["nsdOperationalState"],
+      "members":{
+        "nsdOperationalState":{
+          "shape":"NsdOperationalState",
+          "documentation":"<p>Operational state of the network service descriptor in the network package.</p>"
+        }
+      }
+    },
+    "UpdateSolNetworkServiceData":{
+      "type":"structure",
+      "required":["nsdInfoId"],
+      "members":{
+        "additionalParamsForNs":{
+          "shape":"Document",
+          "documentation":"<p>Values for the configurable properties declared in the network service descriptor.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>ID of the network service descriptor.</p>"
+        }
+      },
+      "documentation":"<p>Information parameters and/or the configurable properties for a network descriptor used for update.</p>"
+    },
+    "UpdateSolNetworkType":{
+      "type":"string",
+      "enum":[
+        "MODIFY_VNF_INFORMATION",
+        "UPDATE_NS"
+      ]
+    },
+    "UsageState":{
+      "type":"string",
+      "enum":[
+        "IN_USE",
+        "NOT_IN_USE"
+      ]
+    },
+    "ValidateSolFunctionPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "file",
+        "vnfPkgId"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Function package content type.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "file":{
+          "shape":"SensitiveBlob",
+          "documentation":"<p>Function package file.</p>"
+        },
+        "vnfPkgId":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>",
+          "location":"uri",
+          "locationName":"vnfPkgId"
+        }
+      },
+      "payload":"file"
+    },
+    "ValidateSolFunctionPackageContentMetadata":{
+      "type":"structure",
+      "members":{
+        "vnfd":{"shape":"FunctionArtifactMeta"}
+      },
+      "documentation":"<p>Validates function package content metadata.</p> <p>A function package is a .zip file in CSAR (Cloud Service Archive) format that contains a network function (an ETSI standard telecommunication application) and function package descriptor that uses the TOSCA standard to describe how the network functions should run on your network.</p>"
+    },
+    "ValidateSolFunctionPackageContentOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "metadata",
+        "vnfProductName",
+        "vnfProvider",
+        "vnfdId",
+        "vnfdVersion"
+      ],
+      "members":{
+        "id":{
+          "shape":"VnfPkgId",
+          "documentation":"<p>Function package ID.</p>"
+        },
+        "metadata":{
+          "shape":"ValidateSolFunctionPackageContentMetadata",
+          "documentation":"<p>Function package metadata.</p>"
+        },
+        "vnfProductName":{
+          "shape":"String",
+          "documentation":"<p>Network function product name.</p>"
+        },
+        "vnfProvider":{
+          "shape":"String",
+          "documentation":"<p>Network function provider.</p>"
+        },
+        "vnfdId":{
+          "shape":"VnfdId",
+          "documentation":"<p>Function package descriptor ID.</p>"
+        },
+        "vnfdVersion":{
+          "shape":"String",
+          "documentation":"<p>Function package descriptor version.</p>"
+        }
+      }
+    },
+    "ValidateSolNetworkPackageContentInput":{
+      "type":"structure",
+      "required":[
+        "file",
+        "nsdInfoId"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"PackageContentType",
+          "documentation":"<p>Network package content type.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "file":{
+          "shape":"SensitiveBlob",
+          "documentation":"<p>Network package file.</p>"
+        },
+        "nsdInfoId":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network service descriptor file.</p>",
+          "location":"uri",
+          "locationName":"nsdInfoId"
+        }
+      },
+      "payload":"file"
+    },
+    "ValidateSolNetworkPackageContentMetadata":{
+      "type":"structure",
+      "members":{
+        "nsd":{"shape":"NetworkArtifactMeta"}
+      },
+      "documentation":"<p>Validates network package content metadata.</p> <p>A network package is a .zip file in CSAR (Cloud Service Archive) format defines the function packages you want to deploy and the Amazon Web Services infrastructure you want to deploy them on.</p>"
+    },
+    "ValidateSolNetworkPackageContentOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "metadata",
+        "nsdId",
+        "nsdName",
+        "nsdVersion",
+        "vnfPkgIds"
+      ],
+      "members":{
+        "arn":{
+          "shape":"NsdInfoArn",
+          "documentation":"<p>Network package ARN.</p>"
+        },
+        "id":{
+          "shape":"NsdInfoId",
+          "documentation":"<p>Network package ID.</p>"
+        },
+        "metadata":{
+          "shape":"ValidateSolNetworkPackageContentMetadata",
+          "documentation":"<p>Network package metadata.</p>"
+        },
+        "nsdId":{
+          "shape":"NsdId",
+          "documentation":"<p>Network service descriptor ID.</p>"
+        },
+        "nsdName":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor name.</p>"
+        },
+        "nsdVersion":{
+          "shape":"String",
+          "documentation":"<p>Network service descriptor version.</p>"
+        },
+        "vnfPkgIds":{
+          "shape":"VnfPkgIdList",
+          "documentation":"<p>Function package IDs.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Unable to process the request because the client provided input failed to satisfy request constraints.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VnfInstanceArn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-b|aws-us-gov):tnb:([a-z]{2}(-(gov|isob|iso))?-(east|west|north|south|central){1,2}-[0-9]):\\d{12}:(function-instance/fi-[a-f0-9]{17})$"
+    },
+    "VnfInstanceId":{
+      "type":"string",
+      "pattern":"^fi-[a-f0-9]{17}$"
+    },
+    "VnfInstantiationState":{
+      "type":"string",
+      "enum":[
+        "INSTANTIATED",
+        "NOT_INSTANTIATED"
+      ]
+    },
+    "VnfOperationalState":{
+      "type":"string",
+      "enum":[
+        "STARTED",
+        "STOPPED"
+      ]
+    },
+    "VnfPkgArn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-b|aws-us-gov):tnb:([a-z]{2}(-(gov|isob|iso))?-(east|west|north|south|central){1,2}-[0-9]):\\d{12}:(function-package/fp-[a-f0-9]{17})$"
+    },
+    "VnfPkgId":{
+      "type":"string",
+      "pattern":"^fp-[a-f0-9]{17}$"
+    },
+    "VnfPkgIdList":{
+      "type":"list",
+      "member":{"shape":"VnfPkgId"}
+    },
+    "VnfdId":{
+      "type":"string",
+      "pattern":"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    }
+  },
+  "documentation":"<p> Amazon Web Services Telco Network Builder (TNB) is a network automation service that helps you deploy and manage telecom networks. AWS TNB helps you with the lifecycle management of your telecommunication network functions throughout planning, deployment, and post-deployment activities.</p>"
+}

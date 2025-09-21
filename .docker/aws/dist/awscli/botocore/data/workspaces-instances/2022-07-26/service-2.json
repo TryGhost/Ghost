@@ -1,0 +1,1945 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-07-26",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"workspaces-instances",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"Amazon Workspaces Instances",
+    "serviceId":"Workspaces Instances",
+    "signatureVersion":"v4",
+    "signingName":"workspaces-instances",
+    "targetPrefix":"EUCMIFrontendAPIService",
+    "uid":"workspaces-instances-2022-07-26"
+  },
+  "operations":{
+    "AssociateVolume":{
+      "name":"AssociateVolume",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateVolumeRequest"},
+      "output":{"shape":"AssociateVolumeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Attaches a volume to a WorkSpace Instance.</p>"
+    },
+    "CreateVolume":{
+      "name":"CreateVolume",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateVolumeRequest"},
+      "output":{"shape":"CreateVolumeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a new volume for WorkSpace Instances.</p>",
+      "idempotent":true
+    },
+    "CreateWorkspaceInstance":{
+      "name":"CreateWorkspaceInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateWorkspaceInstanceRequest"},
+      "output":{"shape":"CreateWorkspaceInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Launches a new WorkSpace Instance with specified configuration parameters, enabling programmatic workspace deployment.</p>",
+      "idempotent":true
+    },
+    "DeleteVolume":{
+      "name":"DeleteVolume",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteVolumeRequest"},
+      "output":{"shape":"DeleteVolumeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a specified volume.</p>"
+    },
+    "DeleteWorkspaceInstance":{
+      "name":"DeleteWorkspaceInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteWorkspaceInstanceRequest"},
+      "output":{"shape":"DeleteWorkspaceInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes the specified WorkSpace</p>"
+    },
+    "DisassociateVolume":{
+      "name":"DisassociateVolume",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisassociateVolumeRequest"},
+      "output":{"shape":"DisassociateVolumeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Detaches a volume from a WorkSpace Instance.</p>"
+    },
+    "GetWorkspaceInstance":{
+      "name":"GetWorkspaceInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetWorkspaceInstanceRequest"},
+      "output":{"shape":"GetWorkspaceInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about a specific WorkSpace Instance.</p>"
+    },
+    "ListInstanceTypes":{
+      "name":"ListInstanceTypes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInstanceTypesRequest"},
+      "output":{"shape":"ListInstanceTypesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of instance types supported by Amazon WorkSpaces Instances, enabling precise workspace infrastructure configuration.</p>"
+    },
+    "ListRegions":{
+      "name":"ListRegions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRegionsRequest"},
+      "output":{"shape":"ListRegionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of AWS regions supported by Amazon WorkSpaces Instances, enabling region discovery for workspace deployments.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves tags for a WorkSpace Instance.</p>"
+    },
+    "ListWorkspaceInstances":{
+      "name":"ListWorkspaceInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWorkspaceInstancesRequest"},
+      "output":{"shape":"ListWorkspaceInstancesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a collection of WorkSpaces Instances based on specified filters.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds tags to a WorkSpace Instance.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes tags from a WorkSpace Instance.</p>"
+    }
+  },
+  "shapes":{
+    "ARN":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:.*"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Detailed explanation of the access denial.</p>"
+        }
+      },
+      "documentation":"<p>Indicates insufficient permissions to perform the requested action.</p>",
+      "exception":true
+    },
+    "AmdSevSnpEnum":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled"
+      ]
+    },
+    "AssociateVolumeRequest":{
+      "type":"structure",
+      "required":[
+        "WorkspaceInstanceId",
+        "VolumeId",
+        "Device"
+      ],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>WorkSpace Instance to attach volume to.</p>"
+        },
+        "VolumeId":{
+          "shape":"VolumeId",
+          "documentation":"<p>Volume to be attached.</p>"
+        },
+        "Device":{
+          "shape":"DeviceName",
+          "documentation":"<p>Device path for volume attachment.</p>"
+        }
+      },
+      "documentation":"<p>Specifies volume attachment parameters.</p>"
+    },
+    "AssociateVolumeResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms volume attachment.</p>"
+    },
+    "AutoRecoveryEnum":{
+      "type":"string",
+      "enum":[
+        "disabled",
+        "default"
+      ]
+    },
+    "AvailabilityZone":{
+      "type":"string",
+      "pattern":"[a-z]{2}-[a-z]+-\\d[a-z](-[a-z0-9]+)?"
+    },
+    "BandwidthWeightingEnum":{
+      "type":"string",
+      "enum":[
+        "default",
+        "vpc-1",
+        "ebs-1"
+      ]
+    },
+    "BlockDeviceMappingRequest":{
+      "type":"structure",
+      "members":{
+        "DeviceName":{
+          "shape":"DeviceName",
+          "documentation":"<p>Name of the device for storage mapping.</p>"
+        },
+        "Ebs":{
+          "shape":"EbsBlockDevice",
+          "documentation":"<p>EBS volume configuration for the device.</p>"
+        },
+        "NoDevice":{
+          "shape":"DeviceName",
+          "documentation":"<p>Indicates device should not be mapped.</p>"
+        },
+        "VirtualName":{
+          "shape":"VirtualName",
+          "documentation":"<p>Virtual device name for ephemeral storage.</p>"
+        }
+      },
+      "documentation":"<p>Defines device mapping for WorkSpace Instance storage.</p>"
+    },
+    "BlockDeviceMappings":{
+      "type":"list",
+      "member":{"shape":"BlockDeviceMappingRequest"}
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CapacityReservationPreferenceEnum":{
+      "type":"string",
+      "enum":[
+        "capacity-reservations-only",
+        "open",
+        "none"
+      ]
+    },
+    "CapacityReservationSpecification":{
+      "type":"structure",
+      "members":{
+        "CapacityReservationPreference":{
+          "shape":"CapacityReservationPreferenceEnum",
+          "documentation":"<p>Preference for using capacity reservation.</p>"
+        },
+        "CapacityReservationTarget":{
+          "shape":"CapacityReservationTarget",
+          "documentation":"<p>Specific capacity reservation target.</p>"
+        }
+      },
+      "documentation":"<p>Specifies capacity reservation preferences.</p>"
+    },
+    "CapacityReservationTarget":{
+      "type":"structure",
+      "members":{
+        "CapacityReservationId":{
+          "shape":"String128",
+          "documentation":"<p>Unique identifier for the capacity reservation.</p>"
+        },
+        "CapacityReservationResourceGroupArn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the capacity reservation resource group.</p>"
+        }
+      },
+      "documentation":"<p>Identifies a specific capacity reservation.</p>"
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "sensitive":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Description of the conflict encountered.</p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the conflicting resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the conflicting resource.</p>"
+        }
+      },
+      "documentation":"<p>Signals a conflict with the current state of the resource.</p>",
+      "exception":true
+    },
+    "ConnectionTrackingSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "TcpEstablishedTimeout":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Timeout for established TCP connections.</p>"
+        },
+        "UdpStreamTimeout":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Timeout for UDP stream connections.</p>"
+        },
+        "UdpTimeout":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>General timeout for UDP connections.</p>"
+        }
+      },
+      "documentation":"<p>Defines connection tracking parameters for network interfaces.</p>"
+    },
+    "CpuCreditsEnum":{
+      "type":"string",
+      "enum":[
+        "standard",
+        "unlimited"
+      ]
+    },
+    "CpuOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "AmdSevSnp":{
+          "shape":"AmdSevSnpEnum",
+          "documentation":"<p>AMD Secure Encrypted Virtualization configuration.</p>"
+        },
+        "CoreCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of CPU cores to allocate.</p>"
+        },
+        "ThreadsPerCore":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of threads per CPU core.</p>"
+        }
+      },
+      "documentation":"<p>Configures CPU-specific settings for WorkSpace Instance.</p>"
+    },
+    "CreateVolumeRequest":{
+      "type":"structure",
+      "required":["AvailabilityZone"],
+      "members":{
+        "AvailabilityZone":{
+          "shape":"String64",
+          "documentation":"<p>Availability zone for the volume.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique token to prevent duplicate volume creation.</p>",
+          "idempotencyToken":true
+        },
+        "Encrypted":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates if the volume should be encrypted.</p>"
+        },
+        "Iops":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Input/output operations per second for the volume.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>KMS key for volume encryption.</p>"
+        },
+        "SizeInGB":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Volume size in gigabytes.</p>"
+        },
+        "SnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>Source snapshot for volume creation.</p>"
+        },
+        "TagSpecifications":{
+          "shape":"TagSpecifications",
+          "documentation":"<p>Metadata tags for the volume.</p>"
+        },
+        "Throughput":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Volume throughput performance.</p>"
+        },
+        "VolumeType":{
+          "shape":"VolumeTypeEnum",
+          "documentation":"<p>Type of EBS volume.</p>"
+        }
+      },
+      "documentation":"<p>Specifies volume creation parameters.</p>"
+    },
+    "CreateVolumeResponse":{
+      "type":"structure",
+      "members":{
+        "VolumeId":{
+          "shape":"VolumeId",
+          "documentation":"<p>Unique identifier for the new volume.</p>"
+        }
+      },
+      "documentation":"<p>Returns the created volume identifier.</p>"
+    },
+    "CreateWorkspaceInstanceRequest":{
+      "type":"structure",
+      "required":["ManagedInstance"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique token to ensure idempotent instance creation, preventing duplicate workspace launches.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Optional metadata tags for categorizing and managing WorkSpaces Instances.</p>"
+        },
+        "ManagedInstance":{
+          "shape":"ManagedInstanceRequest",
+          "documentation":"<p>Comprehensive configuration settings for the WorkSpaces Instance, including network, compute, and storage parameters.</p>"
+        }
+      },
+      "documentation":"<p>Defines the configuration parameters for creating a new WorkSpaces Instance.</p>"
+    },
+    "CreateWorkspaceInstanceResponse":{
+      "type":"structure",
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier assigned to the newly created WorkSpaces Instance.</p>"
+        }
+      },
+      "documentation":"<p>Returns the unique identifier for the newly created WorkSpaces Instance.</p>"
+    },
+    "CreditSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "CpuCredits":{
+          "shape":"CpuCreditsEnum",
+          "documentation":"<p>CPU credit specification mode.</p>"
+        }
+      },
+      "documentation":"<p>Defines CPU credit configuration for burstable instances.</p>"
+    },
+    "DeleteVolumeRequest":{
+      "type":"structure",
+      "required":["VolumeId"],
+      "members":{
+        "VolumeId":{
+          "shape":"VolumeId",
+          "documentation":"<p>Identifier of the volume to delete.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the volume to delete.</p>"
+    },
+    "DeleteVolumeResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms volume deletion.</p>"
+    },
+    "DeleteWorkspaceInstanceRequest":{
+      "type":"structure",
+      "required":["WorkspaceInstanceId"],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the WorkSpaces Instance targeted for deletion.</p>"
+        }
+      },
+      "documentation":"<p>The WorkSpace to delete</p>"
+    },
+    "DeleteWorkspaceInstanceResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms the successful deletion of the specified WorkSpace Instance.</p>"
+    },
+    "Description":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "DeviceName":{
+      "type":"string",
+      "max":32,
+      "min":0
+    },
+    "DisassociateModeEnum":{
+      "type":"string",
+      "enum":[
+        "FORCE",
+        "NO_FORCE"
+      ]
+    },
+    "DisassociateVolumeRequest":{
+      "type":"structure",
+      "required":[
+        "WorkspaceInstanceId",
+        "VolumeId"
+      ],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>WorkSpace Instance to detach volume from.</p>"
+        },
+        "VolumeId":{
+          "shape":"VolumeId",
+          "documentation":"<p>Volume to be detached.</p>"
+        },
+        "Device":{
+          "shape":"DeviceName",
+          "documentation":"<p>Device path of volume to detach.</p>"
+        },
+        "DisassociateMode":{
+          "shape":"DisassociateModeEnum",
+          "documentation":"<p>Mode for volume detachment.</p>"
+        }
+      },
+      "documentation":"<p>Specifies volume detachment parameters.</p>"
+    },
+    "DisassociateVolumeResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms volume detachment.</p>"
+    },
+    "EC2InstanceError":{
+      "type":"structure",
+      "members":{
+        "EC2ErrorCode":{
+          "shape":"String",
+          "documentation":"<p>Unique error code identifying the specific EC2 instance error.</p>"
+        },
+        "EC2ExceptionType":{
+          "shape":"String",
+          "documentation":"<p>Type of exception encountered during EC2 instance operation.</p>"
+        },
+        "EC2ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>Detailed description of the EC2 instance error.</p>"
+        }
+      },
+      "documentation":"<p>Captures detailed error information for EC2 instance operations.</p>"
+    },
+    "EC2InstanceErrors":{
+      "type":"list",
+      "member":{"shape":"EC2InstanceError"}
+    },
+    "EC2ManagedInstance":{
+      "type":"structure",
+      "members":{
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>Unique identifier of the managed EC2 instance.</p>"
+        }
+      },
+      "documentation":"<p>Represents an EC2 instance managed by WorkSpaces.</p>"
+    },
+    "EbsBlockDevice":{
+      "type":"structure",
+      "members":{
+        "VolumeType":{
+          "shape":"VolumeTypeEnum",
+          "documentation":"<p>Type of EBS volume (e.g., gp2, io1).</p>"
+        },
+        "Encrypted":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates if the volume is encrypted.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>KMS key used for volume encryption.</p>"
+        },
+        "Iops":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Input/output operations per second for the volume.</p>"
+        },
+        "Throughput":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Volume data transfer rate.</p>"
+        },
+        "VolumeSize":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Size of the EBS volume in gigabytes.</p>"
+        }
+      },
+      "documentation":"<p>Defines configuration for an Elastic Block Store volume.</p>"
+    },
+    "EnaSrdSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "EnaSrdEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables or disables ENA SRD for network performance.</p>"
+        },
+        "EnaSrdUdpSpecification":{
+          "shape":"EnaSrdUdpSpecificationRequest",
+          "documentation":"<p>Configures UDP-specific ENA SRD settings.</p>"
+        }
+      },
+      "documentation":"<p>Defines Elastic Network Adapter (ENA) Scalable Reliable Datagram (SRD) configuration.</p>"
+    },
+    "EnaSrdUdpSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "EnaSrdUdpEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables or disables ENA SRD for UDP traffic.</p>"
+        }
+      },
+      "documentation":"<p>Specifies UDP configuration for ENA SRD.</p>"
+    },
+    "EnclaveOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "Enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables or disables AWS Nitro Enclaves for enhanced security.</p>"
+        }
+      },
+      "documentation":"<p>Configures AWS Nitro Enclave options for the WorkSpace Instance.</p>"
+    },
+    "GetWorkspaceInstanceRequest":{
+      "type":"structure",
+      "required":["WorkspaceInstanceId"],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the WorkSpace Instance to retrieve.</p>"
+        }
+      },
+      "documentation":"<p>Identifies the WorkSpaces Instance to retrieve detailed information for.</p>"
+    },
+    "GetWorkspaceInstanceResponse":{
+      "type":"structure",
+      "members":{
+        "WorkspaceInstanceErrors":{
+          "shape":"WorkspaceInstanceErrors",
+          "documentation":"<p>Captures any errors specific to the WorkSpace Instance lifecycle.</p>"
+        },
+        "EC2InstanceErrors":{
+          "shape":"EC2InstanceErrors",
+          "documentation":"<p>Includes any underlying EC2 instance errors encountered.</p>"
+        },
+        "ProvisionState":{
+          "shape":"ProvisionStateEnum",
+          "documentation":"<p>Current provisioning state of the WorkSpaces Instance.</p>"
+        },
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the retrieved WorkSpaces Instance.</p>"
+        },
+        "EC2ManagedInstance":{
+          "shape":"EC2ManagedInstance",
+          "documentation":"<p>Details of the associated EC2 managed instance.</p>"
+        }
+      },
+      "documentation":"<p>Provides comprehensive details about the requested WorkSpaces Instance.</p>"
+    },
+    "HibernationOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "Configured":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables or disables instance hibernation capability.</p>"
+        }
+      },
+      "documentation":"<p>Defines hibernation configuration for the WorkSpace Instance.</p>"
+    },
+    "HostId":{
+      "type":"string",
+      "pattern":"h-[0-9a-zA-Z]{1,63}"
+    },
+    "HostnameTypeEnum":{
+      "type":"string",
+      "enum":[
+        "ip-name",
+        "resource-name"
+      ]
+    },
+    "HttpEndpointEnum":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled"
+      ]
+    },
+    "HttpProtocolIpv6Enum":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled"
+      ]
+    },
+    "HttpPutResponseHopLimit":{
+      "type":"integer",
+      "box":true,
+      "max":64,
+      "min":1
+    },
+    "HttpTokensEnum":{
+      "type":"string",
+      "enum":[
+        "optional",
+        "required"
+      ]
+    },
+    "IamInstanceProfileSpecification":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ARN",
+          "documentation":"<p>Amazon Resource Name (ARN) of the IAM instance profile.</p>"
+        },
+        "Name":{
+          "shape":"String64",
+          "documentation":"<p>Name of the IAM instance profile.</p>"
+        }
+      },
+      "documentation":"<p>Defines IAM instance profile configuration for WorkSpace Instance.</p>"
+    },
+    "ImageId":{
+      "type":"string",
+      "pattern":"ami-[0-9a-zA-Z]{1,63}"
+    },
+    "InstanceInterruptionBehaviorEnum":{
+      "type":"string",
+      "enum":[
+        "hibernate",
+        "stop"
+      ]
+    },
+    "InstanceIpv6Address":{
+      "type":"structure",
+      "members":{
+        "Ipv6Address":{
+          "shape":"Ipv6Address",
+          "documentation":"<p>Specific IPv6 address assigned to the instance.</p>"
+        },
+        "IsPrimaryIpv6":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates if this is the primary IPv6 address for the instance.</p>"
+        }
+      },
+      "documentation":"<p>Represents an IPv6 address configuration for a WorkSpace Instance.</p>"
+    },
+    "InstanceMaintenanceOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "AutoRecovery":{
+          "shape":"AutoRecoveryEnum",
+          "documentation":"<p>Enables or disables automatic instance recovery.</p>"
+        }
+      },
+      "documentation":"<p>Configures automatic maintenance settings for WorkSpace Instance.</p>"
+    },
+    "InstanceMarketOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "MarketType":{
+          "shape":"MarketTypeEnum",
+          "documentation":"<p>Specifies the type of marketplace for instance deployment.</p>"
+        },
+        "SpotOptions":{
+          "shape":"SpotMarketOptions",
+          "documentation":"<p>Configuration options for spot instance deployment.</p>"
+        }
+      },
+      "documentation":"<p>Configures marketplace-specific instance deployment options.</p>"
+    },
+    "InstanceMetadataOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "HttpEndpoint":{
+          "shape":"HttpEndpointEnum",
+          "documentation":"<p>Enables or disables HTTP endpoint for instance metadata.</p>"
+        },
+        "HttpProtocolIpv6":{
+          "shape":"HttpProtocolIpv6Enum",
+          "documentation":"<p>Configures IPv6 support for instance metadata HTTP protocol.</p>"
+        },
+        "HttpPutResponseHopLimit":{
+          "shape":"HttpPutResponseHopLimit",
+          "documentation":"<p>Sets maximum number of network hops for metadata PUT responses.</p>"
+        },
+        "HttpTokens":{
+          "shape":"HttpTokensEnum",
+          "documentation":"<p>Configures token requirement for instance metadata retrieval.</p>"
+        },
+        "InstanceMetadataTags":{
+          "shape":"InstanceMetadataTagsEnum",
+          "documentation":"<p>Enables or disables instance metadata tags retrieval.</p>"
+        }
+      },
+      "documentation":"<p>Defines instance metadata service configuration.</p>"
+    },
+    "InstanceMetadataTagsEnum":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled"
+      ]
+    },
+    "InstanceNetworkInterfaceSpecification":{
+      "type":"structure",
+      "members":{
+        "AssociateCarrierIpAddress":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables carrier IP address association.</p>"
+        },
+        "AssociatePublicIpAddress":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables public IP address assignment.</p>"
+        },
+        "ConnectionTrackingSpecification":{
+          "shape":"ConnectionTrackingSpecificationRequest",
+          "documentation":"<p>Configures network connection tracking parameters.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Descriptive text for the network interface.</p>"
+        },
+        "DeviceIndex":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Unique index for the network interface.</p>"
+        },
+        "EnaSrdSpecification":{
+          "shape":"EnaSrdSpecificationRequest",
+          "documentation":"<p>Configures Elastic Network Adapter Scalable Reliable Datagram settings.</p>"
+        },
+        "InterfaceType":{
+          "shape":"InterfaceTypeEnum",
+          "documentation":"<p>Specifies the type of network interface.</p>"
+        },
+        "Ipv4Prefixes":{
+          "shape":"Ipv4Prefixes",
+          "documentation":"<p>IPv4 prefix configurations for the interface.</p>"
+        },
+        "Ipv4PrefixCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of IPv4 prefixes to assign.</p>"
+        },
+        "Ipv6AddressCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of IPv6 addresses to assign.</p>"
+        },
+        "Ipv6Addresses":{
+          "shape":"Ipv6Addresses",
+          "documentation":"<p>Specific IPv6 addresses for the interface.</p>"
+        },
+        "Ipv6Prefixes":{
+          "shape":"Ipv6Prefixes",
+          "documentation":"<p>IPv6 prefix configurations for the interface.</p>"
+        },
+        "Ipv6PrefixCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of IPv6 prefixes to assign.</p>"
+        },
+        "NetworkCardIndex":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Index of the network card for multiple network interfaces.</p>"
+        },
+        "NetworkInterfaceId":{
+          "shape":"NetworkInterfaceId",
+          "documentation":"<p>Unique identifier for the network interface.</p>"
+        },
+        "PrimaryIpv6":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates the primary IPv6 configuration.</p>"
+        },
+        "PrivateIpAddress":{
+          "shape":"Ipv4Address",
+          "documentation":"<p>Primary private IP address for the interface.</p>"
+        },
+        "PrivateIpAddresses":{
+          "shape":"PrivateIpAddresses",
+          "documentation":"<p>List of private IP addresses for the interface.</p>"
+        },
+        "SecondaryPrivateIpAddressCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Number of additional private IP addresses to assign.</p>"
+        },
+        "Groups":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>Security groups associated with the network interface.</p>"
+        },
+        "SubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>Subnet identifier for the network interface.</p>"
+        }
+      },
+      "documentation":"<p>Defines network interface configuration for WorkSpace Instance.</p>"
+    },
+    "InstanceNetworkPerformanceOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "BandwidthWeighting":{
+          "shape":"BandwidthWeightingEnum",
+          "documentation":"<p>Defines bandwidth allocation strategy for network interfaces.</p>"
+        }
+      },
+      "documentation":"<p>Configures network performance settings for WorkSpace Instance.</p>"
+    },
+    "InstanceType":{
+      "type":"string",
+      "pattern":"([a-z0-9-]+)\\.([a-z0-9]+)"
+    },
+    "InstanceTypeInfo":{
+      "type":"structure",
+      "members":{
+        "InstanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>Unique identifier for the WorkSpace Instance type.</p>"
+        }
+      },
+      "documentation":"<p>Provides details about a specific WorkSpace Instance type.</p>"
+    },
+    "InstanceTypes":{
+      "type":"list",
+      "member":{"shape":"InstanceTypeInfo"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InterfaceTypeEnum":{
+      "type":"string",
+      "enum":[
+        "interface",
+        "efa",
+        "efa-only"
+      ]
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Description of the internal server error.</p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Recommended wait time before retrying the request.</p>"
+        }
+      },
+      "documentation":"<p>Indicates an unexpected server-side error occurred.</p>",
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "Ipv4Address":{
+      "type":"string",
+      "pattern":"(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+      "sensitive":true
+    },
+    "Ipv4Prefix":{
+      "type":"string",
+      "pattern":".*(?:(?:\\d|[01]?\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d|\\d)(?:/\\d{1,2})?.*"
+    },
+    "Ipv4PrefixSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "Ipv4Prefix":{
+          "shape":"Ipv4Prefix",
+          "documentation":"<p>Specific IPv4 prefix for network interface configuration.</p>"
+        }
+      },
+      "documentation":"<p>Specifies IPv4 prefix configuration for network interfaces.</p>"
+    },
+    "Ipv4Prefixes":{
+      "type":"list",
+      "member":{"shape":"Ipv4PrefixSpecificationRequest"}
+    },
+    "Ipv6Address":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "sensitive":true
+    },
+    "Ipv6Addresses":{
+      "type":"list",
+      "member":{"shape":"InstanceIpv6Address"}
+    },
+    "Ipv6Prefix":{
+      "type":"string",
+      "pattern":"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\\/([0-9]{1,2}|1[01][0-9]|12[0-8])"
+    },
+    "Ipv6PrefixSpecificationRequest":{
+      "type":"structure",
+      "members":{
+        "Ipv6Prefix":{
+          "shape":"Ipv6Prefix",
+          "documentation":"<p>Specific IPv6 prefix for network interface configuration.</p>"
+        }
+      },
+      "documentation":"<p>Specifies IPv6 prefix configuration for network interfaces.</p>"
+    },
+    "Ipv6Prefixes":{
+      "type":"list",
+      "member":{"shape":"Ipv6PrefixSpecificationRequest"}
+    },
+    "KmsKeyId":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "sensitive":true
+    },
+    "LicenseConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the license configuration for the WorkSpace Instance.</p>"
+        }
+      },
+      "documentation":"<p>Specifies license configuration for WorkSpace Instance.</p>"
+    },
+    "LicenseSpecifications":{
+      "type":"list",
+      "member":{"shape":"LicenseConfigurationRequest"}
+    },
+    "ListInstanceTypesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Maximum number of instance types to return in a single API call. Enables pagination of instance type results.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token for retrieving subsequent pages of instance type results.</p>"
+        }
+      },
+      "documentation":"<p>Defines input parameters for retrieving supported WorkSpaces Instances instance types.</p>"
+    },
+    "ListInstanceTypesResponse":{
+      "type":"structure",
+      "required":["InstanceTypes"],
+      "members":{
+        "InstanceTypes":{
+          "shape":"InstanceTypes",
+          "documentation":"<p>Collection of supported instance types for WorkSpaces Instances.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Token for retrieving additional instance types if the result set is paginated.</p>"
+        }
+      },
+      "documentation":"<p>Contains the list of instance types supported by WorkSpaces Instances.</p>"
+    },
+    "ListRegionsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Maximum number of regions to return in a single API call. Enables pagination of region results.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token for retrieving subsequent pages of region results.</p>"
+        }
+      },
+      "documentation":"<p>Defines input parameters for retrieving supported WorkSpaces Instances regions.</p>"
+    },
+    "ListRegionsResponse":{
+      "type":"structure",
+      "required":["Regions"],
+      "members":{
+        "Regions":{
+          "shape":"RegionList",
+          "documentation":"<p>Collection of AWS regions supported by WorkSpaces Instances.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Token for retrieving additional regions if the result set is paginated.</p>"
+        }
+      },
+      "documentation":"<p>Contains the list of supported AWS regions for WorkSpaces Instances.</p>"
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["WorkspaceInstanceId"],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the WorkSpace Instance.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the WorkSpace Instance to retrieve tags for.</p>"
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Collection of tags associated with the WorkSpace Instance.</p>"
+        }
+      },
+      "documentation":"<p>Returns the list of tags for the specified WorkSpace Instance.</p>"
+    },
+    "ListWorkspaceInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "ProvisionStates":{
+          "shape":"ProvisionStates",
+          "documentation":"<p>Filter WorkSpaces Instances by their current provisioning states.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Maximum number of WorkSpaces Instances to return in a single response.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token for retrieving subsequent pages of WorkSpaces Instances.</p>"
+        }
+      },
+      "documentation":"<p>Defines filters and pagination parameters for retrieving WorkSpaces Instances.</p>"
+    },
+    "ListWorkspaceInstancesResponse":{
+      "type":"structure",
+      "required":["WorkspaceInstances"],
+      "members":{
+        "WorkspaceInstances":{
+          "shape":"WorkspaceInstances",
+          "documentation":"<p>Collection of WorkSpaces Instances returned by the query.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Token for retrieving additional WorkSpaces Instances if the result set is paginated.</p>"
+        }
+      },
+      "documentation":"<p>Contains the list of WorkSpaces Instances matching the specified criteria.</p>"
+    },
+    "ManagedInstanceRequest":{
+      "type":"structure",
+      "members":{
+        "BlockDeviceMappings":{
+          "shape":"BlockDeviceMappings",
+          "documentation":"<p>Configures block device mappings for storage.</p>"
+        },
+        "CapacityReservationSpecification":{
+          "shape":"CapacityReservationSpecification",
+          "documentation":"<p>Specifies capacity reservation preferences.</p>"
+        },
+        "CpuOptions":{
+          "shape":"CpuOptionsRequest",
+          "documentation":"<p>Configures CPU-specific settings.</p>"
+        },
+        "CreditSpecification":{
+          "shape":"CreditSpecificationRequest",
+          "documentation":"<p>Defines CPU credit configuration for burstable instances.</p>"
+        },
+        "DisableApiStop":{
+          "shape":"Boolean",
+          "documentation":"<p>Prevents API-initiated instance stop.</p>"
+        },
+        "EbsOptimized":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables optimized EBS performance.</p>"
+        },
+        "EnablePrimaryIpv6":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables primary IPv6 address configuration.</p>"
+        },
+        "EnclaveOptions":{
+          "shape":"EnclaveOptionsRequest",
+          "documentation":"<p>Configures AWS Nitro Enclave settings.</p>"
+        },
+        "HibernationOptions":{
+          "shape":"HibernationOptionsRequest",
+          "documentation":"<p>Configures instance hibernation capabilities.</p>"
+        },
+        "IamInstanceProfile":{
+          "shape":"IamInstanceProfileSpecification",
+          "documentation":"<p>Specifies IAM instance profile configuration.</p>"
+        },
+        "ImageId":{
+          "shape":"ImageId",
+          "documentation":"<p>Identifies the Amazon Machine Image (AMI) for the instance.</p>"
+        },
+        "InstanceMarketOptions":{
+          "shape":"InstanceMarketOptionsRequest",
+          "documentation":"<p>Configures marketplace-specific deployment options.</p>"
+        },
+        "InstanceType":{
+          "shape":"InstanceType",
+          "documentation":"<p>Specifies the WorkSpace Instance type.</p>"
+        },
+        "Ipv6Addresses":{
+          "shape":"Ipv6Addresses",
+          "documentation":"<p>Configures specific IPv6 addresses.</p>"
+        },
+        "Ipv6AddressCount":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Specifies number of IPv6 addresses to assign.</p>"
+        },
+        "KernelId":{
+          "shape":"String128",
+          "documentation":"<p>Identifies the kernel for the instance.</p>"
+        },
+        "KeyName":{
+          "shape":"String64",
+          "documentation":"<p>Specifies the key pair for instance access.</p>"
+        },
+        "LicenseSpecifications":{
+          "shape":"LicenseSpecifications",
+          "documentation":"<p>Configures license-related settings.</p>"
+        },
+        "MaintenanceOptions":{
+          "shape":"InstanceMaintenanceOptionsRequest",
+          "documentation":"<p>Defines automatic maintenance settings.</p>"
+        },
+        "MetadataOptions":{
+          "shape":"InstanceMetadataOptionsRequest",
+          "documentation":"<p>Configures instance metadata service settings.</p>"
+        },
+        "Monitoring":{
+          "shape":"RunInstancesMonitoringEnabled",
+          "documentation":"<p>Enables or disables detailed instance monitoring.</p>"
+        },
+        "NetworkInterfaces":{
+          "shape":"NetworkInterfaces",
+          "documentation":"<p>Configures network interface settings.</p>"
+        },
+        "NetworkPerformanceOptions":{
+          "shape":"InstanceNetworkPerformanceOptionsRequest",
+          "documentation":"<p>Defines network performance configuration.</p>"
+        },
+        "Placement":{
+          "shape":"Placement",
+          "documentation":"<p>Specifies instance placement preferences.</p>"
+        },
+        "PrivateDnsNameOptions":{
+          "shape":"PrivateDnsNameOptionsRequest",
+          "documentation":"<p>Configures private DNS name settings.</p>"
+        },
+        "PrivateIpAddress":{
+          "shape":"Ipv4Address",
+          "documentation":"<p>Specifies the primary private IP address.</p>"
+        },
+        "RamdiskId":{
+          "shape":"String128",
+          "documentation":"<p>Identifies the ramdisk for the instance.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>Specifies security group identifiers.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroupNames",
+          "documentation":"<p>Configures security group settings.</p>"
+        },
+        "SubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>Identifies the subnet for the instance.</p>"
+        },
+        "TagSpecifications":{
+          "shape":"TagSpecifications",
+          "documentation":"<p>Configures resource tagging specifications.</p>"
+        },
+        "UserData":{
+          "shape":"UserData",
+          "documentation":"<p>Provides custom initialization data for the instance.</p>"
+        }
+      },
+      "documentation":"<p>Defines comprehensive configuration for a managed WorkSpace Instance.</p>"
+    },
+    "MarketTypeEnum":{
+      "type":"string",
+      "enum":[
+        "spot",
+        "capacity-block"
+      ]
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "NetworkInterfaceId":{
+      "type":"string",
+      "pattern":"eni-[0-9a-zA-Z]{1,63}"
+    },
+    "NetworkInterfaces":{
+      "type":"list",
+      "member":{"shape":"InstanceNetworkInterfaceSpecification"}
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "sensitive":true
+    },
+    "NonNegativeInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "Placement":{
+      "type":"structure",
+      "members":{
+        "Affinity":{
+          "shape":"String64",
+          "documentation":"<p>Specifies host affinity for dedicated instances.</p>"
+        },
+        "AvailabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p>Identifies the specific AWS availability zone.</p>"
+        },
+        "GroupId":{
+          "shape":"PlacementGroupId",
+          "documentation":"<p>Unique identifier for placement group.</p>"
+        },
+        "GroupName":{
+          "shape":"String64",
+          "documentation":"<p>Name of the placement group.</p>"
+        },
+        "HostId":{
+          "shape":"HostId",
+          "documentation":"<p>Identifies the specific dedicated host.</p>"
+        },
+        "HostResourceGroupArn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the host resource group.</p>"
+        },
+        "PartitionNumber":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Specifies partition number for partition placement groups.</p>"
+        },
+        "Tenancy":{
+          "shape":"TenancyEnum",
+          "documentation":"<p>Defines instance tenancy configuration.</p>"
+        }
+      },
+      "documentation":"<p>Defines instance placement configuration for WorkSpace Instance.</p>"
+    },
+    "PlacementGroupId":{
+      "type":"string",
+      "pattern":"pg-[0-9a-zA-Z]{1,63}"
+    },
+    "PrivateDnsNameOptionsRequest":{
+      "type":"structure",
+      "members":{
+        "HostnameType":{
+          "shape":"HostnameTypeEnum",
+          "documentation":"<p>Specifies the type of hostname configuration.</p>"
+        },
+        "EnableResourceNameDnsARecord":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables DNS A record for resource name resolution.</p>"
+        },
+        "EnableResourceNameDnsAAAARecord":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables DNS AAAA record for resource name resolution.</p>"
+        }
+      },
+      "documentation":"<p>Configures private DNS name settings for WorkSpace Instance.</p>"
+    },
+    "PrivateIpAddressSpecification":{
+      "type":"structure",
+      "members":{
+        "Primary":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates if this is the primary private IP address.</p>"
+        },
+        "PrivateIpAddress":{
+          "shape":"Ipv4Address",
+          "documentation":"<p>Specific private IP address for the network interface.</p>"
+        }
+      },
+      "documentation":"<p>Defines private IP address configuration for network interface.</p>"
+    },
+    "PrivateIpAddresses":{
+      "type":"list",
+      "member":{"shape":"PrivateIpAddressSpecification"}
+    },
+    "ProvisionStateEnum":{
+      "type":"string",
+      "enum":[
+        "ALLOCATING",
+        "ALLOCATED",
+        "DEALLOCATING",
+        "DEALLOCATED",
+        "ERROR_ALLOCATING",
+        "ERROR_DEALLOCATING"
+      ]
+    },
+    "ProvisionStates":{
+      "type":"list",
+      "member":{"shape":"ProvisionStateEnum"}
+    },
+    "Region":{
+      "type":"structure",
+      "members":{
+        "RegionName":{
+          "shape":"RegionName",
+          "documentation":"<p>Name of the AWS region.</p>"
+        }
+      },
+      "documentation":"<p>Represents an AWS region supported by WorkSpaces Instances.</p>"
+    },
+    "RegionList":{
+      "type":"list",
+      "member":{"shape":"Region"}
+    },
+    "RegionName":{
+      "type":"string",
+      "pattern":"[-0-9a-z]{1,31}"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Details about the missing resource.</p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource that was not found.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource that was not found.</p>"
+        }
+      },
+      "documentation":"<p>Indicates the requested resource could not be found.</p>",
+      "exception":true
+    },
+    "ResourceTypeEnum":{
+      "type":"string",
+      "enum":[
+        "instance",
+        "volume",
+        "spot-instances-request",
+        "network-interface"
+      ]
+    },
+    "RunInstancesMonitoringEnabled":{
+      "type":"structure",
+      "members":{
+        "Enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables or disables detailed instance monitoring.</p>"
+        }
+      },
+      "documentation":"<p>Configures detailed monitoring for WorkSpace Instance.</p>"
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "pattern":"sg-[0-9a-zA-Z]{1,63}"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"}
+    },
+    "SecurityGroupName":{
+      "type":"string",
+      "pattern":"(?!sg-)[\\w .:/()#,@\\[\\]+=&;{}!$*-]{0,255}"
+    },
+    "SecurityGroupNames":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupName"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType",
+        "ServiceCode",
+        "QuotaCode"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Description of the quota limitation.</p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource related to the quota.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of resource related to the quota.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Code identifying the service with the quota limitation.</p>"
+        },
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>Specific code for the exceeded quota.</p>"
+        }
+      },
+      "documentation":"<p>Indicates that a service quota has been exceeded.</p>",
+      "exception":true
+    },
+    "SnapshotId":{
+      "type":"string",
+      "pattern":"snap-[0-9a-zA-Z]{1,63}"
+    },
+    "SpotInstanceTypeEnum":{
+      "type":"string",
+      "enum":[
+        "one-time",
+        "persistent"
+      ]
+    },
+    "SpotMarketOptions":{
+      "type":"structure",
+      "members":{
+        "BlockDurationMinutes":{
+          "shape":"NonNegativeInteger",
+          "documentation":"<p>Duration of spot instance block reservation.</p>"
+        },
+        "InstanceInterruptionBehavior":{
+          "shape":"InstanceInterruptionBehaviorEnum",
+          "documentation":"<p>Specifies behavior when spot instance is interrupted.</p>"
+        },
+        "MaxPrice":{
+          "shape":"String64",
+          "documentation":"<p>Maximum hourly price for spot instance.</p>"
+        },
+        "SpotInstanceType":{
+          "shape":"SpotInstanceTypeEnum",
+          "documentation":"<p>Defines the type of spot instance request.</p>"
+        },
+        "ValidUntilUtc":{
+          "shape":"Timestamp",
+          "documentation":"<p>Timestamp until which spot instance request is valid.</p>"
+        }
+      },
+      "documentation":"<p>Defines configuration for spot instance deployment.</p>"
+    },
+    "String":{"type":"string"},
+    "String128":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "String64":{
+      "type":"string",
+      "max":64,
+      "min":0
+    },
+    "SubnetId":{
+      "type":"string",
+      "pattern":"subnet-[0-9a-zA-Z]{1,63}"
+    },
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>Unique identifier for the tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>Value associated with the tag key.</p>"
+        }
+      },
+      "documentation":"<p>Represents a key-value metadata tag.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]+)"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":30,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":30,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "WorkspaceInstanceId",
+        "Tags"
+      ],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the WorkSpace Instance to tag.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to be added to the WorkSpace Instance.</p>"
+        }
+      },
+      "documentation":"<p>Specifies tags to add to a WorkSpace Instance.</p>"
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms successful tag addition.</p>"
+    },
+    "TagSpecification":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{
+          "shape":"ResourceTypeEnum",
+          "documentation":"<p>Type of resource being tagged.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Collection of tags for the specified resource.</p>"
+        }
+      },
+      "documentation":"<p>Defines tagging configuration for a resource.</p>"
+    },
+    "TagSpecifications":{
+      "type":"list",
+      "member":{"shape":"TagSpecification"},
+      "max":30,
+      "min":0
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)"
+    },
+    "TenancyEnum":{
+      "type":"string",
+      "enum":[
+        "default",
+        "dedicated",
+        "host"
+      ]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Description of the throttling event.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Code identifying the service experiencing throttling.</p>"
+        },
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>Specific code for the throttling quota.</p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Recommended wait time before retrying the request.</p>"
+        }
+      },
+      "documentation":"<p>Indicates the request rate has exceeded limits.</p>",
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "WorkspaceInstanceId",
+        "TagKeys"
+      ],
+      "members":{
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier of the WorkSpace Instance to untag.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Keys of tags to be removed.</p>"
+        }
+      },
+      "documentation":"<p>Specifies tags to remove from a WorkSpace Instance.</p>"
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Confirms successful tag removal.</p>"
+    },
+    "UserData":{
+      "type":"string",
+      "max":16000,
+      "min":0,
+      "sensitive":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "Reason"
+      ],
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Overall description of validation failures.</p>"
+        },
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Specific reason for the validation failure.</p>"
+        },
+        "FieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>List of fields that failed validation.</p>"
+        }
+      },
+      "documentation":"<p>Indicates invalid input parameters in the request.</p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Reason",
+        "Message"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the field that failed validation.</p>"
+        },
+        "Reason":{
+          "shape":"String",
+          "documentation":"<p>Reason for the validation failure.</p>"
+        },
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Detailed error message describing the validation issue.</p>"
+        }
+      },
+      "documentation":"<p>Represents a validation error field in an API request.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "UNSUPPORTED_OPERATION",
+        "CANNOT_PARSE",
+        "FIELD_VALIDATION_FAILED",
+        "DEPENDENCY_FAILURE",
+        "OTHER"
+      ]
+    },
+    "VirtualName":{
+      "type":"string",
+      "pattern":"ephemeral(0|[1-9][0-9]{0,2})"
+    },
+    "VolumeId":{
+      "type":"string",
+      "pattern":"vol-[0-9a-zA-Z]{1,63}"
+    },
+    "VolumeTypeEnum":{
+      "type":"string",
+      "enum":[
+        "standard",
+        "io1",
+        "io2",
+        "gp2",
+        "sc1",
+        "st1",
+        "gp3"
+      ]
+    },
+    "WorkspaceInstance":{
+      "type":"structure",
+      "members":{
+        "ProvisionState":{
+          "shape":"ProvisionStateEnum",
+          "documentation":"<p>Current provisioning state of the WorkSpace Instance.</p>"
+        },
+        "WorkspaceInstanceId":{
+          "shape":"WorkspaceInstanceId",
+          "documentation":"<p>Unique identifier for the WorkSpace Instance.</p>"
+        },
+        "EC2ManagedInstance":{
+          "shape":"EC2ManagedInstance",
+          "documentation":"<p>Details of the associated EC2 managed instance.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single WorkSpace Instance.</p>"
+    },
+    "WorkspaceInstanceError":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{
+          "shape":"String",
+          "documentation":"<p>Unique error code for the WorkSpace Instance error.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>Detailed description of the WorkSpace Instance error.</p>"
+        }
+      },
+      "documentation":"<p>Captures errors specific to WorkSpace Instance operations.</p>"
+    },
+    "WorkspaceInstanceErrors":{
+      "type":"list",
+      "member":{"shape":"WorkspaceInstanceError"}
+    },
+    "WorkspaceInstanceId":{
+      "type":"string",
+      "max":70,
+      "min":15,
+      "pattern":"wsinst-[0-9a-zA-Z]{8,63}"
+    },
+    "WorkspaceInstances":{
+      "type":"list",
+      "member":{"shape":"WorkspaceInstance"}
+    }
+  },
+  "documentation":"<p>Amazon WorkSpaces Instances provides an API framework for managing virtual workspace environments across multiple AWS regions, enabling programmatic creation and configuration of desktop infrastructure.</p>"
+}

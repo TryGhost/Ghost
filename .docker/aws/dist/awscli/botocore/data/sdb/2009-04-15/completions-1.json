@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Domain": {
+      "operation": "ListDomains",
+      "resourceIdentifier": {
+        "DomainName": "DomainNames[]"
+      }
+    }
+  },
+  "operations": {
+    "BatchDeleteAttributes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "BatchPutAttributes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteAttributes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DomainMetadata": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "GetAttributes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "PutAttributes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,418 @@
+{
+  "version": "1.0",
+  "resources": {
+    "DirectoryConfig": {
+      "operation": "DescribeDirectoryConfigs",
+      "resourceIdentifier": {
+        "DirectoryName": "DirectoryConfigs[].DirectoryName",
+        "OrganizationalUnitDistinguishedNames": "DirectoryConfigs[].OrganizationalUnitDistinguishedNames",
+        "ServiceAccountCredentials": "DirectoryConfigs[].ServiceAccountCredentials"
+      }
+    },
+    "Fleet": {
+      "operation": "DescribeFleets",
+      "resourceIdentifier": {
+        "ImageName": "Fleets[].ImageName",
+        "MaxUserDurationInSeconds": "Fleets[].MaxUserDurationInSeconds",
+        "DisconnectTimeoutInSeconds": "Fleets[].DisconnectTimeoutInSeconds"
+      }
+    },
+    "ImageBuilder": {
+      "operation": "DescribeImageBuilders",
+      "resourceIdentifier": {
+        "ImageArn": "ImageBuilders[].ImageArn",
+        "VpcConfig": "ImageBuilders[].VpcConfig",
+        "InstanceType": "ImageBuilders[].InstanceType",
+        "EnableDefaultInternetAccess": "ImageBuilders[].EnableDefaultInternetAccess",
+        "DomainJoinInfo": "ImageBuilders[].DomainJoinInfo"
+      }
+    },
+    "Image": {
+      "operation": "DescribeImages",
+      "resourceIdentifier": {
+        "AppstreamAgentVersion": "Images[].AppstreamAgentVersion",
+        "ImagePermissions": "Images[].ImagePermissions"
+      }
+    },
+    "Stack": {
+      "operation": "DescribeStacks",
+      "resourceIdentifier": {
+        "Name": "Stacks[].Name",
+        "Description": "Stacks[].Description",
+        "DisplayName": "Stacks[].DisplayName",
+        "StorageConnectors": "Stacks[].StorageConnectors",
+        "RedirectURL": "Stacks[].RedirectURL",
+        "FeedbackURL": "Stacks[].FeedbackURL",
+        "UserSettings": "Stacks[].UserSettings",
+        "ApplicationSettings": "Stacks[].ApplicationSettings"
+      }
+    }
+  },
+  "operations": {
+    "DeleteDirectoryConfig": {
+      "DirectoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DirectoryConfig",
+            "resourceIdentifier": "DirectoryName"
+          }
+        ]
+      }
+    },
+    "DeleteFleet": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteImage": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteImageBuilder": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteImagePermissions": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteStack": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DescribeDirectoryConfigs": {
+      "DirectoryNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DirectoryConfig",
+            "resourceIdentifier": "DirectoryName"
+          }
+        ]
+      }
+    },
+    "DescribeImagePermissions": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "StartFleet": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "StartImageBuilder": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "AppstreamAgentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "AppstreamAgentVersion"
+          }
+        ]
+      }
+    },
+    "StopFleet": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "StopImageBuilder": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateDirectoryConfig": {
+      "DirectoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DirectoryConfig",
+            "resourceIdentifier": "DirectoryName"
+          }
+        ]
+      },
+      "OrganizationalUnitDistinguishedNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DirectoryConfig",
+            "resourceIdentifier": "OrganizationalUnitDistinguishedNames"
+          }
+        ]
+      },
+      "ServiceAccountCredentials": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DirectoryConfig",
+            "resourceIdentifier": "ServiceAccountCredentials"
+          }
+        ]
+      }
+    },
+    "UpdateFleet": {
+      "ImageName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "ImageName"
+          }
+        ]
+      },
+      "ImageArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImageBuilder",
+            "resourceIdentifier": "ImageArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImageBuilder",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      },
+      "VpcConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImageBuilder",
+            "resourceIdentifier": "VpcConfig"
+          }
+        ]
+      },
+      "MaxUserDurationInSeconds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "MaxUserDurationInSeconds"
+          }
+        ]
+      },
+      "DisconnectTimeoutInSeconds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "DisconnectTimeoutInSeconds"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "DisplayName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "DisplayName"
+          }
+        ]
+      },
+      "EnableDefaultInternetAccess": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImageBuilder",
+            "resourceIdentifier": "EnableDefaultInternetAccess"
+          }
+        ]
+      },
+      "DomainJoinInfo": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImageBuilder",
+            "resourceIdentifier": "DomainJoinInfo"
+          }
+        ]
+      }
+    },
+    "UpdateImagePermissions": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "ImagePermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "ImagePermissions"
+          }
+        ]
+      }
+    },
+    "UpdateStack": {
+      "DisplayName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "DisplayName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "StorageConnectors": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "StorageConnectors"
+          }
+        ]
+      },
+      "RedirectURL": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "RedirectURL"
+          }
+        ]
+      },
+      "FeedbackURL": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "FeedbackURL"
+          }
+        ]
+      },
+      "UserSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "UserSettings"
+          }
+        ]
+      },
+      "ApplicationSettings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stack",
+            "resourceIdentifier": "ApplicationSettings"
+          }
+        ]
+      }
+    }
+  }
+}

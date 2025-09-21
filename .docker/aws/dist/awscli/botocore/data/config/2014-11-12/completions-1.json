@@ -1,0 +1,385 @@
+{
+  "version": "1.0",
+  "resources": {
+    "AggregationAuthorization": {
+      "operation": "DescribeAggregationAuthorizations",
+      "resourceIdentifier": {
+        "AuthorizedAccountId": "AggregationAuthorizations[].AuthorizedAccountId",
+        "AuthorizedAwsRegion": "AggregationAuthorizations[].AuthorizedAwsRegion"
+      }
+    },
+    "ComplianceByResource": {
+      "operation": "DescribeComplianceByResource",
+      "resourceIdentifier": {
+        "ResourceType": "ComplianceByResources[].ResourceType",
+        "ResourceId": "ComplianceByResources[].ResourceId"
+      }
+    },
+    "ConfigRule": {
+      "operation": "DescribeConfigRules",
+      "resourceIdentifier": {
+        "ConfigRuleName": "ConfigRules[].ConfigRuleName",
+        "ConfigRuleId": "ConfigRules[].ConfigRuleId"
+      }
+    },
+    "ConfigurationAggregator": {
+      "operation": "DescribeConfigurationAggregators",
+      "resourceIdentifier": {
+        "ConfigurationAggregatorName": "ConfigurationAggregators[].ConfigurationAggregatorName",
+        "AccountAggregationSources": "ConfigurationAggregators[].AccountAggregationSources",
+        "OrganizationAggregationSource": "ConfigurationAggregators[].OrganizationAggregationSource"
+      }
+    },
+    "PendingAggregationRequest": {
+      "operation": "DescribePendingAggregationRequests",
+      "resourceIdentifier": {
+        "RequesterAccountId": "PendingAggregationRequests[].RequesterAccountId",
+        "RequesterAwsRegion": "PendingAggregationRequests[].RequesterAwsRegion"
+      }
+    },
+    "RetentionConfiguration": {
+      "operation": "DescribeRetentionConfigurations",
+      "resourceIdentifier": {
+        "RetentionPeriodInDays": "RetentionConfigurations[].RetentionPeriodInDays"
+      }
+    }
+  },
+  "operations": {
+    "DeleteAggregationAuthorization": {
+      "AuthorizedAccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AggregationAuthorization",
+            "resourceIdentifier": "AuthorizedAccountId"
+          }
+        ]
+      },
+      "AuthorizedAwsRegion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AggregationAuthorization",
+            "resourceIdentifier": "AuthorizedAwsRegion"
+          }
+        ]
+      }
+    },
+    "DeleteConfigRule": {
+      "ConfigRuleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "DeleteConfigurationAggregator": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      }
+    },
+    "DeleteEvaluationResults": {
+      "ConfigRuleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "DeletePendingAggregationRequest": {
+      "RequesterAccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PendingAggregationRequest",
+            "resourceIdentifier": "RequesterAccountId"
+          }
+        ]
+      },
+      "RequesterAwsRegion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PendingAggregationRequest",
+            "resourceIdentifier": "RequesterAwsRegion"
+          }
+        ]
+      }
+    },
+    "DescribeAggregateComplianceByConfigRules": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      }
+    },
+    "DescribeComplianceByConfigRule": {
+      "ConfigRuleNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "DescribeComplianceByResource": {
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      }
+    },
+    "DescribeConfigRuleEvaluationStatus": {
+      "ConfigRuleNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "DescribeConfigRules": {
+      "ConfigRuleNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "DescribeConfigurationAggregatorSourcesStatus": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      }
+    },
+    "DescribeConfigurationAggregators": {
+      "ConfigurationAggregatorNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      }
+    },
+    "GetAggregateComplianceDetailsByConfigRule": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      },
+      "ConfigRuleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "GetAggregateConfigRuleComplianceSummary": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      }
+    },
+    "GetComplianceDetailsByConfigRule": {
+      "ConfigRuleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    },
+    "GetComplianceDetailsByResource": {
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      }
+    },
+    "GetComplianceSummaryByResourceType": {
+      "ResourceTypes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      }
+    },
+    "GetResourceConfigHistory": {
+      "resourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      }
+    },
+    "ListDiscoveredResources": {
+      "resourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceByResource",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      }
+    },
+    "PutAggregationAuthorization": {
+      "AuthorizedAccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AggregationAuthorization",
+            "resourceIdentifier": "AuthorizedAccountId"
+          }
+        ]
+      },
+      "AuthorizedAwsRegion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AggregationAuthorization",
+            "resourceIdentifier": "AuthorizedAwsRegion"
+          }
+        ]
+      }
+    },
+    "PutConfigRule": {
+      "ConfigRule": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleId"
+          }
+        ]
+      }
+    },
+    "PutConfigurationAggregator": {
+      "ConfigurationAggregatorName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "ConfigurationAggregatorName"
+          }
+        ]
+      },
+      "AccountAggregationSources": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "AccountAggregationSources"
+          }
+        ]
+      },
+      "OrganizationAggregationSource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigurationAggregator",
+            "resourceIdentifier": "OrganizationAggregationSource"
+          }
+        ]
+      }
+    },
+    "PutRetentionConfiguration": {
+      "RetentionPeriodInDays": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RetentionConfiguration",
+            "resourceIdentifier": "RetentionPeriodInDays"
+          }
+        ]
+      }
+    },
+    "StartConfigRulesEvaluation": {
+      "ConfigRuleNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConfigRule",
+            "resourceIdentifier": "ConfigRuleName"
+          }
+        ]
+      }
+    }
+  }
+}

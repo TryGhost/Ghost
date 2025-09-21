@@ -1,0 +1,97 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "ChannelCreated" : {
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetChannel",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "success",
+        "expected" : "CREATED"
+      }, {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "failure",
+        "expected" : "CREATE_FAILED"
+      }, {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "retry",
+        "expected" : "CREATING"
+      } ]
+    },
+    "ChannelDeleted" : {
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetChannel",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : "ResourceNotFoundException"
+      }, {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "success",
+        "expected" : "DELETED"
+      }, {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "failure",
+        "expected" : "DELETE_FAILED"
+      }, {
+        "matcher" : "path",
+        "argument" : "channelStatus",
+        "state" : "retry",
+        "expected" : "DELETING"
+      } ]
+    },
+    "SpaceCreated" : {
+      "delay" : 300,
+      "maxAttempts" : 24,
+      "operation" : "GetSpace",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "success",
+        "expected" : "CREATED"
+      }, {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "failure",
+        "expected" : "CREATE_FAILED"
+      }, {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "retry",
+        "expected" : "CREATING"
+      } ]
+    },
+    "SpaceDeleted" : {
+      "delay" : 300,
+      "maxAttempts" : 24,
+      "operation" : "GetSpace",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : "ResourceNotFoundException"
+      }, {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "success",
+        "expected" : "DELETED"
+      }, {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "failure",
+        "expected" : "DELETE_FAILED"
+      }, {
+        "matcher" : "path",
+        "argument" : "status",
+        "state" : "retry",
+        "expected" : "DELETING"
+      } ]
+    }
+  }
+}

@@ -1,0 +1,2582 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-11-25",
+    "endpointPrefix":"applicationinsights",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"Application Insights",
+    "serviceFullName":"Amazon CloudWatch Application Insights",
+    "serviceId":"Application Insights",
+    "signatureVersion":"v4",
+    "signingName":"applicationinsights",
+    "targetPrefix":"EC2WindowsBarleyService",
+    "uid":"application-insights-2018-11-25",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AddWorkload":{
+      "name":"AddWorkload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AddWorkloadRequest"},
+      "output":{"shape":"AddWorkloadResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a workload to a component. Each component can have at most five workloads.</p>"
+    },
+    "CreateApplication":{
+      "name":"CreateApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateApplicationRequest"},
+      "output":{"shape":"CreateApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"TagsAlreadyExistException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Adds an application that is created from a resource group.</p>"
+    },
+    "CreateComponent":{
+      "name":"CreateComponent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateComponentRequest"},
+      "output":{"shape":"CreateComponentResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a custom component by grouping similar standalone instances to monitor.</p>"
+    },
+    "CreateLogPattern":{
+      "name":"CreateLogPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLogPatternRequest"},
+      "output":{"shape":"CreateLogPatternResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds an log pattern to a <code>LogPatternSet</code>.</p>"
+    },
+    "DeleteApplication":{
+      "name":"DeleteApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteApplicationRequest"},
+      "output":{"shape":"DeleteApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes the specified application from monitoring. Does not delete the application.</p>"
+    },
+    "DeleteComponent":{
+      "name":"DeleteComponent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteComponentRequest"},
+      "output":{"shape":"DeleteComponentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Ungroups a custom component. When you ungroup custom components, all applicable monitors that are set up for the component are removed and the instances revert to their standalone status.</p>"
+    },
+    "DeleteLogPattern":{
+      "name":"DeleteLogPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLogPatternRequest"},
+      "output":{"shape":"DeleteLogPatternResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes the specified log pattern from a <code>LogPatternSet</code>.</p>"
+    },
+    "DescribeApplication":{
+      "name":"DescribeApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeApplicationRequest"},
+      "output":{"shape":"DescribeApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes the application.</p>"
+    },
+    "DescribeComponent":{
+      "name":"DescribeComponent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeComponentRequest"},
+      "output":{"shape":"DescribeComponentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes a component and lists the resources that are grouped together in a component.</p>"
+    },
+    "DescribeComponentConfiguration":{
+      "name":"DescribeComponentConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeComponentConfigurationRequest"},
+      "output":{"shape":"DescribeComponentConfigurationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes the monitoring configuration of the component.</p>"
+    },
+    "DescribeComponentConfigurationRecommendation":{
+      "name":"DescribeComponentConfigurationRecommendation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeComponentConfigurationRecommendationRequest"},
+      "output":{"shape":"DescribeComponentConfigurationRecommendationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes the recommended monitoring configuration of the component.</p>"
+    },
+    "DescribeLogPattern":{
+      "name":"DescribeLogPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeLogPatternRequest"},
+      "output":{"shape":"DescribeLogPatternResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describe a specific log pattern from a <code>LogPatternSet</code>.</p>"
+    },
+    "DescribeObservation":{
+      "name":"DescribeObservation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeObservationRequest"},
+      "output":{"shape":"DescribeObservationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Describes an anomaly or error with the application.</p>"
+    },
+    "DescribeProblem":{
+      "name":"DescribeProblem",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeProblemRequest"},
+      "output":{"shape":"DescribeProblemResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Describes an application problem.</p>"
+    },
+    "DescribeProblemObservations":{
+      "name":"DescribeProblemObservations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeProblemObservationsRequest"},
+      "output":{"shape":"DescribeProblemObservationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Describes the anomalies or errors associated with the problem.</p>"
+    },
+    "DescribeWorkload":{
+      "name":"DescribeWorkload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeWorkloadRequest"},
+      "output":{"shape":"DescribeWorkloadResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes a workload and its configuration.</p>"
+    },
+    "ListApplications":{
+      "name":"ListApplications",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListApplicationsRequest"},
+      "output":{"shape":"ListApplicationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the IDs of the applications that you are monitoring. </p>"
+    },
+    "ListComponents":{
+      "name":"ListComponents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListComponentsRequest"},
+      "output":{"shape":"ListComponentsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the auto-grouped, standalone, and custom components of the application.</p>"
+    },
+    "ListConfigurationHistory":{
+      "name":"ListConfigurationHistory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListConfigurationHistoryRequest"},
+      "output":{"shape":"ListConfigurationHistoryResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p> Lists the INFO, WARN, and ERROR events for periodic configuration updates performed by Application Insights. Examples of events represented are: </p> <ul> <li> <p>INFO: creating a new alarm or updating an alarm threshold.</p> </li> <li> <p>WARN: alarm not created due to insufficient data points used to predict thresholds.</p> </li> <li> <p>ERROR: alarm not created due to permission errors or exceeding quotas. </p> </li> </ul>"
+    },
+    "ListLogPatternSets":{
+      "name":"ListLogPatternSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLogPatternSetsRequest"},
+      "output":{"shape":"ListLogPatternSetsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the log pattern sets in the specific application.</p>"
+    },
+    "ListLogPatterns":{
+      "name":"ListLogPatterns",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLogPatternsRequest"},
+      "output":{"shape":"ListLogPatternsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the log patterns in the specific log <code>LogPatternSet</code>.</p>"
+    },
+    "ListProblems":{
+      "name":"ListProblems",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListProblemsRequest"},
+      "output":{"shape":"ListProblemsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the problems with your application.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieve a list of the tags (keys and values) that are associated with a specified application. A <i>tag</i> is a label that you optionally define and associate with an application. Each tag consists of a required <i>tag key</i> and an optional associated <i>tag value</i>. A tag key is a general label that acts as a category for more specific tag values. A tag value acts as a descriptor within a tag key.</p>"
+    },
+    "ListWorkloads":{
+      "name":"ListWorkloads",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWorkloadsRequest"},
+      "output":{"shape":"ListWorkloadsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the workloads that are configured on a given component.</p>"
+    },
+    "RemoveWorkload":{
+      "name":"RemoveWorkload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RemoveWorkloadRequest"},
+      "output":{"shape":"RemoveWorkloadResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Remove workload from a component.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Add one or more tags (keys and values) to a specified application. A <i>tag</i> is a label that you optionally define and associate with an application. Tags can help you categorize and manage application in different ways, such as by purpose, owner, environment, or other criteria. </p> <p>Each tag consists of a required <i>tag key</i> and an associated <i>tag value</i>, both of which you define. A tag key is a general label that acts as a category for more specific tag values. A tag value acts as a descriptor within a tag key.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Remove one or more tags (keys and values) from a specified application.</p>"
+    },
+    "UpdateApplication":{
+      "name":"UpdateApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateApplicationRequest"},
+      "output":{"shape":"UpdateApplicationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates the application.</p>"
+    },
+    "UpdateComponent":{
+      "name":"UpdateComponent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateComponentRequest"},
+      "output":{"shape":"UpdateComponentResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the custom component name and/or the list of resources that make up the component.</p>"
+    },
+    "UpdateComponentConfiguration":{
+      "name":"UpdateComponentConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateComponentConfigurationRequest"},
+      "output":{"shape":"UpdateComponentConfigurationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceInUseException"}
+      ],
+      "documentation":"<p>Updates the monitoring configurations for the component. The configuration input parameter is an escaped JSON of the configuration and should match the schema of what is returned by <code>DescribeComponentConfigurationRecommendation</code>. </p>"
+    },
+    "UpdateLogPattern":{
+      "name":"UpdateLogPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLogPatternRequest"},
+      "output":{"shape":"UpdateLogPatternResponse"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a log pattern to a <code>LogPatternSet</code>.</p>"
+    },
+    "UpdateProblem":{
+      "name":"UpdateProblem",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateProblemRequest"},
+      "output":{"shape":"UpdateProblemResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates the visibility of the problem or specifies the problem as <code>RESOLVED</code>.</p>"
+    },
+    "UpdateWorkload":{
+      "name":"UpdateWorkload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateWorkloadRequest"},
+      "output":{"shape":"UpdateWorkloadResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a workload to a component. Each component can have at most five workloads.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p> User does not have permissions to perform this action. </p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "AddWorkloadRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "WorkloadConfiguration"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "WorkloadConfiguration":{
+          "shape":"WorkloadConfiguration",
+          "documentation":"<p>The configuration settings of the workload. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "AddWorkloadResponse":{
+      "type":"structure",
+      "members":{
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "WorkloadConfiguration":{
+          "shape":"WorkloadConfiguration",
+          "documentation":"<p>The configuration settings of the workload. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "AffectedResource":{"type":"string"},
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^arn:aws(-\\w+)*:[\\w\\d-]+:([\\w\\d-]*)?:[\\w\\d_-]*([:/].+)*$"
+    },
+    "ApplicationComponent":{
+      "type":"structure",
+      "members":{
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "ComponentRemarks":{
+          "shape":"Remarks",
+          "documentation":"<p> If logging is supported for the resource type, indicates whether the component has configured logs to be monitored. </p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The resource type. Supported resource types include EC2 instances, Auto Scaling group, Classic ELB, Application ELB, and SQS Queue.</p>"
+        },
+        "OsType":{
+          "shape":"OsType",
+          "documentation":"<p> The operating system of the component. </p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The stack tier of the application component.</p>"
+        },
+        "Monitor":{
+          "shape":"Monitor",
+          "documentation":"<p>Indicates whether the application component is monitored. </p>"
+        },
+        "DetectedWorkload":{
+          "shape":"DetectedWorkload",
+          "documentation":"<p> Workloads detected in the application component. </p>"
+        }
+      },
+      "documentation":"<p>Describes a standalone resource or similarly grouped resources that the application is made up of.</p>"
+    },
+    "ApplicationComponentList":{
+      "type":"list",
+      "member":{"shape":"ApplicationComponent"}
+    },
+    "ApplicationInfo":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the owner of the application.</p>"
+        },
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group used for the application.</p>"
+        },
+        "LifeCycle":{
+          "shape":"LifeCycle",
+          "documentation":"<p>The lifecycle of the application. </p>"
+        },
+        "OpsItemSNSTopicArn":{
+          "shape":"OpsItemSNSTopicArn",
+          "documentation":"<p> The SNS topic provided to Application Insights that is associated to the created opsItems to receive SNS notifications for opsItem updates. </p>"
+        },
+        "SNSNotificationArn":{
+          "shape":"SNSNotificationArn",
+          "documentation":"<p> The SNS topic ARN that is associated with SNS notifications for updates or issues. </p>"
+        },
+        "OpsCenterEnabled":{
+          "shape":"OpsCenterEnabled",
+          "documentation":"<p> Indicates whether Application Insights will create opsItems for any problem detected by Application Insights for an application. </p>"
+        },
+        "CWEMonitorEnabled":{
+          "shape":"CWEMonitorEnabled",
+          "documentation":"<p> Indicates whether Application Insights can listen to CloudWatch events for the application resources, such as <code>instance terminated</code>, <code>failed deployment</code>, and others. </p>"
+        },
+        "Remarks":{
+          "shape":"Remarks",
+          "documentation":"<p>The issues on the user side that block Application Insights from successfully monitoring an application. Example remarks include:</p> <ul> <li> <p>“Configuring application, detected 1 Errors, 3 Warnings”</p> </li> <li> <p>“Configuring application, detected 1 Unconfigured Components”</p> </li> </ul>"
+        },
+        "AutoConfigEnabled":{
+          "shape":"AutoConfigEnabled",
+          "documentation":"<p> Indicates whether auto-configuration is turned on for this application. </p>"
+        },
+        "DiscoveryType":{
+          "shape":"DiscoveryType",
+          "documentation":"<p> The method used by Application Insights to onboard your resources. </p>"
+        },
+        "AttachMissingPermission":{
+          "shape":"AttachMissingPermission",
+          "documentation":"<p>If set to true, the managed policies for SSM and CW will be attached to the instance roles if they are missing.</p>"
+        }
+      },
+      "documentation":"<p>Describes the status of the application.</p>"
+    },
+    "ApplicationInfoList":{
+      "type":"list",
+      "member":{"shape":"ApplicationInfo"}
+    },
+    "AttachMissingPermission":{"type":"boolean"},
+    "AutoConfigEnabled":{"type":"boolean"},
+    "AutoCreate":{"type":"boolean"},
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p>The request is not understood by the server.</p>",
+      "exception":true
+    },
+    "CWEMonitorEnabled":{"type":"boolean"},
+    "CloudWatchEventDetailType":{"type":"string"},
+    "CloudWatchEventId":{"type":"string"},
+    "CloudWatchEventSource":{
+      "type":"string",
+      "enum":[
+        "EC2",
+        "CODE_DEPLOY",
+        "HEALTH",
+        "RDS"
+      ]
+    },
+    "CodeDeployApplication":{"type":"string"},
+    "CodeDeployDeploymentGroup":{"type":"string"},
+    "CodeDeployDeploymentId":{"type":"string"},
+    "CodeDeployInstanceGroupId":{"type":"string"},
+    "CodeDeployState":{"type":"string"},
+    "ComponentConfiguration":{
+      "type":"string",
+      "max":10000,
+      "min":1,
+      "pattern":"[\\S\\s]+"
+    },
+    "ComponentName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"(?:^[\\d\\w\\-_\\.+]*$)|(?:^arn:aws(-\\w+)*:[\\w\\d-]+:([\\w\\d-]*)?:[\\w\\d_-]*([:/].+)*$)"
+    },
+    "ConfigurationEvent":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group of the application to which the configuration event belongs.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the owner of the application to which the configuration event belongs.</p>"
+        },
+        "MonitoredResourceARN":{
+          "shape":"ConfigurationEventMonitoredResourceARN",
+          "documentation":"<p> The resource monitored by Application Insights. </p>"
+        },
+        "EventStatus":{
+          "shape":"ConfigurationEventStatus",
+          "documentation":"<p> The status of the configuration update event. Possible values include INFO, WARN, and ERROR. </p>"
+        },
+        "EventResourceType":{
+          "shape":"ConfigurationEventResourceType",
+          "documentation":"<p> The resource type that Application Insights attempted to configure, for example, CLOUDWATCH_ALARM. </p>"
+        },
+        "EventTime":{
+          "shape":"ConfigurationEventTime",
+          "documentation":"<p> The timestamp of the event. </p>"
+        },
+        "EventDetail":{
+          "shape":"ConfigurationEventDetail",
+          "documentation":"<p> The details of the event in plain text. </p>"
+        },
+        "EventResourceName":{
+          "shape":"ConfigurationEventResourceName",
+          "documentation":"<p> The name of the resource Application Insights attempted to configure. </p>"
+        }
+      },
+      "documentation":"<p> The event information. </p>"
+    },
+    "ConfigurationEventDetail":{"type":"string"},
+    "ConfigurationEventList":{
+      "type":"list",
+      "member":{"shape":"ConfigurationEvent"}
+    },
+    "ConfigurationEventMonitoredResourceARN":{"type":"string"},
+    "ConfigurationEventResourceName":{"type":"string"},
+    "ConfigurationEventResourceType":{
+      "type":"string",
+      "enum":[
+        "CLOUDWATCH_ALARM",
+        "CLOUDWATCH_LOG",
+        "CLOUDFORMATION",
+        "SSM_ASSOCIATION"
+      ]
+    },
+    "ConfigurationEventStatus":{
+      "type":"string",
+      "enum":[
+        "INFO",
+        "WARN",
+        "ERROR"
+      ]
+    },
+    "ConfigurationEventTime":{"type":"timestamp"},
+    "CreateApplicationRequest":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "OpsCenterEnabled":{
+          "shape":"OpsCenterEnabled",
+          "documentation":"<p> When set to <code>true</code>, creates opsItems for any problems detected on an application. </p>"
+        },
+        "CWEMonitorEnabled":{
+          "shape":"CWEMonitorEnabled",
+          "documentation":"<p> Indicates whether Application Insights can listen to CloudWatch events for the application resources, such as <code>instance terminated</code>, <code>failed deployment</code>, and others. </p>"
+        },
+        "OpsItemSNSTopicArn":{
+          "shape":"OpsItemSNSTopicArn",
+          "documentation":"<p> The SNS topic provided to Application Insights that is associated to the created opsItem. Allows you to receive notifications for updates to the opsItem. </p>"
+        },
+        "SNSNotificationArn":{
+          "shape":"SNSNotificationArn",
+          "documentation":"<p> The SNS notification topic ARN. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>List of tags to add to the application. tag key (<code>Key</code>) and an associated tag value (<code>Value</code>). The maximum length of a tag key is 128 characters. The maximum length of a tag value is 256 characters.</p>"
+        },
+        "AutoConfigEnabled":{
+          "shape":"AutoConfigEnabled",
+          "documentation":"<p> Indicates whether Application Insights automatically configures unmonitored resources in the resource group. </p>"
+        },
+        "AutoCreate":{
+          "shape":"AutoCreate",
+          "documentation":"<p> Configures all of the resources in the resource group by applying the recommended configurations. </p>"
+        },
+        "GroupingType":{
+          "shape":"GroupingType",
+          "documentation":"<p>Application Insights can create applications based on a resource group or on an account. To create an account-based application using all of the resources in the account, set this parameter to <code>ACCOUNT_BASED</code>. </p>"
+        },
+        "AttachMissingPermission":{
+          "shape":"AttachMissingPermission",
+          "documentation":"<p>If set to true, the managed policies for SSM and CW will be attached to the instance roles if they are missing.</p>"
+        }
+      }
+    },
+    "CreateApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInfo":{
+          "shape":"ApplicationInfo",
+          "documentation":"<p>Information about the application.</p>"
+        }
+      }
+    },
+    "CreateComponentRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "ResourceList"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"CustomComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "ResourceList":{
+          "shape":"ResourceList",
+          "documentation":"<p>The list of resource ARNs that belong to the component.</p>"
+        }
+      }
+    },
+    "CreateComponentResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreateLogPatternRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "PatternSetName",
+        "PatternName",
+        "Pattern",
+        "Rank"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern set.</p>"
+        },
+        "PatternName":{
+          "shape":"LogPatternName",
+          "documentation":"<p>The name of the log pattern.</p>"
+        },
+        "Pattern":{
+          "shape":"LogPatternRegex",
+          "documentation":"<p>The log pattern. The pattern must be DFA compatible. Patterns that utilize forward lookahead or backreference constructions are not supported.</p>"
+        },
+        "Rank":{
+          "shape":"LogPatternRank",
+          "documentation":"<p>Rank of the log pattern. Must be a value between <code>1</code> and <code>1,000,000</code>. The patterns are sorted by rank, so we recommend that you set your highest priority patterns with the lowest rank. A pattern of rank <code>1</code> will be the first to get matched to a log line. A pattern of rank <code>1,000,000</code> will be last to get matched. When you configure custom log patterns from the console, a <code>Low</code> severity pattern translates to a <code>750,000</code> rank. A <code>Medium</code> severity pattern translates to a <code>500,000</code> rank. And a <code>High</code> severity pattern translates to a <code>250,000</code> rank. Rank values less than <code>1</code> or greater than <code>1,000,000</code> are reserved for Amazon Web Services provided patterns. </p>"
+        }
+      }
+    },
+    "CreateLogPatternResponse":{
+      "type":"structure",
+      "members":{
+        "LogPattern":{
+          "shape":"LogPattern",
+          "documentation":"<p>The successfully created log pattern.</p>"
+        },
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        }
+      }
+    },
+    "CustomComponentName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[\\d\\w\\-_\\.+]*$"
+    },
+    "DeleteApplicationRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        }
+      }
+    },
+    "DeleteApplicationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteComponentRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"CustomComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        }
+      }
+    },
+    "DeleteComponentResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteLogPatternRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "PatternSetName",
+        "PatternName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern set.</p>"
+        },
+        "PatternName":{
+          "shape":"LogPatternName",
+          "documentation":"<p>The name of the log pattern.</p>"
+        }
+      }
+    },
+    "DeleteLogPatternResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeApplicationRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInfo":{
+          "shape":"ApplicationInfo",
+          "documentation":"<p>Information about the application.</p>"
+        }
+      }
+    },
+    "DescribeComponentConfigurationRecommendationRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "Tier"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The tier of the application component.</p>"
+        },
+        "WorkloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload. The name of the workload is required when the tier of the application component is <code>SAP_ASE_SINGLE_NODE</code> or <code>SAP_ASE_HIGH_AVAILABILITY</code>.</p>"
+        },
+        "RecommendationType":{
+          "shape":"RecommendationType",
+          "documentation":"<p>The recommended configuration type.</p>"
+        }
+      }
+    },
+    "DescribeComponentConfigurationRecommendationResponse":{
+      "type":"structure",
+      "members":{
+        "ComponentConfiguration":{
+          "shape":"ComponentConfiguration",
+          "documentation":"<p>The recommended configuration settings of the component. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "DescribeComponentConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeComponentConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "Monitor":{
+          "shape":"Monitor",
+          "documentation":"<p>Indicates whether the application component is monitored.</p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The tier of the application component. Supported tiers include <code>DOT_NET_CORE</code>, <code>DOT_NET_WORKER</code>, <code>DOT_NET_WEB</code>, <code>SQL_SERVER</code>, and <code>DEFAULT</code> </p>"
+        },
+        "ComponentConfiguration":{
+          "shape":"ComponentConfiguration",
+          "documentation":"<p>The configuration settings of the component. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "DescribeComponentRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeComponentResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationComponent":{"shape":"ApplicationComponent"},
+        "ResourceList":{
+          "shape":"ResourceList",
+          "documentation":"<p>The list of resource ARNs that belong to the component.</p>"
+        }
+      }
+    },
+    "DescribeLogPatternRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "PatternSetName",
+        "PatternName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern set.</p>"
+        },
+        "PatternName":{
+          "shape":"LogPatternName",
+          "documentation":"<p>The name of the log pattern.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeLogPatternResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        },
+        "LogPattern":{
+          "shape":"LogPattern",
+          "documentation":"<p>The successfully created log pattern.</p>"
+        }
+      }
+    },
+    "DescribeObservationRequest":{
+      "type":"structure",
+      "required":["ObservationId"],
+      "members":{
+        "ObservationId":{
+          "shape":"ObservationId",
+          "documentation":"<p>The ID of the observation.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeObservationResponse":{
+      "type":"structure",
+      "members":{
+        "Observation":{
+          "shape":"Observation",
+          "documentation":"<p>Information about the observation.</p>"
+        }
+      }
+    },
+    "DescribeProblemObservationsRequest":{
+      "type":"structure",
+      "required":["ProblemId"],
+      "members":{
+        "ProblemId":{
+          "shape":"ProblemId",
+          "documentation":"<p>The ID of the problem.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "DescribeProblemObservationsResponse":{
+      "type":"structure",
+      "members":{
+        "RelatedObservations":{
+          "shape":"RelatedObservations",
+          "documentation":"<p>Observations related to the problem.</p>"
+        }
+      }
+    },
+    "DescribeProblemRequest":{
+      "type":"structure",
+      "required":["ProblemId"],
+      "members":{
+        "ProblemId":{
+          "shape":"ProblemId",
+          "documentation":"<p>The ID of the problem.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the owner of the resource group affected by the problem.</p>"
+        }
+      }
+    },
+    "DescribeProblemResponse":{
+      "type":"structure",
+      "members":{
+        "Problem":{
+          "shape":"Problem",
+          "documentation":"<p>Information about the problem. </p>"
+        },
+        "SNSNotificationArn":{
+          "shape":"SNSNotificationArn",
+          "documentation":"<p> The SNS notification topic ARN of the problem. </p>"
+        }
+      }
+    },
+    "DescribeWorkloadRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "WorkloadId"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the workload owner.</p>"
+        }
+      }
+    },
+    "DescribeWorkloadResponse":{
+      "type":"structure",
+      "members":{
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "WorkloadRemarks":{
+          "shape":"Remarks",
+          "documentation":"<p>If logging is supported for the resource type, shows whether the component has configured logs to be monitored.</p>"
+        },
+        "WorkloadConfiguration":{
+          "shape":"WorkloadConfiguration",
+          "documentation":"<p>The configuration settings of the workload. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "DetectedWorkload":{
+      "type":"map",
+      "key":{"shape":"Tier"},
+      "value":{"shape":"WorkloadMetaData"}
+    },
+    "DiscoveryType":{
+      "type":"string",
+      "enum":[
+        "RESOURCE_GROUP_BASED",
+        "ACCOUNT_BASED"
+      ]
+    },
+    "EbsCause":{"type":"string"},
+    "EbsEvent":{"type":"string"},
+    "EbsRequestId":{"type":"string"},
+    "EbsResult":{"type":"string"},
+    "Ec2State":{"type":"string"},
+    "EndTime":{"type":"timestamp"},
+    "ErrorMsg":{"type":"string"},
+    "ExceptionMessage":{"type":"string"},
+    "Feedback":{
+      "type":"map",
+      "key":{"shape":"FeedbackKey"},
+      "value":{"shape":"FeedbackValue"},
+      "max":10
+    },
+    "FeedbackKey":{
+      "type":"string",
+      "enum":["INSIGHTS_FEEDBACK"]
+    },
+    "FeedbackValue":{
+      "type":"string",
+      "enum":[
+        "NOT_SPECIFIED",
+        "USEFUL",
+        "NOT_USEFUL"
+      ]
+    },
+    "GroupingType":{
+      "type":"string",
+      "enum":["ACCOUNT_BASED"]
+    },
+    "HealthEventArn":{"type":"string"},
+    "HealthEventDescription":{"type":"string"},
+    "HealthEventTypeCategory":{"type":"string"},
+    "HealthEventTypeCode":{"type":"string"},
+    "HealthService":{"type":"string"},
+    "Insights":{"type":"string"},
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p>The server encountered an internal error and is unable to complete the request.</p>",
+      "exception":true
+    },
+    "LastRecurrenceTime":{"type":"timestamp"},
+    "LifeCycle":{"type":"string"},
+    "LineTime":{"type":"timestamp"},
+    "ListApplicationsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListApplicationsResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInfoList":{
+          "shape":"ApplicationInfoList",
+          "documentation":"<p>The list of applications.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return. </p>"
+        }
+      }
+    },
+    "ListComponentsRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListComponentsResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationComponentList":{
+          "shape":"ApplicationComponentList",
+          "documentation":"<p>The list of application components.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListConfigurationHistoryRequest":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>Resource group to which the application belongs. </p>"
+        },
+        "StartTime":{
+          "shape":"StartTime",
+          "documentation":"<p>The start time of the event. </p>"
+        },
+        "EndTime":{
+          "shape":"EndTime",
+          "documentation":"<p>The end time of the event.</p>"
+        },
+        "EventStatus":{
+          "shape":"ConfigurationEventStatus",
+          "documentation":"<p>The status of the configuration update event. Possible values include INFO, WARN, and ERROR.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p> The maximum number of results returned by <code>ListConfigurationHistory</code> in paginated output. When this parameter is used, <code>ListConfigurationHistory</code> returns only <code>MaxResults</code> in a single page along with a <code>NextToken</code> response element. The remaining results of the initial request can be seen by sending another <code>ListConfigurationHistory</code> request with the returned <code>NextToken</code> value. If this parameter is not used, then <code>ListConfigurationHistory</code> returns all results. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The <code>NextToken</code> value returned from a previous paginated <code>ListConfigurationHistory</code> request where <code>MaxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>NextToken</code> value. This value is <code>null</code> when there are no more results to return.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListConfigurationHistoryResponse":{
+      "type":"structure",
+      "members":{
+        "EventList":{
+          "shape":"ConfigurationEventList",
+          "documentation":"<p> The list of configuration events and their corresponding details. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The <code>NextToken</code> value to include in a future <code>ListConfigurationHistory</code> request. When the results of a <code>ListConfigurationHistory</code> request exceed <code>MaxResults</code>, this value can be used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListLogPatternSetsRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListLogPatternSetsResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        },
+        "LogPatternSets":{
+          "shape":"LogPatternSetList",
+          "documentation":"<p>The list of log pattern sets.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return. </p>"
+        }
+      }
+    },
+    "ListLogPatternsRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern set.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListLogPatternsResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        },
+        "LogPatterns":{
+          "shape":"LogPatternList",
+          "documentation":"<p>The list of log patterns.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return. </p>"
+        }
+      }
+    },
+    "ListProblemsRequest":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        },
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "StartTime":{
+          "shape":"StartTime",
+          "documentation":"<p>The time when the problem was detected, in epoch seconds. If you don't specify a time frame for the request, problems within the past seven days are returned.</p>"
+        },
+        "EndTime":{
+          "shape":"EndTime",
+          "documentation":"<p>The time when the problem ended, in epoch seconds. If not specified, problems within the past seven days are returned.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p> The name of the component. </p>"
+        },
+        "Visibility":{
+          "shape":"Visibility",
+          "documentation":"<p>Specifies whether or not you can view the problem. If not specified, visible and ignored problems are returned.</p>"
+        }
+      }
+    },
+    "ListProblemsResponse":{
+      "type":"structure",
+      "members":{
+        "ProblemList":{
+          "shape":"ProblemList",
+          "documentation":"<p>The list of problems. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return. </p>"
+        },
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p> The name of the resource group. </p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the resource group owner.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application that you want to retrieve tag information for.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array that lists all the tags that are associated with the application. Each tag consists of a required tag key (<code>Key</code>) and an associated tag value (<code>Value</code>).</p>"
+        }
+      }
+    },
+    "ListWorkloadsRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxEntities",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>NextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the owner of the workload.</p>"
+        }
+      }
+    },
+    "ListWorkloadsResponse":{
+      "type":"structure",
+      "members":{
+        "WorkloadList":{
+          "shape":"WorkloadList",
+          "documentation":"<p>The list of workloads.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>"
+        }
+      }
+    },
+    "LogFilter":{
+      "type":"string",
+      "enum":[
+        "ERROR",
+        "WARN",
+        "INFO"
+      ]
+    },
+    "LogGroup":{"type":"string"},
+    "LogPattern":{
+      "type":"structure",
+      "members":{
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern. A log pattern name can contain as many as 30 characters, and it cannot be empty. The characters can be Unicode letters, digits, or one of the following symbols: period, dash, underscore.</p>"
+        },
+        "PatternName":{
+          "shape":"LogPatternName",
+          "documentation":"<p>The name of the log pattern. A log pattern name can contain as many as 50 characters, and it cannot be empty. The characters can be Unicode letters, digits, or one of the following symbols: period, dash, underscore.</p>"
+        },
+        "Pattern":{
+          "shape":"LogPatternRegex",
+          "documentation":"<p>A regular expression that defines the log pattern. A log pattern can contain as many as 50 characters, and it cannot be empty. The pattern must be DFA compatible. Patterns that utilize forward lookahead or backreference constructions are not supported.</p>"
+        },
+        "Rank":{
+          "shape":"LogPatternRank",
+          "documentation":"<p>Rank of the log pattern. Must be a value between <code>1</code> and <code>1,000,000</code>. The patterns are sorted by rank, so we recommend that you set your highest priority patterns with the lowest rank. A pattern of rank <code>1</code> will be the first to get matched to a log line. A pattern of rank <code>1,000,000</code> will be last to get matched. When you configure custom log patterns from the console, a <code>Low</code> severity pattern translates to a <code>750,000</code> rank. A <code>Medium</code> severity pattern translates to a <code>500,000</code> rank. And a <code>High</code> severity pattern translates to a <code>250,000</code> rank. Rank values less than <code>1</code> or greater than <code>1,000,000</code> are reserved for Amazon Web Services provided patterns. </p>"
+        }
+      },
+      "documentation":"<p>An object that defines the log patterns that belongs to a <code>LogPatternSet</code>.</p>"
+    },
+    "LogPatternList":{
+      "type":"list",
+      "member":{"shape":"LogPattern"}
+    },
+    "LogPatternName":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\.\\-_]*"
+    },
+    "LogPatternRank":{"type":"integer"},
+    "LogPatternRegex":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"[\\S\\s]+"
+    },
+    "LogPatternSetList":{
+      "type":"list",
+      "member":{"shape":"LogPatternSetName"}
+    },
+    "LogPatternSetName":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\.\\-_]*"
+    },
+    "LogText":{"type":"string"},
+    "MaxEntities":{
+      "type":"integer",
+      "max":40,
+      "min":1
+    },
+    "MetaDataKey":{"type":"string"},
+    "MetaDataValue":{"type":"string"},
+    "MetricName":{"type":"string"},
+    "MetricNamespace":{"type":"string"},
+    "MissingWorkloadConfig":{"type":"boolean"},
+    "Monitor":{"type":"boolean"},
+    "Observation":{
+      "type":"structure",
+      "members":{
+        "Id":{
+          "shape":"ObservationId",
+          "documentation":"<p>The ID of the observation type.</p>"
+        },
+        "StartTime":{
+          "shape":"StartTime",
+          "documentation":"<p>The time when the observation was first detected, in epoch seconds.</p>"
+        },
+        "EndTime":{
+          "shape":"EndTime",
+          "documentation":"<p>The time when the observation ended, in epoch seconds.</p>"
+        },
+        "SourceType":{
+          "shape":"SourceType",
+          "documentation":"<p>The source type of the observation.</p>"
+        },
+        "SourceARN":{
+          "shape":"SourceARN",
+          "documentation":"<p>The source resource ARN of the observation.</p>"
+        },
+        "LogGroup":{
+          "shape":"LogGroup",
+          "documentation":"<p>The log group name.</p>"
+        },
+        "LineTime":{
+          "shape":"LineTime",
+          "documentation":"<p>The timestamp in the CloudWatch Logs that specifies when the matched line occurred.</p>"
+        },
+        "LogText":{
+          "shape":"LogText",
+          "documentation":"<p>The log text of the observation.</p>"
+        },
+        "LogFilter":{
+          "shape":"LogFilter",
+          "documentation":"<p>The log filter of the observation.</p>"
+        },
+        "MetricNamespace":{
+          "shape":"MetricNamespace",
+          "documentation":"<p>The namespace of the observation metric.</p>"
+        },
+        "MetricName":{
+          "shape":"MetricName",
+          "documentation":"<p>The name of the observation metric.</p>"
+        },
+        "Unit":{
+          "shape":"Unit",
+          "documentation":"<p>The unit of the source observation metric.</p>"
+        },
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The value of the source observation metric.</p>"
+        },
+        "CloudWatchEventId":{
+          "shape":"CloudWatchEventId",
+          "documentation":"<p> The ID of the CloudWatch Event-based observation related to the detected problem. </p>"
+        },
+        "CloudWatchEventSource":{
+          "shape":"CloudWatchEventSource",
+          "documentation":"<p> The source of the CloudWatch Event. </p>"
+        },
+        "CloudWatchEventDetailType":{
+          "shape":"CloudWatchEventDetailType",
+          "documentation":"<p> The detail type of the CloudWatch Event-based observation, for example, <code>EC2 Instance State-change Notification</code>. </p>"
+        },
+        "HealthEventArn":{
+          "shape":"HealthEventArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the Health Event-based observation.</p>"
+        },
+        "HealthService":{
+          "shape":"HealthService",
+          "documentation":"<p> The service to which the Health Event belongs, such as EC2. </p>"
+        },
+        "HealthEventTypeCode":{
+          "shape":"HealthEventTypeCode",
+          "documentation":"<p> The type of the Health event, for example, <code>AWS_EC2_POWER_CONNECTIVITY_ISSUE</code>. </p>"
+        },
+        "HealthEventTypeCategory":{
+          "shape":"HealthEventTypeCategory",
+          "documentation":"<p> The category of the Health event, such as <code>issue</code>. </p>"
+        },
+        "HealthEventDescription":{
+          "shape":"HealthEventDescription",
+          "documentation":"<p> The description of the Health event provided by the service, such as Amazon EC2. </p>"
+        },
+        "CodeDeployDeploymentId":{
+          "shape":"CodeDeployDeploymentId",
+          "documentation":"<p> The deployment ID of the CodeDeploy-based observation related to the detected problem. </p>"
+        },
+        "CodeDeployDeploymentGroup":{
+          "shape":"CodeDeployDeploymentGroup",
+          "documentation":"<p> The deployment group to which the CodeDeploy deployment belongs. </p>"
+        },
+        "CodeDeployState":{
+          "shape":"CodeDeployState",
+          "documentation":"<p> The status of the CodeDeploy deployment, for example <code>SUCCESS</code> or <code> FAILURE</code>. </p>"
+        },
+        "CodeDeployApplication":{
+          "shape":"CodeDeployApplication",
+          "documentation":"<p> The CodeDeploy application to which the deployment belongs. </p>"
+        },
+        "CodeDeployInstanceGroupId":{
+          "shape":"CodeDeployInstanceGroupId",
+          "documentation":"<p> The instance group to which the CodeDeploy instance belongs. </p>"
+        },
+        "Ec2State":{
+          "shape":"Ec2State",
+          "documentation":"<p> The state of the instance, such as <code>STOPPING</code> or <code>TERMINATING</code>. </p>"
+        },
+        "RdsEventCategories":{
+          "shape":"RdsEventCategories",
+          "documentation":"<p> The category of an RDS event. </p>"
+        },
+        "RdsEventMessage":{
+          "shape":"RdsEventMessage",
+          "documentation":"<p> The message of an RDS event. </p>"
+        },
+        "S3EventName":{
+          "shape":"S3EventName",
+          "documentation":"<p> The name of the S3 CloudWatch Event-based observation. </p>"
+        },
+        "StatesExecutionArn":{
+          "shape":"StatesExecutionArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the step function execution-based observation. </p>"
+        },
+        "StatesArn":{
+          "shape":"StatesArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the step function-based observation. </p>"
+        },
+        "StatesStatus":{
+          "shape":"StatesStatus",
+          "documentation":"<p> The status of the step function-related observation. </p>"
+        },
+        "StatesInput":{
+          "shape":"StatesInput",
+          "documentation":"<p> The input to the step function-based observation. </p>"
+        },
+        "EbsEvent":{
+          "shape":"EbsEvent",
+          "documentation":"<p> The type of EBS CloudWatch event, such as <code>createVolume</code>, <code>deleteVolume</code> or <code>attachVolume</code>. </p>"
+        },
+        "EbsResult":{
+          "shape":"EbsResult",
+          "documentation":"<p> The result of an EBS CloudWatch event, such as <code>failed</code> or <code>succeeded</code>. </p>"
+        },
+        "EbsCause":{
+          "shape":"EbsCause",
+          "documentation":"<p> The cause of an EBS CloudWatch event. </p>"
+        },
+        "EbsRequestId":{
+          "shape":"EbsRequestId",
+          "documentation":"<p> The request ID of an EBS CloudWatch event. </p>"
+        },
+        "XRayFaultPercent":{
+          "shape":"XRayFaultPercent",
+          "documentation":"<p> The X-Ray request fault percentage for this node. </p>"
+        },
+        "XRayThrottlePercent":{
+          "shape":"XRayThrottlePercent",
+          "documentation":"<p> The X-Ray request throttle percentage for this node. </p>"
+        },
+        "XRayErrorPercent":{
+          "shape":"XRayErrorPercent",
+          "documentation":"<p> The X-Ray request error percentage for this node. </p>"
+        },
+        "XRayRequestCount":{
+          "shape":"XRayRequestCount",
+          "documentation":"<p> The X-Ray request count for this node. </p>"
+        },
+        "XRayRequestAverageLatency":{
+          "shape":"XRayRequestAverageLatency",
+          "documentation":"<p> The X-Ray node request average latency for this node. </p>"
+        },
+        "XRayNodeName":{
+          "shape":"XRayNodeName",
+          "documentation":"<p> The name of the X-Ray node. </p>"
+        },
+        "XRayNodeType":{
+          "shape":"XRayNodeType",
+          "documentation":"<p> The type of the X-Ray node. </p>"
+        }
+      },
+      "documentation":"<p>Describes an anomaly or error with the application.</p>"
+    },
+    "ObservationId":{
+      "type":"string",
+      "max":38,
+      "min":38,
+      "pattern":"o-[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}"
+    },
+    "ObservationList":{
+      "type":"list",
+      "member":{"shape":"Observation"}
+    },
+    "OpsCenterEnabled":{"type":"boolean"},
+    "OpsItemSNSTopicArn":{
+      "type":"string",
+      "max":300,
+      "min":20,
+      "pattern":"^arn:aws(-\\w+)*:[\\w\\d-]+:([\\w\\d-]*)?:[\\w\\d_-]*([:/].+)*$"
+    },
+    "OsType":{
+      "type":"string",
+      "enum":[
+        "WINDOWS",
+        "LINUX"
+      ]
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".+"
+    },
+    "Problem":{
+      "type":"structure",
+      "members":{
+        "Id":{
+          "shape":"ProblemId",
+          "documentation":"<p>The ID of the problem.</p>"
+        },
+        "Title":{
+          "shape":"Title",
+          "documentation":"<p>The name of the problem.</p>"
+        },
+        "ShortName":{
+          "shape":"ShortName",
+          "documentation":"<p> The short name of the problem associated with the SNS notification. </p>"
+        },
+        "Insights":{
+          "shape":"Insights",
+          "documentation":"<p>A detailed analysis of the problem using machine learning.</p>"
+        },
+        "Status":{
+          "shape":"Status",
+          "documentation":"<p>The status of the problem.</p>"
+        },
+        "AffectedResource":{
+          "shape":"AffectedResource",
+          "documentation":"<p>The resource affected by the problem.</p>"
+        },
+        "StartTime":{
+          "shape":"StartTime",
+          "documentation":"<p>The time when the problem started, in epoch seconds.</p>"
+        },
+        "EndTime":{
+          "shape":"EndTime",
+          "documentation":"<p>The time when the problem ended, in epoch seconds.</p>"
+        },
+        "SeverityLevel":{
+          "shape":"SeverityLevel",
+          "documentation":"<p>A measure of the level of impact of the problem.</p>"
+        },
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID for the owner of the resource group affected by the problem.</p>"
+        },
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group affected by the problem.</p>"
+        },
+        "Feedback":{
+          "shape":"Feedback",
+          "documentation":"<p>Feedback provided by the user about the problem.</p>"
+        },
+        "RecurringCount":{
+          "shape":"RecurringCount",
+          "documentation":"<p> The number of times that the same problem reoccurred after the first time it was resolved. </p>"
+        },
+        "LastRecurrenceTime":{
+          "shape":"LastRecurrenceTime",
+          "documentation":"<p> The last time that the problem reoccurred after its last resolution. </p>"
+        },
+        "Visibility":{
+          "shape":"Visibility",
+          "documentation":"<p>Specifies whether or not you can view the problem. Updates to ignored problems do not generate notifications.</p>"
+        },
+        "ResolutionMethod":{
+          "shape":"ResolutionMethod",
+          "documentation":"<p>Specifies how the problem was resolved. If the value is <code>AUTOMATIC</code>, the system resolved the problem. If the value is <code>MANUAL</code>, the user resolved the problem. If the value is <code>UNRESOLVED</code>, then the problem is not resolved.</p>"
+        }
+      },
+      "documentation":"<p>Describes a problem that is detected by correlating observations.</p>"
+    },
+    "ProblemId":{
+      "type":"string",
+      "max":38,
+      "min":38,
+      "pattern":"p-[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}"
+    },
+    "ProblemList":{
+      "type":"list",
+      "member":{"shape":"Problem"}
+    },
+    "RdsEventCategories":{"type":"string"},
+    "RdsEventMessage":{"type":"string"},
+    "RecommendationType":{
+      "type":"string",
+      "enum":[
+        "INFRA_ONLY",
+        "WORKLOAD_ONLY",
+        "ALL"
+      ]
+    },
+    "RecurringCount":{"type":"long"},
+    "RelatedObservations":{
+      "type":"structure",
+      "members":{
+        "ObservationList":{
+          "shape":"ObservationList",
+          "documentation":"<p>The list of observations related to the problem.</p>"
+        }
+      },
+      "documentation":"<p>Describes observations related to the problem.</p>"
+    },
+    "Remarks":{"type":"string"},
+    "RemoveSNSTopic":{"type":"boolean"},
+    "RemoveWorkloadRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "WorkloadId"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        }
+      }
+    },
+    "RemoveWorkloadResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ResolutionMethod":{
+      "type":"string",
+      "enum":[
+        "MANUAL",
+        "AUTOMATIC",
+        "UNRESOLVED"
+      ]
+    },
+    "ResourceARN":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^arn:aws(-\\w+)*:[\\w\\d-]+:([\\w\\d-]*)?:[\\w\\d_-]*([:/].+)*$"
+    },
+    "ResourceGroupName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\.\\-_]*"
+    },
+    "ResourceInUseException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p>The resource is already created or in use.</p>",
+      "exception":true
+    },
+    "ResourceList":{
+      "type":"list",
+      "member":{"shape":"ResourceARN"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p>The resource does not exist in the customer account.</p>",
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"[0-9a-zA-Z:_]*"
+    },
+    "S3EventName":{"type":"string"},
+    "SNSNotificationArn":{
+      "type":"string",
+      "max":300,
+      "min":20,
+      "pattern":"^arn:aws(-\\w+)*:[\\w\\d-]+:([\\w\\d-]*)?:[\\w\\d_-]*([:/].+)*$"
+    },
+    "SeverityLevel":{
+      "type":"string",
+      "enum":[
+        "Informative",
+        "Low",
+        "Medium",
+        "High"
+      ]
+    },
+    "ShortName":{"type":"string"},
+    "SourceARN":{"type":"string"},
+    "SourceType":{"type":"string"},
+    "StartTime":{"type":"timestamp"},
+    "StatesArn":{"type":"string"},
+    "StatesExecutionArn":{"type":"string"},
+    "StatesInput":{"type":"string"},
+    "StatesStatus":{"type":"string"},
+    "Status":{
+      "type":"string",
+      "enum":[
+        "IGNORE",
+        "RESOLVED",
+        "PENDING",
+        "RECURRING",
+        "RECOVERING"
+      ]
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>One part of a key-value pair that defines a tag. The maximum length of a tag key is 128 characters. The minimum length is 1 character.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The optional part of a key-value pair that defines a tag. The maximum length of a tag value is 256 characters. The minimum length is 0 characters. If you don't want an application to have a specific tag value, don't specify a value for this parameter.</p>"
+        }
+      },
+      "documentation":"<p>An object that defines the tags associated with an application. A <i>tag</i> is a label that you optionally define and associate with an application. Tags can help you categorize and manage resources in different ways, such as by purpose, owner, environment, or other criteria.</p> <p>Each tag consists of a required <i>tag key</i> and an associated <i>tag value</i>, both of which you define. A tag key is a general label that acts as a category for a more specific tag value. A tag value acts as a descriptor within a tag key. A tag key can contain as many as 128 characters. A tag value can contain as many as 256 characters. The characters can be Unicode letters, digits, white space, or one of the following symbols: _ . : / = + -. The following additional restrictions apply to tags:</p> <ul> <li> <p>Tag keys and values are case sensitive.</p> </li> <li> <p>For each associated resource, each tag key must be unique and it can have only one value.</p> </li> <li> <p>The <code>aws:</code> prefix is reserved for use by Amazon Web Services; you can’t use it in any tag keys or values that you define. In addition, you can't edit or remove tag keys or values that use this prefix. </p> </li> </ul>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application that you want to add one or more tags to.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags that to add to the application. A tag consists of a required tag key (<code>Key</code>) and an associated tag value (<code>Value</code>). The maximum length of a tag key is 128 characters. The maximum length of a tag value is 256 characters.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagsAlreadyExistException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>Tags are already registered for the specified application ARN.</p>",
+      "exception":true
+    },
+    "Tier":{
+      "type":"string",
+      "enum":[
+        "CUSTOM",
+        "DEFAULT",
+        "DOT_NET_CORE",
+        "DOT_NET_WORKER",
+        "DOT_NET_WEB_TIER",
+        "DOT_NET_WEB",
+        "SQL_SERVER",
+        "SQL_SERVER_ALWAYSON_AVAILABILITY_GROUP",
+        "MYSQL",
+        "POSTGRESQL",
+        "JAVA_JMX",
+        "ORACLE",
+        "SAP_HANA_MULTI_NODE",
+        "SAP_HANA_SINGLE_NODE",
+        "SAP_HANA_HIGH_AVAILABILITY",
+        "SAP_ASE_SINGLE_NODE",
+        "SAP_ASE_HIGH_AVAILABILITY",
+        "SQL_SERVER_FAILOVER_CLUSTER_INSTANCE",
+        "SHAREPOINT",
+        "ACTIVE_DIRECTORY",
+        "SAP_NETWEAVER_STANDARD",
+        "SAP_NETWEAVER_DISTRIBUTED",
+        "SAP_NETWEAVER_HIGH_AVAILABILITY"
+      ],
+      "max":50,
+      "min":1
+    },
+    "Title":{"type":"string"},
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "ResourceName":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The name of the resource with too many tags.</p>"
+        }
+      },
+      "documentation":"<p>The number of the provided tags is beyond the limit, or the number of total tags you are trying to attach to the specified resource exceeds the limit.</p>",
+      "exception":true
+    },
+    "Unit":{"type":"string"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application that you want to remove one or more tags from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tags (tag keys) that you want to remove from the resource. When you specify a tag key, the action removes both that key and its associated tag value.</p> <p>To remove more than one tag from the application, append the <code>TagKeys</code> parameter and argument for each additional tag to remove, separated by an ampersand. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateApplicationRequest":{
+      "type":"structure",
+      "required":["ResourceGroupName"],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "OpsCenterEnabled":{
+          "shape":"OpsCenterEnabled",
+          "documentation":"<p> When set to <code>true</code>, creates opsItems for any problems detected on an application. </p>"
+        },
+        "CWEMonitorEnabled":{
+          "shape":"CWEMonitorEnabled",
+          "documentation":"<p> Indicates whether Application Insights can listen to CloudWatch events for the application resources, such as <code>instance terminated</code>, <code>failed deployment</code>, and others. </p>"
+        },
+        "OpsItemSNSTopicArn":{
+          "shape":"OpsItemSNSTopicArn",
+          "documentation":"<p> The SNS topic provided to Application Insights that is associated to the created opsItem. Allows you to receive notifications for updates to the opsItem.</p>"
+        },
+        "SNSNotificationArn":{
+          "shape":"SNSNotificationArn",
+          "documentation":"<p> The SNS topic ARN. Allows you to receive SNS notifications for updates and issues with an application. </p>"
+        },
+        "RemoveSNSTopic":{
+          "shape":"RemoveSNSTopic",
+          "documentation":"<p> Disassociates the SNS topic from the opsItem created for detected problems.</p>"
+        },
+        "AutoConfigEnabled":{
+          "shape":"AutoConfigEnabled",
+          "documentation":"<p> Turns auto-configuration on or off. </p>"
+        },
+        "AttachMissingPermission":{
+          "shape":"AttachMissingPermission",
+          "documentation":"<p>If set to true, the managed policies for SSM and CW will be attached to the instance roles if they are missing.</p>"
+        }
+      }
+    },
+    "UpdateApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationInfo":{
+          "shape":"ApplicationInfo",
+          "documentation":"<p>Information about the application. </p>"
+        }
+      }
+    },
+    "UpdateComponentConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "Monitor":{
+          "shape":"Monitor",
+          "documentation":"<p>Indicates whether the application component is monitored.</p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The tier of the application component.</p>"
+        },
+        "ComponentConfiguration":{
+          "shape":"ComponentConfiguration",
+          "documentation":"<p>The configuration settings of the component. The value is the escaped JSON of the configuration. For more information about the JSON format, see <a href=\"https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/working-with-json.html\">Working with JSON</a>. You can send a request to <code>DescribeComponentConfigurationRecommendation</code> to see the recommended configuration for a component. For the complete format of the component configuration file, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/component-config.html\">Component Configuration</a>.</p>"
+        },
+        "AutoConfigEnabled":{
+          "shape":"AutoConfigEnabled",
+          "documentation":"<p> Automatically configures the component by applying the recommended configurations. </p>"
+        }
+      }
+    },
+    "UpdateComponentConfigurationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateComponentRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"CustomComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "NewComponentName":{
+          "shape":"CustomComponentName",
+          "documentation":"<p>The new name of the component.</p>"
+        },
+        "ResourceList":{
+          "shape":"ResourceList",
+          "documentation":"<p>The list of resource ARNs that belong to the component.</p>"
+        }
+      }
+    },
+    "UpdateComponentResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLogPatternRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "PatternSetName",
+        "PatternName"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "PatternSetName":{
+          "shape":"LogPatternSetName",
+          "documentation":"<p>The name of the log pattern set.</p>"
+        },
+        "PatternName":{
+          "shape":"LogPatternName",
+          "documentation":"<p>The name of the log pattern.</p>"
+        },
+        "Pattern":{
+          "shape":"LogPatternRegex",
+          "documentation":"<p>The log pattern. The pattern must be DFA compatible. Patterns that utilize forward lookahead or backreference constructions are not supported.</p>"
+        },
+        "Rank":{
+          "shape":"LogPatternRank",
+          "documentation":"<p>Rank of the log pattern. Must be a value between <code>1</code> and <code>1,000,000</code>. The patterns are sorted by rank, so we recommend that you set your highest priority patterns with the lowest rank. A pattern of rank <code>1</code> will be the first to get matched to a log line. A pattern of rank <code>1,000,000</code> will be last to get matched. When you configure custom log patterns from the console, a <code>Low</code> severity pattern translates to a <code>750,000</code> rank. A <code>Medium</code> severity pattern translates to a <code>500,000</code> rank. And a <code>High</code> severity pattern translates to a <code>250,000</code> rank. Rank values less than <code>1</code> or greater than <code>1,000,000</code> are reserved for Amazon Web Services provided patterns. </p>"
+        }
+      }
+    },
+    "UpdateLogPatternResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "LogPattern":{
+          "shape":"LogPattern",
+          "documentation":"<p>The successfully created log pattern.</p>"
+        }
+      }
+    },
+    "UpdateProblemRequest":{
+      "type":"structure",
+      "required":["ProblemId"],
+      "members":{
+        "ProblemId":{
+          "shape":"ProblemId",
+          "documentation":"<p>The ID of the problem.</p>"
+        },
+        "UpdateStatus":{
+          "shape":"UpdateStatus",
+          "documentation":"<p>The status of the problem. Arguments can be passed for only problems that show a status of <code>RECOVERING</code>.</p>"
+        },
+        "Visibility":{
+          "shape":"Visibility",
+          "documentation":"<p>The visibility of a problem. When you pass a value of <code>IGNORED</code>, the problem is removed from the default view, and all notifications for the problem are suspended. When <code>VISIBLE</code> is passed, the <code>IGNORED</code> action is reversed.</p>"
+        }
+      }
+    },
+    "UpdateProblemResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateStatus":{
+      "type":"string",
+      "enum":["RESOLVED"]
+    },
+    "UpdateWorkloadRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceGroupName",
+        "ComponentName",
+        "WorkloadConfiguration"
+      ],
+      "members":{
+        "ResourceGroupName":{
+          "shape":"ResourceGroupName",
+          "documentation":"<p>The name of the resource group.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p> The name of the component. </p>"
+        },
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "WorkloadConfiguration":{
+          "shape":"WorkloadConfiguration",
+          "documentation":"<p>The configuration settings of the workload. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "UpdateWorkloadResponse":{
+      "type":"structure",
+      "members":{
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "WorkloadConfiguration":{
+          "shape":"WorkloadConfiguration",
+          "documentation":"<p>The configuration settings of the workload. The value is the escaped JSON of the configuration.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMsg"}
+      },
+      "documentation":"<p>The parameter is not valid.</p>",
+      "exception":true
+    },
+    "Value":{"type":"double"},
+    "Visibility":{
+      "type":"string",
+      "enum":[
+        "IGNORED",
+        "VISIBLE"
+      ]
+    },
+    "Workload":{
+      "type":"structure",
+      "members":{
+        "WorkloadId":{
+          "shape":"WorkloadId",
+          "documentation":"<p>The ID of the workload.</p>"
+        },
+        "ComponentName":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "WorkloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The tier of the workload.</p>"
+        },
+        "WorkloadRemarks":{
+          "shape":"Remarks",
+          "documentation":"<p>If logging is supported for the resource type, shows whether the component has configured logs to be monitored.</p>"
+        },
+        "MissingWorkloadConfig":{
+          "shape":"MissingWorkloadConfig",
+          "documentation":"<p>Indicates whether all of the component configurations required to monitor a workload were provided.</p>"
+        }
+      },
+      "documentation":"<p>Describes the workloads on a component.</p>"
+    },
+    "WorkloadConfiguration":{
+      "type":"structure",
+      "members":{
+        "WorkloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        },
+        "Tier":{
+          "shape":"Tier",
+          "documentation":"<p>The configuration of the workload tier.</p>"
+        },
+        "Configuration":{
+          "shape":"ComponentConfiguration",
+          "documentation":"<p>The configuration settings of the workload.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of the workload.</p>"
+    },
+    "WorkloadId":{
+      "type":"string",
+      "max":38,
+      "min":38,
+      "pattern":"w-[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}"
+    },
+    "WorkloadList":{
+      "type":"list",
+      "member":{"shape":"Workload"}
+    },
+    "WorkloadMetaData":{
+      "type":"map",
+      "key":{"shape":"MetaDataKey"},
+      "value":{"shape":"MetaDataValue"}
+    },
+    "WorkloadName":{
+      "type":"string",
+      "max":12,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\.\\-_]*"
+    },
+    "XRayErrorPercent":{"type":"integer"},
+    "XRayFaultPercent":{"type":"integer"},
+    "XRayNodeName":{"type":"string"},
+    "XRayNodeType":{"type":"string"},
+    "XRayRequestAverageLatency":{"type":"long"},
+    "XRayRequestCount":{"type":"integer"},
+    "XRayThrottlePercent":{"type":"integer"}
+  },
+  "documentation":"<fullname>Amazon CloudWatch Application Insights</fullname> <p> Amazon CloudWatch Application Insights is a service that helps you detect common problems with your applications. It enables you to pinpoint the source of issues in your applications (built with technologies such as Microsoft IIS, .NET, and Microsoft SQL Server), by providing key insights into detected problems.</p> <p>After you onboard your application, CloudWatch Application Insights identifies, recommends, and sets up metrics and logs. It continuously analyzes and correlates your metrics and logs for unusual behavior to surface actionable problems with your application. For example, if your application is slow and unresponsive and leading to HTTP 500 errors in your Application Load Balancer (ALB), Application Insights informs you that a memory pressure problem with your SQL Server database is occurring. It bases this analysis on impactful metrics and log errors. </p>"
+}

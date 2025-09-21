@@ -1,0 +1,4288 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-08-01",
+    "endpointPrefix":"license-manager",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS License Manager",
+    "serviceId":"License Manager",
+    "signatureVersion":"v4",
+    "targetPrefix":"AWSLicenseManager",
+    "uid":"license-manager-2018-08-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AcceptGrant":{
+      "name":"AcceptGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AcceptGrantRequest"},
+      "output":{"shape":"AcceptGrantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Accepts the specified grant.</p>"
+    },
+    "CheckInLicense":{
+      "name":"CheckInLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CheckInLicenseRequest"},
+      "output":{"shape":"CheckInLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Checks in the specified license. Check in a license when it is no longer in use.</p>"
+    },
+    "CheckoutBorrowLicense":{
+      "name":"CheckoutBorrowLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CheckoutBorrowLicenseRequest"},
+      "output":{"shape":"CheckoutBorrowLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NoEntitlementsAllowedException"},
+        {"shape":"EntitlementNotAllowedException"},
+        {"shape":"UnsupportedDigitalSignatureMethodException"},
+        {"shape":"RedirectException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Checks out the specified license for offline use.</p>"
+    },
+    "CheckoutLicense":{
+      "name":"CheckoutLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CheckoutLicenseRequest"},
+      "output":{"shape":"CheckoutLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NoEntitlementsAllowedException"},
+        {"shape":"UnsupportedDigitalSignatureMethodException"},
+        {"shape":"RedirectException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Checks out the specified license.</p> <note> <p>If the account that created the license is the same that is performing the check out, you must specify the account as the beneficiary.</p> </note>"
+    },
+    "CreateGrant":{
+      "name":"CreateGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateGrantRequest"},
+      "output":{"shape":"CreateGrantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a grant for the specified license. A grant shares the use of license entitlements with a specific Amazon Web Services account, an organization, or an organizational unit (OU). For more information, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html\">Granted licenses in License Manager</a> in the <i>License Manager User Guide</i>.</p>"
+    },
+    "CreateGrantVersion":{
+      "name":"CreateGrantVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateGrantVersionRequest"},
+      "output":{"shape":"CreateGrantVersionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Creates a new version of the specified grant. For more information, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html\">Granted licenses in License Manager</a> in the <i>License Manager User Guide</i>.</p>"
+    },
+    "CreateLicense":{
+      "name":"CreateLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLicenseRequest"},
+      "output":{"shape":"CreateLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"RedirectException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Creates a license.</p>"
+    },
+    "CreateLicenseConfiguration":{
+      "name":"CreateLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLicenseConfigurationRequest"},
+      "output":{"shape":"CreateLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Creates a license configuration.</p> <p>A license configuration is an abstraction of a customer license agreement that can be consumed and enforced by License Manager. Components include specifications for the license type (licensing by instance, socket, CPU, or vCPU), allowed tenancy (shared tenancy, Dedicated Instance, Dedicated Host, or all of these), license affinity to host (how long a license must be associated with a host), and the number of licenses purchased and used.</p>"
+    },
+    "CreateLicenseConversionTaskForResource":{
+      "name":"CreateLicenseConversionTaskForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLicenseConversionTaskForResourceRequest"},
+      "output":{"shape":"CreateLicenseConversionTaskForResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Creates a new license conversion task.</p>"
+    },
+    "CreateLicenseManagerReportGenerator":{
+      "name":"CreateLicenseManagerReportGenerator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLicenseManagerReportGeneratorRequest"},
+      "output":{"shape":"CreateLicenseManagerReportGeneratorResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a report generator.</p>"
+    },
+    "CreateLicenseVersion":{
+      "name":"CreateLicenseVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLicenseVersionRequest"},
+      "output":{"shape":"CreateLicenseVersionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"RedirectException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Creates a new version of the specified license.</p>"
+    },
+    "CreateToken":{
+      "name":"CreateToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateTokenRequest"},
+      "output":{"shape":"CreateTokenResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"RedirectException"}
+      ],
+      "documentation":"<p>Creates a long-lived token.</p> <p>A refresh token is a JWT token used to get an access token. With an access token, you can call AssumeRoleWithWebIdentity to get role credentials that you can use to call License Manager to manage the specified license.</p>"
+    },
+    "DeleteGrant":{
+      "name":"DeleteGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteGrantRequest"},
+      "output":{"shape":"DeleteGrantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Deletes the specified grant.</p>"
+    },
+    "DeleteLicense":{
+      "name":"DeleteLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLicenseRequest"},
+      "output":{"shape":"DeleteLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"RedirectException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Deletes the specified license.</p>"
+    },
+    "DeleteLicenseConfiguration":{
+      "name":"DeleteLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLicenseConfigurationRequest"},
+      "output":{"shape":"DeleteLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Deletes the specified license configuration.</p> <p>You cannot delete a license configuration that is in use.</p>"
+    },
+    "DeleteLicenseManagerReportGenerator":{
+      "name":"DeleteLicenseManagerReportGenerator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLicenseManagerReportGeneratorRequest"},
+      "output":{"shape":"DeleteLicenseManagerReportGeneratorResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the specified report generator.</p> <p>This action deletes the report generator, which stops it from generating future reports. The action cannot be reversed. It has no effect on the previous reports from this generator.</p>"
+    },
+    "DeleteToken":{
+      "name":"DeleteToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteTokenRequest"},
+      "output":{"shape":"DeleteTokenResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"RedirectException"}
+      ],
+      "documentation":"<p>Deletes the specified token. Must be called in the license home Region.</p>"
+    },
+    "ExtendLicenseConsumption":{
+      "name":"ExtendLicenseConsumption",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ExtendLicenseConsumptionRequest"},
+      "output":{"shape":"ExtendLicenseConsumptionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Extends the expiration date for license consumption.</p>"
+    },
+    "GetAccessToken":{
+      "name":"GetAccessToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAccessTokenRequest"},
+      "output":{"shape":"GetAccessTokenResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Gets a temporary access token to use with AssumeRoleWithWebIdentity. Access tokens are valid for one hour.</p>"
+    },
+    "GetGrant":{
+      "name":"GetGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetGrantRequest"},
+      "output":{"shape":"GetGrantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Gets detailed information about the specified grant.</p>"
+    },
+    "GetLicense":{
+      "name":"GetLicense",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetLicenseRequest"},
+      "output":{"shape":"GetLicenseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Gets detailed information about the specified license.</p>"
+    },
+    "GetLicenseConfiguration":{
+      "name":"GetLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetLicenseConfigurationRequest"},
+      "output":{"shape":"GetLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Gets detailed information about the specified license configuration.</p>"
+    },
+    "GetLicenseConversionTask":{
+      "name":"GetLicenseConversionTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetLicenseConversionTaskRequest"},
+      "output":{"shape":"GetLicenseConversionTaskResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Gets information about the specified license type conversion task.</p>"
+    },
+    "GetLicenseManagerReportGenerator":{
+      "name":"GetLicenseManagerReportGenerator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetLicenseManagerReportGeneratorRequest"},
+      "output":{"shape":"GetLicenseManagerReportGeneratorResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets information about the specified report generator.</p>"
+    },
+    "GetLicenseUsage":{
+      "name":"GetLicenseUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetLicenseUsageRequest"},
+      "output":{"shape":"GetLicenseUsageResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Gets detailed information about the usage of the specified license.</p>"
+    },
+    "GetServiceSettings":{
+      "name":"GetServiceSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetServiceSettingsRequest"},
+      "output":{"shape":"GetServiceSettingsResponse"},
+      "errors":[
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Gets the License Manager settings for the current Region.</p>"
+    },
+    "ListAssociationsForLicenseConfiguration":{
+      "name":"ListAssociationsForLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAssociationsForLicenseConfigurationRequest"},
+      "output":{"shape":"ListAssociationsForLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"FilterLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the resource associations for the specified license configuration.</p> <p>Resource associations need not consume licenses from a license configuration. For example, an AMI or a stopped instance might not consume a license (depending on the license rules).</p>"
+    },
+    "ListDistributedGrants":{
+      "name":"ListDistributedGrants",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListDistributedGrantsRequest"},
+      "output":{"shape":"ListDistributedGrantsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the grants distributed for the specified license.</p>"
+    },
+    "ListFailuresForLicenseConfigurationOperations":{
+      "name":"ListFailuresForLicenseConfigurationOperations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFailuresForLicenseConfigurationOperationsRequest"},
+      "output":{"shape":"ListFailuresForLicenseConfigurationOperationsResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the license configuration operations that failed.</p>"
+    },
+    "ListLicenseConfigurations":{
+      "name":"ListLicenseConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicenseConfigurationsRequest"},
+      "output":{"shape":"ListLicenseConfigurationsResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"FilterLimitExceededException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the license configurations for your account.</p>"
+    },
+    "ListLicenseConversionTasks":{
+      "name":"ListLicenseConversionTasks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicenseConversionTasksRequest"},
+      "output":{"shape":"ListLicenseConversionTasksResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the license type conversion tasks for your account.</p>"
+    },
+    "ListLicenseManagerReportGenerators":{
+      "name":"ListLicenseManagerReportGenerators",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicenseManagerReportGeneratorsRequest"},
+      "output":{"shape":"ListLicenseManagerReportGeneratorsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the report generators for your account.</p>"
+    },
+    "ListLicenseSpecificationsForResource":{
+      "name":"ListLicenseSpecificationsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicenseSpecificationsForResourceRequest"},
+      "output":{"shape":"ListLicenseSpecificationsForResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Describes the license configurations for the specified resource.</p>"
+    },
+    "ListLicenseVersions":{
+      "name":"ListLicenseVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicenseVersionsRequest"},
+      "output":{"shape":"ListLicenseVersionsResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Lists all versions of the specified license.</p>"
+    },
+    "ListLicenses":{
+      "name":"ListLicenses",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLicensesRequest"},
+      "output":{"shape":"ListLicensesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Lists the licenses for your account.</p>"
+    },
+    "ListReceivedGrants":{
+      "name":"ListReceivedGrants",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReceivedGrantsRequest"},
+      "output":{"shape":"ListReceivedGrantsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists grants that are received. Received grants are grants created while specifying the recipient as this Amazon Web Services account, your organization, or an organizational unit (OU) to which this member account belongs.</p>"
+    },
+    "ListReceivedGrantsForOrganization":{
+      "name":"ListReceivedGrantsForOrganization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReceivedGrantsForOrganizationRequest"},
+      "output":{"shape":"ListReceivedGrantsForOrganizationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the grants received for all accounts in the organization.</p>"
+    },
+    "ListReceivedLicenses":{
+      "name":"ListReceivedLicenses",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReceivedLicensesRequest"},
+      "output":{"shape":"ListReceivedLicensesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists received licenses.</p>"
+    },
+    "ListReceivedLicensesForOrganization":{
+      "name":"ListReceivedLicensesForOrganization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReceivedLicensesForOrganizationRequest"},
+      "output":{"shape":"ListReceivedLicensesForOrganizationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the licenses received for all accounts in the organization.</p>"
+    },
+    "ListResourceInventory":{
+      "name":"ListResourceInventory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListResourceInventoryRequest"},
+      "output":{"shape":"ListResourceInventoryResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"FilterLimitExceededException"},
+        {"shape":"FailedDependencyException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists resources managed using Systems Manager inventory.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists the tags for the specified resource. For more information about tagging support in License Manager, see the <a href=\"https://docs.aws.amazon.com/license-manager/latest/APIReference/API_TagResource.html\">TagResource</a> operation.</p>"
+    },
+    "ListTokens":{
+      "name":"ListTokens",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTokensRequest"},
+      "output":{"shape":"ListTokensResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Lists your tokens.</p>"
+    },
+    "ListUsageForLicenseConfiguration":{
+      "name":"ListUsageForLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListUsageForLicenseConfigurationRequest"},
+      "output":{"shape":"ListUsageForLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"FilterLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Lists all license usage records for a license configuration, displaying license consumption details by resource at a selected point in time. Use this action to audit the current license consumption for any license inventory and configuration.</p>"
+    },
+    "RejectGrant":{
+      "name":"RejectGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RejectGrantRequest"},
+      "output":{"shape":"RejectGrantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServerInternalException"}
+      ],
+      "documentation":"<p>Rejects the specified grant.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Adds the specified tags to the specified resource. The following resources support tagging in License Manager:</p> <ul> <li> <p>Licenses</p> </li> <li> <p>Grants</p> </li> <li> <p>License configurations</p> </li> <li> <p>Report generators</p> </li> </ul>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p>"
+    },
+    "UpdateLicenseConfiguration":{
+      "name":"UpdateLicenseConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLicenseConfigurationRequest"},
+      "output":{"shape":"UpdateLicenseConfigurationResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Modifies the attributes of an existing license configuration.</p>"
+    },
+    "UpdateLicenseManagerReportGenerator":{
+      "name":"UpdateLicenseManagerReportGenerator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLicenseManagerReportGeneratorRequest"},
+      "output":{"shape":"UpdateLicenseManagerReportGeneratorResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceLimitExceededException"}
+      ],
+      "documentation":"<p>Updates a report generator.</p> <p>After you make changes to a report generator, it starts generating new reports within 60 minutes of being updated.</p>"
+    },
+    "UpdateLicenseSpecificationsForResource":{
+      "name":"UpdateLicenseSpecificationsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLicenseSpecificationsForResourceRequest"},
+      "output":{"shape":"UpdateLicenseSpecificationsForResourceResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidResourceStateException"},
+        {"shape":"LicenseUsageException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Adds or removes the specified license configurations for the specified Amazon Web Services resource.</p> <p>You can update the license specifications of AMIs, instances, and hosts. You cannot update the license specifications for launch templates and CloudFormation templates, as they send license configurations to the operation that creates the resource.</p>"
+    },
+    "UpdateServiceSettings":{
+      "name":"UpdateServiceSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateServiceSettingsRequest"},
+      "output":{"shape":"UpdateServiceSettingsResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"ServerInternalException"},
+        {"shape":"AuthorizationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RateLimitExceededException"}
+      ],
+      "documentation":"<p>Updates License Manager settings for the current Region.</p>"
+    }
+  },
+  "shapes":{
+    "AcceptGrantRequest":{
+      "type":"structure",
+      "required":["GrantArn"],
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        }
+      }
+    },
+    "AcceptGrantResponse":{
+      "type":"structure",
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Grant ARN.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        }
+      }
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Access to resource denied.</p>",
+      "exception":true
+    },
+    "ActivationOverrideBehavior":{
+      "type":"string",
+      "enum":[
+        "DISTRIBUTED_GRANTS_ONLY",
+        "ALL_GRANTS_PERMITTED_BY_ISSUER"
+      ]
+    },
+    "AllowedOperation":{
+      "type":"string",
+      "enum":[
+        "CreateGrant",
+        "CheckoutLicense",
+        "CheckoutBorrowLicense",
+        "CheckInLicense",
+        "ExtendConsumptionLicense",
+        "ListPurchasedLicenses",
+        "CreateToken"
+      ]
+    },
+    "AllowedOperationList":{
+      "type":"list",
+      "member":{"shape":"AllowedOperation"},
+      "max":8,
+      "min":1
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "pattern":"^arn:aws[a-zA-Z-]*:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}$"
+    },
+    "ArnList":{
+      "type":"list",
+      "member":{"shape":"Arn"}
+    },
+    "AuthorizationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The Amazon Web Services user account does not have permission to perform the action. Check the IAM policy associated with this account.</p>",
+      "exception":true
+    },
+    "AutomatedDiscoveryInformation":{
+      "type":"structure",
+      "members":{
+        "LastRunTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Time that automated discovery last ran.</p>"
+        }
+      },
+      "documentation":"<p>Describes automated discovery.</p>"
+    },
+    "Boolean":{"type":"boolean"},
+    "BorrowConfiguration":{
+      "type":"structure",
+      "required":[
+        "AllowEarlyCheckIn",
+        "MaxTimeToLiveInMinutes"
+      ],
+      "members":{
+        "AllowEarlyCheckIn":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Indicates whether early check-ins are allowed.</p>"
+        },
+        "MaxTimeToLiveInMinutes":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum time for the borrow configuration, in minutes.</p>"
+        }
+      },
+      "documentation":"<p>Details about a borrow configuration.</p>"
+    },
+    "BoxBoolean":{"type":"boolean"},
+    "BoxInteger":{"type":"integer"},
+    "BoxLong":{"type":"long"},
+    "CheckInLicenseRequest":{
+      "type":"structure",
+      "required":["LicenseConsumptionToken"],
+      "members":{
+        "LicenseConsumptionToken":{
+          "shape":"String",
+          "documentation":"<p>License consumption token.</p>"
+        },
+        "Beneficiary":{
+          "shape":"String",
+          "documentation":"<p>License beneficiary.</p>"
+        }
+      }
+    },
+    "CheckInLicenseResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "CheckoutBorrowLicenseRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseArn",
+        "Entitlements",
+        "DigitalSignatureMethod",
+        "ClientToken"
+      ],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license. The license must use the borrow consumption configuration.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementDataList",
+          "documentation":"<p>License entitlements. Partial checkouts are not supported.</p>"
+        },
+        "DigitalSignatureMethod":{
+          "shape":"DigitalSignatureMethod",
+          "documentation":"<p>Digital signature method. The possible value is JSON Web Signature (JWS) algorithm PS384. For more information, see <a href=\"https://tools.ietf.org/html/rfc7518#section-3.5\">RFC 7518 Digital Signature with RSASSA-PSS</a>.</p>"
+        },
+        "NodeId":{
+          "shape":"String",
+          "documentation":"<p>Node ID.</p>"
+        },
+        "CheckoutMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>Information about constraints.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        }
+      }
+    },
+    "CheckoutBorrowLicenseResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "LicenseConsumptionToken":{
+          "shape":"String",
+          "documentation":"<p>License consumption token.</p>"
+        },
+        "EntitlementsAllowed":{
+          "shape":"EntitlementDataList",
+          "documentation":"<p>Allowed license entitlements.</p>"
+        },
+        "NodeId":{
+          "shape":"String",
+          "documentation":"<p>Node ID.</p>"
+        },
+        "SignedToken":{
+          "shape":"SignedToken",
+          "documentation":"<p>Signed token.</p>"
+        },
+        "IssuedAt":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date and time at which the license checkout is issued.</p>"
+        },
+        "Expiration":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date and time at which the license checkout expires.</p>"
+        },
+        "CheckoutMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>Information about constraints.</p>"
+        }
+      }
+    },
+    "CheckoutLicenseRequest":{
+      "type":"structure",
+      "required":[
+        "ProductSKU",
+        "CheckoutType",
+        "KeyFingerprint",
+        "Entitlements",
+        "ClientToken"
+      ],
+      "members":{
+        "ProductSKU":{
+          "shape":"String",
+          "documentation":"<p>Product SKU.</p>"
+        },
+        "CheckoutType":{
+          "shape":"CheckoutType",
+          "documentation":"<p>Checkout type.</p>"
+        },
+        "KeyFingerprint":{
+          "shape":"String",
+          "documentation":"<p>Key fingerprint identifying the license.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementDataList",
+          "documentation":"<p>License entitlements.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "Beneficiary":{
+          "shape":"String",
+          "documentation":"<p>License beneficiary.</p>"
+        },
+        "NodeId":{
+          "shape":"String",
+          "documentation":"<p>Node ID.</p>"
+        }
+      }
+    },
+    "CheckoutLicenseResponse":{
+      "type":"structure",
+      "members":{
+        "CheckoutType":{
+          "shape":"CheckoutType",
+          "documentation":"<p>Checkout type.</p>"
+        },
+        "LicenseConsumptionToken":{
+          "shape":"String",
+          "documentation":"<p>License consumption token.</p>"
+        },
+        "EntitlementsAllowed":{
+          "shape":"EntitlementDataList",
+          "documentation":"<p>Allowed license entitlements.</p>"
+        },
+        "SignedToken":{
+          "shape":"SignedToken",
+          "documentation":"<p>Signed token.</p>"
+        },
+        "NodeId":{
+          "shape":"String",
+          "documentation":"<p>Node ID.</p>"
+        },
+        "IssuedAt":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date and time at which the license checkout is issued.</p>"
+        },
+        "Expiration":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date and time at which the license checkout expires.</p>"
+        },
+        "LicenseArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the checkout license.</p>"
+        }
+      }
+    },
+    "CheckoutType":{
+      "type":"string",
+      "enum":[
+        "PROVISIONAL",
+        "PERPETUAL"
+      ]
+    },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":36,
+      "min":1
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":2048,
+      "pattern":"\\S+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>There was a conflict processing the request. Try your request again.</p>",
+      "exception":true
+    },
+    "ConsumedLicenseSummary":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Resource type of the resource consuming a license.</p>"
+        },
+        "ConsumedLicenses":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses consumed by the resource.</p>"
+        }
+      },
+      "documentation":"<p>Details about license consumption.</p>"
+    },
+    "ConsumedLicenseSummaryList":{
+      "type":"list",
+      "member":{"shape":"ConsumedLicenseSummary"}
+    },
+    "ConsumptionConfiguration":{
+      "type":"structure",
+      "members":{
+        "RenewType":{
+          "shape":"RenewType",
+          "documentation":"<p>Renewal frequency.</p>"
+        },
+        "ProvisionalConfiguration":{
+          "shape":"ProvisionalConfiguration",
+          "documentation":"<p>Details about a provisional configuration.</p>"
+        },
+        "BorrowConfiguration":{
+          "shape":"BorrowConfiguration",
+          "documentation":"<p>Details about a borrow configuration.</p>"
+        }
+      },
+      "documentation":"<p>Details about a consumption configuration.</p>"
+    },
+    "CreateGrantRequest":{
+      "type":"structure",
+      "required":[
+        "ClientToken",
+        "GrantName",
+        "LicenseArn",
+        "Principals",
+        "HomeRegion",
+        "AllowedOperations"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "GrantName":{
+          "shape":"String",
+          "documentation":"<p>Grant name.</p>"
+        },
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "Principals":{
+          "shape":"PrincipalArnList",
+          "documentation":"<p>The grant principals. You can specify one of the following as an Amazon Resource Name (ARN):</p> <ul> <li> <p>An Amazon Web Services account, which includes only the account specified.</p> </li> </ul> <ul> <li> <p>An organizational unit (OU), which includes all accounts in the OU.</p> </li> </ul> <ul> <li> <p>An organization, which will include all accounts across your organization.</p> </li> </ul>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region of the grant.</p>"
+        },
+        "AllowedOperations":{
+          "shape":"AllowedOperationList",
+          "documentation":"<p>Allowed operations for the grant.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to add to the grant. For more information about tagging support in License Manager, see the <a href=\"https://docs.aws.amazon.com/license-manager/latest/APIReference/API_TagResource.html\">TagResource</a> operation.</p>"
+        }
+      }
+    },
+    "CreateGrantResponse":{
+      "type":"structure",
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Grant ARN.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        }
+      }
+    },
+    "CreateGrantVersionRequest":{
+      "type":"structure",
+      "required":[
+        "ClientToken",
+        "GrantArn"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        },
+        "GrantName":{
+          "shape":"String",
+          "documentation":"<p>Grant name.</p>"
+        },
+        "AllowedOperations":{
+          "shape":"AllowedOperationList",
+          "documentation":"<p>Allowed operations for the grant.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "StatusReason":{
+          "shape":"StatusReasonMessage",
+          "documentation":"<p>Grant status reason.</p>"
+        },
+        "SourceVersion":{
+          "shape":"String",
+          "documentation":"<p>Current version of the grant.</p>"
+        },
+        "Options":{
+          "shape":"Options",
+          "documentation":"<p>The options specified for the grant.</p>"
+        }
+      }
+    },
+    "CreateGrantVersionResponse":{
+      "type":"structure",
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Grant ARN.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>New version of the grant.</p>"
+        }
+      }
+    },
+    "CreateLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "LicenseCountingType"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the license configuration.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the license configuration.</p>"
+        },
+        "LicenseCountingType":{
+          "shape":"LicenseCountingType",
+          "documentation":"<p>Dimension used to track the license inventory.</p>"
+        },
+        "LicenseCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses managed by the license configuration.</p>"
+        },
+        "LicenseCountHardLimit":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Indicates whether hard or soft license enforcement is used. Exceeding a hard limit blocks the launch of new instances.</p>"
+        },
+        "LicenseRules":{
+          "shape":"StringList",
+          "documentation":"<p>License rules. The syntax is #name=value (for example, #allowedTenancy=EC2-DedicatedHost). The available rules vary by dimension, as follows.</p> <ul> <li> <p> <code>Cores</code> dimension: <code>allowedTenancy</code> | <code>licenseAffinityToHost</code> | <code>maximumCores</code> | <code>minimumCores</code> </p> </li> <li> <p> <code>Instances</code> dimension: <code>allowedTenancy</code> | <code>maximumVcpus</code> | <code>minimumVcpus</code> </p> </li> <li> <p> <code>Sockets</code> dimension: <code>allowedTenancy</code> | <code>licenseAffinityToHost</code> | <code>maximumSockets</code> | <code>minimumSockets</code> </p> </li> <li> <p> <code>vCPUs</code> dimension: <code>allowedTenancy</code> | <code>honorVcpuOptimization</code> | <code>maximumVcpus</code> | <code>minimumVcpus</code> </p> </li> </ul> <p>The unit for <code>licenseAffinityToHost</code> is days and the range is 1 to 180. The possible values for <code>allowedTenancy</code> are <code>EC2-Default</code>, <code>EC2-DedicatedHost</code>, and <code>EC2-DedicatedInstance</code>. The possible values for <code>honorVcpuOptimization</code> are <code>True</code> and <code>False</code>.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to add to the license configuration.</p>"
+        },
+        "DisassociateWhenNotFound":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>When true, disassociates a resource when software is uninstalled.</p>"
+        },
+        "ProductInformationList":{
+          "shape":"ProductInformationList",
+          "documentation":"<p>Product information.</p>"
+        }
+      }
+    },
+    "CreateLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        }
+      }
+    },
+    "CreateLicenseConversionTaskForResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "SourceLicenseContext",
+        "DestinationLicenseContext"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource you are converting the license type for.</p>"
+        },
+        "SourceLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information that identifies the license type you are converting from. For the structure of the source license, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli\">Convert a license type using the CLI </a> in the <i>License Manager User Guide</i>.</p>"
+        },
+        "DestinationLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information that identifies the license type you are converting to. For the structure of the destination license, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli\">Convert a license type using the CLI </a> in the <i>License Manager User Guide</i>.</p>"
+        }
+      }
+    },
+    "CreateLicenseConversionTaskForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConversionTaskId":{
+          "shape":"LicenseConversionTaskId",
+          "documentation":"<p>The ID of the created license type conversion task.</p>"
+        }
+      }
+    },
+    "CreateLicenseManagerReportGeneratorRequest":{
+      "type":"structure",
+      "required":[
+        "ReportGeneratorName",
+        "Type",
+        "ReportContext",
+        "ReportFrequency",
+        "ClientToken"
+      ],
+      "members":{
+        "ReportGeneratorName":{
+          "shape":"ReportGeneratorName",
+          "documentation":"<p>Name of the report generator.</p>"
+        },
+        "Type":{
+          "shape":"ReportTypeList",
+          "documentation":"<p>Type of reports to generate. The following report types an be generated:</p> <ul> <li> <p>License configuration report - Reports the number and details of consumed licenses for a license configuration.</p> </li> <li> <p>Resource report - Reports the tracked licenses and resource consumption for a license configuration.</p> </li> </ul>"
+        },
+        "ReportContext":{
+          "shape":"ReportContext",
+          "documentation":"<p>Defines the type of license configuration the report generator tracks.</p>"
+        },
+        "ReportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Frequency by which reports are generated. Reports can be generated daily, monthly, or weekly.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the report generator.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to add to the report generator.</p>"
+        }
+      }
+    },
+    "CreateLicenseManagerReportGeneratorResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseManagerReportGeneratorArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the new report generator.</p>"
+        }
+      }
+    },
+    "CreateLicenseRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseName",
+        "ProductName",
+        "ProductSKU",
+        "Issuer",
+        "HomeRegion",
+        "Validity",
+        "Entitlements",
+        "Beneficiary",
+        "ConsumptionConfiguration",
+        "ClientToken"
+      ],
+      "members":{
+        "LicenseName":{
+          "shape":"String",
+          "documentation":"<p>License name.</p>"
+        },
+        "ProductName":{
+          "shape":"String",
+          "documentation":"<p>Product name.</p>"
+        },
+        "ProductSKU":{
+          "shape":"String",
+          "documentation":"<p>Product SKU.</p>"
+        },
+        "Issuer":{
+          "shape":"Issuer",
+          "documentation":"<p>License issuer.</p>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region for the license.</p>"
+        },
+        "Validity":{
+          "shape":"DatetimeRange",
+          "documentation":"<p>Date and time range during which the license is valid, in ISO8601-UTC format.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementList",
+          "documentation":"<p>License entitlements.</p>"
+        },
+        "Beneficiary":{
+          "shape":"String",
+          "documentation":"<p>License beneficiary.</p>"
+        },
+        "ConsumptionConfiguration":{
+          "shape":"ConsumptionConfiguration",
+          "documentation":"<p>Configuration for consumption of the license. Choose a provisional configuration for workloads running with continuous connectivity. Choose a borrow configuration for workloads with offline usage.</p>"
+        },
+        "LicenseMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>Information about the license.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags to add to the license. For more information about tagging support in License Manager, see the <a href=\"https://docs.aws.amazon.com/license-manager/latest/APIReference/API_TagResource.html\">TagResource</a> operation.</p>"
+        }
+      }
+    },
+    "CreateLicenseResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "Status":{
+          "shape":"LicenseStatus",
+          "documentation":"<p>License status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>License version.</p>"
+        }
+      }
+    },
+    "CreateLicenseVersionRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseArn",
+        "LicenseName",
+        "ProductName",
+        "Issuer",
+        "HomeRegion",
+        "Validity",
+        "Entitlements",
+        "ConsumptionConfiguration",
+        "Status",
+        "ClientToken"
+      ],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "LicenseName":{
+          "shape":"String",
+          "documentation":"<p>License name.</p>"
+        },
+        "ProductName":{
+          "shape":"String",
+          "documentation":"<p>Product name.</p>"
+        },
+        "Issuer":{
+          "shape":"Issuer",
+          "documentation":"<p>License issuer.</p>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region of the license.</p>"
+        },
+        "Validity":{
+          "shape":"DatetimeRange",
+          "documentation":"<p>Date and time range during which the license is valid, in ISO8601-UTC format.</p>"
+        },
+        "LicenseMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>Information about the license.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementList",
+          "documentation":"<p>License entitlements.</p>"
+        },
+        "ConsumptionConfiguration":{
+          "shape":"ConsumptionConfiguration",
+          "documentation":"<p>Configuration for consumption of the license. Choose a provisional configuration for workloads running with continuous connectivity. Choose a borrow configuration for workloads with offline usage.</p>"
+        },
+        "Status":{
+          "shape":"LicenseStatus",
+          "documentation":"<p>License status.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "SourceVersion":{
+          "shape":"String",
+          "documentation":"<p>Current version of the license.</p>"
+        }
+      }
+    },
+    "CreateLicenseVersionResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>License ARN.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>New version of the license.</p>"
+        },
+        "Status":{
+          "shape":"LicenseStatus",
+          "documentation":"<p>License status.</p>"
+        }
+      }
+    },
+    "CreateTokenRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseArn",
+        "ClientToken"
+      ],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license. The ARN is mapped to the aud claim of the JWT token.</p>"
+        },
+        "RoleArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Name (ARN) of the IAM roles to embed in the token. License Manager does not check whether the roles are in use.</p>"
+        },
+        "ExpirationInDays":{
+          "shape":"Integer",
+          "documentation":"<p>Token expiration, in days, counted from token creation. The default is 365 days.</p>"
+        },
+        "TokenProperties":{
+          "shape":"MaxSize3StringList",
+          "documentation":"<p>Data specified by the caller to be included in the JWT token. The data is mapped to the amr claim of the JWT token.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token, valid for 10 minutes.</p>"
+        }
+      }
+    },
+    "CreateTokenResponse":{
+      "type":"structure",
+      "members":{
+        "TokenId":{
+          "shape":"String",
+          "documentation":"<p>Token ID.</p>"
+        },
+        "TokenType":{
+          "shape":"TokenType",
+          "documentation":"<p>Token type.</p>"
+        },
+        "Token":{
+          "shape":"TokenString",
+          "documentation":"<p>Refresh token, encoded as a JWT token.</p>"
+        }
+      }
+    },
+    "DateTime":{"type":"timestamp"},
+    "DatetimeRange":{
+      "type":"structure",
+      "required":["Begin"],
+      "members":{
+        "Begin":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Start of the time range.</p>"
+        },
+        "End":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>End of the time range.</p>"
+        }
+      },
+      "documentation":"<p>Describes a time range, in ISO8601-UTC format.</p>"
+    },
+    "DeleteGrantRequest":{
+      "type":"structure",
+      "required":[
+        "GrantArn",
+        "Version"
+      ],
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        },
+        "StatusReason":{
+          "shape":"StatusReasonMessage",
+          "documentation":"<p>The Status reason for the delete request.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Current version of the grant.</p>"
+        }
+      }
+    },
+    "DeleteGrantResponse":{
+      "type":"structure",
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Grant ARN.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        }
+      }
+    },
+    "DeleteLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>ID of the license configuration.</p>"
+        }
+      }
+    },
+    "DeleteLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteLicenseManagerReportGeneratorRequest":{
+      "type":"structure",
+      "required":["LicenseManagerReportGeneratorArn"],
+      "members":{
+        "LicenseManagerReportGeneratorArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the report generator to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteLicenseManagerReportGeneratorResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteLicenseRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseArn",
+        "SourceVersion"
+      ],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "SourceVersion":{
+          "shape":"String",
+          "documentation":"<p>Current version of the license.</p>"
+        }
+      }
+    },
+    "DeleteLicenseResponse":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"LicenseDeletionStatus",
+          "documentation":"<p>License status.</p>"
+        },
+        "DeletionDate":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date when the license is deleted.</p>"
+        }
+      }
+    },
+    "DeleteTokenRequest":{
+      "type":"structure",
+      "required":["TokenId"],
+      "members":{
+        "TokenId":{
+          "shape":"String",
+          "documentation":"<p>Token ID.</p>"
+        }
+      }
+    },
+    "DeleteTokenResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DigitalSignatureMethod":{
+      "type":"string",
+      "enum":["JWT_PS384"]
+    },
+    "Entitlement":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Unit"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Entitlement name.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Entitlement resource. Use only if the unit is None.</p>"
+        },
+        "MaxCount":{
+          "shape":"Long",
+          "documentation":"<p>Maximum entitlement count. Use if the unit is not None.</p>"
+        },
+        "Overage":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Indicates whether overages are allowed.</p>"
+        },
+        "Unit":{
+          "shape":"EntitlementUnit",
+          "documentation":"<p>Entitlement unit.</p>"
+        },
+        "AllowCheckIn":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Indicates whether check-ins are allowed.</p>"
+        }
+      },
+      "documentation":"<p>Describes a resource entitled for use with a license.</p>"
+    },
+    "EntitlementData":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Unit"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Entitlement data name.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Entitlement data value.</p>"
+        },
+        "Unit":{
+          "shape":"EntitlementDataUnit",
+          "documentation":"<p>Entitlement data unit.</p>"
+        }
+      },
+      "documentation":"<p>Data associated with an entitlement resource.</p>"
+    },
+    "EntitlementDataList":{
+      "type":"list",
+      "member":{"shape":"EntitlementData"}
+    },
+    "EntitlementDataUnit":{
+      "type":"string",
+      "enum":[
+        "Count",
+        "None",
+        "Seconds",
+        "Microseconds",
+        "Milliseconds",
+        "Bytes",
+        "Kilobytes",
+        "Megabytes",
+        "Gigabytes",
+        "Terabytes",
+        "Bits",
+        "Kilobits",
+        "Megabits",
+        "Gigabits",
+        "Terabits",
+        "Percent",
+        "Bytes/Second",
+        "Kilobytes/Second",
+        "Megabytes/Second",
+        "Gigabytes/Second",
+        "Terabytes/Second",
+        "Bits/Second",
+        "Kilobits/Second",
+        "Megabits/Second",
+        "Gigabits/Second",
+        "Terabits/Second",
+        "Count/Second"
+      ]
+    },
+    "EntitlementList":{
+      "type":"list",
+      "member":{"shape":"Entitlement"}
+    },
+    "EntitlementNotAllowedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The entitlement is not allowed.</p>",
+      "exception":true
+    },
+    "EntitlementUnit":{
+      "type":"string",
+      "enum":[
+        "Count",
+        "None",
+        "Seconds",
+        "Microseconds",
+        "Milliseconds",
+        "Bytes",
+        "Kilobytes",
+        "Megabytes",
+        "Gigabytes",
+        "Terabytes",
+        "Bits",
+        "Kilobits",
+        "Megabits",
+        "Gigabits",
+        "Terabits",
+        "Percent",
+        "Bytes/Second",
+        "Kilobytes/Second",
+        "Megabytes/Second",
+        "Gigabytes/Second",
+        "Terabytes/Second",
+        "Bits/Second",
+        "Kilobits/Second",
+        "Megabits/Second",
+        "Gigabits/Second",
+        "Terabits/Second",
+        "Count/Second"
+      ]
+    },
+    "EntitlementUsage":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ConsumedValue",
+        "Unit"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Entitlement usage name.</p>"
+        },
+        "ConsumedValue":{
+          "shape":"String",
+          "documentation":"<p>Resource usage consumed.</p>"
+        },
+        "MaxCount":{
+          "shape":"String",
+          "documentation":"<p>Maximum entitlement usage count.</p>"
+        },
+        "Unit":{
+          "shape":"EntitlementDataUnit",
+          "documentation":"<p>Entitlement usage unit.</p>"
+        }
+      },
+      "documentation":"<p>Usage associated with an entitlement resource.</p>"
+    },
+    "EntitlementUsageList":{
+      "type":"list",
+      "member":{"shape":"EntitlementUsage"}
+    },
+    "ExtendLicenseConsumptionRequest":{
+      "type":"structure",
+      "required":["LicenseConsumptionToken"],
+      "members":{
+        "LicenseConsumptionToken":{
+          "shape":"String",
+          "documentation":"<p>License consumption token.</p>"
+        },
+        "DryRun":{
+          "shape":"Boolean",
+          "documentation":"<p>Checks whether you have the required permissions for the action, without actually making the request. Provides an error response if you do not have the required permissions.</p>"
+        }
+      }
+    },
+    "ExtendLicenseConsumptionResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConsumptionToken":{
+          "shape":"String",
+          "documentation":"<p>License consumption token.</p>"
+        },
+        "Expiration":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Date and time at which the license consumption expires.</p>"
+        }
+      }
+    },
+    "FailedDependencyException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"},
+        "ErrorCode":{"shape":"String"}
+      },
+      "documentation":"<p>A dependency required to run the API is missing.</p>",
+      "exception":true
+    },
+    "Filter":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"FilterName",
+          "documentation":"<p>Name of the filter. Filter names are case-sensitive.</p>"
+        },
+        "Values":{
+          "shape":"FilterValues",
+          "documentation":"<p>The value of the filter, which is case-sensitive. You can only specify one value for the filter.</p>"
+        }
+      },
+      "documentation":"<p>A filter name and value pair that is used to return more specific results from a describe operation. Filters can be used to match a set of resources by specific criteria, such as tags, attributes, or IDs.</p>"
+    },
+    "FilterLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The request uses too many filters or too many filter values.</p>",
+      "exception":true
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "FilterName":{"type":"string"},
+    "FilterValue":{"type":"string"},
+    "FilterValues":{
+      "type":"list",
+      "member":{"shape":"FilterValue"}
+    },
+    "Filters":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "GetAccessTokenRequest":{
+      "type":"structure",
+      "required":["Token"],
+      "members":{
+        "Token":{
+          "shape":"TokenString",
+          "documentation":"<p>Refresh token, encoded as a JWT token.</p>"
+        },
+        "TokenProperties":{
+          "shape":"MaxSize3StringList",
+          "documentation":"<p>Token properties to validate against those present in the JWT token.</p>"
+        }
+      }
+    },
+    "GetAccessTokenResponse":{
+      "type":"structure",
+      "members":{
+        "AccessToken":{
+          "shape":"TokenString",
+          "documentation":"<p>Temporary access token.</p>"
+        }
+      }
+    },
+    "GetGrantRequest":{
+      "type":"structure",
+      "required":["GrantArn"],
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        }
+      }
+    },
+    "GetGrantResponse":{
+      "type":"structure",
+      "members":{
+        "Grant":{
+          "shape":"Grant",
+          "documentation":"<p>Grant details.</p>"
+        }
+      }
+    },
+    "GetLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        }
+      }
+    },
+    "GetLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationId":{
+          "shape":"String",
+          "documentation":"<p>Unique ID for the license configuration.</p>"
+        },
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the license configuration.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the license configuration.</p>"
+        },
+        "LicenseCountingType":{
+          "shape":"LicenseCountingType",
+          "documentation":"<p>Dimension for which the licenses are counted.</p>"
+        },
+        "LicenseRules":{
+          "shape":"StringList",
+          "documentation":"<p>License rules.</p>"
+        },
+        "LicenseCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of available licenses.</p>"
+        },
+        "LicenseCountHardLimit":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Sets the number of available licenses as a hard limit.</p>"
+        },
+        "ConsumedLicenses":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses assigned to resources.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>License configuration status.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"String",
+          "documentation":"<p>Account ID of the owner of the license configuration.</p>"
+        },
+        "ConsumedLicenseSummaryList":{
+          "shape":"ConsumedLicenseSummaryList",
+          "documentation":"<p>Summaries of the licenses consumed by resources.</p>"
+        },
+        "ManagedResourceSummaryList":{
+          "shape":"ManagedResourceSummaryList",
+          "documentation":"<p>Summaries of the managed resources.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags for the license configuration.</p>"
+        },
+        "ProductInformationList":{
+          "shape":"ProductInformationList",
+          "documentation":"<p>Product information.</p>"
+        },
+        "AutomatedDiscoveryInformation":{
+          "shape":"AutomatedDiscoveryInformation",
+          "documentation":"<p>Automated discovery information.</p>"
+        },
+        "DisassociateWhenNotFound":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>When true, disassociates a resource when software is uninstalled.</p>"
+        }
+      }
+    },
+    "GetLicenseConversionTaskRequest":{
+      "type":"structure",
+      "required":["LicenseConversionTaskId"],
+      "members":{
+        "LicenseConversionTaskId":{
+          "shape":"LicenseConversionTaskId",
+          "documentation":"<p>ID of the license type conversion task to retrieve information on.</p>"
+        }
+      }
+    },
+    "GetLicenseConversionTaskResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConversionTaskId":{
+          "shape":"LicenseConversionTaskId",
+          "documentation":"<p>ID of the license type conversion task.</p>"
+        },
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Names (ARN) of the resources the license conversion task is associated with.</p>"
+        },
+        "SourceLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information about the license type converted from.</p>"
+        },
+        "DestinationLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information about the license type converted to.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message for the conversion task.</p>"
+        },
+        "Status":{
+          "shape":"LicenseConversionTaskStatus",
+          "documentation":"<p>Status of the license type conversion task.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Time at which the license type conversion task was started .</p>"
+        },
+        "LicenseConversionTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Amount of time to complete the license type conversion.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Time at which the license type conversion task was completed.</p>"
+        }
+      }
+    },
+    "GetLicenseManagerReportGeneratorRequest":{
+      "type":"structure",
+      "required":["LicenseManagerReportGeneratorArn"],
+      "members":{
+        "LicenseManagerReportGeneratorArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the report generator.</p>"
+        }
+      }
+    },
+    "GetLicenseManagerReportGeneratorResponse":{
+      "type":"structure",
+      "members":{
+        "ReportGenerator":{
+          "shape":"ReportGenerator",
+          "documentation":"<p>A report generator that creates periodic reports about your license configurations.</p>"
+        }
+      }
+    },
+    "GetLicenseRequest":{
+      "type":"structure",
+      "required":["LicenseArn"],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>License version.</p>"
+        }
+      }
+    },
+    "GetLicenseResponse":{
+      "type":"structure",
+      "members":{
+        "License":{
+          "shape":"License",
+          "documentation":"<p>License details.</p>"
+        }
+      }
+    },
+    "GetLicenseUsageRequest":{
+      "type":"structure",
+      "required":["LicenseArn"],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        }
+      }
+    },
+    "GetLicenseUsageResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseUsage":{
+          "shape":"LicenseUsage",
+          "documentation":"<p>License usage details.</p>"
+        }
+      }
+    },
+    "GetServiceSettingsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "GetServiceSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "S3BucketArn":{
+          "shape":"String",
+          "documentation":"<p>Regional S3 bucket path for storing reports, license trail event data, discovery data, and so on.</p>"
+        },
+        "SnsTopicArn":{
+          "shape":"String",
+          "documentation":"<p>SNS topic configured to receive notifications from License Manager.</p>"
+        },
+        "OrganizationConfiguration":{
+          "shape":"OrganizationConfiguration",
+          "documentation":"<p>Indicates whether Organizations is integrated with License Manager for cross-account discovery.</p>"
+        },
+        "EnableCrossAccountsDiscovery":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Indicates whether cross-account discovery is enabled.</p>"
+        },
+        "LicenseManagerResourceShareArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource share. The License Manager management account provides member accounts with access to this share.</p>"
+        }
+      }
+    },
+    "Grant":{
+      "type":"structure",
+      "required":[
+        "GrantArn",
+        "GrantName",
+        "ParentArn",
+        "LicenseArn",
+        "GranteePrincipalArn",
+        "HomeRegion",
+        "GrantStatus",
+        "Version",
+        "GrantedOperations"
+      ],
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        },
+        "GrantName":{
+          "shape":"String",
+          "documentation":"<p>Grant name.</p>"
+        },
+        "ParentArn":{
+          "shape":"Arn",
+          "documentation":"<p>Parent ARN.</p>"
+        },
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>License ARN.</p>"
+        },
+        "GranteePrincipalArn":{
+          "shape":"Arn",
+          "documentation":"<p>The grantee principal ARN.</p>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region of the grant.</p>"
+        },
+        "GrantStatus":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "StatusReason":{
+          "shape":"StatusReasonMessage",
+          "documentation":"<p>Grant status reason.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        },
+        "GrantedOperations":{
+          "shape":"AllowedOperationList",
+          "documentation":"<p>Granted operations.</p>"
+        },
+        "Options":{
+          "shape":"Options",
+          "documentation":"<p>The options specified for the grant.</p>"
+        }
+      },
+      "documentation":"<p>Describes a grant.</p>"
+    },
+    "GrantList":{
+      "type":"list",
+      "member":{"shape":"Grant"}
+    },
+    "GrantStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING_WORKFLOW",
+        "PENDING_ACCEPT",
+        "REJECTED",
+        "ACTIVE",
+        "FAILED_WORKFLOW",
+        "DELETED",
+        "PENDING_DELETE",
+        "DISABLED",
+        "WORKFLOW_COMPLETED"
+      ]
+    },
+    "GrantedLicense":{
+      "type":"structure",
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "LicenseName":{
+          "shape":"String",
+          "documentation":"<p>License name.</p>"
+        },
+        "ProductName":{
+          "shape":"String",
+          "documentation":"<p>Product name.</p>"
+        },
+        "ProductSKU":{
+          "shape":"String",
+          "documentation":"<p>Product SKU.</p>"
+        },
+        "Issuer":{
+          "shape":"IssuerDetails",
+          "documentation":"<p>Granted license issuer.</p>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region of the granted license.</p>"
+        },
+        "Status":{
+          "shape":"LicenseStatus",
+          "documentation":"<p>Granted license status.</p>"
+        },
+        "Validity":{
+          "shape":"DatetimeRange",
+          "documentation":"<p>Date and time range during which the granted license is valid, in ISO8601-UTC format.</p>"
+        },
+        "Beneficiary":{
+          "shape":"String",
+          "documentation":"<p>Granted license beneficiary.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementList",
+          "documentation":"<p>License entitlements.</p>"
+        },
+        "ConsumptionConfiguration":{
+          "shape":"ConsumptionConfiguration",
+          "documentation":"<p>Configuration for consumption of the license.</p>"
+        },
+        "LicenseMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>Granted license metadata.</p>"
+        },
+        "CreateTime":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Creation time of the granted license.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Version of the granted license.</p>"
+        },
+        "ReceivedMetadata":{
+          "shape":"ReceivedMetadata",
+          "documentation":"<p>Granted license received metadata.</p>"
+        }
+      },
+      "documentation":"<p>Describes a license that is granted to a grantee.</p>"
+    },
+    "GrantedLicenseList":{
+      "type":"list",
+      "member":{"shape":"GrantedLicense"}
+    },
+    "ISO8601DateTime":{
+      "type":"string",
+      "max":50,
+      "pattern":"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[0-1]|0[1-9]|[1-2][0-9])T(2[0-3]|[0-1][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[ 0-3]|[0-1][0-9]):[0-5][0-9])+$"
+    },
+    "Integer":{"type":"integer"},
+    "InvalidParameterValueException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>One or more parameter values are not valid.</p>",
+      "exception":true,
+      "synthetic":true
+    },
+    "InvalidResourceStateException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>License Manager cannot allocate a license to a resource because of its state. </p> <p>For example, you cannot allocate a license to an instance in the process of shutting down.</p>",
+      "exception":true
+    },
+    "InventoryFilter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Condition"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the filter.</p>"
+        },
+        "Condition":{
+          "shape":"InventoryFilterCondition",
+          "documentation":"<p>Condition of the filter.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Value of the filter.</p>"
+        }
+      },
+      "documentation":"<p>An inventory filter.</p>"
+    },
+    "InventoryFilterCondition":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS",
+        "BEGINS_WITH",
+        "CONTAINS"
+      ]
+    },
+    "InventoryFilterList":{
+      "type":"list",
+      "member":{"shape":"InventoryFilter"}
+    },
+    "Issuer":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Issuer name.</p>"
+        },
+        "SignKey":{
+          "shape":"String",
+          "documentation":"<p>Asymmetric KMS key from Key Management Service. The KMS key must have a key usage of sign and verify, and support the RSASSA-PSS SHA-256 signing algorithm.</p>"
+        }
+      },
+      "documentation":"<p>Details about the issuer of a license.</p>"
+    },
+    "IssuerDetails":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Issuer name.</p>"
+        },
+        "SignKey":{
+          "shape":"String",
+          "documentation":"<p>Asymmetric KMS key from Key Management Service. The KMS key must have a key usage of sign and verify, and support the RSASSA-PSS SHA-256 signing algorithm.</p>"
+        },
+        "KeyFingerprint":{
+          "shape":"String",
+          "documentation":"<p>Issuer key fingerprint.</p>"
+        }
+      },
+      "documentation":"<p>Details associated with the issuer of a license.</p>"
+    },
+    "License":{
+      "type":"structure",
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "LicenseName":{
+          "shape":"String",
+          "documentation":"<p>License name.</p>"
+        },
+        "ProductName":{
+          "shape":"String",
+          "documentation":"<p>Product name.</p>"
+        },
+        "ProductSKU":{
+          "shape":"String",
+          "documentation":"<p>Product SKU.</p>"
+        },
+        "Issuer":{
+          "shape":"IssuerDetails",
+          "documentation":"<p>License issuer.</p>"
+        },
+        "HomeRegion":{
+          "shape":"String",
+          "documentation":"<p>Home Region of the license.</p>"
+        },
+        "Status":{
+          "shape":"LicenseStatus",
+          "documentation":"<p>License status.</p>"
+        },
+        "Validity":{
+          "shape":"DatetimeRange",
+          "documentation":"<p>Date and time range during which the license is valid, in ISO8601-UTC format.</p>"
+        },
+        "Beneficiary":{
+          "shape":"String",
+          "documentation":"<p>License beneficiary.</p>"
+        },
+        "Entitlements":{
+          "shape":"EntitlementList",
+          "documentation":"<p>License entitlements.</p>"
+        },
+        "ConsumptionConfiguration":{
+          "shape":"ConsumptionConfiguration",
+          "documentation":"<p>Configuration for consumption of the license.</p>"
+        },
+        "LicenseMetadata":{
+          "shape":"MetadataList",
+          "documentation":"<p>License metadata.</p>"
+        },
+        "CreateTime":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>License creation time.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>License version.</p>"
+        }
+      },
+      "documentation":"<p>Software license that is managed in License Manager.</p>"
+    },
+    "LicenseConfiguration":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationId":{
+          "shape":"String",
+          "documentation":"<p>Unique ID of the license configuration.</p>"
+        },
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the license configuration.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the license configuration.</p>"
+        },
+        "LicenseCountingType":{
+          "shape":"LicenseCountingType",
+          "documentation":"<p>Dimension to use to track the license inventory.</p>"
+        },
+        "LicenseRules":{
+          "shape":"StringList",
+          "documentation":"<p>License rules.</p>"
+        },
+        "LicenseCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses managed by the license configuration.</p>"
+        },
+        "LicenseCountHardLimit":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Number of available licenses as a hard limit.</p>"
+        },
+        "DisassociateWhenNotFound":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>When true, disassociates a resource when software is uninstalled.</p>"
+        },
+        "ConsumedLicenses":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses consumed. </p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>Status of the license configuration.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"String",
+          "documentation":"<p>Account ID of the license configuration's owner.</p>"
+        },
+        "ConsumedLicenseSummaryList":{
+          "shape":"ConsumedLicenseSummaryList",
+          "documentation":"<p>Summaries for licenses consumed by various resources.</p>"
+        },
+        "ManagedResourceSummaryList":{
+          "shape":"ManagedResourceSummaryList",
+          "documentation":"<p>Summaries for managed resources.</p>"
+        },
+        "ProductInformationList":{
+          "shape":"ProductInformationList",
+          "documentation":"<p>Product information.</p>"
+        },
+        "AutomatedDiscoveryInformation":{
+          "shape":"AutomatedDiscoveryInformation",
+          "documentation":"<p>Automated discovery information.</p>"
+        }
+      },
+      "documentation":"<p>A license configuration is an abstraction of a customer license agreement that can be consumed and enforced by License Manager. Components include specifications for the license type (licensing by instance, socket, CPU, or vCPU), allowed tenancy (shared tenancy, Dedicated Instance, Dedicated Host, or all of these), host affinity (how long a VM must be associated with a host), and the number of licenses purchased and used.</p>"
+    },
+    "LicenseConfigurationAssociation":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Type of server resource.</p>"
+        },
+        "ResourceOwnerId":{
+          "shape":"String",
+          "documentation":"<p>ID of the Amazon Web Services account that owns the resource consuming licenses.</p>"
+        },
+        "AssociationTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Time when the license configuration was associated with the resource.</p>"
+        },
+        "AmiAssociationScope":{
+          "shape":"String",
+          "documentation":"<p>Scope of AMI associations. The possible value is <code>cross-account</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes an association with a license configuration.</p>"
+    },
+    "LicenseConfigurationAssociations":{
+      "type":"list",
+      "member":{"shape":"LicenseConfigurationAssociation"}
+    },
+    "LicenseConfigurationStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "DISABLED"
+      ]
+    },
+    "LicenseConfigurationUsage":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Type of resource.</p>"
+        },
+        "ResourceStatus":{
+          "shape":"String",
+          "documentation":"<p>Status of the resource.</p>"
+        },
+        "ResourceOwnerId":{
+          "shape":"String",
+          "documentation":"<p>ID of the account that owns the resource.</p>"
+        },
+        "AssociationTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Time when the license configuration was initially associated with the resource.</p>"
+        },
+        "ConsumedLicenses":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of licenses consumed by the resource.</p>"
+        }
+      },
+      "documentation":"<p>Details about the usage of a resource associated with a license configuration.</p>"
+    },
+    "LicenseConfigurationUsageList":{
+      "type":"list",
+      "member":{"shape":"LicenseConfigurationUsage"}
+    },
+    "LicenseConfigurations":{
+      "type":"list",
+      "member":{"shape":"LicenseConfiguration"}
+    },
+    "LicenseConversionContext":{
+      "type":"structure",
+      "members":{
+        "UsageOperation":{
+          "shape":"UsageOperation",
+          "documentation":"<p>The Usage operation value that corresponds to the license type you are converting your resource from. For more information about which platforms correspond to which usage operation values see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/billing-info-fields.html#billing-info\">Sample data: usage operation by platform </a> </p>"
+        },
+        "ProductCodes":{
+          "shape":"ProductCodeList",
+          "documentation":"<p>Product codes referred to in the license conversion process.</p>"
+        }
+      },
+      "documentation":"<p>Information about a license type conversion task.</p>"
+    },
+    "LicenseConversionTask":{
+      "type":"structure",
+      "members":{
+        "LicenseConversionTaskId":{
+          "shape":"LicenseConversionTaskId",
+          "documentation":"<p>The ID of the license type conversion task.</p>"
+        },
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource associated with the license type conversion task.</p>"
+        },
+        "SourceLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information about the license type this conversion task converted from.</p>"
+        },
+        "DestinationLicenseContext":{
+          "shape":"LicenseConversionContext",
+          "documentation":"<p>Information about the license type this conversion task converted to.</p>"
+        },
+        "Status":{
+          "shape":"LicenseConversionTaskStatus",
+          "documentation":"<p>The status of the conversion task.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message for the conversion task.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time the conversion task was started at.</p>"
+        },
+        "LicenseConversionTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time the usage operation value of the resource was changed.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time the conversion task was completed.</p>"
+        }
+      },
+      "documentation":"<p>Information about a license type conversion task.</p>"
+    },
+    "LicenseConversionTaskId":{
+      "type":"string",
+      "max":50,
+      "pattern":"^lct-[a-zA-Z0-9]*"
+    },
+    "LicenseConversionTaskStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "LicenseConversionTasks":{
+      "type":"list",
+      "member":{"shape":"LicenseConversionTask"}
+    },
+    "LicenseCountingType":{
+      "type":"string",
+      "enum":[
+        "vCPU",
+        "Instance",
+        "Core",
+        "Socket"
+      ]
+    },
+    "LicenseDeletionStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING_DELETE",
+        "DELETED"
+      ]
+    },
+    "LicenseList":{
+      "type":"list",
+      "member":{"shape":"License"}
+    },
+    "LicenseOperationFailure":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Resource type.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>Error message.</p>"
+        },
+        "FailureTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Failure time.</p>"
+        },
+        "OperationName":{
+          "shape":"String",
+          "documentation":"<p>Name of the operation.</p>"
+        },
+        "ResourceOwnerId":{
+          "shape":"String",
+          "documentation":"<p>ID of the Amazon Web Services account that owns the resource.</p>"
+        },
+        "OperationRequestedBy":{
+          "shape":"String",
+          "documentation":"<p>The requester is \"License Manager Automated Discovery\".</p>"
+        },
+        "MetadataList":{
+          "shape":"MetadataList",
+          "documentation":"<p>Reserved.</p>"
+        }
+      },
+      "documentation":"<p>Describes the failure of a license operation.</p>"
+    },
+    "LicenseOperationFailureList":{
+      "type":"list",
+      "member":{"shape":"LicenseOperationFailure"}
+    },
+    "LicenseSpecification":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        },
+        "AmiAssociationScope":{
+          "shape":"String",
+          "documentation":"<p>Scope of AMI associations. The possible value is <code>cross-account</code>.</p>"
+        }
+      },
+      "documentation":"<p>Details for associating a license configuration with a resource.</p>"
+    },
+    "LicenseSpecifications":{
+      "type":"list",
+      "member":{"shape":"LicenseSpecification"}
+    },
+    "LicenseStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "PENDING_AVAILABLE",
+        "DEACTIVATED",
+        "SUSPENDED",
+        "EXPIRED",
+        "PENDING_DELETE",
+        "DELETED"
+      ]
+    },
+    "LicenseUsage":{
+      "type":"structure",
+      "members":{
+        "EntitlementUsages":{
+          "shape":"EntitlementUsageList",
+          "documentation":"<p>License entitlement usages.</p>"
+        }
+      },
+      "documentation":"<p>Describes the entitlement usage associated with a license.</p>"
+    },
+    "LicenseUsageException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>You do not have enough licenses available to support a new resource launch.</p>",
+      "exception":true
+    },
+    "ListAssociationsForLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of a license configuration.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListAssociationsForLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationAssociations":{
+          "shape":"LicenseConfigurationAssociations",
+          "documentation":"<p>Information about the associations for the license configuration.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListDistributedGrantsRequest":{
+      "type":"structure",
+      "members":{
+        "GrantArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Names (ARNs) of the grants.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>LicenseArn</code> </p> </li> <li> <p> <code>GrantStatus</code> </p> </li> <li> <p> <code>GranteePrincipalARN</code> </p> </li> <li> <p> <code>ProductSKU</code> </p> </li> <li> <p> <code>LicenseIssuerName</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListDistributedGrantsResponse":{
+      "type":"structure",
+      "members":{
+        "Grants":{
+          "shape":"GrantList",
+          "documentation":"<p>Distributed grant details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListFailuresForLicenseConfigurationOperationsRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name of the license configuration.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListFailuresForLicenseConfigurationOperationsResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseOperationFailureList":{
+          "shape":"LicenseOperationFailureList",
+          "documentation":"<p>License configuration operations that failed.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationArns":{
+          "shape":"StringList",
+          "documentation":"<p>Amazon Resource Names (ARN) of the license configurations.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p>Filters to scope the results. The following filters and logical operators are supported:</p> <ul> <li> <p> <code>licenseCountingType</code> - The dimension for which licenses are counted. Possible values are <code>vCPU</code> | <code>Instance</code> | <code>Core</code> | <code>Socket</code>.</p> </li> <li> <p> <code>enforceLicenseCount</code> - A Boolean value that indicates whether hard license enforcement is used.</p> </li> <li> <p> <code>usagelimitExceeded</code> - A Boolean value that indicates whether the available licenses have been exceeded.</p> </li> </ul>"
+        }
+      }
+    },
+    "ListLicenseConfigurationsResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurations":{
+          "shape":"LicenseConfigurations",
+          "documentation":"<p>Information about the license configurations.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseConversionTasksRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p> Filters to scope the results. Valid filters are <code>ResourceArns</code> and <code>Status</code>. </p>"
+        }
+      }
+    },
+    "ListLicenseConversionTasksResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConversionTasks":{
+          "shape":"LicenseConversionTasks",
+          "documentation":"<p>Information about the license configuration tasks for your account.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseManagerReportGeneratorsRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported: </p> <ul> <li> <p> <code>LicenseConfigurationArn</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListLicenseManagerReportGeneratorsResponse":{
+      "type":"structure",
+      "members":{
+        "ReportGenerators":{
+          "shape":"ReportGeneratorList",
+          "documentation":"<p>A report generator that creates periodic reports about your license configurations.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseSpecificationsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of a resource that has an associated license configuration.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseSpecificationsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseSpecifications":{
+          "shape":"LicenseSpecifications",
+          "documentation":"<p>License configurations associated with a resource.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicenseVersionsRequest":{
+      "type":"structure",
+      "required":["LicenseArn"],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListLicenseVersionsResponse":{
+      "type":"structure",
+      "members":{
+        "Licenses":{
+          "shape":"LicenseList",
+          "documentation":"<p>License details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListLicensesRequest":{
+      "type":"structure",
+      "members":{
+        "LicenseArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Names (ARNs) of the licenses.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>Beneficiary</code> </p> </li> <li> <p> <code>ProductSKU</code> </p> </li> <li> <p> <code>Fingerprint</code> </p> </li> <li> <p> <code>Status</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListLicensesResponse":{
+      "type":"structure",
+      "members":{
+        "Licenses":{
+          "shape":"LicenseList",
+          "documentation":"<p>License details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListReceivedGrantsForOrganizationRequest":{
+      "type":"structure",
+      "required":["LicenseArn"],
+      "members":{
+        "LicenseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the received license.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>ParentArn</code> </p> </li> <li> <p> <code>GranteePrincipalArn</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListReceivedGrantsForOrganizationResponse":{
+      "type":"structure",
+      "members":{
+        "Grants":{
+          "shape":"GrantList",
+          "documentation":"<p>Lists the grants the organization has received.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListReceivedGrantsRequest":{
+      "type":"structure",
+      "members":{
+        "GrantArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Names (ARNs) of the grants.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>ProductSKU</code> </p> </li> <li> <p> <code>LicenseIssuerName</code> </p> </li> <li> <p> <code>LicenseArn</code> </p> </li> <li> <p> <code>GrantStatus</code> </p> </li> <li> <p> <code>GranterAccountId</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListReceivedGrantsResponse":{
+      "type":"structure",
+      "members":{
+        "Grants":{
+          "shape":"GrantList",
+          "documentation":"<p>Received grant details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListReceivedLicensesForOrganizationRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>Beneficiary</code> </p> </li> <li> <p> <code>ProductSKU</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListReceivedLicensesForOrganizationResponse":{
+      "type":"structure",
+      "members":{
+        "Licenses":{
+          "shape":"GrantedLicenseList",
+          "documentation":"<p>Lists the licenses the organization has received.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListReceivedLicensesRequest":{
+      "type":"structure",
+      "members":{
+        "LicenseArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Names (ARNs) of the licenses.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>ProductSKU</code> </p> </li> <li> <p> <code>Status</code> </p> </li> <li> <p> <code>Fingerprint</code> </p> </li> <li> <p> <code>IssuerName</code> </p> </li> <li> <p> <code>Beneficiary</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListReceivedLicensesResponse":{
+      "type":"structure",
+      "members":{
+        "Licenses":{
+          "shape":"GrantedLicenseList",
+          "documentation":"<p>Received license details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListResourceInventoryRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "Filters":{
+          "shape":"InventoryFilterList",
+          "documentation":"<p>Filters to scope the results. The following filters and logical operators are supported:</p> <ul> <li> <p> <code>account_id</code> - The ID of the Amazon Web Services account that owns the resource. Logical operators are <code>EQUALS</code> | <code>NOT_EQUALS</code>.</p> </li> <li> <p> <code>application_name</code> - The name of the application. Logical operators are <code>EQUALS</code> | <code>BEGINS_WITH</code>.</p> </li> <li> <p> <code>license_included</code> - The type of license included. Logical operators are <code>EQUALS</code> | <code>NOT_EQUALS</code>. Possible values are <code>sql-server-enterprise</code> | <code>sql-server-standard</code> | <code>sql-server-web</code> | <code>windows-server-datacenter</code>.</p> </li> <li> <p> <code>platform</code> - The platform of the resource. Logical operators are <code>EQUALS</code> | <code>BEGINS_WITH</code>.</p> </li> <li> <p> <code>resource_id</code> - The ID of the resource. Logical operators are <code>EQUALS</code> | <code>NOT_EQUALS</code>.</p> </li> <li> <p> <code>tag:&lt;key&gt;</code> - The key/value combination of a tag assigned to the resource. Logical operators are <code>EQUALS</code> (single account) or <code>EQUALS</code> | <code>NOT_EQUALS</code> (cross account).</p> </li> </ul>"
+        }
+      }
+    },
+    "ListResourceInventoryResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceInventoryList":{
+          "shape":"ResourceInventoryList",
+          "documentation":"<p>Information about the resources.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      }
+    },
+    "ListTokensRequest":{
+      "type":"structure",
+      "members":{
+        "TokenIds":{
+          "shape":"StringList",
+          "documentation":"<p>Token IDs.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filters to scope the results. The following filter is supported:</p> <ul> <li> <p> <code>LicenseArns</code> </p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxSize100",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        }
+      }
+    },
+    "ListTokensResponse":{
+      "type":"structure",
+      "members":{
+        "Tokens":{
+          "shape":"TokenList",
+          "documentation":"<p>Received token details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListUsageForLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum number of results to return in a single call.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        },
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p>Filters to scope the results. The following filters and logical operators are supported:</p> <ul> <li> <p> <code>resourceArn</code> - The ARN of the license configuration resource.</p> </li> <li> <p> <code>resourceType</code> - The resource type (<code>EC2_INSTANCE</code> | <code>EC2_HOST</code> | <code>EC2_AMI</code> | <code>SYSTEMS_MANAGER_MANAGED_INSTANCE</code>).</p> </li> <li> <p> <code>resourceAccount</code> - The ID of the account that owns the resource.</p> </li> </ul>"
+        }
+      }
+    },
+    "ListUsageForLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseConfigurationUsageList":{
+          "shape":"LicenseConfigurationUsageList",
+          "documentation":"<p>Information about the license configurations.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>Token for the next set of results.</p>"
+        }
+      }
+    },
+    "Location":{"type":"string"},
+    "Long":{"type":"long"},
+    "ManagedResourceSummary":{
+      "type":"structure",
+      "members":{
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Type of resource associated with a license.</p>"
+        },
+        "AssociationCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>Number of resources associated with licenses.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about a managed resource.</p>"
+    },
+    "ManagedResourceSummaryList":{
+      "type":"list",
+      "member":{"shape":"ManagedResourceSummary"}
+    },
+    "MaxSize100":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "MaxSize3StringList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":3
+    },
+    "Message":{"type":"string"},
+    "Metadata":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The key name.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The value.</p>"
+        }
+      },
+      "documentation":"<p>Describes key/value pairs.</p>"
+    },
+    "MetadataList":{
+      "type":"list",
+      "member":{"shape":"Metadata"}
+    },
+    "NoEntitlementsAllowedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>There are no entitlements found for this license, or the entitlement maximum count is reached.</p>",
+      "exception":true
+    },
+    "Options":{
+      "type":"structure",
+      "members":{
+        "ActivationOverrideBehavior":{
+          "shape":"ActivationOverrideBehavior",
+          "documentation":"<p>An activation option for your grant that determines the behavior of activating a grant. Activation options can only be used with granted licenses sourced from the Amazon Web Services Marketplace. Additionally, the operation must specify the value of <code>ACTIVE</code> for the <code>Status</code> parameter.</p> <ul> <li> <p>As a license administrator, you can optionally specify an <code>ActivationOverrideBehavior</code> when activating a grant.</p> </li> <li> <p>As a grantor, you can optionally specify an <code>ActivationOverrideBehavior</code> when you activate a grant for a grantee account in your organization.</p> </li> <li> <p>As a grantee, if the grantor creating the distributed grant doesn’t specify an <code>ActivationOverrideBehavior</code>, you can optionally specify one when you are activating the grant.</p> </li> </ul> <dl> <dt>DISTRIBUTED_GRANTS_ONLY</dt> <dd> <p>Use this value to activate a grant without replacing any member account’s active grants for the same product.</p> </dd> <dt>ALL_GRANTS_PERMITTED_BY_ISSUER</dt> <dd> <p>Use this value to activate a grant and disable other active grants in any member accounts for the same product. This action will also replace their previously activated grants with this activated grant.</p> </dd> </dl>"
+        }
+      },
+      "documentation":"<p>The options you can specify when you create a new version of a grant, such as activation override behavior. For more information, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html\">Granted licenses in License Manager</a> in the <i>License Manager User Guide</i>.</p>"
+    },
+    "OrganizationConfiguration":{
+      "type":"structure",
+      "required":["EnableIntegration"],
+      "members":{
+        "EnableIntegration":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables Organizations integration.</p>"
+        }
+      },
+      "documentation":"<p>Configuration information for Organizations.</p>"
+    },
+    "PrincipalArnList":{
+      "type":"list",
+      "member":{"shape":"Arn"},
+      "max":1,
+      "min":1
+    },
+    "ProductCodeId":{
+      "type":"string",
+      "pattern":"^[A-Za-z0-9]{1,25}$"
+    },
+    "ProductCodeList":{
+      "type":"list",
+      "member":{"shape":"ProductCodeListItem"}
+    },
+    "ProductCodeListItem":{
+      "type":"structure",
+      "required":[
+        "ProductCodeId",
+        "ProductCodeType"
+      ],
+      "members":{
+        "ProductCodeId":{
+          "shape":"ProductCodeId",
+          "documentation":"<p>The product code ID</p>"
+        },
+        "ProductCodeType":{
+          "shape":"ProductCodeType",
+          "documentation":"<p>The product code type</p>"
+        }
+      },
+      "documentation":"<p>A list item that contains a product code.</p>"
+    },
+    "ProductCodeType":{
+      "type":"string",
+      "enum":["marketplace"]
+    },
+    "ProductInformation":{
+      "type":"structure",
+      "required":[
+        "ResourceType",
+        "ProductInformationFilterList"
+      ],
+      "members":{
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Resource type. The possible values are <code>SSM_MANAGED</code> | <code>RDS</code>.</p>"
+        },
+        "ProductInformationFilterList":{
+          "shape":"ProductInformationFilterList",
+          "documentation":"<p>A Product information filter consists of a <code>ProductInformationFilterComparator</code> which is a logical operator, a <code>ProductInformationFilterName</code> which specifies the type of filter being declared, and a <code>ProductInformationFilterValue</code> that specifies the value to filter on. </p> <p>Accepted values for <code>ProductInformationFilterName</code> are listed here along with descriptions and valid options for <code>ProductInformationFilterComparator</code>. </p> <p>The following filters and are supported when the resource type is <code>SSM_MANAGED</code>:</p> <ul> <li> <p> <code>Application Name</code> - The name of the application. Logical operator is <code>EQUALS</code>.</p> </li> <li> <p> <code>Application Publisher</code> - The publisher of the application. Logical operator is <code>EQUALS</code>.</p> </li> <li> <p> <code>Application Version</code> - The version of the application. Logical operator is <code>EQUALS</code>.</p> </li> <li> <p> <code>Platform Name</code> - The name of the platform. Logical operator is <code>EQUALS</code>.</p> </li> <li> <p> <code>Platform Type</code> - The platform type. Logical operator is <code>EQUALS</code>.</p> </li> <li> <p> <code>Tag:key</code> - The key of a tag attached to an Amazon Web Services resource you wish to exclude from automated discovery. Logical operator is <code>NOT_EQUALS</code>. The key for your tag must be appended to <code>Tag:</code> following the example: <code>Tag:name-of-your-key</code>. <code>ProductInformationFilterValue</code> is optional if you are not using values for the key. </p> </li> <li> <p> <code>AccountId</code> - The 12-digit ID of an Amazon Web Services account you wish to exclude from automated discovery. Logical operator is <code>NOT_EQUALS</code>.</p> </li> <li> <p> <code>License Included</code> - The type of license included. Logical operators are <code>EQUALS</code> and <code>NOT_EQUALS</code>. Possible values are: <code>sql-server-enterprise</code> | <code>sql-server-standard</code> | <code>sql-server-web</code> | <code>windows-server-datacenter</code>.</p> </li> </ul> <p>The following filters and logical operators are supported when the resource type is <code>RDS</code>:</p> <ul> <li> <p> <code>Engine Edition</code> - The edition of the database engine. Logical operator is <code>EQUALS</code>. Possible values are: <code>oracle-ee</code> | <code>oracle-se</code> | <code>oracle-se1</code> | <code>oracle-se2</code> | <code>db2-se</code> | <code>db2-ae</code>.</p> </li> <li> <p> <code>License Pack</code> - The license pack. Logical operator is <code>EQUALS</code>. Possible values are: <code>data guard</code> | <code>diagnostic pack sqlt</code> | <code>tuning pack sqlt</code> | <code>ols</code> | <code>olap</code>.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Describes product information for a license configuration.</p>"
+    },
+    "ProductInformationFilter":{
+      "type":"structure",
+      "required":[
+        "ProductInformationFilterName",
+        "ProductInformationFilterComparator"
+      ],
+      "members":{
+        "ProductInformationFilterName":{
+          "shape":"String",
+          "documentation":"<p>Filter name.</p>"
+        },
+        "ProductInformationFilterValue":{
+          "shape":"StringList",
+          "documentation":"<p>Filter value.</p>"
+        },
+        "ProductInformationFilterComparator":{
+          "shape":"String",
+          "documentation":"<p>Logical operator.</p>"
+        }
+      },
+      "documentation":"<p>Describes product information filters.</p>"
+    },
+    "ProductInformationFilterList":{
+      "type":"list",
+      "member":{"shape":"ProductInformationFilter"}
+    },
+    "ProductInformationList":{
+      "type":"list",
+      "member":{"shape":"ProductInformation"}
+    },
+    "ProvisionalConfiguration":{
+      "type":"structure",
+      "required":["MaxTimeToLiveInMinutes"],
+      "members":{
+        "MaxTimeToLiveInMinutes":{
+          "shape":"BoxInteger",
+          "documentation":"<p>Maximum time for the provisional configuration, in minutes.</p>"
+        }
+      },
+      "documentation":"<p>Details about a provisional configuration.</p>"
+    },
+    "RateLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Too many requests have been submitted. Try again after a brief wait.</p>",
+      "exception":true
+    },
+    "ReceivedMetadata":{
+      "type":"structure",
+      "members":{
+        "ReceivedStatus":{
+          "shape":"ReceivedStatus",
+          "documentation":"<p>Received status.</p>"
+        },
+        "ReceivedStatusReason":{
+          "shape":"StatusReasonMessage",
+          "documentation":"<p>Received status reason.</p>"
+        },
+        "AllowedOperations":{
+          "shape":"AllowedOperationList",
+          "documentation":"<p>Allowed operations.</p>"
+        }
+      },
+      "documentation":"<p>Metadata associated with received licenses and grants.</p>"
+    },
+    "ReceivedStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING_WORKFLOW",
+        "PENDING_ACCEPT",
+        "REJECTED",
+        "ACTIVE",
+        "FAILED_WORKFLOW",
+        "DELETED",
+        "DISABLED",
+        "WORKFLOW_COMPLETED"
+      ]
+    },
+    "RedirectException":{
+      "type":"structure",
+      "members":{
+        "Location":{"shape":"Location"},
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>This is not the correct Region for the resource. Try again.</p>",
+      "exception":true
+    },
+    "RejectGrantRequest":{
+      "type":"structure",
+      "required":["GrantArn"],
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Amazon Resource Name (ARN) of the grant.</p>"
+        }
+      }
+    },
+    "RejectGrantResponse":{
+      "type":"structure",
+      "members":{
+        "GrantArn":{
+          "shape":"Arn",
+          "documentation":"<p>Grant ARN.</p>"
+        },
+        "Status":{
+          "shape":"GrantStatus",
+          "documentation":"<p>Grant status.</p>"
+        },
+        "Version":{
+          "shape":"String",
+          "documentation":"<p>Grant version.</p>"
+        }
+      }
+    },
+    "RenewType":{
+      "type":"string",
+      "enum":[
+        "None",
+        "Weekly",
+        "Monthly"
+      ]
+    },
+    "ReportContext":{
+      "type":"structure",
+      "required":["licenseConfigurationArns"],
+      "members":{
+        "licenseConfigurationArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration that this generator reports on.</p>"
+        }
+      },
+      "documentation":"<p>Details of the license configuration that this generator reports on.</p>"
+    },
+    "ReportFrequency":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"Integer",
+          "documentation":"<p>Number of times within the frequency period that a report is generated. The only supported value is <code>1</code>.</p>"
+        },
+        "period":{
+          "shape":"ReportFrequencyType",
+          "documentation":"<p>Time period between each report. The period can be daily, weekly, or monthly.</p>"
+        }
+      },
+      "documentation":"<p>Details about how frequently reports are generated.</p>"
+    },
+    "ReportFrequencyType":{
+      "type":"string",
+      "enum":[
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ]
+    },
+    "ReportGenerator":{
+      "type":"structure",
+      "members":{
+        "ReportGeneratorName":{
+          "shape":"String",
+          "documentation":"<p>Name of the report generator.</p>"
+        },
+        "ReportType":{
+          "shape":"ReportTypeList",
+          "documentation":"<p>Type of reports that are generated.</p>"
+        },
+        "ReportContext":{
+          "shape":"ReportContext",
+          "documentation":"<p>License configuration type for this generator.</p>"
+        },
+        "ReportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Details about how frequently reports are generated.</p>"
+        },
+        "LicenseManagerReportGeneratorArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the report generator.</p>"
+        },
+        "LastRunStatus":{
+          "shape":"String",
+          "documentation":"<p>Status of the last report generation attempt.</p>"
+        },
+        "LastRunFailureReason":{
+          "shape":"String",
+          "documentation":"<p>Failure message for the last report generation attempt.</p>"
+        },
+        "LastReportGenerationTime":{
+          "shape":"String",
+          "documentation":"<p>Time the last report was generated at.</p>"
+        },
+        "ReportCreatorAccount":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services account ID used to create the report generator.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the report generator.</p>"
+        },
+        "S3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>Details of the S3 bucket that report generator reports are published to.</p>"
+        },
+        "CreateTime":{
+          "shape":"String",
+          "documentation":"<p>Time the report was created.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags associated with the report generator.</p>"
+        }
+      },
+      "documentation":"<p>Describe the details of a report generator.</p>"
+    },
+    "ReportGeneratorList":{
+      "type":"list",
+      "member":{"shape":"ReportGenerator"}
+    },
+    "ReportGeneratorName":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "ReportType":{
+      "type":"string",
+      "enum":[
+        "LicenseConfigurationSummaryReport",
+        "LicenseConfigurationUsageReport"
+      ]
+    },
+    "ReportTypeList":{
+      "type":"list",
+      "member":{"shape":"ReportType"}
+    },
+    "ResourceInventory":{
+      "type":"structure",
+      "members":{
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>ID of the resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>Type of resource.</p>"
+        },
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "Platform":{
+          "shape":"String",
+          "documentation":"<p>Platform of the resource.</p>"
+        },
+        "PlatformVersion":{
+          "shape":"String",
+          "documentation":"<p>Platform version of the resource in the inventory.</p>"
+        },
+        "ResourceOwningAccountId":{
+          "shape":"String",
+          "documentation":"<p>ID of the account that owns the resource.</p>"
+        }
+      },
+      "documentation":"<p>Details about a resource.</p>"
+    },
+    "ResourceInventoryList":{
+      "type":"list",
+      "member":{"shape":"ResourceInventory"}
+    },
+    "ResourceLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Your resource limits have been exceeded.</p>",
+      "exception":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The resource cannot be found.</p>",
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "EC2_INSTANCE",
+        "EC2_HOST",
+        "EC2_AMI",
+        "RDS",
+        "SYSTEMS_MANAGER_MANAGED_INSTANCE"
+      ]
+    },
+    "S3Location":{
+      "type":"structure",
+      "members":{
+        "bucket":{
+          "shape":"String",
+          "documentation":"<p>Name of the S3 bucket reports are published to.</p>"
+        },
+        "keyPrefix":{
+          "shape":"String",
+          "documentation":"<p>Prefix of the S3 bucket reports are published to.</p>"
+        }
+      },
+      "documentation":"<p>Details of the S3 bucket that report generator reports are published to.</p>"
+    },
+    "ServerInternalException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The server experienced an internal error. Try again.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "SignedToken":{
+      "type":"string",
+      "min":4096
+    },
+    "StatusReasonMessage":{
+      "type":"string",
+      "max":400,
+      "pattern":"[\\s\\S]+"
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"String",
+          "documentation":"<p>The tag key.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The tag value.</p>"
+        }
+      },
+      "documentation":"<p>Details about the tags for a resource. For more information about tagging support in License Manager, see the <a href=\"https://docs.aws.amazon.com/license-manager/latest/APIReference/API_TagResource.html\">TagResource</a> operation.</p>"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource. The following examples provide an example ARN for each supported resource in License Manager:</p> <ul> <li> <p>Licenses - <code>arn:aws:license-manager::111122223333:license:l-EXAMPLE2da7646d6861033667f20e895</code> </p> </li> <li> <p>Grants - <code>arn:aws:license-manager::111122223333:grant:g-EXAMPLE7b19f4a0ab73679b0beb52707</code> </p> </li> <li> <p>License configurations - <code>arn:aws:license-manager:us-east-1:111122223333:license-configuration:lic-EXAMPLE6a788d4c8acd4264ff0ecf2ed2d</code> </p> </li> <li> <p>Report generators - <code>arn:aws:license-manager:us-east-1:111122223333:report-generator:r-EXAMPLE825b4a4f8fe5a3e0c88824e5fc6</code> </p> </li> </ul>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>One or more tags.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TokenData":{
+      "type":"structure",
+      "members":{
+        "TokenId":{
+          "shape":"String",
+          "documentation":"<p>Token ID.</p>"
+        },
+        "TokenType":{
+          "shape":"String",
+          "documentation":"<p>Type of token generated. The supported value is <code>REFRESH_TOKEN</code>.</p>"
+        },
+        "LicenseArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license.</p>"
+        },
+        "ExpirationTime":{
+          "shape":"ISO8601DateTime",
+          "documentation":"<p>Token expiration time, in ISO8601-UTC format.</p>"
+        },
+        "TokenProperties":{
+          "shape":"MaxSize3StringList",
+          "documentation":"<p>Data specified by the caller.</p>"
+        },
+        "RoleArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Amazon Resource Names (ARN) of the roles included in the token.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>Token status. The possible values are <code>AVAILABLE</code> and <code>DELETED</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes a token.</p>"
+    },
+    "TokenList":{
+      "type":"list",
+      "member":{"shape":"TokenData"}
+    },
+    "TokenString":{
+      "type":"string",
+      "max":4096,
+      "pattern":"\\S+"
+    },
+    "TokenType":{
+      "type":"string",
+      "enum":["REFRESH_TOKEN"]
+    },
+    "UnsupportedDigitalSignatureMethodException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The digital signature method is unsupported. Try your request again.</p>",
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Keys identifying the tags to remove.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLicenseConfigurationRequest":{
+      "type":"structure",
+      "required":["LicenseConfigurationArn"],
+      "members":{
+        "LicenseConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the license configuration.</p>"
+        },
+        "LicenseConfigurationStatus":{
+          "shape":"LicenseConfigurationStatus",
+          "documentation":"<p>New status of the license configuration.</p>"
+        },
+        "LicenseRules":{
+          "shape":"StringList",
+          "documentation":"<p>New license rule. The only rule that you can add after you create a license configuration is licenseAffinityToHost.</p>"
+        },
+        "LicenseCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>New number of licenses managed by the license configuration.</p>"
+        },
+        "LicenseCountHardLimit":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>New hard limit of the number of available licenses.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>New name of the license configuration.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>New description of the license configuration.</p>"
+        },
+        "ProductInformationList":{
+          "shape":"ProductInformationList",
+          "documentation":"<p>New product information.</p>"
+        },
+        "DisassociateWhenNotFound":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>When true, disassociates a resource when software is uninstalled.</p>"
+        }
+      }
+    },
+    "UpdateLicenseConfigurationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLicenseManagerReportGeneratorRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseManagerReportGeneratorArn",
+        "ReportGeneratorName",
+        "Type",
+        "ReportContext",
+        "ReportFrequency",
+        "ClientToken"
+      ],
+      "members":{
+        "LicenseManagerReportGeneratorArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the report generator to update.</p>"
+        },
+        "ReportGeneratorName":{
+          "shape":"ReportGeneratorName",
+          "documentation":"<p>Name of the report generator.</p>"
+        },
+        "Type":{
+          "shape":"ReportTypeList",
+          "documentation":"<p>Type of reports to generate. The following report types are supported:</p> <ul> <li> <p>License configuration report - Reports the number and details of consumed licenses for a license configuration.</p> </li> <li> <p>Resource report - Reports the tracked licenses and resource consumption for a license configuration.</p> </li> </ul>"
+        },
+        "ReportContext":{
+          "shape":"ReportContext",
+          "documentation":"<p>The report context.</p>"
+        },
+        "ReportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Frequency by which reports are generated.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>Unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Description of the report generator.</p>"
+        }
+      }
+    },
+    "UpdateLicenseManagerReportGeneratorResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLicenseSpecificationsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the Amazon Web Services resource.</p>"
+        },
+        "AddLicenseSpecifications":{
+          "shape":"LicenseSpecifications",
+          "documentation":"<p>ARNs of the license configurations to add.</p>"
+        },
+        "RemoveLicenseSpecifications":{
+          "shape":"LicenseSpecifications",
+          "documentation":"<p>ARNs of the license configurations to remove.</p>"
+        }
+      }
+    },
+    "UpdateLicenseSpecificationsForResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateServiceSettingsRequest":{
+      "type":"structure",
+      "members":{
+        "S3BucketArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the Amazon S3 bucket where the License Manager information is stored.</p>"
+        },
+        "SnsTopicArn":{
+          "shape":"String",
+          "documentation":"<p>Amazon Resource Name (ARN) of the Amazon SNS topic used for License Manager alerts.</p>"
+        },
+        "OrganizationConfiguration":{
+          "shape":"OrganizationConfiguration",
+          "documentation":"<p>Enables integration with Organizations for cross-account discovery.</p>"
+        },
+        "EnableCrossAccountsDiscovery":{
+          "shape":"BoxBoolean",
+          "documentation":"<p>Activates cross-account discovery.</p>"
+        }
+      }
+    },
+    "UpdateServiceSettingsResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UsageOperation":{
+      "type":"string",
+      "max":50
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The provided input is not valid. Try your request again.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>License Manager makes it easier to manage licenses from software vendors across multiple Amazon Web Services accounts and on-premises servers.</p>"
+}

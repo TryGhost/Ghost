@@ -1,0 +1,456 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2019-07-11",
+    "endpointPrefix":"session.qldb",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"QLDB Session",
+    "serviceFullName":"Amazon QLDB Session",
+    "serviceId":"QLDB Session",
+    "signatureVersion":"v4",
+    "signingName":"qldb",
+    "targetPrefix":"QLDBSession",
+    "uid":"qldb-session-2019-07-11",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "SendCommand":{
+      "name":"SendCommand",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"SendCommandRequest"},
+      "output":{"shape":"SendCommandResult"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"InvalidSessionException"},
+        {"shape":"OccConflictException"},
+        {"shape":"RateExceededException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"CapacityExceededException"}
+      ],
+      "documentation":"<p>Sends a command to an Amazon QLDB ledger.</p> <note> <p>Instead of interacting directly with this API, we recommend using the QLDB driver or the QLDB shell to execute data transactions on a ledger.</p> <ul> <li> <p>If you are working with an AWS SDK, use the QLDB driver. The driver provides a high-level abstraction layer above this <i>QLDB Session</i> data plane and manages <code>SendCommand</code> API calls for you. For information and a list of supported programming languages, see <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/getting-started-driver.html\">Getting started with the driver</a> in the <i>Amazon QLDB Developer Guide</i>.</p> </li> <li> <p>If you are working with the AWS Command Line Interface (AWS CLI), use the QLDB shell. The shell is a command line interface that uses the QLDB driver to interact with a ledger. For information, see <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/data-shell.html\">Accessing Amazon QLDB using the QLDB shell</a>.</p> </li> </ul> </note>"
+    }
+  },
+  "shapes":{
+    "AbortTransactionRequest":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Contains the details of the transaction to abort.</p>"
+    },
+    "AbortTransactionResult":{
+      "type":"structure",
+      "members":{
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the aborted transaction.</p>"
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>Returned if the request is malformed or contains an error such as an invalid parameter value or a missing required parameter.</p>",
+      "exception":true
+    },
+    "CapacityExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Returned when the request exceeds the processing capacity of the ledger.</p>",
+      "exception":true
+    },
+    "CommitDigest":{"type":"blob"},
+    "CommitTransactionRequest":{
+      "type":"structure",
+      "required":[
+        "TransactionId",
+        "CommitDigest"
+      ],
+      "members":{
+        "TransactionId":{
+          "shape":"TransactionId",
+          "documentation":"<p>Specifies the transaction ID of the transaction to commit.</p>"
+        },
+        "CommitDigest":{
+          "shape":"CommitDigest",
+          "documentation":"<p>Specifies the commit digest for the transaction to commit. For every active transaction, the commit digest must be passed. QLDB validates <code>CommitDigest</code> and rejects the commit with an error if the digest computed on the client does not match the digest computed by QLDB.</p> <p>The purpose of the <code>CommitDigest</code> parameter is to ensure that QLDB commits a transaction if and only if the server has processed the exact set of statements sent by the client, in the same order that client sent them, and with no duplicates.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the transaction to commit.</p>"
+    },
+    "CommitTransactionResult":{
+      "type":"structure",
+      "members":{
+        "TransactionId":{
+          "shape":"TransactionId",
+          "documentation":"<p>The transaction ID of the committed transaction.</p>"
+        },
+        "CommitDigest":{
+          "shape":"CommitDigest",
+          "documentation":"<p>The commit digest of the committed transaction.</p>"
+        },
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        },
+        "ConsumedIOs":{
+          "shape":"IOUsage",
+          "documentation":"<p>Contains metrics about the number of I/O requests that were consumed.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the committed transaction.</p>"
+    },
+    "EndSessionRequest":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Specifies a request to end the session.</p>"
+    },
+    "EndSessionResult":{
+      "type":"structure",
+      "members":{
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the ended session.</p>"
+    },
+    "ErrorCode":{"type":"string"},
+    "ErrorMessage":{"type":"string"},
+    "ExecuteStatementRequest":{
+      "type":"structure",
+      "required":[
+        "TransactionId",
+        "Statement"
+      ],
+      "members":{
+        "TransactionId":{
+          "shape":"TransactionId",
+          "documentation":"<p>Specifies the transaction ID of the request.</p>"
+        },
+        "Statement":{
+          "shape":"Statement",
+          "documentation":"<p>Specifies the statement of the request.</p>"
+        },
+        "Parameters":{
+          "shape":"StatementParameters",
+          "documentation":"<p>Specifies the parameters for the parameterized statement in the request.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a request to execute a statement.</p>"
+    },
+    "ExecuteStatementResult":{
+      "type":"structure",
+      "members":{
+        "FirstPage":{
+          "shape":"Page",
+          "documentation":"<p>Contains the details of the first fetched page.</p>"
+        },
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        },
+        "ConsumedIOs":{
+          "shape":"IOUsage",
+          "documentation":"<p>Contains metrics about the number of I/O requests that were consumed.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the executed statement.</p>"
+    },
+    "FetchPageRequest":{
+      "type":"structure",
+      "required":[
+        "TransactionId",
+        "NextPageToken"
+      ],
+      "members":{
+        "TransactionId":{
+          "shape":"TransactionId",
+          "documentation":"<p>Specifies the transaction ID of the page to be fetched.</p>"
+        },
+        "NextPageToken":{
+          "shape":"PageToken",
+          "documentation":"<p>Specifies the next page token of the page to be fetched.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the details of the page to be fetched.</p>"
+    },
+    "FetchPageResult":{
+      "type":"structure",
+      "members":{
+        "Page":{
+          "shape":"Page",
+          "documentation":"<p>Contains details of the fetched page.</p>"
+        },
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        },
+        "ConsumedIOs":{
+          "shape":"IOUsage",
+          "documentation":"<p>Contains metrics about the number of I/O requests that were consumed.</p>"
+        }
+      },
+      "documentation":"<p>Contains the page that was fetched.</p>"
+    },
+    "IOUsage":{
+      "type":"structure",
+      "members":{
+        "ReadIOs":{
+          "shape":"ReadIOs",
+          "documentation":"<p>The number of read I/O requests that the command made.</p>"
+        },
+        "WriteIOs":{
+          "shape":"WriteIOs",
+          "documentation":"<p>The number of write I/O requests that the command made.</p>"
+        }
+      },
+      "documentation":"<p>Contains I/O usage metrics for a command that was invoked.</p>"
+    },
+    "InvalidSessionException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>Returned if the session doesn't exist anymore because it timed out or expired.</p>",
+      "exception":true
+    },
+    "IonBinary":{
+      "type":"blob",
+      "max":131072,
+      "min":1
+    },
+    "IonText":{
+      "type":"string",
+      "max":1048576,
+      "min":1
+    },
+    "LedgerName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"(?!^.*--)(?!^[0-9]+$)(?!^-)(?!.*-$)^[A-Za-z0-9-]+$"
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Returned if a resource limit such as number of active sessions is exceeded.</p>",
+      "exception":true
+    },
+    "OccConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Returned when a transaction cannot be written to the journal due to a failure in the verification phase of <i>optimistic concurrency control</i> (OCC).</p>",
+      "exception":true
+    },
+    "Page":{
+      "type":"structure",
+      "members":{
+        "Values":{
+          "shape":"ValueHolders",
+          "documentation":"<p>A structure that contains values in multiple encoding formats.</p>"
+        },
+        "NextPageToken":{
+          "shape":"PageToken",
+          "documentation":"<p>The token of the next page.</p>"
+        }
+      },
+      "documentation":"<p>Contains details of the fetched page.</p>"
+    },
+    "PageToken":{
+      "type":"string",
+      "max":1024,
+      "min":4,
+      "pattern":"^[A-Za-z-0-9+/=]+$"
+    },
+    "ProcessingTimeMilliseconds":{"type":"long"},
+    "RateExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Returned when the rate of requests exceeds the allowed throughput.</p>",
+      "exception":true
+    },
+    "ReadIOs":{"type":"long"},
+    "SendCommandRequest":{
+      "type":"structure",
+      "members":{
+        "SessionToken":{
+          "shape":"SessionToken",
+          "documentation":"<p>Specifies the session token for the current command. A session token is constant throughout the life of the session.</p> <p>To obtain a session token, run the <code>StartSession</code> command. This <code>SessionToken</code> is required for every subsequent command that is issued during the current session.</p>"
+        },
+        "StartSession":{
+          "shape":"StartSessionRequest",
+          "documentation":"<p>Command to start a new session. A session token is obtained as part of the response.</p>"
+        },
+        "StartTransaction":{
+          "shape":"StartTransactionRequest",
+          "documentation":"<p>Command to start a new transaction.</p>"
+        },
+        "EndSession":{
+          "shape":"EndSessionRequest",
+          "documentation":"<p>Command to end the current session.</p>"
+        },
+        "CommitTransaction":{
+          "shape":"CommitTransactionRequest",
+          "documentation":"<p>Command to commit the specified transaction.</p>"
+        },
+        "AbortTransaction":{
+          "shape":"AbortTransactionRequest",
+          "documentation":"<p>Command to abort the current transaction.</p>"
+        },
+        "ExecuteStatement":{
+          "shape":"ExecuteStatementRequest",
+          "documentation":"<p>Command to execute a statement in the specified transaction.</p>"
+        },
+        "FetchPage":{
+          "shape":"FetchPageRequest",
+          "documentation":"<p>Command to fetch a page.</p>"
+        }
+      }
+    },
+    "SendCommandResult":{
+      "type":"structure",
+      "members":{
+        "StartSession":{
+          "shape":"StartSessionResult",
+          "documentation":"<p>Contains the details of the started session that includes a session token. This <code>SessionToken</code> is required for every subsequent command that is issued during the current session.</p>"
+        },
+        "StartTransaction":{
+          "shape":"StartTransactionResult",
+          "documentation":"<p>Contains the details of the started transaction.</p>"
+        },
+        "EndSession":{
+          "shape":"EndSessionResult",
+          "documentation":"<p>Contains the details of the ended session.</p>"
+        },
+        "CommitTransaction":{
+          "shape":"CommitTransactionResult",
+          "documentation":"<p>Contains the details of the committed transaction.</p>"
+        },
+        "AbortTransaction":{
+          "shape":"AbortTransactionResult",
+          "documentation":"<p>Contains the details of the aborted transaction.</p>"
+        },
+        "ExecuteStatement":{
+          "shape":"ExecuteStatementResult",
+          "documentation":"<p>Contains the details of the executed statement.</p>"
+        },
+        "FetchPage":{
+          "shape":"FetchPageResult",
+          "documentation":"<p>Contains the details of the fetched page.</p>"
+        }
+      }
+    },
+    "SessionToken":{
+      "type":"string",
+      "max":1024,
+      "min":4,
+      "pattern":"^[A-Za-z-0-9+/=]+$"
+    },
+    "StartSessionRequest":{
+      "type":"structure",
+      "required":["LedgerName"],
+      "members":{
+        "LedgerName":{
+          "shape":"LedgerName",
+          "documentation":"<p>The name of the ledger to start a new session against.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a request to start a new session.</p>"
+    },
+    "StartSessionResult":{
+      "type":"structure",
+      "members":{
+        "SessionToken":{
+          "shape":"SessionToken",
+          "documentation":"<p>Session token of the started session. This <code>SessionToken</code> is required for every subsequent command that is issued during the current session.</p>"
+        },
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the started session.</p>"
+    },
+    "StartTransactionRequest":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Specifies a request to start a transaction.</p>"
+    },
+    "StartTransactionResult":{
+      "type":"structure",
+      "members":{
+        "TransactionId":{
+          "shape":"TransactionId",
+          "documentation":"<p>The transaction ID of the started transaction.</p>"
+        },
+        "TimingInformation":{
+          "shape":"TimingInformation",
+          "documentation":"<p>Contains server-side performance information for the command.</p>"
+        }
+      },
+      "documentation":"<p>Contains the details of the started transaction.</p>"
+    },
+    "Statement":{
+      "type":"string",
+      "max":100000,
+      "min":1
+    },
+    "StatementParameters":{
+      "type":"list",
+      "member":{"shape":"ValueHolder"}
+    },
+    "TimingInformation":{
+      "type":"structure",
+      "members":{
+        "ProcessingTimeMilliseconds":{
+          "shape":"ProcessingTimeMilliseconds",
+          "documentation":"<p>The amount of time that QLDB spent on processing the command, measured in milliseconds.</p>"
+        }
+      },
+      "documentation":"<p>Contains server-side performance information for a command. Amazon QLDB captures timing information between the times when it receives the request and when it sends the corresponding response.</p>"
+    },
+    "TransactionId":{
+      "type":"string",
+      "max":22,
+      "min":22,
+      "pattern":"^[A-Za-z-0-9]+$"
+    },
+    "ValueHolder":{
+      "type":"structure",
+      "members":{
+        "IonBinary":{
+          "shape":"IonBinary",
+          "documentation":"<p>An Amazon Ion binary value contained in a <code>ValueHolder</code> structure.</p>"
+        },
+        "IonText":{
+          "shape":"IonText",
+          "documentation":"<p>An Amazon Ion plaintext value contained in a <code>ValueHolder</code> structure.</p>"
+        }
+      },
+      "documentation":"<p>A structure that can contain a value in multiple encoding formats.</p>"
+    },
+    "ValueHolders":{
+      "type":"list",
+      "member":{"shape":"ValueHolder"}
+    },
+    "WriteIOs":{"type":"long"}
+  },
+  "documentation":"<p>The transactional data APIs for Amazon QLDB</p> <note> <p>Instead of interacting directly with this API, we recommend using the QLDB driver or the QLDB shell to execute data transactions on a ledger.</p> <ul> <li> <p>If you are working with an AWS SDK, use the QLDB driver. The driver provides a high-level abstraction layer above this <i>QLDB Session</i> data plane and manages <code>SendCommand</code> API calls for you. For information and a list of supported programming languages, see <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/getting-started-driver.html\">Getting started with the driver</a> in the <i>Amazon QLDB Developer Guide</i>.</p> </li> <li> <p>If you are working with the AWS Command Line Interface (AWS CLI), use the QLDB shell. The shell is a command line interface that uses the QLDB driver to interact with a ledger. For information, see <a href=\"https://docs.aws.amazon.com/qldb/latest/developerguide/data-shell.html\">Accessing Amazon QLDB using the QLDB shell</a>.</p> </li> </ul> </note>"
+}

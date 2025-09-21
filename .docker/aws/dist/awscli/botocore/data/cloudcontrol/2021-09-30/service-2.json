@@ -1,0 +1,941 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-09-30",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"cloudcontrolapi",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"CloudControlApi",
+    "serviceFullName":"AWS Cloud Control API",
+    "serviceId":"CloudControl",
+    "signatureVersion":"v4",
+    "signingName":"cloudcontrolapi",
+    "targetPrefix":"CloudApiService",
+    "uid":"cloudcontrol-2021-09-30"
+  },
+  "operations":{
+    "CancelResourceRequest":{
+      "name":"CancelResourceRequest",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CancelResourceRequestInput"},
+      "output":{"shape":"CancelResourceRequestOutput"},
+      "errors":[
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"RequestTokenNotFoundException"}
+      ],
+      "documentation":"<p>Cancels the specified resource operation request. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-manage-requests.html#resource-operations-manage-requests-cancel\">Canceling resource operation requests</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>Only resource operations requests with a status of <code>PENDING</code> or <code>IN_PROGRESS</code> can be canceled.</p>",
+      "idempotent":true
+    },
+    "CreateResource":{
+      "name":"CreateResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateResourceInput"},
+      "output":{"shape":"CreateResourceOutput"},
+      "errors":[
+        {"shape":"AlreadyExistsException"},
+        {"shape":"HandlerInternalFailureException"},
+        {"shape":"GeneralServiceException"},
+        {"shape":"NotUpdatableException"},
+        {"shape":"TypeNotFoundException"},
+        {"shape":"ConcurrentOperationException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"PrivateTypeException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NetworkFailureException"},
+        {"shape":"UnsupportedActionException"},
+        {"shape":"NotStabilizedException"},
+        {"shape":"ServiceInternalErrorException"},
+        {"shape":"HandlerFailureException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"ClientTokenConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates the specified resource. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-create.html\">Creating a resource</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>After you have initiated a resource creation request, you can monitor the progress of your request by calling <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> using the <code>RequestToken</code> of the <code>ProgressEvent</code> type returned by <code>CreateResource</code>.</p>"
+    },
+    "DeleteResource":{
+      "name":"DeleteResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteResourceInput"},
+      "output":{"shape":"DeleteResourceOutput"},
+      "errors":[
+        {"shape":"AlreadyExistsException"},
+        {"shape":"HandlerInternalFailureException"},
+        {"shape":"GeneralServiceException"},
+        {"shape":"NotUpdatableException"},
+        {"shape":"TypeNotFoundException"},
+        {"shape":"ConcurrentOperationException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"PrivateTypeException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NetworkFailureException"},
+        {"shape":"UnsupportedActionException"},
+        {"shape":"NotStabilizedException"},
+        {"shape":"ServiceInternalErrorException"},
+        {"shape":"HandlerFailureException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"ClientTokenConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes the specified resource. For details, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-delete.html\">Deleting a resource</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>After you have initiated a resource deletion request, you can monitor the progress of your request by calling <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> using the <code>RequestToken</code> of the <code>ProgressEvent</code> returned by <code>DeleteResource</code>.</p>"
+    },
+    "GetResource":{
+      "name":"GetResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourceInput"},
+      "output":{"shape":"GetResourceOutput"},
+      "errors":[
+        {"shape":"AlreadyExistsException"},
+        {"shape":"HandlerInternalFailureException"},
+        {"shape":"GeneralServiceException"},
+        {"shape":"NotUpdatableException"},
+        {"shape":"TypeNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"PrivateTypeException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NetworkFailureException"},
+        {"shape":"UnsupportedActionException"},
+        {"shape":"NotStabilizedException"},
+        {"shape":"ServiceInternalErrorException"},
+        {"shape":"HandlerFailureException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns information about the current state of the specified resource. For details, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-read.html\">Reading a resource's current state</a>.</p> <p>You can use this action to return information about an existing resource in your account and Amazon Web Services Region, whether those resources were provisioned using Cloud Control API.</p>"
+    },
+    "GetResourceRequestStatus":{
+      "name":"GetResourceRequestStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourceRequestStatusInput"},
+      "output":{"shape":"GetResourceRequestStatusOutput"},
+      "errors":[
+        {"shape":"RequestTokenNotFoundException"}
+      ],
+      "documentation":"<p>Returns the current status of a resource operation request. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-manage-requests.html#resource-operations-manage-requests-track\">Tracking the progress of resource operation requests</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+    },
+    "ListResourceRequests":{
+      "name":"ListResourceRequests",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListResourceRequestsInput"},
+      "output":{"shape":"ListResourceRequestsOutput"},
+      "documentation":"<p>Returns existing resource operation requests. This includes requests of all status types. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-manage-requests.html#resource-operations-manage-requests-list\">Listing active resource operation requests</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <note> <p>Resource operation requests expire after 7 days.</p> </note>"
+    },
+    "ListResources":{
+      "name":"ListResources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListResourcesInput"},
+      "output":{"shape":"ListResourcesOutput"},
+      "errors":[
+        {"shape":"AlreadyExistsException"},
+        {"shape":"HandlerInternalFailureException"},
+        {"shape":"GeneralServiceException"},
+        {"shape":"NotUpdatableException"},
+        {"shape":"TypeNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"PrivateTypeException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NetworkFailureException"},
+        {"shape":"UnsupportedActionException"},
+        {"shape":"NotStabilizedException"},
+        {"shape":"ServiceInternalErrorException"},
+        {"shape":"HandlerFailureException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns information about the specified resources. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-list.html\">Discovering resources</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>You can use this action to return information about existing resources in your account and Amazon Web Services Region, whether those resources were provisioned using Cloud Control API.</p>"
+    },
+    "UpdateResource":{
+      "name":"UpdateResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateResourceInput"},
+      "output":{"shape":"UpdateResourceOutput"},
+      "errors":[
+        {"shape":"AlreadyExistsException"},
+        {"shape":"HandlerInternalFailureException"},
+        {"shape":"GeneralServiceException"},
+        {"shape":"NotUpdatableException"},
+        {"shape":"TypeNotFoundException"},
+        {"shape":"ConcurrentOperationException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"PrivateTypeException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"NetworkFailureException"},
+        {"shape":"UnsupportedActionException"},
+        {"shape":"NotStabilizedException"},
+        {"shape":"ServiceInternalErrorException"},
+        {"shape":"HandlerFailureException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"ClientTokenConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the specified property values in the resource.</p> <p>You specify your resource property updates as a list of patch operations contained in a JSON patch document that adheres to the <a href=\"https://datatracker.ietf.org/doc/html/rfc6902\"> <i>RFC 6902 - JavaScript Object Notation (JSON) Patch</i> </a> standard.</p> <p>For details on how Cloud Control API performs resource update operations, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-update.html\">Updating a resource</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>After you have initiated a resource update request, you can monitor the progress of your request by calling <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> using the <code>RequestToken</code> of the <code>ProgressEvent</code> returned by <code>UpdateResource</code>.</p> <p>For more information about the properties of a specific resource, refer to the related topic for the resource in the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html\">Resource and property types reference</a> in the <i>CloudFormation Users Guide</i>.</p>"
+    }
+  },
+  "shapes":{
+    "AlreadyExistsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource with the name requested already exists.</p>",
+      "exception":true
+    },
+    "CancelResourceRequestInput":{
+      "type":"structure",
+      "required":["RequestToken"],
+      "members":{
+        "RequestToken":{
+          "shape":"RequestToken",
+          "documentation":"<p>The <code>RequestToken</code> of the <code>ProgressEvent</code> object returned by the resource operation request.</p>"
+        }
+      }
+    },
+    "CancelResourceRequestOutput":{
+      "type":"structure",
+      "members":{
+        "ProgressEvent":{"shape":"ProgressEvent"}
+      }
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[-A-Za-z0-9+/=]+"
+    },
+    "ClientTokenConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified client token has already been used in another resource request.</p> <p>It's best practice for client tokens to be unique for each resource operation request. However, client token expire after 36 hours.</p>",
+      "exception":true
+    },
+    "ConcurrentModificationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource is currently being modified by another operation.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ConcurrentOperationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Another resource operation is currently being performed on this resource.</p>",
+      "exception":true
+    },
+    "CreateResourceInput":{
+      "type":"structure",
+      "required":[
+        "TypeName",
+        "DesiredState"
+      ],
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "TypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>For private resource types, the type version to use in this resource operation. If you do not specify a resource version, CloudFormation uses the default version.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role for Cloud Control API to use when performing this resource operation. The role specified must have the permissions required for this operation. The necessary permissions for each event handler are defined in the <code> <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html#schema-properties-handlers\">handlers</a> </code> section of the <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html\">resource type definition schema</a>.</p> <p>If you do not specify a role, Cloud Control API uses a temporary session created using your Amazon Web Services user credentials.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-permissions\">Specifying credentials</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique identifier to ensure the idempotency of the resource request. As a best practice, specify this token to ensure idempotency, so that Amazon Web Services Cloud Control API can accurately distinguish between request retries and new resource requests. You might retry a resource request to ensure that it was successfully received.</p> <p>A client token is valid for 36 hours once used. After that, a resource request with the same client token is treated as a new request.</p> <p>If you do not specify a client token, one is generated for inclusion in the request.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-idempotency\">Ensuring resource operation requests are unique</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>",
+          "idempotencyToken":true
+        },
+        "DesiredState":{
+          "shape":"Properties",
+          "documentation":"<p>Structured data format representing the desired state of the resource, consisting of that resource's properties and their desired values.</p> <note> <p>Cloud Control API currently supports JSON as a structured data format.</p> </note> <p>Specify the desired state as one of the following:</p> <ul> <li> <p>A JSON blob</p> </li> <li> <p>A local path containing the desired state in JSON data format</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-create.html#resource-operations-create-desiredstate\">Composing the desired state of the resource</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p> <p>For more information about the properties of a specific resource, refer to the related topic for the resource in the <a href=\"https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html\">Resource and property types reference</a> in the <i>CloudFormation Users Guide</i>.</p>"
+        }
+      }
+    },
+    "CreateResourceOutput":{
+      "type":"structure",
+      "members":{
+        "ProgressEvent":{
+          "shape":"ProgressEvent",
+          "documentation":"<p>Represents the current status of the resource creation request.</p> <p>After you have initiated a resource creation request, you can monitor the progress of your request by calling <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> using the <code>RequestToken</code> of the <code>ProgressEvent</code> returned by <code>CreateResource</code>.</p>"
+        }
+      }
+    },
+    "DeleteResourceInput":{
+      "type":"structure",
+      "required":[
+        "TypeName",
+        "Identifier"
+      ],
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "TypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>For private resource types, the type version to use in this resource operation. If you do not specify a resource version, CloudFormation uses the default version.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role for Cloud Control API to use when performing this resource operation. The role specified must have the permissions required for this operation. The necessary permissions for each event handler are defined in the <code> <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html#schema-properties-handlers\">handlers</a> </code> section of the <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html\">resource type definition schema</a>.</p> <p>If you do not specify a role, Cloud Control API uses a temporary session created using your Amazon Web Services user credentials.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-permissions\">Specifying credentials</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique identifier to ensure the idempotency of the resource request. As a best practice, specify this token to ensure idempotency, so that Amazon Web Services Cloud Control API can accurately distinguish between request retries and new resource requests. You might retry a resource request to ensure that it was successfully received.</p> <p>A client token is valid for 36 hours once used. After that, a resource request with the same client token is treated as a new request.</p> <p>If you do not specify a client token, one is generated for inclusion in the request.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-idempotency\">Ensuring resource operation requests are unique</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>",
+          "idempotencyToken":true
+        },
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier for the resource.</p> <p>You can specify the primary identifier, or any secondary identifier defined for the resource type in its resource schema. You can only specify one identifier. Primary identifiers can be specified as a string or JSON; secondary identifiers must be specified as JSON.</p> <p>For compound primary identifiers (that is, one that consists of multiple resource properties strung together), to specify the primary identifier as a string, list the property values <i>in the order they are specified</i> in the primary identifier definition, separated by <code>|</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-identifier.html\">Identifying resources</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        }
+      }
+    },
+    "DeleteResourceOutput":{
+      "type":"structure",
+      "members":{
+        "ProgressEvent":{
+          "shape":"ProgressEvent",
+          "documentation":"<p>Represents the current status of the resource deletion request.</p> <p>After you have initiated a resource deletion request, you can monitor the progress of your request by calling <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> using the <code>RequestToken</code> of the <code>ProgressEvent</code> returned by <code>DeleteResource</code>.</p>"
+        }
+      }
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":".+"
+    },
+    "GeneralServiceException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that the downstream service generated an error that doesn't map to any other handler error code.</p>",
+      "exception":true
+    },
+    "GetResourceInput":{
+      "type":"structure",
+      "required":[
+        "TypeName",
+        "Identifier"
+      ],
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "TypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>For private resource types, the type version to use in this resource operation. If you do not specify a resource version, CloudFormation uses the default version.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role for Cloud Control API to use when performing this resource operation. The role specified must have the permissions required for this operation. The necessary permissions for each event handler are defined in the <code> <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html#schema-properties-handlers\">handlers</a> </code> section of the <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html\">resource type definition schema</a>.</p> <p>If you do not specify a role, Cloud Control API uses a temporary session created using your Amazon Web Services user credentials.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-permissions\">Specifying credentials</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier for the resource.</p> <p>You can specify the primary identifier, or any secondary identifier defined for the resource type in its resource schema. You can only specify one identifier. Primary identifiers can be specified as a string or JSON; secondary identifiers must be specified as JSON.</p> <p>For compound primary identifiers (that is, one that consists of multiple resource properties strung together), to specify the primary identifier as a string, list the property values <i>in the order they are specified</i> in the primary identifier definition, separated by <code>|</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-identifier.html\">Identifying resources</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        }
+      }
+    },
+    "GetResourceOutput":{
+      "type":"structure",
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "ResourceDescription":{"shape":"ResourceDescription"}
+      }
+    },
+    "GetResourceRequestStatusInput":{
+      "type":"structure",
+      "required":["RequestToken"],
+      "members":{
+        "RequestToken":{
+          "shape":"RequestToken",
+          "documentation":"<p>A unique token used to track the progress of the resource operation request.</p> <p>Request tokens are included in the <code>ProgressEvent</code> type returned by a resource operation request.</p>"
+        }
+      }
+    },
+    "GetResourceRequestStatusOutput":{
+      "type":"structure",
+      "members":{
+        "ProgressEvent":{
+          "shape":"ProgressEvent",
+          "documentation":"<p>Represents the current status of the resource operation request.</p>"
+        },
+        "HooksProgressEvent":{
+          "shape":"HooksProgressEvent",
+          "documentation":"<p>Lists Hook invocations for the specified target in the request. This is a list since the same target can invoke multiple Hooks.</p>"
+        }
+      }
+    },
+    "HandlerErrorCode":{
+      "type":"string",
+      "enum":[
+        "NotUpdatable",
+        "InvalidRequest",
+        "AccessDenied",
+        "UnauthorizedTaggingOperation",
+        "InvalidCredentials",
+        "AlreadyExists",
+        "NotFound",
+        "ResourceConflict",
+        "Throttling",
+        "ServiceLimitExceeded",
+        "NotStabilized",
+        "GeneralServiceException",
+        "ServiceInternalError",
+        "ServiceTimeout",
+        "NetworkFailure",
+        "InternalFailure"
+      ]
+    },
+    "HandlerFailureException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has failed without a returning a more specific error code. This can include timeouts.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "HandlerInternalFailureException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that an unexpected error occurred within the resource handler.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "HandlerNextToken":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "pattern":".+"
+    },
+    "HookFailureMode":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[-A-Za-z_]+"
+    },
+    "HookInvocationPoint":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[-A-Za-z_]+"
+    },
+    "HookProgressEvent":{
+      "type":"structure",
+      "members":{
+        "HookTypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The type name of the Hook being invoked.</p>"
+        },
+        "HookTypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>The type version of the Hook being invoked.</p>"
+        },
+        "HookTypeArn":{
+          "shape":"HookTypeArn",
+          "documentation":"<p>The ARN of the Hook being invoked.</p>"
+        },
+        "InvocationPoint":{
+          "shape":"HookInvocationPoint",
+          "documentation":"<p>States whether the Hook is invoked before or after resource provisioning.</p>"
+        },
+        "HookStatus":{
+          "shape":"HookStatus",
+          "documentation":"<p>The status of the Hook invocation. The following are potential statuses:</p> <ul> <li> <p> <code>HOOK_PENDING</code>: The Hook was added to the invocation plan, but not yet invoked.</p> </li> <li> <p> <code>HOOK_IN_PROGRESS</code>: The Hook was invoked, but hasn't completed.</p> </li> <li> <p> <code>HOOK_COMPLETE_SUCCEEDED</code>: The Hook invocation is complete with a successful result.</p> </li> <li> <p> <code>HOOK_COMPLETE_FAILED</code>: The Hook invocation is complete with a failed result.</p> </li> <li> <p> <code>HOOK_FAILED</code>: The Hook invocation didn't complete successfully.</p> </li> </ul>"
+        },
+        "HookEventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that the Hook invocation request initiated.</p>"
+        },
+        "HookStatusMessage":{
+          "shape":"StatusMessage",
+          "documentation":"<p>The message explaining the current Hook status.</p>"
+        },
+        "FailureMode":{
+          "shape":"HookFailureMode",
+          "documentation":"<p>The failure mode of the invocation. The following are the potential statuses:</p> <ul> <li> <p> <code>FAIL</code>: This will fail the Hook invocation and the request associated with it.</p> </li> <li> <p> <code>WARN</code>: This will fail the Hook invocation, but not the request associated with it.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Represents the current status of applicable Hooks for a resource operation request. It contains list of Hook invocation information for the resource specified in the request since the same target can invoke multiple Hooks. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-manage-requests.html\">Managing resource operation requests with Amazon Web Services Cloud Control API </a>.</p>"
+    },
+    "HookStatus":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[-A-Za-z_]+"
+    },
+    "HookTypeArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"arn:aws.*:.+:.*:.*:.+"
+    },
+    "HooksProgressEvent":{
+      "type":"list",
+      "member":{"shape":"HookProgressEvent"}
+    },
+    "Identifier":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".+"
+    },
+    "InvalidCredentialsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that the credentials provided by the user are invalid.</p>",
+      "exception":true
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that invalid input from the user has generated a generic exception.</p>",
+      "exception":true
+    },
+    "ListResourceRequestsInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned with a single call. If the number of available results exceeds this maximum, the response includes a <code>NextToken</code> value that you can assign to the <code>NextToken</code> request parameter to get the next set of results.</p> <p>The default is <code>20</code>.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous paginated request didn't return all of the remaining results, the response object's <code>NextToken</code> parameter value is set to a token. To retrieve the next set of results, call this action again and assign that token to the request object's <code>NextToken</code> parameter. If there are no remaining results, the previous response object's <code>NextToken</code> parameter is set to <code>null</code>.</p>"
+        },
+        "ResourceRequestStatusFilter":{
+          "shape":"ResourceRequestStatusFilter",
+          "documentation":"<p>The filter criteria to apply to the requests returned.</p>"
+        }
+      }
+    },
+    "ListResourceRequestsOutput":{
+      "type":"structure",
+      "members":{
+        "ResourceRequestStatusSummaries":{
+          "shape":"ResourceRequestStatusSummaries",
+          "documentation":"<p>The requests that match the specified filter criteria.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the request doesn't return all of the remaining results, <code>NextToken</code> is set to a token. To retrieve the next set of results, call <code>ListResources</code> again and assign that token to the request object's <code>NextToken</code> parameter. If the request returns all results, <code>NextToken</code> is set to null.</p>"
+        }
+      }
+    },
+    "ListResourcesInput":{
+      "type":"structure",
+      "required":["TypeName"],
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "TypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>For private resource types, the type version to use in this resource operation. If you do not specify a resource version, CloudFormation uses the default version.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role for Cloud Control API to use when performing this resource operation. The role specified must have the permissions required for this operation. The necessary permissions for each event handler are defined in the <code> <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html#schema-properties-handlers\">handlers</a> </code> section of the <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html\">resource type definition schema</a>.</p> <p>If you do not specify a role, Cloud Control API uses a temporary session created using your Amazon Web Services user credentials.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-permissions\">Specifying credentials</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "NextToken":{
+          "shape":"HandlerNextToken",
+          "documentation":"<p>If the previous paginated request didn't return all of the remaining results, the response object's <code>NextToken</code> parameter value is set to a token. To retrieve the next set of results, call this action again and assign that token to the request object's <code>NextToken</code> parameter. If there are no remaining results, the previous response object's <code>NextToken</code> parameter is set to <code>null</code>.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Reserved.</p>"
+        },
+        "ResourceModel":{
+          "shape":"Properties",
+          "documentation":"<p>The resource model to use to select the resources to return.</p>"
+        }
+      }
+    },
+    "ListResourcesOutput":{
+      "type":"structure",
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "ResourceDescriptions":{
+          "shape":"ResourceDescriptions",
+          "documentation":"<p>Information about the specified resources, including primary identifier and resource model.</p>"
+        },
+        "NextToken":{
+          "shape":"HandlerNextToken",
+          "documentation":"<p>If the request doesn't return all of the remaining results, <code>NextToken</code> is set to a token. To retrieve the next set of results, call <code>ListResources</code> again and assign that token to the request object's <code>NextToken</code> parameter. If the request returns all results, <code>NextToken</code> is set to null.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NetworkFailureException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that the request couldn't be completed due to networking issues, such as a failure to receive a response from the server.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[-A-Za-z0-9+/=]+"
+    },
+    "NotStabilizedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that the downstream resource failed to complete all of its ready-state checks.</p>",
+      "exception":true
+    },
+    "NotUpdatableException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>One or more properties included in this resource operation are defined as create-only, and therefore can't be updated.</p>",
+      "exception":true
+    },
+    "Operation":{
+      "type":"string",
+      "enum":[
+        "CREATE",
+        "DELETE",
+        "UPDATE"
+      ]
+    },
+    "OperationStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAILED",
+        "CANCEL_IN_PROGRESS",
+        "CANCEL_COMPLETE"
+      ]
+    },
+    "OperationStatuses":{
+      "type":"list",
+      "member":{"shape":"OperationStatus"}
+    },
+    "Operations":{
+      "type":"list",
+      "member":{"shape":"Operation"}
+    },
+    "PatchDocument":{
+      "type":"string",
+      "documentation":"<p>Allow up to 256K length of Resource properties</p>",
+      "max":262144,
+      "min":1,
+      "pattern":"[\\s\\S]*",
+      "sensitive":true
+    },
+    "PrivateTypeException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Cloud Control API hasn't received a valid response from the resource handler, due to a configuration error. This includes issues such as the resource handler returning an invalid response, or timing out.</p>",
+      "exception":true
+    },
+    "ProgressEvent":{
+      "type":"structure",
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type used in the operation.</p>"
+        },
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The primary identifier for the resource.</p> <note> <p>In some cases, the resource identifier may be available before the resource operation has reached a status of <code>SUCCESS</code>.</p> </note>"
+        },
+        "RequestToken":{
+          "shape":"RequestToken",
+          "documentation":"<p>The unique token representing this resource operation request.</p> <p>Use the <code>RequestToken</code> with <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> to return the current status of a resource operation request.</p>"
+        },
+        "HooksRequestToken":{
+          "shape":"RequestToken",
+          "documentation":"<p>The unique token representing the Hooks operation for the request.</p>"
+        },
+        "Operation":{
+          "shape":"Operation",
+          "documentation":"<p>The resource operation type.</p>"
+        },
+        "OperationStatus":{
+          "shape":"OperationStatus",
+          "documentation":"<p>The current status of the resource operation request.</p> <ul> <li> <p> <code>PENDING</code>: The resource operation hasn't yet started.</p> </li> <li> <p> <code>IN_PROGRESS</code>: The resource operation is currently in progress.</p> </li> <li> <p> <code>SUCCESS</code>: The resource operation has successfully completed.</p> </li> <li> <p> <code>FAILED</code>: The resource operation has failed. Refer to the error code and status message for more information.</p> </li> <li> <p> <code>CANCEL_IN_PROGRESS</code>: The resource operation is in the process of being canceled.</p> </li> <li> <p> <code>CANCEL_COMPLETE</code>: The resource operation has been canceled.</p> </li> </ul>"
+        },
+        "EventTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the resource operation request was initiated.</p>"
+        },
+        "ResourceModel":{
+          "shape":"Properties",
+          "documentation":"<p>A JSON string containing the resource model, consisting of each resource property and its current value.</p>"
+        },
+        "StatusMessage":{
+          "shape":"StatusMessage",
+          "documentation":"<p>Any message explaining the current status.</p>"
+        },
+        "ErrorCode":{
+          "shape":"HandlerErrorCode",
+          "documentation":"<p>For requests with a status of <code>FAILED</code>, the associated error code.</p> <p>For error code definitions, see <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-test-contract-errors.html\">Handler error codes</a> in the <i>CloudFormation Command Line Interface User Guide for Extension Development</i>.</p>"
+        },
+        "RetryAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>When to next request the status of this resource operation request.</p>"
+        }
+      },
+      "documentation":"<p>Represents the current status of a resource operation request. For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-manage-requests.html\">Managing resource operation requests</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+    },
+    "Properties":{
+      "type":"string",
+      "documentation":"<p>Allow up to 256K length of Resource properties</p>",
+      "max":262144,
+      "min":1,
+      "pattern":"[\\s\\S]*",
+      "sensitive":true
+    },
+    "RequestToken":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[-A-Za-z0-9+/=]+"
+    },
+    "RequestTokenNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A resource operation with the specified request token can't be found.</p>",
+      "exception":true
+    },
+    "ResourceConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource is temporarily unavailable to be acted upon. For example, if the resource is currently undergoing an operation and can't be acted upon until that operation is finished.</p>",
+      "exception":true
+    },
+    "ResourceDescription":{
+      "type":"structure",
+      "members":{
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The primary identifier for the resource.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-identifier.html\">Identifying resources</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "Properties":{
+          "shape":"Properties",
+          "documentation":"<p>A list of the resource properties and their current values.</p>"
+        }
+      },
+      "documentation":"<p>Represents information about a provisioned resource.</p>"
+    },
+    "ResourceDescriptions":{
+      "type":"list",
+      "member":{"shape":"ResourceDescription"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A resource with the specified identifier can't be found.</p>",
+      "exception":true
+    },
+    "ResourceRequestStatusFilter":{
+      "type":"structure",
+      "members":{
+        "Operations":{
+          "shape":"Operations",
+          "documentation":"<p>The operation types to include in the filter.</p>"
+        },
+        "OperationStatuses":{
+          "shape":"OperationStatuses",
+          "documentation":"<p>The operation statuses to include in the filter.</p> <ul> <li> <p> <code>PENDING</code>: The operation has been requested, but not yet initiated.</p> </li> <li> <p> <code>IN_PROGRESS</code>: The operation is in progress.</p> </li> <li> <p> <code>SUCCESS</code>: The operation completed.</p> </li> <li> <p> <code>FAILED</code>: The operation failed.</p> </li> <li> <p> <code>CANCEL_IN_PROGRESS</code>: The operation is in the process of being canceled.</p> </li> <li> <p> <code>CANCEL_COMPLETE</code>: The operation has been canceled.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The filter criteria to use in determining the requests returned.</p>"
+    },
+    "ResourceRequestStatusSummaries":{
+      "type":"list",
+      "member":{"shape":"ProgressEvent"}
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:.+:iam::[0-9]{12}:role/.+"
+    },
+    "ServiceInternalErrorException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that the downstream service returned an internal error, typically with a <code>5XX HTTP</code> status code.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ServiceLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource handler has returned that a non-transient resource limit was reached on the service side.</p>",
+      "exception":true
+    },
+    "StatusMessage":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"[\\s\\S]*"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TypeName":{
+      "type":"string",
+      "max":196,
+      "min":10,
+      "pattern":"[A-Za-z0-9]{2,64}::[A-Za-z0-9]{2,64}::[A-Za-z0-9]{2,64}"
+    },
+    "TypeNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified extension doesn't exist in the CloudFormation registry.</p>",
+      "exception":true
+    },
+    "TypeVersionId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[A-Za-z0-9-]+"
+    },
+    "UnsupportedActionException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified resource doesn't support this resource operation.</p>",
+      "exception":true
+    },
+    "UpdateResourceInput":{
+      "type":"structure",
+      "required":[
+        "TypeName",
+        "Identifier",
+        "PatchDocument"
+      ],
+      "members":{
+        "TypeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The name of the resource type.</p>"
+        },
+        "TypeVersionId":{
+          "shape":"TypeVersionId",
+          "documentation":"<p>For private resource types, the type version to use in this resource operation. If you do not specify a resource version, CloudFormation uses the default version.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role for Cloud Control API to use when performing this resource operation. The role specified must have the permissions required for this operation. The necessary permissions for each event handler are defined in the <code> <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html#schema-properties-handlers\">handlers</a> </code> section of the <a href=\"https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html\">resource type definition schema</a>.</p> <p>If you do not specify a role, Cloud Control API uses a temporary session created using your Amazon Web Services user credentials.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-permissions\">Specifying credentials</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique identifier to ensure the idempotency of the resource request. As a best practice, specify this token to ensure idempotency, so that Amazon Web Services Cloud Control API can accurately distinguish between request retries and new resource requests. You might retry a resource request to ensure that it was successfully received.</p> <p>A client token is valid for 36 hours once used. After that, a resource request with the same client token is treated as a new request.</p> <p>If you do not specify a client token, one is generated for inclusion in the request.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations.html#resource-operations-idempotency\">Ensuring resource operation requests are unique</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>",
+          "idempotencyToken":true
+        },
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier for the resource.</p> <p>You can specify the primary identifier, or any secondary identifier defined for the resource type in its resource schema. You can only specify one identifier. Primary identifiers can be specified as a string or JSON; secondary identifiers must be specified as JSON.</p> <p>For compound primary identifiers (that is, one that consists of multiple resource properties strung together), to specify the primary identifier as a string, list the property values <i>in the order they are specified</i> in the primary identifier definition, separated by <code>|</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-identifier.html\">Identifying resources</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        },
+        "PatchDocument":{
+          "shape":"PatchDocument",
+          "documentation":"<p>A JavaScript Object Notation (JSON) document listing the patch operations that represent the updates to apply to the current resource properties. For details, see <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/resource-operations-update.html#resource-operations-update-patch\">Composing the patch document</a> in the <i>Amazon Web Services Cloud Control API User Guide</i>.</p>"
+        }
+      }
+    },
+    "UpdateResourceOutput":{
+      "type":"structure",
+      "members":{
+        "ProgressEvent":{
+          "shape":"ProgressEvent",
+          "documentation":"<p>Represents the current status of the resource update request.</p> <p>Use the <code>RequestToken</code> of the <code>ProgressEvent</code> with <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/APIReference/API_GetResourceRequestStatus.html\">GetResourceRequestStatus</a> to return the current status of a resource operation request.</p>"
+        }
+      }
+    }
+  },
+  "documentation":"<p>For more information about Amazon Web Services Cloud Control API, see the <a href=\"https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/what-is-cloudcontrolapi.html\">Amazon Web Services Cloud Control API User Guide</a>.</p>"
+}

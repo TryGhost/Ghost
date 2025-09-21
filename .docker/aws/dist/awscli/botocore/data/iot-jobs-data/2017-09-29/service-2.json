@@ -1,0 +1,679 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-09-29",
+    "endpointPrefix":"data.jobs.iot",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS IoT Jobs Data Plane",
+    "serviceId":"IoT Jobs Data Plane",
+    "signatureVersion":"v4",
+    "signingName":"iot-jobs-data",
+    "uid":"iot-jobs-data-2017-09-29",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "DescribeJobExecution":{
+      "name":"DescribeJobExecution",
+      "http":{
+        "method":"GET",
+        "requestUri":"/things/{thingName}/jobs/{jobId}"
+      },
+      "input":{"shape":"DescribeJobExecutionRequest"},
+      "output":{"shape":"DescribeJobExecutionResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"CertificateValidationException"},
+        {"shape":"TerminalStateException"}
+      ],
+      "documentation":"<p>Gets details of a job execution.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiot.html#awsiot-actions-as-permissions\">DescribeJobExecution</a> action.</p>"
+    },
+    "GetPendingJobExecutions":{
+      "name":"GetPendingJobExecutions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/things/{thingName}/jobs"
+      },
+      "input":{"shape":"GetPendingJobExecutionsRequest"},
+      "output":{"shape":"GetPendingJobExecutionsResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"CertificateValidationException"}
+      ],
+      "documentation":"<p>Gets the list of all jobs for a thing that are not in a terminal status.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiot.html#awsiot-actions-as-permissions\">GetPendingJobExecutions</a> action.</p>"
+    },
+    "StartCommandExecution":{
+      "name":"StartCommandExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/command-executions"
+      },
+      "input":{"shape":"StartCommandExecutionRequest"},
+      "output":{"shape":"StartCommandExecutionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Using the command created with the <code>CreateCommand</code> API, start a command execution on a specific device.</p>"
+    },
+    "StartNextPendingJobExecution":{
+      "name":"StartNextPendingJobExecution",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/things/{thingName}/jobs/$next"
+      },
+      "input":{"shape":"StartNextPendingJobExecutionRequest"},
+      "output":{"shape":"StartNextPendingJobExecutionResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"CertificateValidationException"}
+      ],
+      "documentation":"<p>Gets and starts the next pending (status IN_PROGRESS or QUEUED) job execution for a thing.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiot.html#awsiot-actions-as-permissions\">StartNextPendingJobExecution</a> action.</p>"
+    },
+    "UpdateJobExecution":{
+      "name":"UpdateJobExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/things/{thingName}/jobs/{jobId}"
+      },
+      "input":{"shape":"UpdateJobExecutionRequest"},
+      "output":{"shape":"UpdateJobExecutionResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"CertificateValidationException"},
+        {"shape":"InvalidStateTransitionException"}
+      ],
+      "documentation":"<p>Updates the status of a job execution.</p> <p>Requires permission to access the <a href=\"https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiotjobsdataplane.html\">UpdateJobExecution</a> action.</p>"
+    }
+  },
+  "shapes":{
+    "ApproximateSecondsBeforeTimedOut":{"type":"long"},
+    "BinaryBlob":{"type":"blob"},
+    "BinaryParameterValue":{
+      "type":"blob",
+      "min":1
+    },
+    "BooleanParameterValue":{"type":"boolean"},
+    "CertificateValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"errorMessage",
+          "documentation":"<p>Additional information about the exception.</p>"
+        }
+      },
+      "documentation":"<p>The certificate is invalid.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ClientRequestTokenV2":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[\\x21-\\x7E]+$"
+    },
+    "CommandArn":{"type":"string"},
+    "CommandExecutionId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "CommandExecutionParameterMap":{
+      "type":"map",
+      "key":{"shape":"CommandParameterName"},
+      "value":{"shape":"CommandParameterValue"},
+      "min":1
+    },
+    "CommandExecutionTimeoutInSeconds":{
+      "type":"long",
+      "min":1
+    },
+    "CommandParameterName":{
+      "type":"string",
+      "max":192,
+      "min":1,
+      "pattern":"^[.$a-zA-Z0-9_-]+$"
+    },
+    "CommandParameterValue":{
+      "type":"structure",
+      "members":{
+        "S":{
+          "shape":"StringParameterValue",
+          "documentation":"<p>An attribute of type String. For example:</p> <p> <code>\"S\": \"Hello\"</code> </p>"
+        },
+        "B":{
+          "shape":"BooleanParameterValue",
+          "documentation":"<p>An attribute of type Boolean. For example:</p> <p> <code>\"BOOL\": true</code> </p>"
+        },
+        "I":{
+          "shape":"IntegerParameterValue",
+          "documentation":"<p>An attribute of type Integer (Thirty-Two Bits).</p>"
+        },
+        "L":{
+          "shape":"LongParameterValue",
+          "documentation":"<p>An attribute of type Long.</p>"
+        },
+        "D":{
+          "shape":"DoubleParameterValue",
+          "documentation":"<p>An attribute of type Double (Sixty-Four Bits).</p>"
+        },
+        "BIN":{
+          "shape":"BinaryParameterValue",
+          "documentation":"<p>An attribute of type Binary.</p>"
+        },
+        "UL":{
+          "shape":"UnsignedLongParameterValue",
+          "documentation":"<p>An attribute of type Unsigned Long.</p>"
+        }
+      },
+      "documentation":"<p>The list of values used to describe a specific command parameter.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"},
+        "resourceId":{
+          "shape":"resourceId",
+          "documentation":"<p>A conflict occurred while performing the API request on the resource ID.</p>"
+        }
+      },
+      "documentation":"<p>A conflict has occurred when performing the API request.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "DescribeJobExecutionJobId":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9_-]+|^\\$next"
+    },
+    "DescribeJobExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "thingName"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"DescribeJobExecutionJobId",
+          "documentation":"<p>The unique identifier assigned to this job when it was created.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        },
+        "thingName":{
+          "shape":"ThingName",
+          "documentation":"<p>The thing name associated with the device the job execution is running on.</p>",
+          "location":"uri",
+          "locationName":"thingName"
+        },
+        "includeJobDocument":{
+          "shape":"IncludeJobDocument",
+          "documentation":"<p>Optional. Unless set to false, the response contains the job document. The default is true.</p>",
+          "location":"querystring",
+          "locationName":"includeJobDocument"
+        },
+        "executionNumber":{
+          "shape":"ExecutionNumber",
+          "documentation":"<p>Optional. A number that identifies a particular job execution on a particular device. If not specified, the latest job execution is returned.</p>",
+          "location":"querystring",
+          "locationName":"executionNumber"
+        }
+      }
+    },
+    "DescribeJobExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "execution":{
+          "shape":"JobExecution",
+          "documentation":"<p>Contains data about a job execution.</p>"
+        }
+      }
+    },
+    "DetailsKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9:_-]+"
+    },
+    "DetailsMap":{
+      "type":"map",
+      "key":{"shape":"DetailsKey"},
+      "value":{"shape":"DetailsValue"}
+    },
+    "DetailsValue":{
+      "type":"string",
+      "min":1,
+      "pattern":"[^\\p{C}]+"
+    },
+    "DoubleParameterValue":{"type":"double"},
+    "ExecutionNumber":{"type":"long"},
+    "ExpectedVersion":{"type":"long"},
+    "GetPendingJobExecutionsRequest":{
+      "type":"structure",
+      "required":["thingName"],
+      "members":{
+        "thingName":{
+          "shape":"ThingName",
+          "documentation":"<p>The name of the thing that is executing the job.</p>",
+          "location":"uri",
+          "locationName":"thingName"
+        }
+      }
+    },
+    "GetPendingJobExecutionsResponse":{
+      "type":"structure",
+      "members":{
+        "inProgressJobs":{
+          "shape":"JobExecutionSummaryList",
+          "documentation":"<p>A list of JobExecutionSummary objects with status IN_PROGRESS.</p>"
+        },
+        "queuedJobs":{
+          "shape":"JobExecutionSummaryList",
+          "documentation":"<p>A list of JobExecutionSummary objects with status QUEUED.</p>"
+        }
+      }
+    },
+    "IncludeExecutionState":{"type":"boolean"},
+    "IncludeJobDocument":{"type":"boolean"},
+    "IntegerParameterValue":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>An internal server error occurred when performing the API request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"errorMessage",
+          "documentation":"<p>The message for the exception.</p>"
+        }
+      },
+      "documentation":"<p>The contents of the request were invalid.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "InvalidStateTransitionException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>An update attempted to change the job execution to a state that is invalid because of the job execution's current state (for example, an attempt to change a request in state SUCCESS to state IN_PROGRESS). In this case, the body of the error message also contains the executionState field.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "JobDocument":{
+      "type":"string",
+      "max":32768
+    },
+    "JobExecution":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The unique identifier you assigned to this job when it was created.</p>"
+        },
+        "thingName":{
+          "shape":"ThingName",
+          "documentation":"<p>The name of the thing that is executing the job.</p>"
+        },
+        "status":{
+          "shape":"JobExecutionStatus",
+          "documentation":"<p>The status of the job execution. Can be one of: \"QUEUED\", \"IN_PROGRESS\", \"FAILED\", \"SUCCESS\", \"CANCELED\", \"TIMED_OUT\", \"REJECTED\", or \"REMOVED\".</p>"
+        },
+        "statusDetails":{
+          "shape":"DetailsMap",
+          "documentation":"<p>A collection of name/value pairs that describe the status of the job execution.</p> <p>The maximum length of the value in the name/value pair is 1,024 characters.</p>"
+        },
+        "queuedAt":{
+          "shape":"QueuedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution was enqueued.</p>"
+        },
+        "startedAt":{
+          "shape":"StartedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution was started.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"LastUpdatedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution was last updated. </p>"
+        },
+        "approximateSecondsBeforeTimedOut":{
+          "shape":"ApproximateSecondsBeforeTimedOut",
+          "documentation":"<p>The estimated number of seconds that remain before the job execution status will be changed to <code>TIMED_OUT</code>. The actual job execution timeout can occur up to 60 seconds later than the estimated duration.</p>"
+        },
+        "versionNumber":{
+          "shape":"VersionNumber",
+          "documentation":"<p>The version of the job execution. Job execution versions are incremented each time they are updated by a device.</p>"
+        },
+        "executionNumber":{
+          "shape":"ExecutionNumber",
+          "documentation":"<p>A number that identifies a particular job execution on a particular device. It can be used later in commands that return or update job execution information.</p>"
+        },
+        "jobDocument":{
+          "shape":"JobDocument",
+          "documentation":"<p>The content of the job document.</p>"
+        }
+      },
+      "documentation":"<p>Contains data about a job execution.</p>"
+    },
+    "JobExecutionState":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"JobExecutionStatus",
+          "documentation":"<p>The status of the job execution. Can be one of: \"QUEUED\", \"IN_PROGRESS\", \"FAILED\", \"SUCCESS\", \"CANCELED\", \"TIMED_OUT\", \"REJECTED\", or \"REMOVED\".</p>"
+        },
+        "statusDetails":{
+          "shape":"DetailsMap",
+          "documentation":"<p>A collection of name/value pairs that describe the status of the job execution.</p> <p>The maximum length of the value in the name/value pair is 1,024 characters.</p>"
+        },
+        "versionNumber":{
+          "shape":"VersionNumber",
+          "documentation":"<p>The version of the job execution. Job execution versions are incremented each time they are updated by a device.</p>"
+        }
+      },
+      "documentation":"<p>Contains data about the state of a job execution.</p>"
+    },
+    "JobExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED",
+        "TIMED_OUT",
+        "REJECTED",
+        "REMOVED",
+        "CANCELED"
+      ]
+    },
+    "JobExecutionSummary":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The unique identifier you assigned to this job when it was created.</p>"
+        },
+        "queuedAt":{
+          "shape":"QueuedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution was enqueued.</p>"
+        },
+        "startedAt":{
+          "shape":"StartedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution started.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"LastUpdatedAt",
+          "documentation":"<p>The time, in seconds since the epoch, when the job execution was last updated.</p>"
+        },
+        "versionNumber":{
+          "shape":"VersionNumber",
+          "documentation":"<p>The version of the job execution. Job execution versions are incremented each time IoT Jobs receives an update from a device.</p>"
+        },
+        "executionNumber":{
+          "shape":"ExecutionNumber",
+          "documentation":"<p>A number that identifies a particular job execution on a particular device.</p>"
+        }
+      },
+      "documentation":"<p>Contains a subset of information about a job execution.</p>"
+    },
+    "JobExecutionSummaryList":{
+      "type":"list",
+      "member":{"shape":"JobExecutionSummary"}
+    },
+    "JobId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "LastUpdatedAt":{"type":"long"},
+    "LongParameterValue":{"type":"long"},
+    "QueuedAt":{"type":"long"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"errorMessage",
+          "documentation":"<p>The message for the exception.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource does not exist.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>The service quota has been exceeded for this request.</p>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"errorMessage",
+          "documentation":"<p>The message for the exception.</p>"
+        }
+      },
+      "documentation":"<p>The service is temporarily unavailable.</p>",
+      "error":{"httpStatusCode":503},
+      "exception":true,
+      "fault":true
+    },
+    "StartCommandExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "targetArn",
+        "commandArn"
+      ],
+      "members":{
+        "targetArn":{
+          "shape":"TargetArn",
+          "documentation":"<p>The Amazon Resource Number (ARN) of the device where the command execution is occurring.</p>"
+        },
+        "commandArn":{
+          "shape":"CommandArn",
+          "documentation":"<p>The Amazon Resource Number (ARN) of the command. For example, <code>arn:aws:iot:&lt;region&gt;:&lt;accountid&gt;:command/&lt;commandName&gt;</code> </p>"
+        },
+        "parameters":{
+          "shape":"CommandExecutionParameterMap",
+          "documentation":"<p>A list of parameters that are required by the <code>StartCommandExecution</code> API when performing the command on a device.</p>"
+        },
+        "executionTimeoutSeconds":{
+          "shape":"CommandExecutionTimeoutInSeconds",
+          "documentation":"<p>Specifies the amount of time in second the device has to finish the command execution. A timer is started as soon as the command execution is created. If the command execution status is not set to another terminal state before the timer expires, it will automatically update to <code>TIMED_OUT</code>.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientRequestTokenV2",
+          "documentation":"<p>The client token is used to implement idempotency. It ensures that the request completes no more than one time. If you retry a request with the same token and the same parameters, the request will complete successfully. However, if you retry the request using the same token but different parameters, an HTTP 409 conflict occurs. If you omit this value, Amazon Web Services SDKs will automatically generate a unique client request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartCommandExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "executionId":{
+          "shape":"CommandExecutionId",
+          "documentation":"<p>A unique identifier for the command execution.</p>"
+        }
+      }
+    },
+    "StartNextPendingJobExecutionRequest":{
+      "type":"structure",
+      "required":["thingName"],
+      "members":{
+        "thingName":{
+          "shape":"ThingName",
+          "documentation":"<p>The name of the thing associated with the device.</p>",
+          "location":"uri",
+          "locationName":"thingName"
+        },
+        "statusDetails":{
+          "shape":"DetailsMap",
+          "documentation":"<p>A collection of name/value pairs that describe the status of the job execution. If not specified, the statusDetails are unchanged.</p> <p>The maximum length of the value in the name/value pair is 1,024 characters.</p>"
+        },
+        "stepTimeoutInMinutes":{
+          "shape":"StepTimeoutInMinutes",
+          "documentation":"<p>Specifies the amount of time this device has to finish execution of this job. If the job execution status is not set to a terminal state before this timer expires, or before the timer is reset (by calling <code>UpdateJobExecution</code>, setting the status to <code>IN_PROGRESS</code>, and specifying a new timeout value in field <code>stepTimeoutInMinutes</code>) the job execution status will be automatically set to <code>TIMED_OUT</code>. Note that setting the step timeout has no effect on the in progress timeout that may have been specified when the job was created (<code>CreateJob</code> using field <code>timeoutConfig</code>).</p> <p>Valid values for this parameter range from 1 to 10080 (1 minute to 7 days).</p>"
+        }
+      }
+    },
+    "StartNextPendingJobExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "execution":{
+          "shape":"JobExecution",
+          "documentation":"<p>A JobExecution object.</p>"
+        }
+      }
+    },
+    "StartedAt":{"type":"long"},
+    "StepTimeoutInMinutes":{"type":"long"},
+    "StringParameterValue":{
+      "type":"string",
+      "min":1
+    },
+    "TargetArn":{
+      "type":"string",
+      "max":2048
+    },
+    "TerminalStateException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>The job is in a terminal state.</p>",
+      "error":{"httpStatusCode":410},
+      "exception":true
+    },
+    "ThingName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9:_-]+"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"errorMessage",
+          "documentation":"<p>The message associated with the exception.</p>"
+        },
+        "payload":{
+          "shape":"BinaryBlob",
+          "documentation":"<p>The payload associated with the exception.</p>"
+        }
+      },
+      "documentation":"<p>The rate exceeds the limit.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "UnsignedLongParameterValue":{
+      "type":"string",
+      "max":20,
+      "min":1,
+      "pattern":"^[0-9]*$"
+    },
+    "UpdateJobExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "thingName",
+        "status"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The unique identifier assigned to this job when it was created.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        },
+        "thingName":{
+          "shape":"ThingName",
+          "documentation":"<p>The name of the thing associated with the device.</p>",
+          "location":"uri",
+          "locationName":"thingName"
+        },
+        "status":{
+          "shape":"JobExecutionStatus",
+          "documentation":"<p>The new status for the job execution (IN_PROGRESS, FAILED, SUCCESS, or REJECTED). This must be specified on every update.</p>"
+        },
+        "statusDetails":{
+          "shape":"DetailsMap",
+          "documentation":"<p> Optional. A collection of name/value pairs that describe the status of the job execution. If not specified, the statusDetails are unchanged.</p> <p>The maximum length of the value in the name/value pair is 1,024 characters.</p>"
+        },
+        "stepTimeoutInMinutes":{
+          "shape":"StepTimeoutInMinutes",
+          "documentation":"<p>Specifies the amount of time this device has to finish execution of this job. If the job execution status is not set to a terminal state before this timer expires, or before the timer is reset (by again calling <code>UpdateJobExecution</code>, setting the status to <code>IN_PROGRESS</code>, and specifying a new timeout value in this field) the job execution status will be automatically set to <code>TIMED_OUT</code>. Note that setting or resetting the step timeout has no effect on the in progress timeout that may have been specified when the job was created (<code>CreateJob</code> using field <code>timeoutConfig</code>).</p> <p>Valid values for this parameter range from 1 to 10080 (1 minute to 7 days). A value of -1 is also valid and will cancel the current step timer (created by an earlier use of <code>UpdateJobExecutionRequest</code>).</p>"
+        },
+        "expectedVersion":{
+          "shape":"ExpectedVersion",
+          "documentation":"<p>Optional. The expected current version of the job execution. Each time you update the job execution, its version is incremented. If the version of the job execution stored in Jobs does not match, the update is rejected with a VersionMismatch error, and an ErrorResponse that contains the current job execution status data is returned. (This makes it unnecessary to perform a separate DescribeJobExecution request in order to obtain the job execution status data.)</p>"
+        },
+        "includeJobExecutionState":{
+          "shape":"IncludeExecutionState",
+          "documentation":"<p>Optional. When included and set to true, the response contains the JobExecutionState data. The default is false.</p>"
+        },
+        "includeJobDocument":{
+          "shape":"IncludeJobDocument",
+          "documentation":"<p>Optional. When set to true, the response contains the job document. The default is false.</p>"
+        },
+        "executionNumber":{
+          "shape":"ExecutionNumber",
+          "documentation":"<p>Optional. A number that identifies a particular job execution on a particular device.</p>"
+        }
+      }
+    },
+    "UpdateJobExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "executionState":{
+          "shape":"JobExecutionState",
+          "documentation":"<p>A JobExecutionState object.</p>"
+        },
+        "jobDocument":{
+          "shape":"JobDocument",
+          "documentation":"<p>The contents of the Job Documents.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>A validation error occurred when performing the API request.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "VersionNumber":{"type":"long"},
+    "errorMessage":{"type":"string"},
+    "resourceId":{"type":"string"}
+  },
+  "documentation":"<p>IoT Jobs is a service that allows you to define a set of jobs — remote operations that are sent to and executed on one or more devices connected to Amazon Web Services IoT Core. For example, you can define a job that instructs a set of devices to download and install application or firmware updates, reboot, rotate certificates, or perform remote troubleshooting operations.</p> <p>Find the endpoint address for actions in the IoT jobs data plane by running this CLI command:</p> <p> <code>aws iot describe-endpoint --endpoint-type iot:Jobs</code> </p> <p>The service name used by <a href=\"https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html\">Amazon Web Services Signature Version 4</a> to sign requests is: <i>iot-jobs-data</i>.</p> <p> To create a job, you make a job document which is a description of the remote operations to be performed, and you specify a list of targets that should perform the operations. The targets can be individual things, thing groups or both.</p> <p> IoT Jobs sends a message to inform the targets that a job is available. The target starts the execution of the job by downloading the job document, performing the operations it specifies, and reporting its progress to Amazon Web Services IoT Core. The Jobs service provides commands to track the progress of a job on a specific target and for all the targets of the job</p>"
+}

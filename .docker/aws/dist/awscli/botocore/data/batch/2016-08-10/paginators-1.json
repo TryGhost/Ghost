@@ -1,0 +1,58 @@
+{
+  "pagination": {
+    "DescribeComputeEnvironments": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "computeEnvironments"
+    },
+    "DescribeJobDefinitions": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "jobDefinitions"
+    },
+    "DescribeJobQueues": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "jobQueues"
+    },
+    "ListJobs": {
+      "input_token": "nextToken",
+      "limit_key": "maxResults",
+      "output_token": "nextToken",
+      "result_key": "jobSummaryList"
+    },
+    "ListSchedulingPolicies": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "schedulingPolicies"
+    },
+    "ListConsumableResources": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "consumableResources"
+    },
+    "ListJobsByConsumableResource": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "jobs"
+    },
+    "DescribeServiceEnvironments": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "serviceEnvironments"
+    },
+    "ListServiceJobs": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "jobSummaryList"
+    }
+  }
+}

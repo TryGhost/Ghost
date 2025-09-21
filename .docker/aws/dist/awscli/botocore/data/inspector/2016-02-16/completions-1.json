@@ -1,0 +1,87 @@
+{
+  "version": "1.0",
+  "resources": {
+    "EventSubscription": {
+      "operation": "ListEventSubscriptions",
+      "resourceIdentifier": {
+        "resourceArn": "subscriptions[].resourceArn",
+        "topicArn": "subscriptions[].topicArn"
+      }
+    }
+  },
+  "operations": {
+    "ListEventSubscriptions": {
+      "resourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "resourceArn"
+          }
+        ]
+      }
+    },
+    "ListTagsForResource": {
+      "resourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "resourceArn"
+          }
+        ]
+      }
+    },
+    "SetTagsForResource": {
+      "resourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "resourceArn"
+          }
+        ]
+      }
+    },
+    "SubscribeToEvent": {
+      "resourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "resourceArn"
+          }
+        ]
+      },
+      "topicArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "topicArn"
+          }
+        ]
+      }
+    },
+    "UnsubscribeFromEvent": {
+      "resourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "resourceArn"
+          }
+        ]
+      },
+      "topicArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "topicArn"
+          }
+        ]
+      }
+    }
+  }
+}

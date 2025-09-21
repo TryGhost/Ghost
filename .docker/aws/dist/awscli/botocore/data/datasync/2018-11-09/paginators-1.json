@@ -1,0 +1,34 @@
+{
+  "pagination": {
+    "ListAgents": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "Agents"
+    },
+    "ListLocations": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "Locations"
+    },
+    "ListTagsForResource": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "Tags"
+    },
+    "ListTaskExecutions": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "TaskExecutions"
+    },
+    "ListTasks": {
+      "input_token": "NextToken",
+      "limit_key": "MaxResults",
+      "output_token": "NextToken",
+      "result_key": "Tasks"
+    }
+  }
+}

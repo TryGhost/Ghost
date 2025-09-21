@@ -1,0 +1,3353 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-11-01",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"aoss",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"OpenSearch Service Serverless",
+    "serviceId":"OpenSearchServerless",
+    "signatureVersion":"v4",
+    "signingName":"aoss",
+    "targetPrefix":"OpenSearchServerless",
+    "uid":"opensearchserverless-2021-11-01"
+  },
+  "operations":{
+    "BatchGetCollection":{
+      "name":"BatchGetCollection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetCollectionRequest"},
+      "output":{"shape":"BatchGetCollectionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns attributes for one or more collections, including the collection endpoint, the OpenSearch Dashboards endpoint, and FIPS-compliant endpoints. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html\">Creating and managing Amazon OpenSearch Serverless collections</a>.</p>"
+    },
+    "BatchGetEffectiveLifecyclePolicy":{
+      "name":"BatchGetEffectiveLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetEffectiveLifecyclePolicyRequest"},
+      "output":{"shape":"BatchGetEffectiveLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of successful and failed retrievals for the OpenSearch Serverless indexes. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-list\">Viewing data lifecycle policies</a>.</p>"
+    },
+    "BatchGetLifecyclePolicy":{
+      "name":"BatchGetLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetLifecyclePolicyRequest"},
+      "output":{"shape":"BatchGetLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns one or more configured OpenSearch Serverless lifecycle policies. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-list\">Viewing data lifecycle policies</a>.</p>"
+    },
+    "BatchGetVpcEndpoint":{
+      "name":"BatchGetVpcEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetVpcEndpointRequest"},
+      "output":{"shape":"BatchGetVpcEndpointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns attributes for one or more VPC endpoints associated with the current account. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>"
+    },
+    "CreateAccessPolicy":{
+      "name":"CreateAccessPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateAccessPolicyRequest"},
+      "output":{"shape":"CreateAccessPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a data access policy for OpenSearch Serverless. Access policies limit access to collections and the resources within them, and allow a user to access that data irrespective of the access mechanism or network source. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-data-access.html\">Data access control for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "CreateCollection":{
+      "name":"CreateCollection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateCollectionRequest"},
+      "output":{"shape":"CreateCollectionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"OcuLimitExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new OpenSearch Serverless collection. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html\">Creating and managing Amazon OpenSearch Serverless collections</a>.</p>",
+      "idempotent":true
+    },
+    "CreateIndex":{
+      "name":"CreateIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateIndexRequest"},
+      "output":{"shape":"CreateIndexResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an index within an OpenSearch Serverless collection. Unlike other OpenSearch indexes, indexes created by this API are automatically configured to conduct automatic semantic enrichment ingestion and search. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html#serverless-semantic-enrichment\">About automatic semantic enrichment</a> in the <i>OpenSearch User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "CreateLifecyclePolicy":{
+      "name":"CreateLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateLifecyclePolicyRequest"},
+      "output":{"shape":"CreateLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a lifecyle policy to be applied to OpenSearch Serverless indexes. Lifecycle policies define the number of days or hours to retain the data on an OpenSearch Serverless index. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-create\">Creating data lifecycle policies</a>.</p>",
+      "idempotent":true
+    },
+    "CreateSecurityConfig":{
+      "name":"CreateSecurityConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSecurityConfigRequest"},
+      "output":{"shape":"CreateSecurityConfigResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Specifies a security configuration for OpenSearch Serverless. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-saml.html\">SAML authentication for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "CreateSecurityPolicy":{
+      "name":"CreateSecurityPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSecurityPolicyRequest"},
+      "output":{"shape":"CreateSecurityPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a security policy to be used by one or more OpenSearch Serverless collections. Security policies provide access to a collection and its OpenSearch Dashboards endpoint from public networks or specific VPC endpoints. They also allow you to secure a collection with a KMS encryption key. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-network.html\">Network access for Amazon OpenSearch Serverless</a> and <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-encryption.html\">Encryption at rest for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "CreateVpcEndpoint":{
+      "name":"CreateVpcEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateVpcEndpointRequest"},
+      "output":{"shape":"CreateVpcEndpointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates an OpenSearch Serverless-managed interface VPC endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteAccessPolicy":{
+      "name":"DeleteAccessPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteAccessPolicyRequest"},
+      "output":{"shape":"DeleteAccessPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Serverless access policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-data-access.html\">Data access control for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteCollection":{
+      "name":"DeleteCollection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteCollectionRequest"},
+      "output":{"shape":"DeleteCollectionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Serverless collection. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html\">Creating and managing Amazon OpenSearch Serverless collections</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteIndex":{
+      "name":"DeleteIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteIndexRequest"},
+      "output":{"shape":"DeleteIndexResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an index from an OpenSearch Serverless collection. Be aware that the index might be configured to conduct automatic semantic enrichment ingestion and search. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html#serverless-semantic-enrichment\">About automatic semantic enrichment</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteLifecyclePolicy":{
+      "name":"DeleteLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteLifecyclePolicyRequest"},
+      "output":{"shape":"DeleteLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Serverless lifecycle policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-delete\">Deleting data lifecycle policies</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteSecurityConfig":{
+      "name":"DeleteSecurityConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSecurityConfigRequest"},
+      "output":{"shape":"DeleteSecurityConfigResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a security configuration for OpenSearch Serverless. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-saml.html\">SAML authentication for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteSecurityPolicy":{
+      "name":"DeleteSecurityPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSecurityPolicyRequest"},
+      "output":{"shape":"DeleteSecurityPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Serverless security policy.</p>",
+      "idempotent":true
+    },
+    "DeleteVpcEndpoint":{
+      "name":"DeleteVpcEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteVpcEndpointRequest"},
+      "output":{"shape":"DeleteVpcEndpointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an OpenSearch Serverless-managed interface endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>",
+      "idempotent":true
+    },
+    "GetAccessPolicy":{
+      "name":"GetAccessPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAccessPolicyRequest"},
+      "output":{"shape":"GetAccessPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns an OpenSearch Serverless access policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-data-access.html\">Data access control for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "GetAccountSettings":{
+      "name":"GetAccountSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAccountSettingsRequest"},
+      "output":{"shape":"GetAccountSettingsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns account-level settings related to OpenSearch Serverless.</p>"
+    },
+    "GetIndex":{
+      "name":"GetIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetIndexRequest"},
+      "output":{"shape":"GetIndexResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves information about an index in an OpenSearch Serverless collection, including its schema definition. The index might be configured to conduct automatic semantic enrichment ingestion and search. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html#serverless-semantic-enrichment\">About automatic semantic enrichment</a>.</p>"
+    },
+    "GetPoliciesStats":{
+      "name":"GetPoliciesStats",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPoliciesStatsRequest"},
+      "output":{"shape":"GetPoliciesStatsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns statistical information about your OpenSearch Serverless access policies, security configurations, and security policies.</p>"
+    },
+    "GetSecurityConfig":{
+      "name":"GetSecurityConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSecurityConfigRequest"},
+      "output":{"shape":"GetSecurityConfigResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about an OpenSearch Serverless security configuration. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-saml.html\">SAML authentication for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "GetSecurityPolicy":{
+      "name":"GetSecurityPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSecurityPolicyRequest"},
+      "output":{"shape":"GetSecurityPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a configured OpenSearch Serverless security policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-network.html\">Network access for Amazon OpenSearch Serverless</a> and <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-encryption.html\">Encryption at rest for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "ListAccessPolicies":{
+      "name":"ListAccessPolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAccessPoliciesRequest"},
+      "output":{"shape":"ListAccessPoliciesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a list of OpenSearch Serverless access policies.</p>"
+    },
+    "ListCollections":{
+      "name":"ListCollections",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListCollectionsRequest"},
+      "output":{"shape":"ListCollectionsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all OpenSearch Serverless collections. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html\">Creating and managing Amazon OpenSearch Serverless collections</a>.</p> <note> <p>Make sure to include an empty request body {} if you don't include any collection filters in the request.</p> </note>"
+    },
+    "ListLifecyclePolicies":{
+      "name":"ListLifecyclePolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListLifecyclePoliciesRequest"},
+      "output":{"shape":"ListLifecyclePoliciesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of OpenSearch Serverless lifecycle policies. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-list\">Viewing data lifecycle policies</a>.</p>"
+    },
+    "ListSecurityConfigs":{
+      "name":"ListSecurityConfigs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSecurityConfigsRequest"},
+      "output":{"shape":"ListSecurityConfigsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about configured OpenSearch Serverless security configurations. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-saml.html\">SAML authentication for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "ListSecurityPolicies":{
+      "name":"ListSecurityPolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSecurityPoliciesRequest"},
+      "output":{"shape":"ListSecurityPoliciesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about configured OpenSearch Serverless security policies.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the tags for an OpenSearch Serverless resource. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html\">Tagging Amazon OpenSearch Serverless collections</a>.</p>"
+    },
+    "ListVpcEndpoints":{
+      "name":"ListVpcEndpoints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListVpcEndpointsRequest"},
+      "output":{"shape":"ListVpcEndpointsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the OpenSearch Serverless-managed interface VPC endpoints associated with the current account. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Associates tags with an OpenSearch Serverless resource. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html\">Tagging Amazon OpenSearch Serverless collections</a>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes a tag or set of tags from an OpenSearch Serverless resource. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/tag-collection.html\">Tagging Amazon OpenSearch Serverless collections</a>.</p>"
+    },
+    "UpdateAccessPolicy":{
+      "name":"UpdateAccessPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateAccessPolicyRequest"},
+      "output":{"shape":"UpdateAccessPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Serverless access policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-data-access.html\">Data access control for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateAccountSettings":{
+      "name":"UpdateAccountSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateAccountSettingsRequest"},
+      "output":{"shape":"UpdateAccountSettingsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Update the OpenSearch Serverless settings for the current Amazon Web Services account. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-scaling.html\">Managing capacity limits for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "UpdateCollection":{
+      "name":"UpdateCollection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateCollectionRequest"},
+      "output":{"shape":"UpdateCollectionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Serverless collection.</p>",
+      "idempotent":true
+    },
+    "UpdateIndex":{
+      "name":"UpdateIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateIndexRequest"},
+      "output":{"shape":"UpdateIndexResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an existing index in an OpenSearch Serverless collection. This operation allows you to modify the index schema, including adding new fields or changing field mappings. You can also enable automatic semantic enrichment ingestion and search. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-manage.html#serverless-semantic-enrichment\">About automatic semantic enrichment</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateLifecyclePolicy":{
+      "name":"UpdateLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateLifecyclePolicyRequest"},
+      "output":{"shape":"UpdateLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Serverless access policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-lifecycle.html#serverless-lifecycle-update\">Updating data lifecycle policies</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateSecurityConfig":{
+      "name":"UpdateSecurityConfig",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSecurityConfigRequest"},
+      "output":{"shape":"UpdateSecurityConfigResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a security configuration for OpenSearch Serverless. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-saml.html\">SAML authentication for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateSecurityPolicy":{
+      "name":"UpdateSecurityPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSecurityPolicyRequest"},
+      "output":{"shape":"UpdateSecurityPolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Serverless security policy. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-network.html\">Network access for Amazon OpenSearch Serverless</a> and <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-encryption.html\">Encryption at rest for Amazon OpenSearch Serverless</a>.</p>",
+      "idempotent":true
+    },
+    "UpdateVpcEndpoint":{
+      "name":"UpdateVpcEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateVpcEndpointRequest"},
+      "output":{"shape":"UpdateVpcEndpointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an OpenSearch Serverless-managed interface endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessPolicyDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of access policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the policy.</p>"
+        },
+        "policy":{
+          "shape":"Document",
+          "documentation":"<p>The JSON policy document without any whitespaces.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the policy was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about an OpenSearch Serverless access policy.</p>"
+    },
+    "AccessPolicyStats":{
+      "type":"structure",
+      "members":{
+        "DataPolicyCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of data access policies in the current account.</p>"
+        }
+      },
+      "documentation":"<p>Statistics for an OpenSearch Serverless access policy.</p>"
+    },
+    "AccessPolicySummaries":{
+      "type":"list",
+      "member":{"shape":"AccessPolicySummary"}
+    },
+    "AccessPolicySummary":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of access policy. Currently, the only available type is <code>data</code>.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the access policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the access policy.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The Epoch time when the access policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the collection was last modified.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the data access policy.</p>"
+    },
+    "AccessPolicyType":{
+      "type":"string",
+      "enum":["data"]
+    },
+    "AccountSettingsDetail":{
+      "type":"structure",
+      "members":{
+        "capacityLimits":{"shape":"CapacityLimits"}
+      },
+      "documentation":"<p>OpenSearch Serverless-related information for the current account.</p>"
+    },
+    "Arn":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "BatchGetCollectionRequest":{
+      "type":"structure",
+      "members":{
+        "ids":{
+          "shape":"CollectionIds",
+          "documentation":"<p>A list of collection IDs. You can't provide names and IDs in the same request. The ID is part of the collection endpoint. You can also retrieve it using the <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/ServerlessAPIReference/API_ListCollections.html\">ListCollections</a> API.</p>"
+        },
+        "names":{
+          "shape":"CollectionNames",
+          "documentation":"<p>A list of collection names. You can't provide names and IDs in the same request.</p>"
+        }
+      }
+    },
+    "BatchGetCollectionResponse":{
+      "type":"structure",
+      "members":{
+        "collectionDetails":{
+          "shape":"CollectionDetails",
+          "documentation":"<p>Details about each collection.</p>"
+        },
+        "collectionErrorDetails":{
+          "shape":"CollectionErrorDetails",
+          "documentation":"<p>Error information for the request.</p>"
+        }
+      }
+    },
+    "BatchGetEffectiveLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":["resourceIdentifiers"],
+      "members":{
+        "resourceIdentifiers":{
+          "shape":"LifecyclePolicyResourceIdentifiers",
+          "documentation":"<p>The unique identifiers of policy types and resource names.</p>"
+        }
+      }
+    },
+    "BatchGetEffectiveLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "effectiveLifecyclePolicyDetails":{
+          "shape":"EffectiveLifecyclePolicyDetails",
+          "documentation":"<p>A list of lifecycle policies applied to the OpenSearch Serverless indexes.</p>"
+        },
+        "effectiveLifecyclePolicyErrorDetails":{
+          "shape":"EffectiveLifecyclePolicyErrorDetails",
+          "documentation":"<p>A list of resources for which retrieval failed.</p>"
+        }
+      }
+    },
+    "BatchGetLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":["identifiers"],
+      "members":{
+        "identifiers":{
+          "shape":"LifecyclePolicyIdentifiers",
+          "documentation":"<p>The unique identifiers of policy types and policy names.</p>"
+        }
+      }
+    },
+    "BatchGetLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "lifecyclePolicyDetails":{
+          "shape":"LifecyclePolicyDetails",
+          "documentation":"<p>A list of lifecycle policies matched to the input policy name and policy type.</p>"
+        },
+        "lifecyclePolicyErrorDetails":{
+          "shape":"LifecyclePolicyErrorDetails",
+          "documentation":"<p>A list of lifecycle policy names and policy types for which retrieval failed.</p>"
+        }
+      }
+    },
+    "BatchGetVpcEndpointRequest":{
+      "type":"structure",
+      "required":["ids"],
+      "members":{
+        "ids":{
+          "shape":"VpcEndpointIds",
+          "documentation":"<p>A list of VPC endpoint identifiers.</p>"
+        }
+      }
+    },
+    "BatchGetVpcEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "vpcEndpointDetails":{
+          "shape":"VpcEndpointDetails",
+          "documentation":"<p>Details about the specified VPC endpoint.</p>"
+        },
+        "vpcEndpointErrorDetails":{
+          "shape":"VpcEndpointErrorDetails",
+          "documentation":"<p>Error information for a failed request.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CapacityLimits":{
+      "type":"structure",
+      "members":{
+        "maxIndexingCapacityInOCU":{
+          "shape":"IndexingCapacityValue",
+          "documentation":"<p>The maximum indexing capacity for collections.</p>"
+        },
+        "maxSearchCapacityInOCU":{
+          "shape":"SearchCapacityValue",
+          "documentation":"<p>The maximum search capacity for collections.</p>"
+        }
+      },
+      "documentation":"<p>The maximum capacity limits for all OpenSearch Serverless collections, in OpenSearch Compute Units (OCUs). These limits are used to scale your collections based on the current workload. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-scaling.html\">Managing capacity limits for Amazon OpenSearch Serverless</a>.</p>"
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "CollectionDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>A unique identifier for the collection.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        },
+        "type":{
+          "shape":"CollectionType",
+          "documentation":"<p>The type of collection.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>A description of the collection.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the collection.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the Amazon Web Services KMS key used to encrypt the collection.</p>"
+        },
+        "standbyReplicas":{
+          "shape":"StandbyReplicas",
+          "documentation":"<p>Details about an OpenSearch Serverless collection.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The Epoch time when the collection was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the collection was last modified.</p>"
+        },
+        "collectionEndpoint":{
+          "shape":"String",
+          "documentation":"<p>Collection-specific endpoint used to submit index, search, and data upload requests to an OpenSearch Serverless collection.</p>"
+        },
+        "dashboardEndpoint":{
+          "shape":"String",
+          "documentation":"<p>Collection-specific endpoint used to access OpenSearch Dashboards.</p>"
+        },
+        "fipsEndpoints":{
+          "shape":"FipsEndpoints",
+          "documentation":"<p>FIPS-compliant endpoints for the collection. These endpoints use FIPS 140-3 validated cryptographic modules and are required for federal government workloads that must comply with FedRAMP security standards.</p>"
+        },
+        "failureCode":{
+          "shape":"String",
+          "documentation":"<p>A failure code associated with the request.</p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p>A message associated with the failure code.</p>"
+        }
+      },
+      "documentation":"<p>Details about each OpenSearch Serverless collection, including the collection endpoint, the OpenSearch Dashboards endpoint, and FIPS-compliant endpoints for federal government workloads.</p>"
+    },
+    "CollectionDetails":{
+      "type":"list",
+      "member":{"shape":"CollectionDetail"}
+    },
+    "CollectionErrorDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>If the request contains collection IDs, the response includes the IDs provided in the request.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>If the request contains collection names, the response includes the names provided in the request.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>A description of the error. For example, <code>The specified Collection is not found.</code> </p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code for the request. For example, <code>NOT_FOUND</code>.</p>"
+        }
+      },
+      "documentation":"<p>Error information for an OpenSearch Serverless request.</p>"
+    },
+    "CollectionErrorDetails":{
+      "type":"list",
+      "member":{"shape":"CollectionErrorDetail"}
+    },
+    "CollectionFilters":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        }
+      },
+      "documentation":"<p>A list of filter keys that you can use for LIST, UPDATE, and DELETE requests to OpenSearch Serverless collections.</p>"
+    },
+    "CollectionId":{
+      "type":"string",
+      "max":40,
+      "min":3,
+      "pattern":"[a-z0-9]{3,40}"
+    },
+    "CollectionIds":{
+      "type":"list",
+      "member":{"shape":"CollectionId"},
+      "max":100,
+      "min":1
+    },
+    "CollectionName":{
+      "type":"string",
+      "max":32,
+      "min":3,
+      "pattern":"[a-z][a-z0-9-]+"
+    },
+    "CollectionNames":{
+      "type":"list",
+      "member":{"shape":"CollectionName"},
+      "max":100,
+      "min":1
+    },
+    "CollectionStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "DELETING",
+        "ACTIVE",
+        "FAILED"
+      ]
+    },
+    "CollectionSummaries":{
+      "type":"list",
+      "member":{"shape":"CollectionSummary"}
+    },
+    "CollectionSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the collection.</p>"
+        }
+      },
+      "documentation":"<p>Details about each OpenSearch Serverless collection.</p>"
+    },
+    "CollectionType":{
+      "type":"string",
+      "enum":[
+        "SEARCH",
+        "TIMESERIES",
+        "VECTORSEARCH"
+      ]
+    },
+    "ConfigDescription":{
+      "type":"string",
+      "max":1000,
+      "min":1
+    },
+    "ConfigName":{
+      "type":"string",
+      "max":32,
+      "min":3,
+      "pattern":"[a-z][a-z0-9-]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>When creating a resource, thrown when a resource with the same name already exists or is being created. When deleting a resource, thrown when the resource is not in the ACTIVE or FAILED state.</p>",
+      "exception":true
+    },
+    "CreateAccessPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policy"
+      ],
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the policy. Typically used to store information about the permissions defined in the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateAccessPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "accessPolicyDetail":{
+          "shape":"AccessPolicyDetail",
+          "documentation":"<p>Details about the created access policy.</p>"
+        }
+      }
+    },
+    "CreateCollectionDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        },
+        "type":{
+          "shape":"CollectionType",
+          "documentation":"<p>The type of collection.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>A description of the collection.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the collection.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the KMS key with which to encrypt the collection.</p>"
+        },
+        "standbyReplicas":{
+          "shape":"StandbyReplicas",
+          "documentation":"<p>Creates details about an OpenSearch Serverless collection.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The Epoch time when the collection was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the collection was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about the created OpenSearch Serverless collection.</p>"
+    },
+    "CreateCollectionRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>Name of the collection.</p>"
+        },
+        "type":{
+          "shape":"CollectionType",
+          "documentation":"<p>The type of collection.</p>"
+        },
+        "description":{
+          "shape":"CreateCollectionRequestDescriptionString",
+          "documentation":"<p>Description of the collection.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>An arbitrary set of tags (key–value pairs) to associate with the OpenSearch Serverless collection.</p>"
+        },
+        "standbyReplicas":{
+          "shape":"StandbyReplicas",
+          "documentation":"<p>Indicates whether standby replicas should be used for a collection.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateCollectionRequestDescriptionString":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "CreateCollectionResponse":{
+      "type":"structure",
+      "members":{
+        "createCollectionDetail":{
+          "shape":"CreateCollectionDetail",
+          "documentation":"<p>Details about the collection.</p>"
+        }
+      }
+    },
+    "CreateIamIdentityCenterConfigOptions":{
+      "type":"structure",
+      "required":["instanceArn"],
+      "members":{
+        "instanceArn":{
+          "shape":"IamIdentityCenterInstanceArn",
+          "documentation":"<p>The ARN of the IAM Identity Center instance used to integrate with OpenSearch Serverless.</p>"
+        },
+        "userAttribute":{
+          "shape":"IamIdentityCenterUserAttribute",
+          "documentation":"<p>The user attribute for this IAM Identity Center integration. Defaults to <code>UserId</code>.</p>"
+        },
+        "groupAttribute":{
+          "shape":"IamIdentityCenterGroupAttribute",
+          "documentation":"<p>The group attribute for this IAM Identity Center integration. Defaults to <code>GroupId</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes IAM Identity Center options for creating an OpenSearch Serverless security configuration in the form of a key-value map.</p>"
+    },
+    "CreateIndexRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "indexName"
+      ],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection in which to create the index.</p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the index to create. Index names must be lowercase and can't begin with underscores (_) or hyphens (-).</p>"
+        },
+        "indexSchema":{
+          "shape":"IndexSchema",
+          "documentation":"<p>The JSON schema definition for the index, including field mappings and settings.</p>"
+        }
+      }
+    },
+    "CreateIndexResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreateLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policy"
+      ],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the lifecycle policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the lifecycle policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "lifecyclePolicyDetail":{
+          "shape":"LifecyclePolicyDetail",
+          "documentation":"<p>Details about the created lifecycle policy.</p>"
+        }
+      }
+    },
+    "CreateSecurityConfigRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"SecurityConfigType",
+          "documentation":"<p>The type of security configuration.</p>"
+        },
+        "name":{
+          "shape":"ConfigName",
+          "documentation":"<p>The name of the security configuration.</p>"
+        },
+        "description":{
+          "shape":"ConfigDescription",
+          "documentation":"<p>A description of the security configuration.</p>"
+        },
+        "samlOptions":{
+          "shape":"SamlConfigOptions",
+          "documentation":"<p>Describes SAML options in in the form of a key-value map. This field is required if you specify <code>SAML</code> for the <code>type</code> parameter.</p>"
+        },
+        "iamIdentityCenterOptions":{
+          "shape":"CreateIamIdentityCenterConfigOptions",
+          "documentation":"<p>Describes IAM Identity Center options in the form of a key-value map. This field is required if you specify iamidentitycenter for the type parameter.</p>"
+        },
+        "iamFederationOptions":{
+          "shape":"IamFederationConfigOptions",
+          "documentation":"<p>Describes IAM federation options in the form of a key-value map. This field is required if you specify <code>iamFederation</code> for the <code>type</code> parameter.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateSecurityConfigResponse":{
+      "type":"structure",
+      "members":{
+        "securityConfigDetail":{
+          "shape":"SecurityConfigDetail",
+          "documentation":"<p>Details about the created security configuration.</p>"
+        }
+      }
+    },
+    "CreateSecurityPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policy"
+      ],
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of security policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the policy. Typically used to store information about the permissions defined in the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the new policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateSecurityPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "securityPolicyDetail":{
+          "shape":"SecurityPolicyDetail",
+          "documentation":"<p>Details about the created security policy.</p>"
+        }
+      }
+    },
+    "CreateVpcEndpointDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the endpoint.</p>"
+        },
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status in the endpoint creation process.</p>"
+        }
+      },
+      "documentation":"<p>Creation details for an OpenSearch Serverless-managed interface endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-vpc.html\">Access Amazon OpenSearch Serverless using an interface endpoint</a>.</p>"
+    },
+    "CreateVpcEndpointRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "vpcId",
+        "subnetIds"
+      ],
+      "members":{
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the interface endpoint.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC from which you'll access OpenSearch Serverless.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The ID of one or more subnets from which you'll access OpenSearch Serverless.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The unique identifiers of the security groups that define the ports, protocols, and sources for inbound traffic that you are authorizing into your endpoint.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateVpcEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "createVpcEndpointDetail":{
+          "shape":"CreateVpcEndpointDetail",
+          "documentation":"<p>Details about the created interface VPC endpoint.</p>"
+        }
+      }
+    },
+    "DeleteAccessPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteAccessPolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteCollectionDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        }
+      },
+      "documentation":"<p>Details about a deleted OpenSearch Serverless collection.</p>"
+    },
+    "DeleteCollectionRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection. For example, <code>1iu5usc406kd</code>. The ID is part of the collection endpoint. You can also retrieve it using the <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/ServerlessAPIReference/API_ListCollections.html\">ListCollections</a> API.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteCollectionResponse":{
+      "type":"structure",
+      "members":{
+        "deleteCollectionDetail":{
+          "shape":"DeleteCollectionDetail",
+          "documentation":"<p>Details of the deleted collection.</p>"
+        }
+      }
+    },
+    "DeleteIndexRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "indexName"
+      ],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection containing the index to delete.</p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the index to delete.</p>"
+        }
+      }
+    },
+    "DeleteIndexResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteSecurityConfigRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"SecurityConfigId",
+          "documentation":"<p>The security configuration identifier. For SAML the ID will be <code>saml/&lt;accountId&gt;/&lt;idpProviderName&gt;</code>. For example, <code>saml/123456789123/OKTADev</code>.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteSecurityConfigResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteSecurityPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteSecurityPolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteVpcEndpointDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the endpoint.</p>"
+        },
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status of the endpoint deletion process.</p>"
+        }
+      },
+      "documentation":"<p>Deletion details for an OpenSearch Serverless-managed interface endpoint.</p>"
+    },
+    "DeleteVpcEndpointRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The VPC endpoint identifier.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteVpcEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "deleteVpcEndpointDetail":{
+          "shape":"DeleteVpcEndpointDetail",
+          "documentation":"<p>Details about the deleted endpoint.</p>"
+        }
+      }
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "EffectiveLifecyclePolicyDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "resource":{
+          "shape":"Resource",
+          "documentation":"<p>The name of the OpenSearch Serverless index resource.</p>"
+        },
+        "policyName":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of OpenSearch Serverless resource. Currently, the only supported resource is <code>index</code>.</p>"
+        },
+        "retentionPeriod":{
+          "shape":"String",
+          "documentation":"<p>The minimum number of index retention in days or hours. This is an optional parameter that will return only if it’s set.</p>"
+        },
+        "noMinRetentionPeriod":{
+          "shape":"Boolean",
+          "documentation":"<p>The minimum number of index retention days set. That is an optional param that will return as <code>true</code> if the minimum number of days or hours is not set to a index resource.</p>"
+        }
+      },
+      "documentation":"<p>Error information for an OpenSearch Serverless request.</p>"
+    },
+    "EffectiveLifecyclePolicyDetails":{
+      "type":"list",
+      "member":{"shape":"EffectiveLifecyclePolicyDetail"}
+    },
+    "EffectiveLifecyclePolicyErrorDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "resource":{
+          "shape":"Resource",
+          "documentation":"<p>The name of OpenSearch Serverless index resource.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>A description of the error. For example, <code>The specified Index resource is not found</code>.</p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code for the request.</p>"
+        }
+      },
+      "documentation":"<p>Error information for an OpenSearch Serverless request.</p>"
+    },
+    "EffectiveLifecyclePolicyErrorDetails":{
+      "type":"list",
+      "member":{"shape":"EffectiveLifecyclePolicyErrorDetail"}
+    },
+    "FipsEndpoints":{
+      "type":"structure",
+      "members":{
+        "collectionEndpoint":{
+          "shape":"String",
+          "documentation":"<p>FIPS-compliant collection endpoint used to submit index, search, and data upload requests to an OpenSearch Serverless collection. This endpoint uses FIPS 140-3 validated cryptography and is required for federal government workloads.</p>"
+        },
+        "dashboardEndpoint":{
+          "shape":"String",
+          "documentation":"<p>FIPS-compliant endpoint used to access OpenSearch Dashboards. This endpoint uses FIPS 140-3 validated cryptography and is required for federal government workloads that need dashboard visualization capabilities.</p>"
+        }
+      },
+      "documentation":"<p>FIPS-compliant endpoint URLs for an OpenSearch Serverless collection. These endpoints ensure all data transmission uses FIPS 140-3 validated cryptographic implementations, meeting federal security requirements for government workloads.</p>"
+    },
+    "GetAccessPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>Tye type of policy. Currently, the only supported value is <code>data</code>.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the access policy.</p>"
+        }
+      }
+    },
+    "GetAccessPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "accessPolicyDetail":{
+          "shape":"AccessPolicyDetail",
+          "documentation":"<p>Details about the requested access policy.</p>"
+        }
+      }
+    },
+    "GetAccountSettingsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "GetAccountSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "accountSettingsDetail":{
+          "shape":"AccountSettingsDetail",
+          "documentation":"<p>OpenSearch Serverless-related details for the current account.</p>"
+        }
+      }
+    },
+    "GetIndexRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "indexName"
+      ],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection containing the index.</p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the index to retrieve information about.</p>"
+        }
+      }
+    },
+    "GetIndexResponse":{
+      "type":"structure",
+      "members":{
+        "indexSchema":{
+          "shape":"IndexSchema",
+          "documentation":"<p>The JSON schema definition for the index, including field mappings and settings.</p>"
+        }
+      }
+    },
+    "GetPoliciesStatsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "GetPoliciesStatsResponse":{
+      "type":"structure",
+      "members":{
+        "AccessPolicyStats":{
+          "shape":"AccessPolicyStats",
+          "documentation":"<p>Information about the data access policies in your account.</p>"
+        },
+        "SecurityPolicyStats":{
+          "shape":"SecurityPolicyStats",
+          "documentation":"<p>Information about the security policies in your account.</p>"
+        },
+        "SecurityConfigStats":{
+          "shape":"SecurityConfigStats",
+          "documentation":"<p>Information about the security configurations in your account.</p>"
+        },
+        "LifecyclePolicyStats":{
+          "shape":"LifecyclePolicyStats",
+          "documentation":"<p>Information about the lifecycle policies in your account.</p>"
+        },
+        "TotalPolicyCount":{
+          "shape":"Long",
+          "documentation":"<p>The total number of OpenSearch Serverless security policies and configurations in your account.</p>"
+        }
+      }
+    },
+    "GetSecurityConfigRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"SecurityConfigId",
+          "documentation":"<p>The unique identifier of the security configuration.</p>"
+        }
+      }
+    },
+    "GetSecurityConfigResponse":{
+      "type":"structure",
+      "members":{
+        "securityConfigDetail":{
+          "shape":"SecurityConfigDetail",
+          "documentation":"<p>Details of the requested security configuration.</p>"
+        }
+      }
+    },
+    "GetSecurityPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of security policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the security policy.</p>"
+        }
+      }
+    },
+    "GetSecurityPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "securityPolicyDetail":{
+          "shape":"SecurityPolicyDetail",
+          "documentation":"<p>Details about the requested security policy.</p>"
+        }
+      }
+    },
+    "IamFederationConfigOptions":{
+      "type":"structure",
+      "members":{
+        "groupAttribute":{
+          "shape":"iamFederationGroupAttribute",
+          "documentation":"<p>The group attribute for this IAM federation integration. This attribute is used to map identity provider groups to OpenSearch Serverless permissions.</p>"
+        },
+        "userAttribute":{
+          "shape":"iamFederationUserAttribute",
+          "documentation":"<p>The user attribute for this IAM federation integration. This attribute is used to identify users in the federated authentication process.</p>"
+        }
+      },
+      "documentation":"<p>Describes IAM federation options for an OpenSearch Serverless security configuration in the form of a key-value map. These options define how OpenSearch Serverless integrates with external identity providers using federation.</p>"
+    },
+    "IamIdentityCenterApplicationArn":{
+      "type":"string",
+      "max":1224,
+      "min":10,
+      "pattern":"arn:(aws|aws-us-gov|aws-cn|aws-iso|aws-iso-b):sso::\\d{12}:application/(sso)?ins-[a-zA-Z0-9-.]{16}/apl-[a-zA-Z0-9]{16}"
+    },
+    "IamIdentityCenterConfigOptions":{
+      "type":"structure",
+      "members":{
+        "instanceArn":{
+          "shape":"IamIdentityCenterInstanceArn",
+          "documentation":"<p>The ARN of the IAM Identity Center instance used to integrate with OpenSearch Serverless.</p>"
+        },
+        "applicationArn":{
+          "shape":"IamIdentityCenterApplicationArn",
+          "documentation":"<p>The ARN of the IAM Identity Center application used to integrate with OpenSearch Serverless.</p>"
+        },
+        "applicationName":{
+          "shape":"String",
+          "documentation":"<p>The name of the IAM Identity Center application used to integrate with OpenSearch Serverless.</p>"
+        },
+        "applicationDescription":{
+          "shape":"String",
+          "documentation":"<p>The description of the IAM Identity Center application used to integrate with OpenSearch Serverless.</p>"
+        },
+        "userAttribute":{
+          "shape":"IamIdentityCenterUserAttribute",
+          "documentation":"<p>The user attribute for this IAM Identity Center integration. Defaults to <code>UserId</code> </p>"
+        },
+        "groupAttribute":{
+          "shape":"IamIdentityCenterGroupAttribute",
+          "documentation":"<p>The group attribute for this IAM Identity Center integration. Defaults to <code>GroupId</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes IAM Identity Center options for an OpenSearch Serverless security configuration in the form of a key-value map.</p>"
+    },
+    "IamIdentityCenterGroupAttribute":{
+      "type":"string",
+      "enum":[
+        "GroupId",
+        "GroupName"
+      ]
+    },
+    "IamIdentityCenterInstanceArn":{
+      "type":"string",
+      "max":1224,
+      "min":10,
+      "pattern":"arn:(aws|aws-us-gov|aws-cn|aws-iso|aws-iso-b):sso:::instance/(sso)?ins-[a-zA-Z0-9-.]{16}"
+    },
+    "IamIdentityCenterUserAttribute":{
+      "type":"string",
+      "enum":[
+        "UserId",
+        "UserName",
+        "Email"
+      ]
+    },
+    "IndexName":{"type":"string"},
+    "IndexSchema":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "IndexingCapacityValue":{
+      "type":"integer",
+      "box":true,
+      "min":2
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Thrown when an error internal to the service occurs while processing a request.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "LifecyclePolicyDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the lifecycle policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the lifecycle policy.</p>"
+        },
+        "policy":{
+          "shape":"Document",
+          "documentation":"<p>The JSON policy document without any whitespaces.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the lifecycle policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the lifecycle policy was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about an OpenSearch Serverless lifecycle policy.</p>"
+    },
+    "LifecyclePolicyDetails":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicyDetail"}
+    },
+    "LifecyclePolicyErrorDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>A description of the error. For example, <code>The specified Lifecycle Policy is not found</code>.</p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code for the request. For example, <code>NOT_FOUND</code>.</p>"
+        }
+      },
+      "documentation":"<p>Error information for an OpenSearch Serverless request.</p>"
+    },
+    "LifecyclePolicyErrorDetails":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicyErrorDetail"}
+    },
+    "LifecyclePolicyIdentifier":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name"
+      ],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        }
+      },
+      "documentation":"<p>The unique identifiers of policy types and policy names.</p>"
+    },
+    "LifecyclePolicyIdentifiers":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicyIdentifier"},
+      "max":40,
+      "min":1
+    },
+    "LifecyclePolicyResourceIdentifier":{
+      "type":"structure",
+      "required":[
+        "type",
+        "resource"
+      ],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "resource":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the OpenSearch Serverless ilndex resource.</p>"
+        }
+      },
+      "documentation":"<p>The unique identifiers of policy types and resource names.</p>"
+    },
+    "LifecyclePolicyResourceIdentifiers":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicyResourceIdentifier"},
+      "max":100,
+      "min":1
+    },
+    "LifecyclePolicyStats":{
+      "type":"structure",
+      "members":{
+        "RetentionPolicyCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of retention lifecycle policies in the current account.</p>"
+        }
+      },
+      "documentation":"<p>Statistics for an OpenSearch Serverless lifecycle policy.</p>"
+    },
+    "LifecyclePolicySummaries":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicySummary"}
+    },
+    "LifecyclePolicySummary":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the lifecycle policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the lifecycle policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the lifecycle policy.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The Epoch time when the lifecycle policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the lifecycle policy was last modified.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the lifecycle policy.</p>"
+    },
+    "LifecyclePolicyType":{
+      "type":"string",
+      "enum":["retention"]
+    },
+    "LifecycleResource":{"type":"string"},
+    "ListAccessPoliciesRequest":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of access policy.</p>"
+        },
+        "resource":{
+          "shape":"ListAccessPoliciesRequestResourceList",
+          "documentation":"<p>Resource filters (can be collections or indexes) that policies can apply to.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListAccessPolicies</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListAccessPolicies</code> operations, which returns results in the next page.</p>"
+        },
+        "maxResults":{
+          "shape":"ListAccessPoliciesRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results. The default is 20.</p>"
+        }
+      }
+    },
+    "ListAccessPoliciesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListAccessPoliciesRequestResourceList":{
+      "type":"list",
+      "member":{"shape":"Resource"},
+      "max":1000,
+      "min":1
+    },
+    "ListAccessPoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "accessPolicySummaries":{
+          "shape":"AccessPolicySummaries",
+          "documentation":"<p>Details about the requested access policies.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListCollectionsRequest":{
+      "type":"structure",
+      "members":{
+        "collectionFilters":{
+          "shape":"CollectionFilters",
+          "documentation":"<p> A list of filter names and values that you can use for requests.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListCollections</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListCollections</code> operations, which returns results in the next page.</p>"
+        },
+        "maxResults":{
+          "shape":"ListCollectionsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return. Default is 20. You can use <code>nextToken</code> to get the next page of results.</p>"
+        }
+      }
+    },
+    "ListCollectionsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListCollectionsResponse":{
+      "type":"structure",
+      "members":{
+        "collectionSummaries":{
+          "shape":"CollectionSummaries",
+          "documentation":"<p>Details about each collection.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListLifecyclePoliciesRequest":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p>The type of lifecycle policy.</p>"
+        },
+        "resources":{
+          "shape":"ListLifecyclePoliciesRequestResourcesList",
+          "documentation":"<p>Resource filters that policies can apply to. Currently, the only supported resource type is <code>index</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListLifecyclePolicies</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListLifecyclePolicies</code> operations, which returns results in the next page.</p>"
+        },
+        "maxResults":{
+          "shape":"ListLifecyclePoliciesRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use use <code>nextToken</code> to get the next page of results. The default is 10.</p>"
+        }
+      }
+    },
+    "ListLifecyclePoliciesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListLifecyclePoliciesRequestResourcesList":{
+      "type":"list",
+      "member":{"shape":"LifecycleResource"},
+      "max":1000,
+      "min":1
+    },
+    "ListLifecyclePoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "lifecyclePolicySummaries":{
+          "shape":"LifecyclePolicySummaries",
+          "documentation":"<p>Details about the requested lifecycle policies.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListSecurityConfigsRequest":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"SecurityConfigType",
+          "documentation":"<p>The type of security configuration.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListSecurityConfigs</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListSecurityConfigs</code> operations, which returns results in the next page.</p>"
+        },
+        "maxResults":{
+          "shape":"ListSecurityConfigsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results. The default is 20.</p>"
+        }
+      }
+    },
+    "ListSecurityConfigsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSecurityConfigsResponse":{
+      "type":"structure",
+      "members":{
+        "securityConfigSummaries":{
+          "shape":"SecurityConfigSummaries",
+          "documentation":"<p>Details about the security configurations in your account.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListSecurityPoliciesRequest":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "resource":{
+          "shape":"ListSecurityPoliciesRequestResourceList",
+          "documentation":"<p>Resource filters (can be collection or indexes) that policies can apply to. </p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListSecurityPolicies</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListSecurityPolicies</code> operations, which returns results in the next page.</p>"
+        },
+        "maxResults":{
+          "shape":"ListSecurityPoliciesRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results. The default is 20.</p>"
+        }
+      }
+    },
+    "ListSecurityPoliciesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSecurityPoliciesRequestResourceList":{
+      "type":"list",
+      "member":{"shape":"Resource"},
+      "max":1000,
+      "min":1
+    },
+    "ListSecurityPoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "securityPolicySummaries":{
+          "shape":"SecurityPolicySummaries",
+          "documentation":"<p>Details about the security policies in your account.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource. The resource must be active (not in the <code>DELETING</code> state), and must be owned by the account ID included in the request.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags associated with the resource.</p>"
+        }
+      }
+    },
+    "ListVpcEndpointsRequest":{
+      "type":"structure",
+      "members":{
+        "vpcEndpointFilters":{
+          "shape":"VpcEndpointFilters",
+          "documentation":"<p>Filter the results according to the current status of the VPC endpoint. Possible statuses are <code>CREATING</code>, <code>DELETING</code>, <code>UPDATING</code>, <code>ACTIVE</code>, and <code>FAILED</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListVpcEndpoints</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in subsequent <code>ListVpcEndpoints</code> operations, which returns results in the next page. </p>"
+        },
+        "maxResults":{
+          "shape":"ListVpcEndpointsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results. The default is 20.</p>"
+        }
+      }
+    },
+    "ListVpcEndpointsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListVpcEndpointsResponse":{
+      "type":"structure",
+      "members":{
+        "vpcEndpointSummaries":{
+          "shape":"VpcEndpointSummaries",
+          "documentation":"<p>Details about each VPC endpoint, including the name and current status.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "OcuLimitExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>Thrown when the collection you're attempting to create results in a number of search or indexing OCUs that exceeds the account limit. </p>",
+      "exception":true
+    },
+    "PolicyDescription":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "PolicyDocument":{
+      "type":"string",
+      "max":20480,
+      "min":1,
+      "pattern":".*[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u00A1-\\u00FF]+.*"
+    },
+    "PolicyName":{
+      "type":"string",
+      "max":32,
+      "min":3,
+      "pattern":"[a-z][a-z0-9-]+"
+    },
+    "PolicyVersion":{
+      "type":"string",
+      "max":36,
+      "min":20,
+      "pattern":"([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?"
+    },
+    "Resource":{"type":"string"},
+    "ResourceName":{
+      "type":"string",
+      "pattern":"index/[a-z][a-z0-9-]{3,32}/([a-z;0-9&$%][+.~=\\-_a-z;0-9&$%]*)"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Thrown when accessing or deleting a resource that does not exist.</p>",
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":["index"]
+    },
+    "SamlConfigOptions":{
+      "type":"structure",
+      "required":["metadata"],
+      "members":{
+        "metadata":{
+          "shape":"samlMetadata",
+          "documentation":"<p>The XML IdP metadata file generated from your identity provider.</p>"
+        },
+        "userAttribute":{
+          "shape":"samlUserAttribute",
+          "documentation":"<p>A user attribute for this SAML integration.</p>"
+        },
+        "groupAttribute":{
+          "shape":"samlGroupAttribute",
+          "documentation":"<p>The group attribute for this SAML integration.</p>"
+        },
+        "openSearchServerlessEntityId":{
+          "shape":"openSearchServerlessEntityId",
+          "documentation":"<p>Custom entity ID attribute to override the default entity ID for this SAML integration.</p>"
+        },
+        "sessionTimeout":{
+          "shape":"SamlConfigOptionsSessionTimeoutInteger",
+          "documentation":"<p>The session timeout, in minutes. Default is 60 minutes (12 hours).</p>"
+        }
+      },
+      "documentation":"<p>Describes SAML options for an OpenSearch Serverless security configuration in the form of a key-value map.</p>"
+    },
+    "SamlConfigOptionsSessionTimeoutInteger":{
+      "type":"integer",
+      "box":true,
+      "max":720,
+      "min":5
+    },
+    "SearchCapacityValue":{
+      "type":"integer",
+      "box":true,
+      "min":2
+    },
+    "SecurityConfigDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"SecurityConfigId",
+          "documentation":"<p>The unique identifier of the security configuration.</p>"
+        },
+        "type":{
+          "shape":"SecurityConfigType",
+          "documentation":"<p>The type of security configuration.</p>"
+        },
+        "configVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the security configuration.</p>"
+        },
+        "description":{
+          "shape":"ConfigDescription",
+          "documentation":"<p>The description of the security configuration.</p>"
+        },
+        "samlOptions":{
+          "shape":"SamlConfigOptions",
+          "documentation":"<p>SAML options for the security configuration in the form of a key-value map.</p>"
+        },
+        "iamIdentityCenterOptions":{
+          "shape":"IamIdentityCenterConfigOptions",
+          "documentation":"<p>Describes IAM Identity Center options in the form of a key-value map.</p>"
+        },
+        "iamFederationOptions":{
+          "shape":"IamFederationConfigOptions",
+          "documentation":"<p>Describes IAM federation options in the form of a key-value map. Contains configuration details about how OpenSearch Serverless integrates with external identity providers through federation.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the configuration was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the configuration was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about a security configuration for OpenSearch Serverless.</p>"
+    },
+    "SecurityConfigId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "SecurityConfigStats":{
+      "type":"structure",
+      "members":{
+        "SamlConfigCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of security configurations in the current account.</p>"
+        }
+      },
+      "documentation":"<p>Statistics for an OpenSearch Serverless security configuration.</p>"
+    },
+    "SecurityConfigSummaries":{
+      "type":"list",
+      "member":{"shape":"SecurityConfigSummary"}
+    },
+    "SecurityConfigSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"SecurityConfigId",
+          "documentation":"<p>The unique identifier of the security configuration.</p>"
+        },
+        "type":{
+          "shape":"SecurityConfigType",
+          "documentation":"<p>The type of security configuration.</p>"
+        },
+        "configVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the security configuration.</p>"
+        },
+        "description":{
+          "shape":"ConfigDescription",
+          "documentation":"<p>The description of the security configuration.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The Epoch time when the security configuration was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the configuration was last modified.</p>"
+        }
+      },
+      "documentation":"<p>A summary of a security configuration for OpenSearch Serverless.</p>"
+    },
+    "SecurityConfigType":{
+      "type":"string",
+      "enum":[
+        "saml",
+        "iamidentitycenter",
+        "iamfederation"
+      ]
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[\\w+\\-]+"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":5,
+      "min":1
+    },
+    "SecurityPolicyDetail":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of security policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the security policy.</p>"
+        },
+        "policy":{
+          "shape":"Document",
+          "documentation":"<p>The JSON policy document without any whitespaces.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the policy was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about an OpenSearch Serverless security policy.</p>"
+    },
+    "SecurityPolicyStats":{
+      "type":"structure",
+      "members":{
+        "EncryptionPolicyCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of encryption policies in the current account.</p>"
+        },
+        "NetworkPolicyCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of network policies in the current account.</p>"
+        }
+      },
+      "documentation":"<p>Statistics for an OpenSearch Serverless security policy.</p>"
+    },
+    "SecurityPolicySummaries":{
+      "type":"list",
+      "member":{"shape":"SecurityPolicySummary"}
+    },
+    "SecurityPolicySummary":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of security policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the security policy.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the policy was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the policy was last modified.</p>"
+        }
+      },
+      "documentation":"<p>A summary of a security policy for OpenSearch Serverless.</p>"
+    },
+    "SecurityPolicyType":{
+      "type":"string",
+      "enum":[
+        "encryption",
+        "network"
+      ]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "serviceCode"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>Type of the resource affected.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>Service Quotas requirement to identify originating service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service Quotas requirement to identify originating quota.</p>"
+        }
+      },
+      "documentation":"<p>Thrown when you attempt to create more resources than the service allows based on service quotas.</p>",
+      "exception":true
+    },
+    "StandbyReplicas":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "String":{"type":"string"},
+    "SubnetId":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"subnet-([0-9a-f]{8}|[0-9a-f]{17})"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key to use in the tag.</p>"
+        },
+        "value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>A map of key-value pairs associated to an OpenSearch Serverless resource.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource. The resource must be active (not in the <code>DELETING</code> state), and must be owned by the account ID included in the request.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>A list of tags (key-value pairs) to add to the resource. All tag keys in the request must be unique.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to remove tags from. The resource must be active (not in the <code>DELETING</code> state), and must be owned by the account ID included in the request.</p>"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The tag or set of tags to remove from the resource. All tag keys in the request must be unique.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateAccessPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policyVersion"
+      ],
+      "members":{
+        "type":{
+          "shape":"AccessPolicyType",
+          "documentation":"<p>The type of policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy being updated.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the policy. Typically used to store information about the permissions defined in the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateAccessPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "accessPolicyDetail":{
+          "shape":"AccessPolicyDetail",
+          "documentation":"<p>Details about the updated access policy.</p>"
+        }
+      }
+    },
+    "UpdateAccountSettingsRequest":{
+      "type":"structure",
+      "members":{
+        "capacityLimits":{"shape":"CapacityLimits"}
+      }
+    },
+    "UpdateAccountSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "accountSettingsDetail":{
+          "shape":"AccountSettingsDetail",
+          "documentation":"<p>OpenSearch Serverless-related settings for the current Amazon Web Services account.</p>"
+        }
+      }
+    },
+    "UpdateCollectionDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection.</p>"
+        },
+        "name":{
+          "shape":"CollectionName",
+          "documentation":"<p>The name of the collection.</p>"
+        },
+        "status":{
+          "shape":"CollectionStatus",
+          "documentation":"<p>The current status of the collection.</p>"
+        },
+        "type":{
+          "shape":"CollectionType",
+          "documentation":"<p>The collection type.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the collection.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the collection.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the collection was created.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The date and time when the collection was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Details about an updated OpenSearch Serverless collection.</p>"
+    },
+    "UpdateCollectionRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection.</p>"
+        },
+        "description":{
+          "shape":"UpdateCollectionRequestDescriptionString",
+          "documentation":"<p>A description of the collection.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateCollectionRequestDescriptionString":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "UpdateCollectionResponse":{
+      "type":"structure",
+      "members":{
+        "updateCollectionDetail":{
+          "shape":"UpdateCollectionDetail",
+          "documentation":"<p>Details about the updated collection.</p>"
+        }
+      }
+    },
+    "UpdateIamIdentityCenterConfigOptions":{
+      "type":"structure",
+      "members":{
+        "userAttribute":{
+          "shape":"IamIdentityCenterUserAttribute",
+          "documentation":"<p>The user attribute for this IAM Identity Center integration. Defaults to <code>UserId</code>.</p>"
+        },
+        "groupAttribute":{
+          "shape":"IamIdentityCenterGroupAttribute",
+          "documentation":"<p>The group attribute for this IAM Identity Center integration. Defaults to <code>GroupId</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes IAM Identity Center options for updating an OpenSearch Serverless security configuration in the form of a key-value map.</p>"
+    },
+    "UpdateIndexRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "indexName"
+      ],
+      "members":{
+        "id":{
+          "shape":"CollectionId",
+          "documentation":"<p>The unique identifier of the collection containing the index to update.</p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the index to update.</p>"
+        },
+        "indexSchema":{
+          "shape":"IndexSchema",
+          "documentation":"<p>The updated JSON schema definition for the index, including field mappings and settings. </p>"
+        }
+      }
+    },
+    "UpdateIndexResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policyVersion"
+      ],
+      "members":{
+        "type":{
+          "shape":"LifecyclePolicyType",
+          "documentation":"<p> The type of lifecycle policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy being updated.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the lifecycle policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the lifecycle policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "lifecyclePolicyDetail":{
+          "shape":"LifecyclePolicyDetail",
+          "documentation":"<p>Details about the updated lifecycle policy.</p>"
+        }
+      }
+    },
+    "UpdateSecurityConfigRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "configVersion"
+      ],
+      "members":{
+        "id":{
+          "shape":"SecurityConfigId",
+          "documentation":"<p>The security configuration identifier. For SAML the ID will be <code>saml/&lt;accountId&gt;/&lt;idpProviderName&gt;</code>. For example, <code>saml/123456789123/OKTADev</code>.</p>"
+        },
+        "configVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the security configuration to be updated. You can find the most recent version of a security configuration using the <code>GetSecurityPolicy</code> command.</p>"
+        },
+        "description":{
+          "shape":"ConfigDescription",
+          "documentation":"<p>A description of the security configuration.</p>"
+        },
+        "samlOptions":{
+          "shape":"SamlConfigOptions",
+          "documentation":"<p>SAML options in in the form of a key-value map.</p>"
+        },
+        "iamIdentityCenterOptionsUpdates":{
+          "shape":"UpdateIamIdentityCenterConfigOptions",
+          "documentation":"<p>Describes IAM Identity Center options in the form of a key-value map.</p>"
+        },
+        "iamFederationOptions":{
+          "shape":"IamFederationConfigOptions",
+          "documentation":"<p>Describes IAM federation options in the form of a key-value map for updating an existing security configuration. Use this field to modify IAM federation settings for the security configuration.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateSecurityConfigResponse":{
+      "type":"structure",
+      "members":{
+        "securityConfigDetail":{
+          "shape":"SecurityConfigDetail",
+          "documentation":"<p>Details about the updated security configuration. </p>"
+        }
+      }
+    },
+    "UpdateSecurityPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "policyVersion"
+      ],
+      "members":{
+        "type":{
+          "shape":"SecurityPolicyType",
+          "documentation":"<p>The type of access policy.</p>"
+        },
+        "name":{
+          "shape":"PolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        },
+        "policyVersion":{
+          "shape":"PolicyVersion",
+          "documentation":"<p>The version of the policy being updated.</p>"
+        },
+        "description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the policy. Typically used to store information about the permissions defined in the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The JSON policy document to use as the content for the new policy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateSecurityPolicyResponse":{
+      "type":"structure",
+      "members":{
+        "securityPolicyDetail":{
+          "shape":"SecurityPolicyDetail",
+          "documentation":"<p>Details about the updated security policy.</p>"
+        }
+      }
+    },
+    "UpdateVpcEndpointDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the endpoint.</p>"
+        },
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status of the endpoint update process.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The ID of the subnets from which you access OpenSearch Serverless.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The unique identifiers of the security groups that define the ports, protocols, and sources for inbound traffic that you are authorizing into your endpoint.</p>"
+        },
+        "lastModifiedDate":{
+          "shape":"Long",
+          "documentation":"<p>The timestamp of when the endpoint was last modified.</p>"
+        }
+      },
+      "documentation":"<p>Update details for an OpenSearch Serverless-managed interface endpoint.</p>"
+    },
+    "UpdateVpcEndpointRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the interface endpoint to update.</p>"
+        },
+        "addSubnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The ID of one or more subnets to add to the endpoint.</p>"
+        },
+        "removeSubnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The unique identifiers of the subnets to remove from the endpoint.</p>"
+        },
+        "addSecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The unique identifiers of the security groups to add to the endpoint. Security groups define the ports, protocols, and sources for inbound traffic that you are authorizing into your endpoint.</p>"
+        },
+        "removeSecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The unique identifiers of the security groups to remove from the endpoint.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure idempotency of the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateVpcEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "UpdateVpcEndpointDetail":{
+          "shape":"UpdateVpcEndpointDetail",
+          "documentation":"<p>Details about the updated VPC endpoint.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Thrown when the HTTP request contains invalid input or is missing required input.</p>",
+      "exception":true
+    },
+    "VpcEndpointDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the endpoint.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC from which you access OpenSearch Serverless.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The ID of the subnets from which you access OpenSearch Serverless.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The unique identifiers of the security groups that define the ports, protocols, and sources for inbound traffic that you are authorizing into your endpoint.</p>"
+        },
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status of the endpoint.</p>"
+        },
+        "createdDate":{
+          "shape":"Long",
+          "documentation":"<p>The date the endpoint was created.</p>"
+        },
+        "failureCode":{
+          "shape":"String",
+          "documentation":"<p>A failure code associated with the request.</p>"
+        },
+        "failureMessage":{
+          "shape":"String",
+          "documentation":"<p>A message associated with the failure code.</p>"
+        }
+      },
+      "documentation":"<p>Details about an OpenSearch Serverless-managed interface endpoint.</p>"
+    },
+    "VpcEndpointDetails":{
+      "type":"list",
+      "member":{"shape":"VpcEndpointDetail"}
+    },
+    "VpcEndpointErrorDetail":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the VPC endpoint.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>An error message describing the reason for the failure.</p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code for the failed request.</p>"
+        }
+      },
+      "documentation":"<p>Error information for a failed <code>BatchGetVpcEndpoint</code> request.</p>"
+    },
+    "VpcEndpointErrorDetails":{
+      "type":"list",
+      "member":{"shape":"VpcEndpointErrorDetail"}
+    },
+    "VpcEndpointFilters":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status of the endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Filter the results of a <code>ListVpcEndpoints</code> request.</p>"
+    },
+    "VpcEndpointId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"vpce-[0-9a-z]*"
+    },
+    "VpcEndpointIds":{
+      "type":"list",
+      "member":{"shape":"VpcEndpointId"},
+      "max":100,
+      "min":1
+    },
+    "VpcEndpointName":{
+      "type":"string",
+      "max":32,
+      "min":3,
+      "pattern":"[a-z][a-z0-9-]+"
+    },
+    "VpcEndpointStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "DELETING",
+        "ACTIVE",
+        "FAILED"
+      ]
+    },
+    "VpcEndpointSummaries":{
+      "type":"list",
+      "member":{"shape":"VpcEndpointSummary"}
+    },
+    "VpcEndpointSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The unique identifier of the endpoint.</p>"
+        },
+        "name":{
+          "shape":"VpcEndpointName",
+          "documentation":"<p>The name of the endpoint.</p>"
+        },
+        "status":{
+          "shape":"VpcEndpointStatus",
+          "documentation":"<p>The current status of the endpoint.</p>"
+        }
+      },
+      "documentation":"<p>The VPC endpoint object.</p>"
+    },
+    "VpcId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"vpc-[0-9a-z]*"
+    },
+    "iamFederationGroupAttribute":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[A-Za-z][A-Za-z0-9_.:/=+\\-@]*"
+    },
+    "iamFederationUserAttribute":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[A-Za-z][A-Za-z0-9_.:/=+\\-@]*"
+    },
+    "openSearchServerlessEntityId":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"aws:opensearch:[0-9]{12}:*.*"
+    },
+    "samlGroupAttribute":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":".*[\\w+=,.@-]+.*"
+    },
+    "samlMetadata":{
+      "type":"string",
+      "max":51200,
+      "min":1,
+      "pattern":".*[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u00A1-\\u00FF]+.*"
+    },
+    "samlUserAttribute":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":".*[\\w+=,.@-]+.*"
+    }
+  },
+  "documentation":"<p>Use the Amazon OpenSearch Serverless API to create, configure, and manage OpenSearch Serverless collections and security policies.</p> <p>OpenSearch Serverless is an on-demand, pre-provisioned serverless configuration for Amazon OpenSearch Service. OpenSearch Serverless removes the operational complexities of provisioning, configuring, and tuning your OpenSearch clusters. It enables you to easily search and analyze petabytes of data without having to worry about the underlying infrastructure and data management.</p> <p>To learn more about OpenSearch Serverless, see <a href=\"https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-overview.html\">What is Amazon OpenSearch Serverless?</a> </p>"
+}

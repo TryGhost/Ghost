@@ -1,0 +1,1305 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-07-01",
+    "endpointPrefix":"healthlake",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"HealthLake",
+    "serviceFullName":"Amazon HealthLake",
+    "serviceId":"HealthLake",
+    "signatureVersion":"v4",
+    "signingName":"healthlake",
+    "targetPrefix":"HealthLake",
+    "uid":"healthlake-2017-07-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateFHIRDatastore":{
+      "name":"CreateFHIRDatastore",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateFHIRDatastoreRequest"},
+      "output":{"shape":"CreateFHIRDatastoreResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Create a FHIR-enabled data store.</p>"
+    },
+    "DeleteFHIRDatastore":{
+      "name":"DeleteFHIRDatastore",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteFHIRDatastoreRequest"},
+      "output":{"shape":"DeleteFHIRDatastoreResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Delete a FHIR-enabled data store.</p>"
+    },
+    "DescribeFHIRDatastore":{
+      "name":"DescribeFHIRDatastore",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeFHIRDatastoreRequest"},
+      "output":{"shape":"DescribeFHIRDatastoreResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Get properties for a FHIR-enabled data store.</p>"
+    },
+    "DescribeFHIRExportJob":{
+      "name":"DescribeFHIRExportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeFHIRExportJobRequest"},
+      "output":{"shape":"DescribeFHIRExportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Get FHIR export job properties.</p>"
+    },
+    "DescribeFHIRImportJob":{
+      "name":"DescribeFHIRImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeFHIRImportJobRequest"},
+      "output":{"shape":"DescribeFHIRImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Get the import job properties to learn more about the job or job progress.</p>"
+    },
+    "ListFHIRDatastores":{
+      "name":"ListFHIRDatastores",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFHIRDatastoresRequest"},
+      "output":{"shape":"ListFHIRDatastoresResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List all FHIR-enabled data stores in a user’s account, regardless of data store status.</p>"
+    },
+    "ListFHIRExportJobs":{
+      "name":"ListFHIRExportJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFHIRExportJobsRequest"},
+      "output":{"shape":"ListFHIRExportJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all FHIR export jobs associated with an account and their statuses.</p>"
+    },
+    "ListFHIRImportJobs":{
+      "name":"ListFHIRImportJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFHIRImportJobsRequest"},
+      "output":{"shape":"ListFHIRImportJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List all FHIR import jobs associated with an account and their statuses.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of all existing tags associated with a data store.</p>"
+    },
+    "StartFHIRExportJob":{
+      "name":"StartFHIRExportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartFHIRExportJobRequest"},
+      "output":{"shape":"StartFHIRExportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Start a FHIR export job.</p>"
+    },
+    "StartFHIRImportJob":{
+      "name":"StartFHIRImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartFHIRImportJobRequest"},
+      "output":{"shape":"StartFHIRImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Start importing bulk FHIR data into an ACTIVE data store. The import job imports FHIR data found in the <code>InputDataConfig</code> object and stores processing results in the <code>JobOutputDataConfig</code> object.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Add a user-specifed key and value tag to a data store.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Remove a user-specifed key and value tag from a data store.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Access is denied. Your account is not authorized to perform this operation.</p>",
+      "exception":true
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^arn:aws((-us-gov)|(-iso)|(-iso-b)|(-cn))?:healthlake:[a-z0-9-]+:\\d{12}:datastore\\/fhir\\/.{32}"
+    },
+    "AuthorizationStrategy":{
+      "type":"string",
+      "enum":[
+        "SMART_ON_FHIR_V1",
+        "SMART_ON_FHIR",
+        "AWS_AUTH"
+      ]
+    },
+    "Boolean":{"type":"boolean"},
+    "BoundedLengthString":{
+      "type":"string",
+      "max":5000,
+      "min":1,
+      "pattern":"[\\P{M}\\p{M}]{1,5000}"
+    },
+    "ClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-]+$"
+    },
+    "CmkType":{
+      "type":"string",
+      "enum":[
+        "CUSTOMER_MANAGED_KMS_KEY",
+        "AWS_OWNED_KMS_KEY"
+      ]
+    },
+    "ConfigurationMetadata":{"type":"string"},
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The data store is in a transition state and the user requested action cannot be performed.</p>",
+      "exception":true
+    },
+    "CreateFHIRDatastoreRequest":{
+      "type":"structure",
+      "required":["DatastoreTypeVersion"],
+      "members":{
+        "DatastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>The data store name (user-generated).</p>"
+        },
+        "DatastoreTypeVersion":{
+          "shape":"FHIRVersion",
+          "documentation":"<p>The FHIR release version supported by the data store. Current support is for version <code>R4</code>.</p>"
+        },
+        "SseConfiguration":{
+          "shape":"SseConfiguration",
+          "documentation":"<p>The server-side encryption key configuration for a customer-provided encryption key specified for creating a data store. </p>"
+        },
+        "PreloadDataConfig":{
+          "shape":"PreloadDataConfig",
+          "documentation":"<p>An optional parameter to preload (import) open source Synthea FHIR data upon creation of the data store.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>An optional user-provided token to ensure API idempotency.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The resource tags applied to a data store when it is created.</p>"
+        },
+        "IdentityProviderConfiguration":{
+          "shape":"IdentityProviderConfiguration",
+          "documentation":"<p>The identity provider configuration to use for the data store.</p>"
+        }
+      }
+    },
+    "CreateFHIRDatastoreResponse":{
+      "type":"structure",
+      "required":[
+        "DatastoreId",
+        "DatastoreArn",
+        "DatastoreStatus",
+        "DatastoreEndpoint"
+      ],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "DatastoreArn":{
+          "shape":"DatastoreArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the data store.</p>"
+        },
+        "DatastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        },
+        "DatastoreEndpoint":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>The AWS endpoint created for the data store.</p>"
+        }
+      }
+    },
+    "DatastoreArn":{
+      "type":"string",
+      "pattern":"^arn:aws((-us-gov)|(-iso)|(-iso-b)|(-cn))?:healthlake:[a-zA-Z0-9-]+:[0-9]{12}:datastore/.+?"
+    },
+    "DatastoreFilter":{
+      "type":"structure",
+      "members":{
+        "DatastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>Filter data store results by name.</p>"
+        },
+        "DatastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>Filter data store results by status.</p>"
+        },
+        "CreatedBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filter to set cutoff dates for records. All data stores created before the specified date are included in the results. </p>"
+        },
+        "CreatedAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filter to set cutoff dates for records. All data stores created after the specified date are included in the results.</p>"
+        }
+      },
+      "documentation":"<p>The filters applied to a data store query.</p>"
+    },
+    "DatastoreId":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$"
+    },
+    "DatastoreName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$"
+    },
+    "DatastoreProperties":{
+      "type":"structure",
+      "required":[
+        "DatastoreId",
+        "DatastoreArn",
+        "DatastoreStatus",
+        "DatastoreTypeVersion",
+        "DatastoreEndpoint"
+      ],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "DatastoreArn":{
+          "shape":"DatastoreArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) used in the creation of the data store.</p>"
+        },
+        "DatastoreName":{
+          "shape":"DatastoreName",
+          "documentation":"<p>The data store name.</p>"
+        },
+        "DatastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the data store was created. </p>"
+        },
+        "DatastoreTypeVersion":{
+          "shape":"FHIRVersion",
+          "documentation":"<p>The FHIR release version supported by the data store. Current support is for version <code>R4</code>.</p>"
+        },
+        "DatastoreEndpoint":{
+          "shape":"String",
+          "documentation":"<p>The AWS endpoint for the data store.</p>"
+        },
+        "SseConfiguration":{
+          "shape":"SseConfiguration",
+          "documentation":"<p> The server-side encryption key configuration for a customer provided encryption key.</p>"
+        },
+        "PreloadDataConfig":{
+          "shape":"PreloadDataConfig",
+          "documentation":"<p>The preloaded Synthea data configuration for the data store.</p>"
+        },
+        "IdentityProviderConfiguration":{
+          "shape":"IdentityProviderConfiguration",
+          "documentation":"<p>The identity provider selected during data store creation.</p>"
+        },
+        "ErrorCause":{
+          "shape":"ErrorCause",
+          "documentation":"<p>The error cause for the current data store operation.</p>"
+        }
+      },
+      "documentation":"<p>The data store properties.</p>"
+    },
+    "DatastorePropertiesList":{
+      "type":"list",
+      "member":{"shape":"DatastoreProperties"}
+    },
+    "DatastoreStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "DELETED",
+        "CREATE_FAILED"
+      ]
+    },
+    "DeleteFHIRDatastoreRequest":{
+      "type":"structure",
+      "required":["DatastoreId"],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p> The AWS-generated identifier for the data store to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteFHIRDatastoreResponse":{
+      "type":"structure",
+      "required":[
+        "DatastoreId",
+        "DatastoreArn",
+        "DatastoreStatus",
+        "DatastoreEndpoint"
+      ],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The AWS-generated ID for the deleted data store.</p>"
+        },
+        "DatastoreArn":{
+          "shape":"DatastoreArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants access permission to AWS HealthLake.</p>"
+        },
+        "DatastoreStatus":{
+          "shape":"DatastoreStatus",
+          "documentation":"<p>The data store status.</p>"
+        },
+        "DatastoreEndpoint":{
+          "shape":"BoundedLengthString",
+          "documentation":"<p>The AWS endpoint of the data store to be deleted.</p>"
+        }
+      }
+    },
+    "DescribeFHIRDatastoreRequest":{
+      "type":"structure",
+      "required":["DatastoreId"],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        }
+      }
+    },
+    "DescribeFHIRDatastoreResponse":{
+      "type":"structure",
+      "required":["DatastoreProperties"],
+      "members":{
+        "DatastoreProperties":{
+          "shape":"DatastoreProperties",
+          "documentation":"<p>The data store properties.</p>"
+        }
+      }
+    },
+    "DescribeFHIRExportJobRequest":{
+      "type":"structure",
+      "required":[
+        "DatastoreId",
+        "JobId"
+      ],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier from which FHIR data is being exported from.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The export job identifier.</p>"
+        }
+      }
+    },
+    "DescribeFHIRExportJobResponse":{
+      "type":"structure",
+      "required":["ExportJobProperties"],
+      "members":{
+        "ExportJobProperties":{
+          "shape":"ExportJobProperties",
+          "documentation":"<p>The export job properties.</p>"
+        }
+      }
+    },
+    "DescribeFHIRImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "DatastoreId",
+        "JobId"
+      ],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        }
+      }
+    },
+    "DescribeFHIRImportJobResponse":{
+      "type":"structure",
+      "required":["ImportJobProperties"],
+      "members":{
+        "ImportJobProperties":{
+          "shape":"ImportJobProperties",
+          "documentation":"<p>The import job properties.</p>"
+        }
+      }
+    },
+    "EncryptionKeyID":{
+      "type":"string",
+      "max":400,
+      "min":1,
+      "pattern":"(arn:aws((-us-gov)|(-iso)|(-iso-b)|(-cn))?:kms:)?([a-z]{2}-[a-z]+(-[a-z]+)?-\\d:)?(\\d{12}:)?(((key/)?[a-zA-Z0-9-_]+)|(alias/[a-zA-Z0-9:/_-]+))"
+    },
+    "ErrorCategory":{
+      "type":"string",
+      "enum":[
+        "RETRYABLE_ERROR",
+        "NON_RETRYABLE_ERROR"
+      ]
+    },
+    "ErrorCause":{
+      "type":"structure",
+      "members":{
+        "ErrorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The error message text for <code>ErrorCause</code>.</p>"
+        },
+        "ErrorCategory":{
+          "shape":"ErrorCategory",
+          "documentation":"<p>The error category for <code>ErrorCause</code>.</p>"
+        }
+      },
+      "documentation":"<p>The error information for <code>CreateFHIRDatastore</code> and <code>DeleteFHIRDatastore</code> actions.</p>"
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "ExportJobProperties":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "JobStatus",
+        "SubmitTime",
+        "DatastoreId",
+        "OutputDataConfig"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The export job identifier.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The export job name.</p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The export job status.</p>"
+        },
+        "SubmitTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the export job was initiated.</p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the export job completed.</p>"
+        },
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier from which files are being exported.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data configuration supplied when the export job was created.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) used during the initiation of the export job.</p>"
+        },
+        "Message":{
+          "shape":"Message",
+          "documentation":"<p>An explanation of any errors that might have occurred during the export job.</p>"
+        }
+      },
+      "documentation":"<p>The properties of a FHIR export job.</p>"
+    },
+    "ExportJobPropertiesList":{
+      "type":"list",
+      "member":{"shape":"ExportJobProperties"}
+    },
+    "FHIRVersion":{
+      "type":"string",
+      "enum":["R4"]
+    },
+    "GenericDouble":{"type":"double"},
+    "GenericLong":{"type":"long"},
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws(-[^:]+)?:iam::[0-9]{12}:role/.+"
+    },
+    "IdentityProviderConfiguration":{
+      "type":"structure",
+      "required":["AuthorizationStrategy"],
+      "members":{
+        "AuthorizationStrategy":{
+          "shape":"AuthorizationStrategy",
+          "documentation":"<p>The authorization strategy selected when the HealthLake data store is created.</p> <note> <p>HealthLake provides support for both SMART on FHIR V1 and V2 as described below.</p> <ul> <li> <p> <code>SMART_ON_FHIR_V1</code> – Support for only SMART on FHIR V1, which includes <code>read</code> (read/search) and <code>write</code> (create/update/delete) permissions.</p> </li> <li> <p> <code>SMART_ON_FHIR</code> – Support for both SMART on FHIR V1 and V2, which includes <code>create</code>, <code>read</code>, <code>update</code>, <code>delete</code>, and <code>search</code> permissions.</p> </li> <li> <p> <code>AWS_AUTH</code> – The default HealthLake authorization strategy; not affiliated with SMART on FHIR.</p> </li> </ul> </note>"
+        },
+        "FineGrainedAuthorizationEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>The parameter to enable SMART on FHIR fine-grained authorization for the data store.</p>"
+        },
+        "Metadata":{
+          "shape":"ConfigurationMetadata",
+          "documentation":"<p>The JSON metadata elements to use in your identity provider configuration. Required elements are listed based on the launch specification of the SMART application. For more information on all possible elements, see <a href=\"https://build.fhir.org/ig/HL7/smart-app-launch/conformance.html#metadata\">Metadata</a> in SMART's App Launch specification.</p> <p> <code>authorization_endpoint</code>: The URL to the OAuth2 authorization endpoint.</p> <p> <code>grant_types_supported</code>: An array of grant types that are supported at the token endpoint. You must provide at least one grant type option. Valid options are <code>authorization_code</code> and <code>client_credentials</code>.</p> <p> <code>token_endpoint</code>: The URL to the OAuth2 token endpoint.</p> <p> <code>capabilities</code>: An array of strings of the SMART capabilities that the authorization server supports.</p> <p> <code>code_challenge_methods_supported</code>: An array of strings of supported PKCE code challenge methods. You must include the <code>S256</code> method in the array of PKCE code challenge methods.</p>"
+        },
+        "IdpLambdaArn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Lambda function to use to decode the access token created by the authorization server.</p>"
+        }
+      },
+      "documentation":"<p>The identity provider configuration selected when the data store was created.</p>"
+    },
+    "ImportJobProperties":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "JobStatus",
+        "SubmitTime",
+        "DatastoreId",
+        "InputDataConfig"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The import job name.</p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The import job status.</p>"
+        },
+        "SubmitTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the import job was submitted for processing.</p>"
+        },
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the import job was completed.</p>"
+        },
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier. </p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input data configuration supplied when the import job was created.</p>"
+        },
+        "JobOutputDataConfig":{"shape":"OutputDataConfig"},
+        "JobProgressReport":{
+          "shape":"JobProgressReport",
+          "documentation":"<p>Displays the progress of the import job, including total resources scanned, total resources imported, and total size of data imported.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants AWS HealthLake access to the input data.</p>"
+        },
+        "Message":{
+          "shape":"Message",
+          "documentation":"<p>An explanation of any errors that might have occurred during the FHIR import job.</p>"
+        },
+        "ValidationLevel":{
+          "shape":"ValidationLevel",
+          "documentation":"<p>The validation level of the import job.</p>"
+        }
+      },
+      "documentation":"<p>The import job properties.</p>"
+    },
+    "ImportJobPropertiesList":{
+      "type":"list",
+      "member":{"shape":"ImportJobProperties"}
+    },
+    "InputDataConfig":{
+      "type":"structure",
+      "members":{
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The <code>S3Uri</code> is the user-specified S3 location of the FHIR data to be imported into AWS HealthLake.</p>"
+        }
+      },
+      "documentation":"<p> The import job input properties.</p>",
+      "union":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>An unknown internal error occurred in the service.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "JobId":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$"
+    },
+    "JobName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$"
+    },
+    "JobProgressReport":{
+      "type":"structure",
+      "members":{
+        "TotalNumberOfScannedFiles":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of files scanned from the S3 input bucket.</p>"
+        },
+        "TotalSizeOfScannedFilesInMB":{
+          "shape":"GenericDouble",
+          "documentation":"<p>The size (in MB) of files scanned from the S3 input bucket.</p>"
+        },
+        "TotalNumberOfImportedFiles":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of files imported.</p>"
+        },
+        "TotalNumberOfResourcesScanned":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of resources scanned from the S3 input bucket.</p>"
+        },
+        "TotalNumberOfResourcesImported":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of resources imported.</p>"
+        },
+        "TotalNumberOfResourcesWithCustomerError":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of resources that failed due to customer error.</p>"
+        },
+        "TotalNumberOfFilesReadWithCustomerError":{
+          "shape":"GenericLong",
+          "documentation":"<p>The number of files that failed to be read from the S3 input bucket due to customer error.</p>"
+        },
+        "Throughput":{
+          "shape":"GenericDouble",
+          "documentation":"<p>The transaction rate the import job is processed at.</p>"
+        }
+      },
+      "documentation":"<p>The progress report for the import job.</p>"
+    },
+    "JobStatus":{
+      "type":"string",
+      "enum":[
+        "SUBMITTED",
+        "QUEUED",
+        "IN_PROGRESS",
+        "COMPLETED_WITH_ERRORS",
+        "COMPLETED",
+        "FAILED",
+        "CANCEL_SUBMITTED",
+        "CANCEL_IN_PROGRESS",
+        "CANCEL_COMPLETED",
+        "CANCEL_FAILED"
+      ]
+    },
+    "KmsEncryptionConfig":{
+      "type":"structure",
+      "required":["CmkType"],
+      "members":{
+        "CmkType":{
+          "shape":"CmkType",
+          "documentation":"<p>The type of customer-managed-key (CMK) used for encryption.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"EncryptionKeyID",
+          "documentation":"<p>The Key Management Service (KMS) encryption key id/alias used to encrypt the data store contents at rest.</p>"
+        }
+      },
+      "documentation":"<p>The customer-managed-key (CMK) used when creating a data store. If a customer-owned key is not specified, an AWS-owned key is used for encryption. </p>"
+    },
+    "LambdaArn":{
+      "type":"string",
+      "max":256,
+      "min":49,
+      "pattern":"arn:aws:lambda:[a-z]{2}-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9\\-_\\.]+(:(\\$LATEST|[a-zA-Z0-9\\-_]+))?"
+    },
+    "ListFHIRDatastoresRequest":{
+      "type":"structure",
+      "members":{
+        "Filter":{
+          "shape":"DatastoreFilter",
+          "documentation":"<p>List all filters associated with a FHIR data store request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token used to retrieve the next page of data stores when results are paginated.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsInteger",
+          "documentation":"<p>The maximum number of data stores returned on a page.</p>"
+        }
+      }
+    },
+    "ListFHIRDatastoresResponse":{
+      "type":"structure",
+      "required":["DatastorePropertiesList"],
+      "members":{
+        "DatastorePropertiesList":{
+          "shape":"DatastorePropertiesList",
+          "documentation":"<p>The properties associated with all listed data stores.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListFHIRExportJobsRequest":{
+      "type":"structure",
+      "required":["DatastoreId"],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>Limits the response to the export job with the specified data store ID. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token used to identify the next page of results to return.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsInteger",
+          "documentation":"<p>Limits the number of results returned for a ListFHIRExportJobs to a maximum quantity specified by the user.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>Limits the response to the export job with the specified job name. </p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>Limits the response to export jobs with the specified job status. </p>"
+        },
+        "SubmittedBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Limits the response to FHIR export jobs submitted before a user- specified date.</p>"
+        },
+        "SubmittedAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Limits the response to FHIR export jobs submitted after a user-specified date.</p>"
+        }
+      }
+    },
+    "ListFHIRExportJobsResponse":{
+      "type":"structure",
+      "required":["ExportJobPropertiesList"],
+      "members":{
+        "ExportJobPropertiesList":{
+          "shape":"ExportJobPropertiesList",
+          "documentation":"<p>The properties of listed FHIR export jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to identify the next page of results to return.</p>"
+        }
+      }
+    },
+    "ListFHIRImportJobsRequest":{
+      "type":"structure",
+      "required":["DatastoreId"],
+      "members":{
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>Limits the response to the import job with the specified data store ID. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to identify the next page of results to return.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsInteger",
+          "documentation":"<p>Limits the number of results returned for <code>ListFHIRImportJobs</code> to a maximum quantity specified by the user.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>Limits the response to the import job with the specified job name. </p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>Limits the response to the import job with the specified job status. </p>"
+        },
+        "SubmittedBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Limits the response to FHIR import jobs submitted before a user- specified date. </p>"
+        },
+        "SubmittedAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Limits the response to FHIR import jobs submitted after a user-specified date.</p>"
+        }
+      }
+    },
+    "ListFHIRImportJobsResponse":{
+      "type":"structure",
+      "required":["ImportJobPropertiesList"],
+      "members":{
+        "ImportJobPropertiesList":{
+          "shape":"ImportJobPropertiesList",
+          "documentation":"<p>The properties for listed import jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to identify the next page of results to return.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data store to which tags are being added.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Returns a list of tags associated with a data store. </p>"
+        }
+      }
+    },
+    "MaxResultsInteger":{
+      "type":"integer",
+      "max":500,
+      "min":1
+    },
+    "Message":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "pattern":"\\p{ASCII}{0,8192}"
+    },
+    "OutputDataConfig":{
+      "type":"structure",
+      "members":{
+        "S3Configuration":{
+          "shape":"S3Configuration",
+          "documentation":"<p>The output data configuration supplied when the export job was created. </p>"
+        }
+      },
+      "documentation":"<p>The output data configuration supplied when the export job was created.</p>",
+      "union":true
+    },
+    "PreloadDataConfig":{
+      "type":"structure",
+      "required":["PreloadDataType"],
+      "members":{
+        "PreloadDataType":{
+          "shape":"PreloadDataType",
+          "documentation":"<p>The type of preloaded data. Only Synthea preloaded data is supported.</p>"
+        }
+      },
+      "documentation":"<p>The input properties for the preloaded (Synthea) data store.</p>"
+    },
+    "PreloadDataType":{
+      "type":"string",
+      "enum":["SYNTHEA"]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The requested data store was not found.</p>",
+      "exception":true
+    },
+    "S3Configuration":{
+      "type":"structure",
+      "required":[
+        "S3Uri",
+        "KmsKeyId"
+      ],
+      "members":{
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The <code>S3Uri</code> is the user-specified S3 location of the FHIR data to be imported into AWS HealthLake.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"EncryptionKeyID",
+          "documentation":"<p>The Key Management Service (KMS) key ID used to access the S3 bucket. </p>"
+        }
+      },
+      "documentation":"<p>The configuration of the S3 bucket for either an import or export job. This includes assigning access permissions.</p>"
+    },
+    "S3Uri":{
+      "type":"string",
+      "max":1024,
+      "pattern":"s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?"
+    },
+    "SseConfiguration":{
+      "type":"structure",
+      "required":["KmsEncryptionConfig"],
+      "members":{
+        "KmsEncryptionConfig":{
+          "shape":"KmsEncryptionConfig",
+          "documentation":"<p>The Key Management Service (KMS) encryption configuration used to provide details for data encryption.</p>"
+        }
+      },
+      "documentation":"<p>The server-side encryption key configuration for a customer-provided encryption key.</p>"
+    },
+    "StartFHIRExportJobRequest":{
+      "type":"structure",
+      "required":[
+        "OutputDataConfig",
+        "DatastoreId",
+        "DataAccessRoleArn"
+      ],
+      "members":{
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The export job name.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data configuration supplied when the export job was started.</p>"
+        },
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier from which files are being exported.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) used during initiation of the export job.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>An optional user provided token used for ensuring API idempotency.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartFHIRExportJobResponse":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "JobStatus"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The export job identifier.</p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The export job status.</p>"
+        },
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier from which files are being exported.</p>"
+        }
+      }
+    },
+    "StartFHIRImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "InputDataConfig",
+        "JobOutputDataConfig",
+        "DatastoreId",
+        "DataAccessRoleArn"
+      ],
+      "members":{
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The import job name.</p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input properties for the import job request.</p>"
+        },
+        "JobOutputDataConfig":{"shape":"OutputDataConfig"},
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants access permission to AWS HealthLake.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>The optional user-provided token used for ensuring API idempotency.</p>",
+          "idempotencyToken":true
+        },
+        "ValidationLevel":{
+          "shape":"ValidationLevel",
+          "documentation":"<p>The validation level of the import job.</p>"
+        }
+      }
+    },
+    "StartFHIRImportJobResponse":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "JobStatus"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The import job identifier.</p>"
+        },
+        "JobStatus":{
+          "shape":"JobStatus",
+          "documentation":"<p>The import job status.</p>"
+        },
+        "DatastoreId":{
+          "shape":"DatastoreId",
+          "documentation":"<p>The data store identifier.</p>"
+        }
+      }
+    },
+    "String":{
+      "type":"string",
+      "max":10000,
+      "pattern":"[\\P{M}\\p{M}]{0,10000}"
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key portion of a tag. Tag keys are case sensitive. </p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p> The value portion of a tag. Tag values are case-sensitive.</p>"
+        }
+      },
+      "documentation":"<p>A label consisting of a user-defined key and value. The form for tags is {\"Key\", \"Value\"}</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) that grants access to the data store tags are being added to.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The user-specified key and value pair tags being added to a data store.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The user has exceeded their maximum number of allowed calls to the given API. </p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data store from which tags are being removed.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The keys for the tags to be removed from the data store.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The user input parameter was invalid.</p>",
+      "exception":true
+    },
+    "ValidationLevel":{
+      "type":"string",
+      "enum":[
+        "strict",
+        "structure-only",
+        "minimal"
+      ]
+    }
+  },
+  "documentation":"<p>This is the <i>AWS HealthLake API Reference</i>. For an introduction to the service, see <a href=\"https://docs.aws.amazon.com/healthlake/latest/devguide/what-is.html\">What is AWS HealthLake?</a> in the <i>AWS HealthLake Developer Guide</i>.</p>"
+}

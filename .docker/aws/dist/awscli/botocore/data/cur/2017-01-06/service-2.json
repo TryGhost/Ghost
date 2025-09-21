@@ -1,0 +1,564 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-01-06",
+    "endpointPrefix":"cur",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Cost and Usage Report Service",
+    "serviceId":"Cost and Usage Report Service",
+    "signatureVersion":"v4",
+    "signingName":"cur",
+    "targetPrefix":"AWSOrigamiServiceGatewayService",
+    "uid":"cur-2017-01-06",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "DeleteReportDefinition":{
+      "name":"DeleteReportDefinition",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteReportDefinitionRequest"},
+      "output":{"shape":"DeleteReportDefinitionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified report. Any tags associated with the report are also deleted.</p>"
+    },
+    "DescribeReportDefinitions":{
+      "name":"DescribeReportDefinitions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeReportDefinitionsRequest"},
+      "output":{"shape":"DescribeReportDefinitionsResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"}
+      ],
+      "documentation":"<p>Lists the Amazon Web Services Cost and Usage Report available to this account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the tags associated with the specified report definition.</p>"
+    },
+    "ModifyReportDefinition":{
+      "name":"ModifyReportDefinition",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyReportDefinitionRequest"},
+      "output":{"shape":"ModifyReportDefinitionResponse"},
+      "errors":[
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Allows you to programmatically update your report preferences.</p>"
+    },
+    "PutReportDefinition":{
+      "name":"PutReportDefinition",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutReportDefinitionRequest"},
+      "output":{"shape":"PutReportDefinitionResponse"},
+      "errors":[
+        {"shape":"DuplicateReportNameException"},
+        {"shape":"ReportLimitReachedException"},
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a new report using the description that you provide.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Associates a set of tags with a report definition.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalErrorException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Disassociates a set of tags from a report definition.</p>"
+    }
+  },
+  "shapes":{
+    "AWSRegion":{
+      "type":"string",
+      "documentation":"<p>The region of the S3 bucket that Amazon Web Services delivers the report into.</p>",
+      "enum":[
+        "af-south-1",
+        "ap-east-1",
+        "ap-south-1",
+        "ap-south-2",
+        "ap-southeast-1",
+        "ap-southeast-2",
+        "ap-southeast-3",
+        "ap-northeast-1",
+        "ap-northeast-2",
+        "ap-northeast-3",
+        "ca-central-1",
+        "eu-central-1",
+        "eu-central-2",
+        "eu-west-1",
+        "eu-west-2",
+        "eu-west-3",
+        "eu-north-1",
+        "eu-south-1",
+        "eu-south-2",
+        "me-central-1",
+        "me-south-1",
+        "sa-east-1",
+        "us-east-1",
+        "us-east-2",
+        "us-west-1",
+        "us-west-2",
+        "cn-north-1",
+        "cn-northwest-1"
+      ]
+    },
+    "AdditionalArtifact":{
+      "type":"string",
+      "documentation":"<p>The types of manifest that you want Amazon Web Services to create for this report.</p>",
+      "enum":[
+        "REDSHIFT",
+        "QUICKSIGHT",
+        "ATHENA"
+      ]
+    },
+    "AdditionalArtifactList":{
+      "type":"list",
+      "member":{"shape":"AdditionalArtifact"},
+      "documentation":"<p>A list of additional artifacts.</p>"
+    },
+    "BillingViewArn":{
+      "type":"string",
+      "max":128,
+      "pattern":"(arn:aws(-cn)?:billing::[0-9]{12}:billingview/)?[a-zA-Z0-9_\\+=\\.\\-@].{1,30}"
+    },
+    "CompressionFormat":{
+      "type":"string",
+      "documentation":"<p>The compression format that Amazon Web Services uses for the report.</p>",
+      "enum":[
+        "ZIP",
+        "GZIP",
+        "Parquet"
+      ]
+    },
+    "DeleteReportDefinitionRequest":{
+      "type":"structure",
+      "required":["ReportName"],
+      "members":{
+        "ReportName":{
+          "shape":"ReportName",
+          "documentation":"<p>The name of the report that you want to delete. The name must be unique, is case sensitive, and can't include spaces.</p>"
+        }
+      },
+      "documentation":"<p>Deletes the specified report.</p>"
+    },
+    "DeleteReportDefinitionResponse":{
+      "type":"structure",
+      "members":{
+        "ResponseMessage":{"shape":"DeleteResponseMessage"}
+      },
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response.</p>"
+    },
+    "DeleteResponseMessage":{
+      "type":"string",
+      "documentation":"<p>Whether the deletion was successful or not.</p>"
+    },
+    "DescribeReportDefinitionsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{"shape":"MaxResults"},
+        "NextToken":{"shape":"GenericString"}
+      },
+      "documentation":"<p>Requests a Amazon Web Services Cost and Usage Report list owned by the account.</p>"
+    },
+    "DescribeReportDefinitionsResponse":{
+      "type":"structure",
+      "members":{
+        "ReportDefinitions":{
+          "shape":"ReportDefinitionList",
+          "documentation":"<p>An Amazon Web Services Cost and Usage Report list owned by the account.</p>"
+        },
+        "NextToken":{"shape":"GenericString"}
+      },
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response.</p>"
+    },
+    "DuplicateReportNameException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A report with the specified name already exists in the account. Specify a different report name.</p>",
+      "exception":true
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "documentation":"<p>A message to show the detail of the exception.</p>"
+    },
+    "GenericString":{
+      "type":"string",
+      "documentation":"<p>A generic string.</p>",
+      "max":256,
+      "pattern":"[A-Za-z0-9_\\.\\-=]*"
+    },
+    "InternalErrorException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An error on the server occurred during the processing of your request. Try again later.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "LastDelivery":{
+      "type":"string",
+      "max":20,
+      "min":16,
+      "pattern":"[0-9]{8}[T][0-9]{6}([Z]|[+-][0-9]{4})"
+    },
+    "LastStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCESS",
+        "ERROR_PERMISSIONS",
+        "ERROR_NO_BUCKET"
+      ]
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ReportName"],
+      "members":{
+        "ReportName":{
+          "shape":"ReportName",
+          "documentation":"<p>The report name of the report definition that tags are to be returned for.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags assigned to the report definition resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "documentation":"<p>The maximum number of results that Amazon Web Services returns for the operation.</p>",
+      "box":true,
+      "max":5,
+      "min":5
+    },
+    "ModifyReportDefinitionRequest":{
+      "type":"structure",
+      "required":[
+        "ReportName",
+        "ReportDefinition"
+      ],
+      "members":{
+        "ReportName":{"shape":"ReportName"},
+        "ReportDefinition":{"shape":"ReportDefinition"}
+      }
+    },
+    "ModifyReportDefinitionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "PutReportDefinitionRequest":{
+      "type":"structure",
+      "required":["ReportDefinition"],
+      "members":{
+        "ReportDefinition":{
+          "shape":"ReportDefinition",
+          "documentation":"<p>Represents the output of the PutReportDefinition operation. The content consists of the detailed metadata and data file information. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags to be assigned to the report definition resource.</p>"
+        }
+      },
+      "documentation":"<p>Creates a Cost and Usage Report.</p>"
+    },
+    "PutReportDefinitionResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response with an empty HTTP body.</p>"
+    },
+    "RefreshClosedReports":{
+      "type":"boolean",
+      "box":true
+    },
+    "ReportDefinition":{
+      "type":"structure",
+      "required":[
+        "ReportName",
+        "TimeUnit",
+        "Format",
+        "Compression",
+        "AdditionalSchemaElements",
+        "S3Bucket",
+        "S3Prefix",
+        "S3Region"
+      ],
+      "members":{
+        "ReportName":{"shape":"ReportName"},
+        "TimeUnit":{"shape":"TimeUnit"},
+        "Format":{"shape":"ReportFormat"},
+        "Compression":{"shape":"CompressionFormat"},
+        "AdditionalSchemaElements":{
+          "shape":"SchemaElementList",
+          "documentation":"<p>A list of strings that indicate additional content that Amazon Web Services includes in the report, such as individual resource IDs. </p>"
+        },
+        "S3Bucket":{"shape":"S3Bucket"},
+        "S3Prefix":{"shape":"S3Prefix"},
+        "S3Region":{"shape":"AWSRegion"},
+        "AdditionalArtifacts":{
+          "shape":"AdditionalArtifactList",
+          "documentation":"<p>A list of manifests that you want Amazon Web Services to create for this report.</p>"
+        },
+        "RefreshClosedReports":{
+          "shape":"RefreshClosedReports",
+          "documentation":"<p>Whether you want Amazon Web Services to update your reports after they have been finalized if Amazon Web Services detects charges related to previous months. These charges can include refunds, credits, or support fees.</p>"
+        },
+        "ReportVersioning":{
+          "shape":"ReportVersioning",
+          "documentation":"<p>Whether you want Amazon Web Services to overwrite the previous version of each report or to deliver the report in addition to the previous versions.</p>"
+        },
+        "BillingViewArn":{
+          "shape":"BillingViewArn",
+          "documentation":"<p> The Amazon resource name of the billing view. The <code>BillingViewArn</code> is needed to create Amazon Web Services Cost and Usage Report for each billing group maintained in the Amazon Web Services Billing Conductor service. The <code>BillingViewArn</code> for a billing group can be constructed as: <code>arn:aws:billing::payer-account-id:billingview/billing-group-primary-account-id</code> </p>"
+        },
+        "ReportStatus":{
+          "shape":"ReportStatus",
+          "documentation":"<p>The status of the report.</p>"
+        }
+      },
+      "documentation":"<p>The definition of Amazon Web Services Cost and Usage Report. You can specify the report name, time unit, report format, compression format, S3 bucket, additional artifacts, and schema elements in the definition. </p>"
+    },
+    "ReportDefinitionList":{
+      "type":"list",
+      "member":{"shape":"ReportDefinition"},
+      "documentation":"<p>A list of report definitions.</p>"
+    },
+    "ReportFormat":{
+      "type":"string",
+      "documentation":"<p>The format that Amazon Web Services saves the report in.</p>",
+      "enum":[
+        "textORcsv",
+        "Parquet"
+      ]
+    },
+    "ReportLimitReachedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>This account already has five reports defined. To define a new report, you must delete an existing report.</p>",
+      "exception":true
+    },
+    "ReportName":{
+      "type":"string",
+      "documentation":"<p>The name of the report that you want to create. The name must be unique, is case sensitive, and can't include spaces. </p>",
+      "max":256,
+      "pattern":"[0-9A-Za-z!\\-_.*\\'()]+"
+    },
+    "ReportStatus":{
+      "type":"structure",
+      "members":{
+        "lastDelivery":{
+          "shape":"LastDelivery",
+          "documentation":"<p>A timestamp that gives the date of a report delivery.</p>"
+        },
+        "lastStatus":{
+          "shape":"LastStatus",
+          "documentation":"<p>An enum that gives the status of a report delivery.</p>"
+        }
+      },
+      "documentation":"<p>A two element dictionary with a <code>lastDelivery</code> and <code>lastStatus</code> key whose values describe the date and status of the last delivered report for a particular report definition.</p>"
+    },
+    "ReportVersioning":{
+      "type":"string",
+      "enum":[
+        "CREATE_NEW_REPORT",
+        "OVERWRITE_REPORT"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified report (<code>ReportName</code>) in the request doesn't exist.</p>",
+      "exception":true
+    },
+    "S3Bucket":{
+      "type":"string",
+      "documentation":"<p>The S3 bucket where Amazon Web Services delivers the report.</p>",
+      "max":256,
+      "pattern":"[A-Za-z0-9_\\.\\-]+"
+    },
+    "S3Prefix":{
+      "type":"string",
+      "documentation":"<p>The prefix that Amazon Web Services adds to the report name when Amazon Web Services delivers the report. Your prefix can't include spaces.</p>",
+      "max":256,
+      "pattern":"[0-9A-Za-z!\\-_.*\\'()/]*"
+    },
+    "SchemaElement":{
+      "type":"string",
+      "documentation":"<p>Whether or not Amazon Web Services includes resource IDs in the report. </p>",
+      "enum":[
+        "RESOURCES",
+        "SPLIT_COST_ALLOCATION_DATA",
+        "MANUAL_DISCOUNT_COMPATIBILITY"
+      ]
+    },
+    "SchemaElementList":{
+      "type":"list",
+      "member":{"shape":"SchemaElement"},
+      "documentation":"<p>A list of strings that indicate the content that is included in the report, such as service or usage type.</p>"
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag. Tag keys are case sensitive. Each report definition can only have up to one tag with the same key. If you try to add an existing tag with the same key, the existing tag value will be updated to the new value.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag. Tag values are case-sensitive. This can be an empty string.</p>"
+        }
+      },
+      "documentation":"<p>Describes a tag. A tag is a key-value pair. You can add up to 50 tags to a report definition.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":".*"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ReportName",
+        "Tags"
+      ],
+      "members":{
+        "ReportName":{
+          "shape":"ReportName",
+          "documentation":"<p>The report name of the report definition that tags are to be associated with.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags to be assigned to the report definition resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*"
+    },
+    "TimeUnit":{
+      "type":"string",
+      "documentation":"<p>The length of time covered by the report. </p>",
+      "enum":[
+        "HOURLY",
+        "DAILY",
+        "MONTHLY"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ReportName",
+        "TagKeys"
+      ],
+      "members":{
+        "ReportName":{
+          "shape":"ReportName",
+          "documentation":"<p>The report name of the report definition that tags are to be disassociated from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tags to be disassociated from the report definition resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>You can use the Amazon Web Services Cost and Usage Report API to programmatically create, query, and delete Amazon Web Services Cost and Usage Report definitions.</p> <p>Amazon Web Services Cost and Usage Report track the monthly Amazon Web Services costs and usage associated with your Amazon Web Services account. The report contains line items for each unique combination of Amazon Web Services product, usage type, and operation that your Amazon Web Services account uses. You can configure the Amazon Web Services Cost and Usage Report to show only the data that you want, using the Amazon Web Services Cost and Usage Report API.</p> <p>Service Endpoint</p> <p>The Amazon Web Services Cost and Usage Report API provides the following endpoint:</p> <ul> <li> <p>cur.us-east-1.amazonaws.com</p> </li> </ul>"
+}

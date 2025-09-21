@@ -1,0 +1,1506 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-01-12",
+    "endpointPrefix":"dlm",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"Amazon DLM",
+    "serviceFullName":"Amazon Data Lifecycle Manager",
+    "serviceId":"DLM",
+    "signatureVersion":"v4",
+    "signingName":"dlm",
+    "uid":"dlm-2018-01-12",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateLifecyclePolicy":{
+      "name":"CreateLifecyclePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/policies"
+      },
+      "input":{"shape":"CreateLifecyclePolicyRequest"},
+      "output":{"shape":"CreateLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates an Amazon Data Lifecycle Manager lifecycle policy. Amazon Data Lifecycle Manager supports the following policy types:</p> <ul> <li> <p>Custom EBS snapshot policy</p> </li> <li> <p>Custom EBS-backed AMI policy</p> </li> <li> <p>Cross-account copy event policy</p> </li> <li> <p>Default policy for EBS snapshots</p> </li> <li> <p>Default policy for EBS-backed AMIs</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/policy-differences.html\"> Default policies vs custom policies</a>.</p> <important> <p>If you create a default policy, you can specify the request parameters either in the request body, or in the PolicyDetails request structure, but not both.</p> </important>"
+    },
+    "DeleteLifecyclePolicy":{
+      "name":"DeleteLifecyclePolicy",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/policies/{policyId}"
+      },
+      "input":{"shape":"DeleteLifecyclePolicyRequest"},
+      "output":{"shape":"DeleteLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Deletes the specified lifecycle policy and halts the automated operations that the policy specified.</p> <p>For more information about deleting a policy, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/view-modify-delete.html#delete\">Delete lifecycle policies</a>.</p>"
+    },
+    "GetLifecyclePolicies":{
+      "name":"GetLifecyclePolicies",
+      "http":{
+        "method":"GET",
+        "requestUri":"/policies"
+      },
+      "input":{"shape":"GetLifecyclePoliciesRequest"},
+      "output":{"shape":"GetLifecyclePoliciesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServerException"},
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Gets summary information about all or the specified data lifecycle policies.</p> <p>To get complete information about a policy, use <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_GetLifecyclePolicy.html\">GetLifecyclePolicy</a>.</p>"
+    },
+    "GetLifecyclePolicy":{
+      "name":"GetLifecyclePolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/policies/{policyId}"
+      },
+      "input":{"shape":"GetLifecyclePolicyRequest"},
+      "output":{"shape":"GetLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Gets detailed information about the specified lifecycle policy.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the tags for the specified resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds the specified tags to the specified resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p>"
+    },
+    "UpdateLifecyclePolicy":{
+      "name":"UpdateLifecyclePolicy",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/policies/{policyId}"
+      },
+      "input":{"shape":"UpdateLifecyclePolicyRequest"},
+      "output":{"shape":"UpdateLifecyclePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServerException"},
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Updates the specified lifecycle policy.</p> <p>For more information about updating a policy, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/view-modify-delete.html#modify\">Modify lifecycle policies</a>.</p>"
+    }
+  },
+  "shapes":{
+    "Action":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "CrossRegionCopy"
+      ],
+      "members":{
+        "Name":{
+          "shape":"ActionName",
+          "documentation":"<p>A descriptive name for the action.</p>"
+        },
+        "CrossRegionCopy":{
+          "shape":"CrossRegionCopyActionList",
+          "documentation":"<p>The rule for copying shared snapshots across Regions.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Event-based policies only]</b> Specifies an action for an event-based policy.</p>"
+    },
+    "ActionList":{
+      "type":"list",
+      "member":{"shape":"Action"},
+      "max":1,
+      "min":1
+    },
+    "ActionName":{
+      "type":"string",
+      "max":120,
+      "min":0,
+      "pattern":"[0-9A-Za-z _-]+"
+    },
+    "ArchiveRetainRule":{
+      "type":"structure",
+      "required":["RetentionArchiveTier"],
+      "members":{
+        "RetentionArchiveTier":{
+          "shape":"RetentionArchiveTier",
+          "documentation":"<p>Information about retention period in the Amazon EBS Snapshots Archive. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/snapshot-archive.html\">Archive Amazon EBS snapshots</a>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies only]</b> Specifies information about the archive storage tier retention period.</p>"
+    },
+    "ArchiveRule":{
+      "type":"structure",
+      "required":["RetainRule"],
+      "members":{
+        "RetainRule":{
+          "shape":"ArchiveRetainRule",
+          "documentation":"<p>Information about the retention period for the snapshot archiving rule.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies only]</b> Specifies a snapshot archiving rule for a schedule.</p>"
+    },
+    "AvailabilityZone":{
+      "type":"string",
+      "max":16,
+      "min":0,
+      "pattern":"([a-z]+-){2,3}\\d[a-z]"
+    },
+    "AvailabilityZoneList":{
+      "type":"list",
+      "member":{"shape":"AvailabilityZone"},
+      "max":10,
+      "min":1
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^[0-9]{12}$"
+    },
+    "CmkArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:aws(-[a-z]{1,3}){0,2}:kms:([a-z]+-){2,3}\\d:\\d+:key/.*"
+    },
+    "CopyTags":{"type":"boolean"},
+    "CopyTagsNullable":{"type":"boolean"},
+    "Count":{
+      "type":"integer",
+      "max":1000,
+      "min":1
+    },
+    "CreateInterval":{
+      "type":"integer",
+      "min":1
+    },
+    "CreateLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ExecutionRoleArn",
+        "Description",
+        "State"
+      ],
+      "members":{
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role used to run the operations specified by the lifecycle policy.</p>"
+        },
+        "Description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the lifecycle policy. The characters ^[0-9A-Za-z _-]+$ are supported.</p>"
+        },
+        "State":{
+          "shape":"SettablePolicyStateValues",
+          "documentation":"<p>The activation state of the lifecycle policy after creation.</p>"
+        },
+        "PolicyDetails":{
+          "shape":"PolicyDetails",
+          "documentation":"<p>The configuration details of the lifecycle policy.</p> <important> <p>If you create a default policy, you can specify the request parameters either in the request body, or in the PolicyDetails request structure, but not both.</p> </important>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to apply to the lifecycle policy during creation.</p>"
+        },
+        "DefaultPolicy":{
+          "shape":"DefaultPolicyTypeValues",
+          "documentation":"<p> <b>[Default policies only]</b> Specify the type of default policy to create.</p> <ul> <li> <p>To create a default policy for EBS snapshots, that creates snapshots of all volumes in the Region that do not have recent backups, specify <code>VOLUME</code>.</p> </li> <li> <p>To create a default policy for EBS-backed AMIs, that creates EBS-backed AMIs from all instances in the Region that do not have recent backups, specify <code>INSTANCE</code>.</p> </li> </ul>"
+        },
+        "CreateInterval":{
+          "shape":"CreateInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how often the policy should run and create snapshots or AMIs. The creation frequency can range from 1 to 7 days. If you do not specify a value, the default is 1.</p> <p>Default: 1</p>"
+        },
+        "RetainInterval":{
+          "shape":"RetainInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how long the policy should retain snapshots or AMIs before deleting them. The retention period can range from 2 to 14 days, but it must be greater than the creation frequency to ensure that the policy retains at least 1 snapshot or AMI at any given time. If you do not specify a value, the default is 7.</p> <p>Default: 7</p>"
+        },
+        "CopyTags":{
+          "shape":"CopyTagsNullable",
+          "documentation":"<p> <b>[Default policies only]</b> Indicates whether the policy should copy tags from the source resource to the snapshot or AMI. If you do not specify a value, the default is <code>false</code>.</p> <p>Default: false</p>"
+        },
+        "ExtendDeletion":{
+          "shape":"ExtendDeletion",
+          "documentation":"<p> <b>[Default policies only]</b> Defines the snapshot or AMI retention behavior for the policy if the source volume or instance is deleted, or if the policy enters the error, disabled, or deleted state.</p> <p>By default (<b>ExtendDeletion=false</b>):</p> <ul> <li> <p>If a source resource is deleted, Amazon Data Lifecycle Manager will continue to delete previously created snapshots or AMIs, up to but not including the last one, based on the specified retention period. If you want Amazon Data Lifecycle Manager to delete all snapshots or AMIs, including the last one, specify <code>true</code>.</p> </li> <li> <p>If a policy enters the error, disabled, or deleted state, Amazon Data Lifecycle Manager stops deleting snapshots and AMIs. If you want Amazon Data Lifecycle Manager to continue deleting snapshots or AMIs, including the last one, if the policy enters one of these states, specify <code>true</code>.</p> </li> </ul> <p>If you enable extended deletion (<b>ExtendDeletion=true</b>), you override both default behaviors simultaneously.</p> <p>If you do not specify a value, the default is <code>false</code>.</p> <p>Default: false</p>"
+        },
+        "CrossRegionCopyTargets":{
+          "shape":"CrossRegionCopyTargetList",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies destination Regions for snapshot or AMI copies. You can specify up to 3 destination Regions. If you do not want to create cross-Region copies, omit this parameter.</p>"
+        },
+        "Exclusions":{
+          "shape":"Exclusions",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies exclusion parameters for volumes or instances for which you do not want to create snapshots or AMIs. The policy will not create snapshots or AMIs for target resources that match any of the specified exclusion parameters.</p>"
+        }
+      }
+    },
+    "CreateLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>"
+        }
+      }
+    },
+    "CreateRule":{
+      "type":"structure",
+      "members":{
+        "Location":{
+          "shape":"LocationValues",
+          "documentation":"<p> <b>[Custom snapshot policies only]</b> Specifies the destination for snapshots created by the policy. The allowed destinations depend on the location of the targeted resources.</p> <ul> <li> <p>If the policy targets resources in a Region, then you must create snapshots in the same Region as the source resource.</p> </li> <li> <p>If the policy targets resources in a Local Zone, you can create snapshots in the same Local Zone or in its parent Region.</p> </li> <li> <p>If the policy targets resources on an Outpost, then you can create snapshots on the same Outpost or in its parent Region.</p> </li> </ul> <p>Specify one of the following values:</p> <ul> <li> <p>To create snapshots in the same Region as the source resource, specify <code>CLOUD</code>.</p> </li> <li> <p>To create snapshots in the same Local Zone as the source resource, specify <code>LOCAL_ZONE</code>.</p> </li> <li> <p>To create snapshots on the same Outpost as the source resource, specify <code>OUTPOST_LOCAL</code>.</p> </li> </ul> <p>Default: <code>CLOUD</code> </p>"
+        },
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>The interval between snapshots. The supported values are 1, 2, 3, 4, 6, 8, 12, and 24.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"IntervalUnitValues",
+          "documentation":"<p>The interval unit.</p>"
+        },
+        "Times":{
+          "shape":"TimesList",
+          "documentation":"<p>The time, in UTC, to start the operation. The supported format is hh:mm.</p> <p>The operation occurs within a one-hour window following the specified time. If you do not specify a time, Amazon Data Lifecycle Manager selects a time within the next 24 hours.</p>"
+        },
+        "CronExpression":{
+          "shape":"CronExpression",
+          "documentation":"<p>The schedule, as a Cron expression. The schedule interval must be between 1 hour and 1 year. For more information, see the <a href=\"https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-cron-expressions.html\">Cron expressions reference</a> in the <i>Amazon EventBridge User Guide</i>.</p>"
+        },
+        "Scripts":{
+          "shape":"ScriptsList",
+          "documentation":"<p> <b>[Custom snapshot policies that target instances only]</b> Specifies pre and/or post scripts for a snapshot lifecycle policy that targets instances. This is useful for creating application-consistent snapshots, or for performing specific administrative tasks before or after Amazon Data Lifecycle Manager initiates snapshot creation.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/automate-app-consistent-backups.html\">Automating application-consistent snapshots with pre and post scripts</a>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> Specifies when the policy should create snapshots or AMIs.</p> <note> <ul> <li> <p>You must specify either <b>CronExpression</b>, or <b>Interval</b>, <b>IntervalUnit</b>, and <b>Times</b>.</p> </li> <li> <p>If you need to specify an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a> for the schedule, then you must specify a creation frequency of at least 28 days.</p> </li> </ul> </note>"
+    },
+    "CronExpression":{
+      "type":"string",
+      "max":106,
+      "min":17,
+      "pattern":"cron\\([^\\n]{11,100}\\)"
+    },
+    "CrossRegionCopyAction":{
+      "type":"structure",
+      "required":[
+        "Target",
+        "EncryptionConfiguration"
+      ],
+      "members":{
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The target Region.</p>"
+        },
+        "EncryptionConfiguration":{
+          "shape":"EncryptionConfiguration",
+          "documentation":"<p>The encryption settings for the copied snapshot.</p>"
+        },
+        "RetainRule":{"shape":"CrossRegionCopyRetainRule"}
+      },
+      "documentation":"<p> <b>[Event-based policies only]</b> Specifies a cross-Region copy action for event-based policies.</p> <note> <p>To specify a cross-Region copy rule for snapshot and AMI policies, use <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_CrossRegionCopyRule.html\">CrossRegionCopyRule</a>.</p> </note>"
+    },
+    "CrossRegionCopyActionList":{
+      "type":"list",
+      "member":{"shape":"CrossRegionCopyAction"},
+      "max":3,
+      "min":0
+    },
+    "CrossRegionCopyDeprecateRule":{
+      "type":"structure",
+      "members":{
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>The period after which to deprecate the cross-Region AMI copies. The period must be less than or equal to the cross-Region AMI copy retention period, and it can't be greater than 10 years. This is equivalent to 120 months, 520 weeks, or 3650 days.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time in which to measure the <b>Interval</b>. For example, to deprecate a cross-Region AMI copy after 3 months, specify <code>Interval=3</code> and <code>IntervalUnit=MONTHS</code>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom AMI policies only]</b> Specifies an AMI deprecation rule for cross-Region AMI copies created by an AMI policy.</p>"
+    },
+    "CrossRegionCopyRetainRule":{
+      "type":"structure",
+      "members":{
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>The amount of time to retain a cross-Region snapshot or AMI copy. The maximum is 100 years. This is equivalent to 1200 months, 5200 weeks, or 36500 days.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time for time-based retention. For example, to retain a cross-Region copy for 3 months, specify <code>Interval=3</code> and <code>IntervalUnit=MONTHS</code>.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a retention rule for cross-Region snapshot copies created by snapshot or event-based policies, or cross-Region AMI copies created by AMI policies. After the retention period expires, the cross-Region copy is deleted.</p>"
+    },
+    "CrossRegionCopyRule":{
+      "type":"structure",
+      "required":["Encrypted"],
+      "members":{
+        "TargetRegion":{
+          "shape":"TargetRegion",
+          "documentation":"<note> <p>Use this parameter for AMI policies only. For snapshot policies, use <b>Target</b> instead. For snapshot policies created before the <b>Target</b> parameter was introduced, this parameter indicates the target Region for snapshot copies.</p> <p/> </note> <p> <b>[Custom AMI policies only]</b> The target Region or the Amazon Resource Name (ARN) of the target Outpost for the snapshot copies.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<note> <p>Use this parameter for snapshot policies only. For AMI policies, use <b>TargetRegion</b> instead.</p> </note> <p> <b>[Custom snapshot policies only]</b> The target Region or the Amazon Resource Name (ARN) of the target Outpost for the snapshot copies.</p>"
+        },
+        "Encrypted":{
+          "shape":"Encrypted",
+          "documentation":"<p>To encrypt a copy of an unencrypted snapshot if encryption by default is not enabled, enable encryption using this parameter. Copies of encrypted snapshots are encrypted, even if this parameter is false or if encryption by default is not enabled.</p>"
+        },
+        "CmkArn":{
+          "shape":"CmkArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the KMS key to use for EBS encryption. If this parameter is not specified, the default KMS key for the account is used.</p>"
+        },
+        "CopyTags":{
+          "shape":"CopyTagsNullable",
+          "documentation":"<p>Indicates whether to copy all user-defined tags from the source snapshot or AMI to the cross-Region copy.</p>"
+        },
+        "RetainRule":{
+          "shape":"CrossRegionCopyRetainRule",
+          "documentation":"<p>The retention rule that indicates how long the cross-Region snapshot or AMI copies are to be retained in the destination Region.</p>"
+        },
+        "DeprecateRule":{
+          "shape":"CrossRegionCopyDeprecateRule",
+          "documentation":"<p> <b>[Custom AMI policies only]</b> The AMI deprecation rule for cross-Region AMI copies created by the rule.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> Specifies a cross-Region copy rule for a snapshot and AMI policies.</p> <note> <p>To specify a cross-Region copy action for event-based polices, use <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_CrossRegionCopyAction.html\">CrossRegionCopyAction</a>.</p> </note>"
+    },
+    "CrossRegionCopyRules":{
+      "type":"list",
+      "member":{"shape":"CrossRegionCopyRule"},
+      "max":3,
+      "min":0
+    },
+    "CrossRegionCopyTarget":{
+      "type":"structure",
+      "members":{
+        "TargetRegion":{
+          "shape":"TargetRegion",
+          "documentation":"<p>The target Region, for example <code>us-east-1</code>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Default policies only]</b> Specifies a destination Region for cross-Region copy actions.</p>"
+    },
+    "CrossRegionCopyTargetList":{
+      "type":"list",
+      "member":{"shape":"CrossRegionCopyTarget"},
+      "max":3,
+      "min":0
+    },
+    "DefaultPoliciesTypeValues":{
+      "type":"string",
+      "enum":[
+        "VOLUME",
+        "INSTANCE",
+        "ALL"
+      ]
+    },
+    "DefaultPolicy":{"type":"boolean"},
+    "DefaultPolicyTypeValues":{
+      "type":"string",
+      "enum":[
+        "VOLUME",
+        "INSTANCE"
+      ]
+    },
+    "DeleteLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":["PolicyId"],
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>",
+          "location":"uri",
+          "locationName":"policyId"
+        }
+      }
+    },
+    "DeleteLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeprecateRule":{
+      "type":"structure",
+      "members":{
+        "Count":{
+          "shape":"Count",
+          "documentation":"<p>If the schedule has a count-based retention rule, this parameter specifies the number of oldest AMIs to deprecate. The count must be less than or equal to the schedule's retention count, and it can't be greater than 1000.</p>"
+        },
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>If the schedule has an age-based retention rule, this parameter specifies the period after which to deprecate AMIs created by the schedule. The period must be less than or equal to the schedule's retention period, and it can't be greater than 10 years. This is equivalent to 120 months, 520 weeks, or 3650 days.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time in which to measure the <b>Interval</b>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom AMI policies only]</b> Specifies an AMI deprecation rule for AMIs created by an AMI lifecycle policy.</p> <p>For age-based schedules, you must specify <b>Interval</b> and <b>IntervalUnit</b>. For count-based schedules, you must specify <b>Count</b>.</p>"
+    },
+    "DescriptionRegex":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":"[\\p{all}]*"
+    },
+    "Encrypted":{"type":"boolean"},
+    "EncryptionConfiguration":{
+      "type":"structure",
+      "required":["Encrypted"],
+      "members":{
+        "Encrypted":{
+          "shape":"Encrypted",
+          "documentation":"<p>To encrypt a copy of an unencrypted snapshot when encryption by default is not enabled, enable encryption using this parameter. Copies of encrypted snapshots are encrypted, even if this parameter is false or when encryption by default is not enabled.</p>"
+        },
+        "CmkArn":{
+          "shape":"CmkArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the KMS key to use for EBS encryption. If this parameter is not specified, the default KMS key for the account is used.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Event-based policies only]</b> Specifies the encryption settings for cross-Region snapshot copies created by event-based policies.</p>"
+    },
+    "ErrorCode":{"type":"string"},
+    "ErrorMessage":{"type":"string"},
+    "EventParameters":{
+      "type":"structure",
+      "required":[
+        "EventType",
+        "SnapshotOwner",
+        "DescriptionRegex"
+      ],
+      "members":{
+        "EventType":{
+          "shape":"EventTypeValues",
+          "documentation":"<p>The type of event. Currently, only snapshot sharing events are supported.</p>"
+        },
+        "SnapshotOwner":{
+          "shape":"SnapshotOwnerList",
+          "documentation":"<p>The IDs of the Amazon Web Services accounts that can trigger policy by sharing snapshots with your account. The policy only runs if one of the specified Amazon Web Services accounts shares a snapshot with your account.</p>"
+        },
+        "DescriptionRegex":{
+          "shape":"DescriptionRegex",
+          "documentation":"<p>The snapshot description that can trigger the policy. The description pattern is specified using a regular expression. The policy runs only if a snapshot with a description that matches the specified pattern is shared with your account.</p> <p>For example, specifying <code>^.*Created for policy: policy-1234567890abcdef0.*$</code> configures the policy to run only if snapshots created by policy <code>policy-1234567890abcdef0</code> are shared with your account.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Event-based policies only]</b> Specifies an event that activates an event-based policy.</p>"
+    },
+    "EventSource":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "Type":{
+          "shape":"EventSourceValues",
+          "documentation":"<p>The source of the event. Currently only managed CloudWatch Events rules are supported.</p>"
+        },
+        "Parameters":{
+          "shape":"EventParameters",
+          "documentation":"<p>Information about the event.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Event-based policies only]</b> Specifies an event that activates an event-based policy.</p>"
+    },
+    "EventSourceValues":{
+      "type":"string",
+      "enum":["MANAGED_CWE"]
+    },
+    "EventTypeValues":{
+      "type":"string",
+      "enum":["shareSnapshot"]
+    },
+    "ExcludeBootVolume":{"type":"boolean"},
+    "ExcludeBootVolumes":{"type":"boolean"},
+    "ExcludeDataVolumeTagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "ExcludeTagsList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "ExcludeVolumeTypesList":{
+      "type":"list",
+      "member":{"shape":"VolumeTypeValues"},
+      "max":6,
+      "min":0
+    },
+    "Exclusions":{
+      "type":"structure",
+      "members":{
+        "ExcludeBootVolumes":{
+          "shape":"ExcludeBootVolumes",
+          "documentation":"<p> <b>[Default policies for EBS snapshots only]</b> Indicates whether to exclude volumes that are attached to instances as the boot volume. If you exclude boot volumes, only volumes attached as data (non-boot) volumes will be backed up by the policy. To exclude boot volumes, specify <code>true</code>.</p>"
+        },
+        "ExcludeVolumeTypes":{
+          "shape":"ExcludeVolumeTypesList",
+          "documentation":"<p> <b>[Default policies for EBS snapshots only]</b> Specifies the volume types to exclude. Volumes of the specified types will not be targeted by the policy.</p>"
+        },
+        "ExcludeTags":{
+          "shape":"ExcludeTagsList",
+          "documentation":"<p> <b>[Default policies for EBS-backed AMIs only]</b> Specifies whether to exclude volumes that have specific tags. </p>"
+        }
+      },
+      "documentation":"<p> <b>[Default policies only]</b> Specifies exclusion parameters for volumes or instances for which you do not want to create snapshots or AMIs. The policy will not create snapshots or AMIs for target resources that match any of the specified exclusion parameters.</p>"
+    },
+    "ExecuteOperationOnScriptFailure":{"type":"boolean"},
+    "ExecutionHandler":{
+      "type":"string",
+      "max":200,
+      "min":0,
+      "pattern":"^([a-zA-Z0-9_\\-.]{3,128}|[a-zA-Z0-9_\\-.:/]{3,200}|[A-Z0-9_]+)$"
+    },
+    "ExecutionHandlerServiceValues":{
+      "type":"string",
+      "enum":["AWS_SYSTEMS_MANAGER"]
+    },
+    "ExecutionRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:aws(-[a-z]{1,3}){0,2}:iam::\\d+:role/.*"
+    },
+    "ExtendDeletion":{"type":"boolean"},
+    "FastRestoreRule":{
+      "type":"structure",
+      "required":["AvailabilityZones"],
+      "members":{
+        "Count":{
+          "shape":"Count",
+          "documentation":"<p>The number of snapshots to be enabled with fast snapshot restore.</p>"
+        },
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>The amount of time to enable fast snapshot restore. The maximum is 100 years. This is equivalent to 1200 months, 5200 weeks, or 36500 days.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time for enabling fast snapshot restore.</p>"
+        },
+        "AvailabilityZones":{
+          "shape":"AvailabilityZoneList",
+          "documentation":"<p>The Availability Zones in which to enable fast snapshot restore.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies only]</b> Specifies a rule for enabling fast snapshot restore for snapshots created by snapshot policies. You can enable fast snapshot restore based on either a count or a time interval.</p>"
+    },
+    "GetLifecyclePoliciesRequest":{
+      "type":"structure",
+      "members":{
+        "PolicyIds":{
+          "shape":"PolicyIdList",
+          "documentation":"<p>The identifiers of the data lifecycle policies.</p>",
+          "location":"querystring",
+          "locationName":"policyIds"
+        },
+        "State":{
+          "shape":"GettablePolicyStateValues",
+          "documentation":"<p>The activation state.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypeValuesList",
+          "documentation":"<p>The resource type.</p>",
+          "location":"querystring",
+          "locationName":"resourceTypes"
+        },
+        "TargetTags":{
+          "shape":"TargetTagsFilterList",
+          "documentation":"<p>The target tag for a policy.</p> <p>Tags are strings in the format <code>key=value</code>.</p>",
+          "location":"querystring",
+          "locationName":"targetTags"
+        },
+        "TagsToAdd":{
+          "shape":"TagsToAddFilterList",
+          "documentation":"<p>The tags to add to objects created by the policy.</p> <p>Tags are strings in the format <code>key=value</code>.</p> <p>These user-defined tags are added in addition to the Amazon Web Services-added lifecycle tags.</p>",
+          "location":"querystring",
+          "locationName":"tagsToAdd"
+        },
+        "DefaultPolicyType":{
+          "shape":"DefaultPoliciesTypeValues",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies the type of default policy to get. Specify one of the following:</p> <ul> <li> <p> <code>VOLUME</code> - To get only the default policy for EBS snapshots</p> </li> <li> <p> <code>INSTANCE</code> - To get only the default policy for EBS-backed AMIs</p> </li> <li> <p> <code>ALL</code> - To get all default policies</p> </li> </ul>",
+          "location":"querystring",
+          "locationName":"defaultPolicyType"
+        }
+      }
+    },
+    "GetLifecyclePoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "Policies":{
+          "shape":"LifecyclePolicySummaryList",
+          "documentation":"<p>Summary information about the lifecycle policies.</p>"
+        }
+      }
+    },
+    "GetLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":["PolicyId"],
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>",
+          "location":"uri",
+          "locationName":"policyId"
+        }
+      }
+    },
+    "GetLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "Policy":{
+          "shape":"LifecyclePolicy",
+          "documentation":"<p>Detailed information about the lifecycle policy.</p>"
+        }
+      }
+    },
+    "GettablePolicyStateValues":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED",
+        "ERROR"
+      ]
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The service failed in an unexpected way.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true
+    },
+    "Interval":{
+      "type":"integer",
+      "min":1
+    },
+    "IntervalUnitValues":{
+      "type":"string",
+      "enum":["HOURS"]
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"},
+        "RequiredParameters":{
+          "shape":"ParameterList",
+          "documentation":"<p>The request omitted one or more required parameters.</p>"
+        },
+        "MutuallyExclusiveParameters":{
+          "shape":"ParameterList",
+          "documentation":"<p>The request included parameters that cannot be provided together.</p>"
+        }
+      },
+      "documentation":"<p>Bad request. The request is missing required parameters or has invalid parameters.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "LifecyclePolicy":{
+      "type":"structure",
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>"
+        },
+        "Description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the lifecycle policy.</p>"
+        },
+        "State":{
+          "shape":"GettablePolicyStateValues",
+          "documentation":"<p>The activation state of the lifecycle policy.</p>"
+        },
+        "StatusMessage":{
+          "shape":"StatusMessage",
+          "documentation":"<p>The description of the status.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role used to run the operations specified by the lifecycle policy.</p>"
+        },
+        "DateCreated":{
+          "shape":"Timestamp",
+          "documentation":"<p>The local date and time when the lifecycle policy was created.</p>"
+        },
+        "DateModified":{
+          "shape":"Timestamp",
+          "documentation":"<p>The local date and time when the lifecycle policy was last modified.</p>"
+        },
+        "PolicyDetails":{
+          "shape":"PolicyDetails",
+          "documentation":"<p>The configuration of the lifecycle policy</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags.</p>"
+        },
+        "PolicyArn":{
+          "shape":"PolicyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the policy.</p>"
+        },
+        "DefaultPolicy":{
+          "shape":"DefaultPolicy",
+          "documentation":"<p>Indicates whether the policy is a default lifecycle policy or a custom lifecycle policy.</p> <ul> <li> <p> <code>true</code> - the policy is a default policy.</p> </li> <li> <p> <code>false</code> - the policy is a custom policy.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Information about a lifecycle policy.</p>"
+    },
+    "LifecyclePolicySummary":{
+      "type":"structure",
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>"
+        },
+        "Description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>The description of the lifecycle policy.</p>"
+        },
+        "State":{
+          "shape":"GettablePolicyStateValues",
+          "documentation":"<p>The activation state of the lifecycle policy.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags.</p>"
+        },
+        "PolicyType":{
+          "shape":"PolicyTypeValues",
+          "documentation":"<p>The type of policy. <code>EBS_SNAPSHOT_MANAGEMENT</code> indicates that the policy manages the lifecycle of Amazon EBS snapshots. <code>IMAGE_MANAGEMENT</code> indicates that the policy manages the lifecycle of EBS-backed AMIs. <code>EVENT_BASED_POLICY</code> indicates that the policy automates cross-account snapshot copies for snapshots that are shared with your account.</p>"
+        },
+        "DefaultPolicy":{
+          "shape":"DefaultPolicy",
+          "documentation":"<p> <b>[Default policies only]</b> The type of default policy. Values include:</p> <ul> <li> <p> <code>VOLUME</code> - Default policy for EBS snapshots</p> </li> <li> <p> <code>INSTANCE</code> - Default policy for EBS-backed AMIs</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Summary information about a lifecycle policy.</p>"
+    },
+    "LifecyclePolicySummaryList":{
+      "type":"list",
+      "member":{"shape":"LifecyclePolicySummary"}
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"},
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Value is the type of resource for which a limit was exceeded.</p>"
+        }
+      },
+      "documentation":"<p>The request failed because a limit was exceeded.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"PolicyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      }
+    },
+    "LocationValues":{
+      "type":"string",
+      "enum":[
+        "CLOUD",
+        "OUTPOST_LOCAL",
+        "LOCAL_ZONE"
+      ]
+    },
+    "NoReboot":{"type":"boolean"},
+    "Parameter":{"type":"string"},
+    "ParameterList":{
+      "type":"list",
+      "member":{"shape":"Parameter"}
+    },
+    "Parameters":{
+      "type":"structure",
+      "members":{
+        "ExcludeBootVolume":{
+          "shape":"ExcludeBootVolume",
+          "documentation":"<p> <b>[Custom snapshot policies that target instances only]</b> Indicates whether to exclude the root volume from multi-volume snapshot sets. The default is <code>false</code>. If you specify <code>true</code>, then the root volumes attached to targeted instances will be excluded from the multi-volume snapshot sets created by the policy.</p>"
+        },
+        "NoReboot":{
+          "shape":"NoReboot",
+          "documentation":"<p> <b>[Custom AMI policies only]</b> Indicates whether targeted instances are rebooted when the lifecycle policy runs. <code>true</code> indicates that targeted instances are not rebooted when the policy runs. <code>false</code> indicates that target instances are rebooted when the policy runs. The default is <code>true</code> (instances are not rebooted).</p>"
+        },
+        "ExcludeDataVolumeTags":{
+          "shape":"ExcludeDataVolumeTagList",
+          "documentation":"<p> <b>[Custom snapshot policies that target instances only]</b> The tags used to identify data (non-root) volumes to exclude from multi-volume snapshot sets.</p> <p>If you create a snapshot lifecycle policy that targets instances and you specify tags for this parameter, then data volumes with the specified tags that are attached to targeted instances will be excluded from the multi-volume snapshot sets created by the policy.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> Specifies optional parameters for snapshot and AMI policies. The set of valid parameters depends on the combination of policy type and target resource type.</p> <p>If you choose to exclude boot volumes and you specify tags that consequently exclude all of the additional data volumes attached to an instance, then Amazon Data Lifecycle Manager will not create any snapshots for the affected instance, and it will emit a <code>SnapshotsCreateFailed</code> Amazon CloudWatch metric. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitor-dlm-cw-metrics.html\">Monitor your policies using Amazon CloudWatch</a>.</p>"
+    },
+    "PolicyArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"^arn:aws(-[a-z]{1,3}){0,2}:dlm:[A-Za-z0-9_/.-]{0,63}:\\d+:policy/[0-9A-Za-z_-]{1,128}$"
+    },
+    "PolicyDescription":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "pattern":"[0-9A-Za-z _-]+"
+    },
+    "PolicyDetails":{
+      "type":"structure",
+      "members":{
+        "PolicyType":{
+          "shape":"PolicyTypeValues",
+          "documentation":"<p>The type of policy. Specify <code>EBS_SNAPSHOT_MANAGEMENT</code> to create a lifecycle policy that manages the lifecycle of Amazon EBS snapshots. Specify <code>IMAGE_MANAGEMENT</code> to create a lifecycle policy that manages the lifecycle of EBS-backed AMIs. Specify <code>EVENT_BASED_POLICY </code> to create an event-based policy that performs specific actions when a defined event occurs in your Amazon Web Services account.</p> <p>The default is <code>EBS_SNAPSHOT_MANAGEMENT</code>.</p>"
+        },
+        "ResourceTypes":{
+          "shape":"ResourceTypeValuesList",
+          "documentation":"<p> <b>[Custom snapshot policies only]</b> The target resource type for snapshot and AMI lifecycle policies. Use <code>VOLUME </code>to create snapshots of individual volumes or use <code>INSTANCE</code> to create multi-volume snapshots from the volumes for an instance.</p>"
+        },
+        "ResourceLocations":{
+          "shape":"ResourceLocationList",
+          "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> The location of the resources to backup.</p> <ul> <li> <p>If the source resources are located in a Region, specify <code>CLOUD</code>. In this case, the policy targets all resources of the specified type with matching target tags across all Availability Zones in the Region.</p> </li> <li> <p> <b>[Custom snapshot policies only]</b> If the source resources are located in a Local Zone, specify <code>LOCAL_ZONE</code>. In this case, the policy targets all resources of the specified type with matching target tags across all Local Zones in the Region.</p> </li> <li> <p>If the source resources are located on an Outpost in your account, specify <code>OUTPOST</code>. In this case, the policy targets all resources of the specified type with matching target tags across all of the Outposts in your account.</p> </li> </ul> <p/>"
+        },
+        "TargetTags":{
+          "shape":"TargetTagList",
+          "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> The single tag that identifies targeted resources for this policy.</p>"
+        },
+        "Schedules":{
+          "shape":"ScheduleList",
+          "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> The schedules of policy-defined actions for snapshot and AMI lifecycle policies. A policy can have up to four schedules—one mandatory schedule and up to three optional schedules.</p>"
+        },
+        "Parameters":{
+          "shape":"Parameters",
+          "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> A set of optional parameters for snapshot and AMI lifecycle policies. </p> <note> <p>If you are modifying a policy that was created or previously modified using the Amazon Data Lifecycle Manager console, then you must include this parameter and specify either the default values or the new values that you require. You can't omit this parameter or set its values to null.</p> </note>"
+        },
+        "EventSource":{
+          "shape":"EventSource",
+          "documentation":"<p> <b>[Event-based policies only]</b> The event that activates the event-based policy.</p>"
+        },
+        "Actions":{
+          "shape":"ActionList",
+          "documentation":"<p> <b>[Event-based policies only]</b> The actions to be performed when the event-based policy is activated. You can specify only one action per policy.</p>"
+        },
+        "PolicyLanguage":{
+          "shape":"PolicyLanguageValues",
+          "documentation":"<p>The type of policy to create. Specify one of the following:</p> <ul> <li> <p> <code>SIMPLIFIED</code> To create a default policy.</p> </li> <li> <p> <code>STANDARD</code> To create a custom policy.</p> </li> </ul>"
+        },
+        "ResourceType":{
+          "shape":"ResourceTypeValues",
+          "documentation":"<p> <b>[Default policies only]</b> Specify the type of default policy to create.</p> <ul> <li> <p>To create a default policy for EBS snapshots, that creates snapshots of all volumes in the Region that do not have recent backups, specify <code>VOLUME</code>.</p> </li> <li> <p>To create a default policy for EBS-backed AMIs, that creates EBS-backed AMIs from all instances in the Region that do not have recent backups, specify <code>INSTANCE</code>.</p> </li> </ul>"
+        },
+        "CreateInterval":{
+          "shape":"CreateInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how often the policy should run and create snapshots or AMIs. The creation frequency can range from 1 to 7 days. If you do not specify a value, the default is 1.</p> <p>Default: 1</p>"
+        },
+        "RetainInterval":{
+          "shape":"RetainInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how long the policy should retain snapshots or AMIs before deleting them. The retention period can range from 2 to 14 days, but it must be greater than the creation frequency to ensure that the policy retains at least 1 snapshot or AMI at any given time. If you do not specify a value, the default is 7.</p> <p>Default: 7</p>"
+        },
+        "CopyTags":{
+          "shape":"CopyTagsNullable",
+          "documentation":"<p> <b>[Default policies only]</b> Indicates whether the policy should copy tags from the source resource to the snapshot or AMI. If you do not specify a value, the default is <code>false</code>.</p> <p>Default: false</p>"
+        },
+        "CrossRegionCopyTargets":{
+          "shape":"CrossRegionCopyTargetList",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies destination Regions for snapshot or AMI copies. You can specify up to 3 destination Regions. If you do not want to create cross-Region copies, omit this parameter.</p>"
+        },
+        "ExtendDeletion":{
+          "shape":"ExtendDeletion",
+          "documentation":"<p> <b>[Default policies only]</b> Defines the snapshot or AMI retention behavior for the policy if the source volume or instance is deleted, or if the policy enters the error, disabled, or deleted state.</p> <p>By default (<b>ExtendDeletion=false</b>):</p> <ul> <li> <p>If a source resource is deleted, Amazon Data Lifecycle Manager will continue to delete previously created snapshots or AMIs, up to but not including the last one, based on the specified retention period. If you want Amazon Data Lifecycle Manager to delete all snapshots or AMIs, including the last one, specify <code>true</code>.</p> </li> <li> <p>If a policy enters the error, disabled, or deleted state, Amazon Data Lifecycle Manager stops deleting snapshots and AMIs. If you want Amazon Data Lifecycle Manager to continue deleting snapshots or AMIs, including the last one, if the policy enters one of these states, specify <code>true</code>.</p> </li> </ul> <p>If you enable extended deletion (<b>ExtendDeletion=true</b>), you override both default behaviors simultaneously.</p> <p>If you do not specify a value, the default is <code>false</code>.</p> <p>Default: false</p>"
+        },
+        "Exclusions":{
+          "shape":"Exclusions",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies exclusion parameters for volumes or instances for which you do not want to create snapshots or AMIs. The policy will not create snapshots or AMIs for target resources that match any of the specified exclusion parameters.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the configuration of a lifecycle policy.</p>"
+    },
+    "PolicyId":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"policy-[a-f0-9]+"
+    },
+    "PolicyIdList":{
+      "type":"list",
+      "member":{"shape":"PolicyId"}
+    },
+    "PolicyLanguageValues":{
+      "type":"string",
+      "enum":[
+        "SIMPLIFIED",
+        "STANDARD"
+      ]
+    },
+    "PolicyTypeValues":{
+      "type":"string",
+      "enum":[
+        "EBS_SNAPSHOT_MANAGEMENT",
+        "IMAGE_MANAGEMENT",
+        "EVENT_BASED_POLICY"
+      ]
+    },
+    "ResourceLocationList":{
+      "type":"list",
+      "member":{"shape":"ResourceLocationValues"},
+      "max":1,
+      "min":1
+    },
+    "ResourceLocationValues":{
+      "type":"string",
+      "enum":[
+        "CLOUD",
+        "OUTPOST",
+        "LOCAL_ZONE"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "Code":{"shape":"ErrorCode"},
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>Value is the type of resource that was not found.</p>"
+        },
+        "ResourceIds":{
+          "shape":"PolicyIdList",
+          "documentation":"<p>Value is a list of resource IDs that were not found.</p>"
+        }
+      },
+      "documentation":"<p>A requested resource was not found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ResourceTypeValues":{
+      "type":"string",
+      "enum":[
+        "VOLUME",
+        "INSTANCE"
+      ]
+    },
+    "ResourceTypeValuesList":{
+      "type":"list",
+      "member":{"shape":"ResourceTypeValues"},
+      "max":1,
+      "min":1
+    },
+    "RetainInterval":{
+      "type":"integer",
+      "min":1
+    },
+    "RetainRule":{
+      "type":"structure",
+      "members":{
+        "Count":{
+          "shape":"StandardTierRetainRuleCount",
+          "documentation":"<p>The number of snapshots to retain for each volume, up to a maximum of 1000. For example if you want to retain a maximum of three snapshots, specify <code>3</code>. When the fourth snapshot is created, the oldest retained snapshot is deleted, or it is moved to the archive tier if you have specified an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a>.</p>"
+        },
+        "Interval":{
+          "shape":"StandardTierRetainRuleInterval",
+          "documentation":"<p>The amount of time to retain each snapshot. The maximum is 100 years. This is equivalent to 1200 months, 5200 weeks, or 36500 days.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time for time-based retention. For example, to retain snapshots for 3 months, specify <code>Interval=3</code> and <code>IntervalUnit=MONTHS</code>. Once the snapshot has been retained for 3 months, it is deleted, or it is moved to the archive tier if you have specified an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> Specifies a retention rule for snapshots created by snapshot policies, or for AMIs created by AMI policies.</p> <note> <p>For snapshot policies that have an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a>, this retention rule applies to standard tier retention. When the retention threshold is met, snapshots are moved from the standard to the archive tier.</p> <p>For snapshot policies that do not have an <b>ArchiveRule</b>, snapshots are permanently deleted when this retention threshold is met.</p> </note> <p>You can retain snapshots based on either a count or a time interval.</p> <ul> <li> <p> <b>Count-based retention</b> </p> <p>You must specify <b>Count</b>. If you specify an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a> for the schedule, then you can specify a retention count of <code>0</code> to archive snapshots immediately after creation. If you specify a <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_FastRestoreRule.html\">FastRestoreRule</a>, <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ShareRule.html\">ShareRule</a>, or a <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_CrossRegionCopyRule.html\">CrossRegionCopyRule</a>, then you must specify a retention count of <code>1</code> or more.</p> </li> <li> <p> <b>Age-based retention</b> </p> <p>You must specify <b>Interval</b> and <b>IntervalUnit</b>. If you specify an <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ArchiveRule.html\">ArchiveRule</a> for the schedule, then you can specify a retention interval of <code>0</code> days to archive snapshots immediately after creation. If you specify a <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_FastRestoreRule.html\">FastRestoreRule</a>, <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_ShareRule.html\">ShareRule</a>, or a <a href=\"https://docs.aws.amazon.com/dlm/latest/APIReference/API_CrossRegionCopyRule.html\">CrossRegionCopyRule</a>, then you must specify a retention interval of <code>1</code> day or more.</p> </li> </ul>"
+    },
+    "RetentionArchiveTier":{
+      "type":"structure",
+      "members":{
+        "Count":{
+          "shape":"Count",
+          "documentation":"<p>The maximum number of snapshots to retain in the archive storage tier for each volume. The count must ensure that each snapshot remains in the archive tier for at least 90 days. For example, if the schedule creates snapshots every 30 days, you must specify a count of 3 or more to ensure that each snapshot is archived for at least 90 days.</p>"
+        },
+        "Interval":{
+          "shape":"Interval",
+          "documentation":"<p>Specifies the period of time to retain snapshots in the archive tier. After this period expires, the snapshot is permanently deleted.</p>"
+        },
+        "IntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time in which to measure the <b>Interval</b>. For example, to retain a snapshots in the archive tier for 6 months, specify <code>Interval=6</code> and <code>IntervalUnit=MONTHS</code>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies only]</b> Describes the retention rule for archived snapshots. Once the archive retention threshold is met, the snapshots are permanently deleted from the archive tier.</p> <note> <p>The archive retention rule must retain snapshots in the archive tier for a minimum of 90 days.</p> </note> <p>For <b>count-based schedules</b>, you must specify <b>Count</b>. For <b>age-based schedules</b>, you must specify <b>Interval</b> and <b> IntervalUnit</b>.</p> <p>For more information about using snapshot archiving, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshot-ami-policy.html#dlm-archive\">Considerations for snapshot lifecycle policies</a>.</p>"
+    },
+    "RetentionIntervalUnitValues":{
+      "type":"string",
+      "enum":[
+        "DAYS",
+        "WEEKS",
+        "MONTHS",
+        "YEARS"
+      ]
+    },
+    "Schedule":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule.</p>"
+        },
+        "CopyTags":{
+          "shape":"CopyTags",
+          "documentation":"<p>Copy all user-defined tags on a source volume to snapshots of the volume created by this policy.</p>"
+        },
+        "TagsToAdd":{
+          "shape":"TagsToAddList",
+          "documentation":"<p>The tags to apply to policy-created resources. These user-defined tags are in addition to the Amazon Web Services-added lifecycle tags.</p>"
+        },
+        "VariableTags":{
+          "shape":"VariableTagsList",
+          "documentation":"<p> <b>[AMI policies and snapshot policies that target instances only]</b> A collection of key/value pairs with values determined dynamically when the policy is executed. Keys may be any valid Amazon EC2 tag key. Values must be in one of the two following formats: <code>$(instance-id)</code> or <code>$(timestamp)</code>. Variable tags are only valid for EBS Snapshot Management – Instance policies.</p>"
+        },
+        "CreateRule":{
+          "shape":"CreateRule",
+          "documentation":"<p>The creation rule.</p>"
+        },
+        "RetainRule":{
+          "shape":"RetainRule",
+          "documentation":"<p>The retention rule for snapshots or AMIs created by the policy.</p>"
+        },
+        "FastRestoreRule":{
+          "shape":"FastRestoreRule",
+          "documentation":"<p> <b>[Custom snapshot policies only]</b> The rule for enabling fast snapshot restore.</p>"
+        },
+        "CrossRegionCopyRules":{
+          "shape":"CrossRegionCopyRules",
+          "documentation":"<p>Specifies a rule for copying snapshots or AMIs across Regions.</p> <note> <p>You can't specify cross-Region copy rules for policies that create snapshots on an Outpost or in a Local Zone. If the policy creates snapshots in a Region, then snapshots can be copied to up to three Regions or Outposts.</p> </note>"
+        },
+        "ShareRules":{
+          "shape":"ShareRules",
+          "documentation":"<p> <b>[Custom snapshot policies only]</b> The rule for sharing snapshots with other Amazon Web Services accounts.</p>"
+        },
+        "DeprecateRule":{
+          "shape":"DeprecateRule",
+          "documentation":"<p> <b>[Custom AMI policies only]</b> The AMI deprecation rule for the schedule.</p>"
+        },
+        "ArchiveRule":{
+          "shape":"ArchiveRule",
+          "documentation":"<p> <b>[Custom snapshot policies that target volumes only]</b> The snapshot archiving rule for the schedule. When you specify an archiving rule, snapshots are automatically moved from the standard tier to the archive tier once the schedule's retention threshold is met. Snapshots are then retained in the archive tier for the archive retention period that you specify. </p> <p>For more information about using snapshot archiving, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshot-ami-policy.html#dlm-archive\">Considerations for snapshot lifecycle policies</a>.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot and AMI policies only]</b> Specifies a schedule for a snapshot or AMI lifecycle policy.</p>"
+    },
+    "ScheduleList":{
+      "type":"list",
+      "member":{"shape":"Schedule"},
+      "max":4,
+      "min":1
+    },
+    "ScheduleName":{
+      "type":"string",
+      "max":120,
+      "min":0,
+      "pattern":"[0-9A-Za-z _-]+"
+    },
+    "Script":{
+      "type":"structure",
+      "required":["ExecutionHandler"],
+      "members":{
+        "Stages":{
+          "shape":"StagesList",
+          "documentation":"<p>Indicate which scripts Amazon Data Lifecycle Manager should run on target instances. Pre scripts run before Amazon Data Lifecycle Manager initiates snapshot creation. Post scripts run after Amazon Data Lifecycle Manager initiates snapshot creation.</p> <ul> <li> <p>To run a pre script only, specify <code>PRE</code>. In this case, Amazon Data Lifecycle Manager calls the SSM document with the <code>pre-script</code> parameter before initiating snapshot creation.</p> </li> <li> <p>To run a post script only, specify <code>POST</code>. In this case, Amazon Data Lifecycle Manager calls the SSM document with the <code>post-script</code> parameter after initiating snapshot creation.</p> </li> <li> <p>To run both pre and post scripts, specify both <code>PRE</code> and <code>POST</code>. In this case, Amazon Data Lifecycle Manager calls the SSM document with the <code>pre-script</code> parameter before initiating snapshot creation, and then it calls the SSM document again with the <code>post-script</code> parameter after initiating snapshot creation.</p> </li> </ul> <p>If you are automating VSS Backups, omit this parameter.</p> <p>Default: PRE and POST</p>"
+        },
+        "ExecutionHandlerService":{
+          "shape":"ExecutionHandlerServiceValues",
+          "documentation":"<p>Indicates the service used to execute the pre and/or post scripts.</p> <ul> <li> <p>If you are using custom SSM documents or automating application-consistent snapshots of SAP HANA workloads, specify <code>AWS_SYSTEMS_MANAGER</code>.</p> </li> <li> <p>If you are automating VSS Backups, omit this parameter.</p> </li> </ul> <p>Default: AWS_SYSTEMS_MANAGER</p>"
+        },
+        "ExecutionHandler":{
+          "shape":"ExecutionHandler",
+          "documentation":"<p>The SSM document that includes the pre and/or post scripts to run.</p> <ul> <li> <p>If you are automating VSS backups, specify <code>AWS_VSS_BACKUP</code>. In this case, Amazon Data Lifecycle Manager automatically uses the <code>AWSEC2-CreateVssSnapshot</code> SSM document.</p> </li> <li> <p>If you are automating application-consistent snapshots for SAP HANA workloads, specify <code>AWSSystemsManagerSAP-CreateDLMSnapshotForSAPHANA</code>.</p> </li> <li> <p>If you are using a custom SSM document that you own, specify either the name or ARN of the SSM document. If you are using a custom SSM document that is shared with you, specify the ARN of the SSM document.</p> </li> </ul>"
+        },
+        "ExecuteOperationOnScriptFailure":{
+          "shape":"ExecuteOperationOnScriptFailure",
+          "documentation":"<p>Indicates whether Amazon Data Lifecycle Manager should default to crash-consistent snapshots if the pre script fails.</p> <ul> <li> <p>To default to crash consistent snapshot if the pre script fails, specify <code>true</code>.</p> </li> <li> <p>To skip the instance for snapshot creation if the pre script fails, specify <code>false</code>.</p> </li> </ul> <p>This parameter is supported only if you run a pre script. If you run a post script only, omit this parameter.</p> <p>Default: true</p>"
+        },
+        "ExecutionTimeout":{
+          "shape":"ScriptExecutionTimeout",
+          "documentation":"<p>Specifies a timeout period, in seconds, after which Amazon Data Lifecycle Manager fails the script run attempt if it has not completed. If a script does not complete within its timeout period, Amazon Data Lifecycle Manager fails the attempt. The timeout period applies to the pre and post scripts individually. </p> <p>If you are automating VSS Backups, omit this parameter.</p> <p>Default: 10</p>"
+        },
+        "MaximumRetryCount":{
+          "shape":"ScriptMaximumRetryCount",
+          "documentation":"<p>Specifies the number of times Amazon Data Lifecycle Manager should retry scripts that fail.</p> <ul> <li> <p>If the pre script fails, Amazon Data Lifecycle Manager retries the entire snapshot creation process, including running the pre and post scripts.</p> </li> <li> <p>If the post script fails, Amazon Data Lifecycle Manager retries the post script only; in this case, the pre script will have completed and the snapshot might have been created.</p> </li> </ul> <p>If you do not want Amazon Data Lifecycle Manager to retry failed scripts, specify <code>0</code>.</p> <p>Default: 0</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies that target instances only]</b> Information about pre and/or post scripts for a snapshot lifecycle policy that targets instances. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/automate-app-consistent-backups.html\"> Automating application-consistent snapshots with pre and post scripts</a>.</p>"
+    },
+    "ScriptExecutionTimeout":{
+      "type":"integer",
+      "max":120,
+      "min":10
+    },
+    "ScriptMaximumRetryCount":{
+      "type":"integer",
+      "max":3,
+      "min":0
+    },
+    "ScriptsList":{
+      "type":"list",
+      "member":{"shape":"Script"},
+      "max":1,
+      "min":0
+    },
+    "SettablePolicyStateValues":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "ShareRule":{
+      "type":"structure",
+      "required":["TargetAccounts"],
+      "members":{
+        "TargetAccounts":{
+          "shape":"ShareTargetAccountList",
+          "documentation":"<p>The IDs of the Amazon Web Services accounts with which to share the snapshots.</p>"
+        },
+        "UnshareInterval":{
+          "shape":"Interval",
+          "documentation":"<p>The period after which snapshots that are shared with other Amazon Web Services accounts are automatically unshared.</p>"
+        },
+        "UnshareIntervalUnit":{
+          "shape":"RetentionIntervalUnitValues",
+          "documentation":"<p>The unit of time for the automatic unsharing interval.</p>"
+        }
+      },
+      "documentation":"<p> <b>[Custom snapshot policies only]</b> Specifies a rule for sharing snapshots across Amazon Web Services accounts.</p>"
+    },
+    "ShareRules":{
+      "type":"list",
+      "member":{"shape":"ShareRule"},
+      "max":1,
+      "min":0
+    },
+    "ShareTargetAccountList":{
+      "type":"list",
+      "member":{"shape":"AwsAccountId"},
+      "min":1
+    },
+    "SnapshotOwnerList":{
+      "type":"list",
+      "member":{"shape":"AwsAccountId"},
+      "max":50,
+      "min":0
+    },
+    "StageValues":{
+      "type":"string",
+      "enum":[
+        "PRE",
+        "POST"
+      ]
+    },
+    "StagesList":{
+      "type":"list",
+      "member":{"shape":"StageValues"},
+      "max":2,
+      "min":1
+    },
+    "StandardTierRetainRuleCount":{
+      "type":"integer",
+      "max":1000,
+      "min":0
+    },
+    "StandardTierRetainRuleInterval":{
+      "type":"integer",
+      "min":0
+    },
+    "StatusMessage":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "pattern":"[\\p{all}]*"
+    },
+    "String":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "pattern":"[\\p{all}]*"
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"String",
+          "documentation":"<p>The tag key.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The tag value.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a tag for a resource.</p>"
+    },
+    "TagFilter":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[\\p{all}]*"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"PolicyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>One or more tags.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "pattern":"[\\p{all}]*"
+    },
+    "TagsToAddFilterList":{
+      "type":"list",
+      "member":{"shape":"TagFilter"},
+      "max":50,
+      "min":0
+    },
+    "TagsToAddList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":45,
+      "min":0
+    },
+    "Target":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"^[\\w:\\-\\/\\*]+$"
+    },
+    "TargetRegion":{
+      "type":"string",
+      "max":16,
+      "min":0,
+      "pattern":"([a-z]+-){2,3}\\d"
+    },
+    "TargetTagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":1
+    },
+    "TargetTagsFilterList":{
+      "type":"list",
+      "member":{"shape":"TagFilter"},
+      "max":50,
+      "min":1
+    },
+    "Time":{
+      "type":"string",
+      "max":5,
+      "min":5,
+      "pattern":"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "TimesList":{
+      "type":"list",
+      "member":{"shape":"Time"},
+      "max":1
+    },
+    "Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"PolicyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLifecyclePolicyRequest":{
+      "type":"structure",
+      "required":["PolicyId"],
+      "members":{
+        "PolicyId":{
+          "shape":"PolicyId",
+          "documentation":"<p>The identifier of the lifecycle policy.</p>",
+          "location":"uri",
+          "locationName":"policyId"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role used to run the operations specified by the lifecycle policy.</p>"
+        },
+        "State":{
+          "shape":"SettablePolicyStateValues",
+          "documentation":"<p>The desired activation state of the lifecycle policy after creation.</p>"
+        },
+        "Description":{
+          "shape":"PolicyDescription",
+          "documentation":"<p>A description of the lifecycle policy.</p>"
+        },
+        "PolicyDetails":{
+          "shape":"PolicyDetails",
+          "documentation":"<p>The configuration of the lifecycle policy. You cannot update the policy type or the resource type.</p>"
+        },
+        "CreateInterval":{
+          "shape":"CreateInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how often the policy should run and create snapshots or AMIs. The creation frequency can range from 1 to 7 days.</p>"
+        },
+        "RetainInterval":{
+          "shape":"RetainInterval",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies how long the policy should retain snapshots or AMIs before deleting them. The retention period can range from 2 to 14 days, but it must be greater than the creation frequency to ensure that the policy retains at least 1 snapshot or AMI at any given time.</p>"
+        },
+        "CopyTags":{
+          "shape":"CopyTagsNullable",
+          "documentation":"<p> <b>[Default policies only]</b> Indicates whether the policy should copy tags from the source resource to the snapshot or AMI.</p>"
+        },
+        "ExtendDeletion":{
+          "shape":"ExtendDeletion",
+          "documentation":"<p> <b>[Default policies only]</b> Defines the snapshot or AMI retention behavior for the policy if the source volume or instance is deleted, or if the policy enters the error, disabled, or deleted state.</p> <p>By default (<b>ExtendDeletion=false</b>):</p> <ul> <li> <p>If a source resource is deleted, Amazon Data Lifecycle Manager will continue to delete previously created snapshots or AMIs, up to but not including the last one, based on the specified retention period. If you want Amazon Data Lifecycle Manager to delete all snapshots or AMIs, including the last one, specify <code>true</code>.</p> </li> <li> <p>If a policy enters the error, disabled, or deleted state, Amazon Data Lifecycle Manager stops deleting snapshots and AMIs. If you want Amazon Data Lifecycle Manager to continue deleting snapshots or AMIs, including the last one, if the policy enters one of these states, specify <code>true</code>.</p> </li> </ul> <p>If you enable extended deletion (<b>ExtendDeletion=true</b>), you override both default behaviors simultaneously.</p> <p>Default: false</p>"
+        },
+        "CrossRegionCopyTargets":{
+          "shape":"CrossRegionCopyTargetList",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies destination Regions for snapshot or AMI copies. You can specify up to 3 destination Regions. If you do not want to create cross-Region copies, omit this parameter.</p>"
+        },
+        "Exclusions":{
+          "shape":"Exclusions",
+          "documentation":"<p> <b>[Default policies only]</b> Specifies exclusion parameters for volumes or instances for which you do not want to create snapshots or AMIs. The policy will not create snapshots or AMIs for target resources that match any of the specified exclusion parameters.</p>"
+        }
+      }
+    },
+    "UpdateLifecyclePolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "VariableTagsList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":45,
+      "min":0
+    },
+    "VolumeTypeValues":{"type":"string"}
+  },
+  "documentation":"<fullname>Amazon Data Lifecycle Manager</fullname> <p>With Amazon Data Lifecycle Manager, you can manage the lifecycle of your Amazon Web Services resources. You create lifecycle policies, which are used to automate operations on the specified resources.</p> <p>Amazon Data Lifecycle Manager supports Amazon EBS volumes and snapshots. For information about using Amazon Data Lifecycle Manager with Amazon EBS, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/snapshot-lifecycle.html\"> Amazon Data Lifecycle Manager</a> in the <i>Amazon EC2 User Guide</i>.</p>"
+}

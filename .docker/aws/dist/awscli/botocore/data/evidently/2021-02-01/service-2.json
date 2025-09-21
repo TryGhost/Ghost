@@ -1,0 +1,4048 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-02-01",
+    "endpointPrefix":"evidently",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon CloudWatch Evidently",
+    "serviceId":"Evidently",
+    "signatureVersion":"v4",
+    "signingName":"evidently",
+    "uid":"evidently-2021-02-01"
+  },
+  "operations":{
+    "BatchEvaluateFeature":{
+      "name":"BatchEvaluateFeature",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/evaluations",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchEvaluateFeatureRequest"},
+      "output":{"shape":"BatchEvaluateFeatureResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This operation assigns feature variation to user sessions. For each user session, you pass in an <code>entityID</code> that represents the user. Evidently then checks the evaluation rules and assigns the variation.</p> <p>The first rules that are evaluated are the override rules. If the user's <code>entityID</code> matches an override rule, the user is served the variation specified by that rule.</p> <p>Next, if there is a launch of the feature, the user might be assigned to a variation in the launch. The chance of this depends on the percentage of users that are allocated to that launch. If the user is enrolled in the launch, the variation they are served depends on the allocation of the various feature variations used for the launch.</p> <p>If the user is not assigned to a launch, and there is an ongoing experiment for this feature, the user might be assigned to a variation in the experiment. The chance of this depends on the percentage of users that are allocated to that experiment. If the user is enrolled in the experiment, the variation they are served depends on the allocation of the various feature variations used for the experiment. </p> <p>If the user is not assigned to a launch or experiment, they are served the default variation.</p>",
+      "endpoint":{"hostPrefix":"dataplane."}
+    },
+    "CreateExperiment":{
+      "name":"CreateExperiment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/experiments",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateExperimentRequest"},
+      "output":{"shape":"CreateExperimentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Evidently <i>experiment</i>. Before you create an experiment, you must create the feature to use for the experiment.</p> <p>An experiment helps you make feature design decisions based on evidence and data. An experiment can test as many as five variations at once. Evidently collects experiment data and analyzes it by statistical methods, and provides clear recommendations about which variations perform better.</p> <p>You can optionally specify a <code>segment</code> to have the experiment consider only certain audience types in the experiment, such as using only user sessions from a certain location or who use a certain internet browser.</p> <p>Don't use this operation to update an existing experiment. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateExperiment.html\">UpdateExperiment</a>. </p>",
+      "idempotent":true
+    },
+    "CreateFeature":{
+      "name":"CreateFeature",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/features",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateFeatureRequest"},
+      "output":{"shape":"CreateFeatureResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Evidently <i>feature</i> that you want to launch or test. You can define up to five variations of a feature, and use these variations in your launches and experiments. A feature must be created in a project. For information about creating a project, see <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateProject.html\">CreateProject</a>.</p> <p>Don't use this operation to update an existing feature. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateFeature.html\">UpdateFeature</a>. </p>"
+    },
+    "CreateLaunch":{
+      "name":"CreateLaunch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/launches",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateLaunchRequest"},
+      "output":{"shape":"CreateLaunchResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a <i>launch</i> of a given feature. Before you create a launch, you must create the feature to use for the launch.</p> <p>You can use a launch to safely validate new features by serving them to a specified percentage of your users while you roll out the feature. You can monitor the performance of the new feature to help you decide when to ramp up traffic to more users. This helps you reduce risk and identify unintended consequences before you fully launch the feature.</p> <p>Don't use this operation to update an existing launch. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateLaunch.html\">UpdateLaunch</a>. </p>"
+    },
+    "CreateProject":{
+      "name":"CreateProject",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateProjectRequest"},
+      "output":{"shape":"CreateProjectResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a project, which is the logical object in Evidently that can contain features, launches, and experiments. Use projects to group similar features together.</p> <p>To update an existing project, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateProject.html\">UpdateProject</a>.</p>"
+    },
+    "CreateSegment":{
+      "name":"CreateSegment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/segments",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSegmentRequest"},
+      "output":{"shape":"CreateSegmentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Use this operation to define a <i>segment</i> of your audience. A segment is a portion of your audience that share one or more characteristics. Examples could be Chrome browser users, users in Europe, or Firefox browser users in Europe who also fit other criteria that your application collects, such as age.</p> <p>Using a segment in an experiment limits that experiment to evaluate only the users who match the segment criteria. Using one or more segments in a launch allows you to define different traffic splits for the different audience segments.</p> <p>For more information about segment pattern syntax, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html#CloudWatch-Evidently-segments-syntax.html\"> Segment rule pattern syntax</a>.</p> <p>The pattern that you define for a segment is matched against the value of <code>evaluationContext</code>, which is passed into Evidently in the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation, when Evidently assigns a feature variation to a user.</p>"
+    },
+    "DeleteExperiment":{
+      "name":"DeleteExperiment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/projects/{project}/experiments/{experiment}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteExperimentRequest"},
+      "output":{"shape":"DeleteExperimentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Evidently experiment. The feature used for the experiment is not deleted.</p> <p>To stop an experiment without deleting it, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_StopExperiment.html\">StopExperiment</a>. </p>",
+      "idempotent":true
+    },
+    "DeleteFeature":{
+      "name":"DeleteFeature",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/projects/{project}/features/{feature}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteFeatureRequest"},
+      "output":{"shape":"DeleteFeatureResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Evidently feature.</p>",
+      "idempotent":true
+    },
+    "DeleteLaunch":{
+      "name":"DeleteLaunch",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/projects/{project}/launches/{launch}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteLaunchRequest"},
+      "output":{"shape":"DeleteLaunchResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Evidently launch. The feature used for the launch is not deleted.</p> <p>To stop a launch without deleting it, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_StopLaunch.html\">StopLaunch</a>. </p>",
+      "idempotent":true
+    },
+    "DeleteProject":{
+      "name":"DeleteProject",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/projects/{project}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteProjectRequest"},
+      "output":{"shape":"DeleteProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Evidently project. Before you can delete a project, you must delete all the features that the project contains. To delete a feature, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_DeleteFeature.html\">DeleteFeature</a>.</p>",
+      "idempotent":true
+    },
+    "DeleteSegment":{
+      "name":"DeleteSegment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/segments/{segment}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSegmentRequest"},
+      "output":{"shape":"DeleteSegmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a segment. You can't delete a segment that is being used in a launch or experiment, even if that launch or experiment is not currently running.</p>",
+      "idempotent":true
+    },
+    "EvaluateFeature":{
+      "name":"EvaluateFeature",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/evaluations/{feature}",
+        "responseCode":200
+      },
+      "input":{"shape":"EvaluateFeatureRequest"},
+      "output":{"shape":"EvaluateFeatureResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This operation assigns a feature variation to one given user session. You pass in an <code>entityID</code> that represents the user. Evidently then checks the evaluation rules and assigns the variation.</p> <p>The first rules that are evaluated are the override rules. If the user's <code>entityID</code> matches an override rule, the user is served the variation specified by that rule.</p> <p>If there is a current launch with this feature that uses segment overrides, and if the user session's <code>evaluationContext</code> matches a segment rule defined in a segment override, the configuration in the segment overrides is used. For more information about segments, see <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateSegment.html\">CreateSegment</a> and <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html\">Use segments to focus your audience</a>.</p> <p>If there is a launch with no segment overrides, the user might be assigned to a variation in the launch. The chance of this depends on the percentage of users that are allocated to that launch. If the user is enrolled in the launch, the variation they are served depends on the allocation of the various feature variations used for the launch.</p> <p>If the user is not assigned to a launch, and there is an ongoing experiment for this feature, the user might be assigned to a variation in the experiment. The chance of this depends on the percentage of users that are allocated to that experiment.</p> <p>If the experiment uses a segment, then only user sessions with <code>evaluationContext</code> values that match the segment rule are used in the experiment.</p> <p>If the user is enrolled in the experiment, the variation they are served depends on the allocation of the various feature variations used for the experiment. </p> <p>If the user is not assigned to a launch or experiment, they are served the default variation.</p>",
+      "endpoint":{"hostPrefix":"dataplane."}
+    },
+    "GetExperiment":{
+      "name":"GetExperiment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/experiments/{experiment}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetExperimentRequest"},
+      "output":{"shape":"GetExperimentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the details about one experiment. You must already know the experiment name. To retrieve a list of experiments in your account, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_ListExperiments.html\">ListExperiments</a>.</p>"
+    },
+    "GetExperimentResults":{
+      "name":"GetExperimentResults",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/experiments/{experiment}/results",
+        "responseCode":200
+      },
+      "input":{"shape":"GetExperimentResultsRequest"},
+      "output":{"shape":"GetExperimentResultsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the results of a running or completed experiment. No results are available until there have been 100 events for each variation and at least 10 minutes have passed since the start of the experiment. To increase the statistical power, Evidently performs an additional offline p-value analysis at the end of the experiment. Offline p-value analysis can detect statistical significance in some cases where the anytime p-values used during the experiment do not find statistical significance.</p> <p>Experiment results are available up to 63 days after the start of the experiment. They are not available after that because of CloudWatch data retention policies.</p>"
+    },
+    "GetFeature":{
+      "name":"GetFeature",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/features/{feature}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetFeatureRequest"},
+      "output":{"shape":"GetFeatureResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the details about one feature. You must already know the feature name. To retrieve a list of features in your account, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_ListFeatures.html\">ListFeatures</a>.</p>"
+    },
+    "GetLaunch":{
+      "name":"GetLaunch",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/launches/{launch}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLaunchRequest"},
+      "output":{"shape":"GetLaunchResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the details about one launch. You must already know the launch name. To retrieve a list of launches in your account, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_ListLaunches.html\">ListLaunches</a>.</p>"
+    },
+    "GetProject":{
+      "name":"GetProject",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetProjectRequest"},
+      "output":{"shape":"GetProjectResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the details about one launch. You must already know the project name. To retrieve a list of projects in your account, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_ListProjects.html\">ListProjects</a>.</p>"
+    },
+    "GetSegment":{
+      "name":"GetSegment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/segments/{segment}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSegmentRequest"},
+      "output":{"shape":"GetSegmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about the specified segment. Specify the segment you want to view by specifying its ARN.</p>"
+    },
+    "ListExperiments":{
+      "name":"ListExperiments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/experiments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListExperimentsRequest"},
+      "output":{"shape":"ListExperimentsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns configuration details about all the experiments in the specified project.</p>"
+    },
+    "ListFeatures":{
+      "name":"ListFeatures",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/features",
+        "responseCode":200
+      },
+      "input":{"shape":"ListFeaturesRequest"},
+      "output":{"shape":"ListFeaturesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns configuration details about all the features in the specified project.</p>"
+    },
+    "ListLaunches":{
+      "name":"ListLaunches",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{project}/launches",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLaunchesRequest"},
+      "output":{"shape":"ListLaunchesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns configuration details about all the launches in the specified project.</p>"
+    },
+    "ListProjects":{
+      "name":"ListProjects",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects",
+        "responseCode":200
+      },
+      "input":{"shape":"ListProjectsRequest"},
+      "output":{"shape":"ListProjectsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns configuration details about all the projects in the current Region in your account.</p>"
+    },
+    "ListSegmentReferences":{
+      "name":"ListSegmentReferences",
+      "http":{
+        "method":"GET",
+        "requestUri":"/segments/{segment}/references",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSegmentReferencesRequest"},
+      "output":{"shape":"ListSegmentReferencesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Use this operation to find which experiments or launches are using a specified segment.</p>"
+    },
+    "ListSegments":{
+      "name":"ListSegments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/segments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSegmentsRequest"},
+      "output":{"shape":"ListSegmentsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of audience segments that you have created in your account in this Region.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Displays the tags associated with an Evidently resource.</p>"
+    },
+    "PutProjectEvents":{
+      "name":"PutProjectEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/events/projects/{project}",
+        "responseCode":200
+      },
+      "input":{"shape":"PutProjectEventsRequest"},
+      "output":{"shape":"PutProjectEventsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Sends performance events to Evidently. These events can be used to evaluate a launch or an experiment.</p>",
+      "endpoint":{"hostPrefix":"dataplane."}
+    },
+    "StartExperiment":{
+      "name":"StartExperiment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/experiments/{experiment}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartExperimentRequest"},
+      "output":{"shape":"StartExperimentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts an existing experiment. To create an experiment, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateExperiment.html\">CreateExperiment</a>.</p>"
+    },
+    "StartLaunch":{
+      "name":"StartLaunch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/launches/{launch}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartLaunchRequest"},
+      "output":{"shape":"StartLaunchResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts an existing launch. To create a launch, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateLaunch.html\">CreateLaunch</a>.</p>"
+    },
+    "StopExperiment":{
+      "name":"StopExperiment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/experiments/{experiment}/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"StopExperimentRequest"},
+      "output":{"shape":"StopExperimentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Stops an experiment that is currently running. If you stop an experiment, you can't resume it or restart it.</p>"
+    },
+    "StopLaunch":{
+      "name":"StopLaunch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects/{project}/launches/{launch}/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"StopLaunchRequest"},
+      "output":{"shape":"StopLaunchResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Stops a launch that is currently running. After you stop a launch, you will not be able to resume it or restart it. Also, it will not be evaluated as a rule for traffic allocation, and the traffic that was allocated to the launch will instead be available to the feature's experiment, if there is one. Otherwise, all traffic will be served the default variation after the launch is stopped.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified CloudWatch Evidently resource. Projects, features, launches, and experiments can be tagged.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can use the <code>TagResource</code> action with a resource that already has tags. If you specify a new tag key for the resource, this tag is appended to the list of tags associated with the alarm. If you specify a tag key that is already associated with the resource, the new tag value that you specify replaces the previous value for that tag.</p> <p>You can associate as many as 50 tags with a resource.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>",
+      "idempotent":true
+    },
+    "TestSegmentPattern":{
+      "name":"TestSegmentPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/test-segment-pattern",
+        "responseCode":200
+      },
+      "input":{"shape":"TestSegmentPatternRequest"},
+      "output":{"shape":"TestSegmentPatternResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Use this operation to test a rules pattern that you plan to use to create an audience segment. For more information about segments, see <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateSegment.html\">CreateSegment</a>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes one or more tags from the specified resource.</p>",
+      "idempotent":true
+    },
+    "UpdateExperiment":{
+      "name":"UpdateExperiment",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/projects/{project}/experiments/{experiment}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateExperimentRequest"},
+      "output":{"shape":"UpdateExperimentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an Evidently experiment. </p> <p>Don't use this operation to update an experiment's tag. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_TagResource.html\">TagResource</a>. </p>"
+    },
+    "UpdateFeature":{
+      "name":"UpdateFeature",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/projects/{project}/features/{feature}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateFeatureRequest"},
+      "output":{"shape":"UpdateFeatureResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an existing feature.</p> <p>You can't use this operation to update the tags of an existing feature. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_TagResource.html\">TagResource</a>. </p>"
+    },
+    "UpdateLaunch":{
+      "name":"UpdateLaunch",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/projects/{project}/launches/{launch}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLaunchRequest"},
+      "output":{"shape":"UpdateLaunchResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates a launch of a given feature. </p> <p>Don't use this operation to update the tags of an existing launch. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_TagResource.html\">TagResource</a>. </p>"
+    },
+    "UpdateProject":{
+      "name":"UpdateProject",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/projects/{project}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateProjectRequest"},
+      "output":{"shape":"UpdateProjectResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the description of an existing project.</p> <p>To create a new project, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateProject.html\">CreateProject</a>.</p> <p>Don't use this operation to update the data storage options of a project. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateProjectDataDelivery.html\">UpdateProjectDataDelivery</a>. </p> <p>Don't use this operation to update the tags of a project. Instead, use <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_TagResource.html\">TagResource</a>. </p>"
+    },
+    "UpdateProjectDataDelivery":{
+      "name":"UpdateProjectDataDelivery",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/projects/{project}/data-delivery",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateProjectDataDeliveryRequest"},
+      "output":{"shape":"UpdateProjectDataDeliveryResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the data storage options for this project. If you store evaluation events, you an keep them and analyze them on your own. If you choose not to store evaluation events, Evidently deletes them after using them to produce metrics and other experiment results that you can view.</p> <p>You can't specify both <code>cloudWatchLogs</code> and <code>s3Destination</code> in the same operation.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient permissions to perform this action. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AppConfigResourceId":{
+      "type":"string",
+      "pattern":"[a-z0-9]{4,7}"
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:.*"
+    },
+    "BatchEvaluateFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "project",
+        "requests"
+      ],
+      "members":{
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the feature being evaluated.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "requests":{
+          "shape":"EvaluationRequestsList",
+          "documentation":"<p>An array of structures, where each structure assigns a feature variation to one user session.</p>"
+        }
+      }
+    },
+    "BatchEvaluateFeatureResponse":{
+      "type":"structure",
+      "members":{
+        "results":{
+          "shape":"EvaluationResultsList",
+          "documentation":"<p>An array of structures, where each structure displays the results of one feature evaluation assignment to one user session.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ChangeDirectionEnum":{
+      "type":"string",
+      "enum":[
+        "INCREASE",
+        "DECREASE"
+      ]
+    },
+    "CloudWatchLogsDestination":{
+      "type":"structure",
+      "members":{
+        "logGroup":{
+          "shape":"CwLogGroupSafeName",
+          "documentation":"<p>The name of the log group where the project stores evaluation events.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing the CloudWatch Logs log group where the project stores evaluation events.</p>"
+    },
+    "CloudWatchLogsDestinationConfig":{
+      "type":"structure",
+      "members":{
+        "logGroup":{
+          "shape":"CwLogGroupSafeName",
+          "documentation":"<p>The name of the log group where the project stores evaluation events.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing the CloudWatch Logs log group where the project stores evaluation events.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource that caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource that is associated with the error.</p>"
+        }
+      },
+      "documentation":"<p>A resource was in an inconsistent state during an update or a deletion.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "metricGoals",
+        "name",
+        "project",
+        "treatments"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the experiment.</p>"
+        },
+        "metricGoals":{
+          "shape":"MetricGoalConfigList",
+          "documentation":"<p>An array of structures that defines the metrics used for the experiment, and whether a higher or lower value for each metric is the goal.</p>"
+        },
+        "name":{
+          "shape":"ExperimentName",
+          "documentation":"<p>A name for the new experiment.</p>"
+        },
+        "onlineAbConfig":{
+          "shape":"OnlineAbConfig",
+          "documentation":"<p>A structure that contains the configuration of which variation to use as the \"control\" version. tThe \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that you want to create the new experiment in.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>When Evidently assigns a particular user session to an experiment, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the experiment name as the <code>randomizationSalt</code>.</p>"
+        },
+        "samplingRate":{
+          "shape":"SplitWeight",
+          "documentation":"<p>The portion of the available audience that you want to allocate to this experiment, in thousandths of a percent. The available audience is the total audience minus the audience that you have allocated to overrides or current launches of this feature.</p> <p>This is represented in thousandths of a percent. For example, specify 10,000 to allocate 10% of the available audience.</p>",
+          "box":true
+        },
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>Specifies an audience <i>segment</i> to use in the experiment. When a segment is used in an experiment, only user sessions that match the segment pattern are used in the experiment.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the experiment.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with an experiment.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>"
+        },
+        "treatments":{
+          "shape":"TreatmentConfigList",
+          "documentation":"<p>An array of structures that describe the configuration of each feature variation used in the experiment.</p>"
+        }
+      }
+    },
+    "CreateExperimentResponse":{
+      "type":"structure",
+      "required":["experiment"],
+      "members":{
+        "experiment":{
+          "shape":"Experiment",
+          "documentation":"<p>A structure containing the configuration details of the experiment that you created.</p>"
+        }
+      }
+    },
+    "CreateFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "project",
+        "variations"
+      ],
+      "members":{
+        "defaultVariation":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation to use as the default variation. The default variation is served to users who are not allocated to any ongoing launches or experiments of this feature.</p> <p>This variation must also be listed in the <code>variations</code> structure.</p> <p>If you omit <code>defaultVariation</code>, the first variation listed in the <code>variations</code> structure is used as the default variation.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the feature.</p>"
+        },
+        "entityOverrides":{
+          "shape":"EntityOverrideMap",
+          "documentation":"<p>Specify users that should always be served a specific variation of a feature. Each user is specified by a key-value pair . For each key, specify a user by entering their user ID, account ID, or some other identifier. For the value, specify the name of the variation that they are to be served.</p> <p>This parameter is limited to 2500 overrides or a total of 40KB. The 40KB limit includes an overhead of 6 bytes per override.</p>"
+        },
+        "evaluationStrategy":{
+          "shape":"FeatureEvaluationStrategy",
+          "documentation":"<p>Specify <code>ALL_RULES</code> to activate the traffic allocation specified by any ongoing launches or experiments. Specify <code>DEFAULT_VARIATION</code> to serve the default variation to all users instead.</p>"
+        },
+        "name":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name for the new feature.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that is to contain the new feature.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the feature.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with a feature.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>"
+        },
+        "variations":{
+          "shape":"VariationConfigsList",
+          "documentation":"<p>An array of structures that contain the configuration of the feature's different variations.</p>"
+        }
+      }
+    },
+    "CreateFeatureResponse":{
+      "type":"structure",
+      "members":{
+        "feature":{
+          "shape":"Feature",
+          "documentation":"<p>A structure that contains information about the new feature.</p>"
+        }
+      }
+    },
+    "CreateLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "groups",
+        "name",
+        "project"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description for the launch.</p>"
+        },
+        "groups":{
+          "shape":"LaunchGroupConfigList",
+          "documentation":"<p>An array of structures that contains the feature and variations that are to be used for the launch.</p>"
+        },
+        "metricMonitors":{
+          "shape":"MetricMonitorConfigList",
+          "documentation":"<p>An array of structures that define the metrics that will be used to monitor the launch performance.</p>"
+        },
+        "name":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name for the new launch.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that you want to create the launch in.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>When Evidently assigns a particular user session to a launch, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the launch name as the <code>randomizationSalt</code>.</p>"
+        },
+        "scheduledSplitsConfig":{
+          "shape":"ScheduledSplitsLaunchConfig",
+          "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the launch.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with a launch.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>"
+        }
+      }
+    },
+    "CreateLaunchResponse":{
+      "type":"structure",
+      "required":["launch"],
+      "members":{
+        "launch":{
+          "shape":"Launch",
+          "documentation":"<p>A structure that contains the configuration of the launch that was created.</p>"
+        }
+      }
+    },
+    "CreateProjectRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "appConfigResource":{
+          "shape":"ProjectAppConfigResourceConfig",
+          "documentation":"<p>Use this parameter if the project will use <i>client-side evaluation powered by AppConfig</i>. Client-side evaluation allows your application to assign variations to user sessions locally instead of by calling the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation. This mitigates the latency and availability risks that come with an API call. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-client-side-evaluation.html\"> Client-side evaluation - powered by AppConfig.</a> </p> <p>This parameter is a structure that contains information about the AppConfig application and environment that will be used as for client-side evaluation.</p> <p>To create a project that uses client-side evaluation, you must have the <code>evidently:ExportProjectAsConfiguration</code> permission.</p>"
+        },
+        "dataDelivery":{
+          "shape":"ProjectDataDeliveryConfig",
+          "documentation":"<p>A structure that contains information about where Evidently is to store evaluation events for longer term storage, if you choose to do so. If you choose not to store these events, Evidently deletes them after using them to produce metrics and other experiment results that you can view.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the project.</p>"
+        },
+        "name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name for the project.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the project.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with a project.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>"
+        }
+      }
+    },
+    "CreateProjectResponse":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"Project",
+          "documentation":"<p>A structure that contains information about the created project.</p>"
+        }
+      }
+    },
+    "CreateSegmentRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "pattern"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description for this segment.</p>"
+        },
+        "name":{
+          "shape":"SegmentName",
+          "documentation":"<p>A name for the segment.</p>"
+        },
+        "pattern":{
+          "shape":"SegmentPattern",
+          "documentation":"<p>The pattern to use for the segment. For more information about pattern syntax, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html#CloudWatch-Evidently-segments-syntax.html\"> Segment rule pattern syntax</a>.</p>",
+          "jsonvalue":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Assigns one or more tags (key-value pairs) to the segment.</p> <p>Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values.</p> <p>Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters.</p> <p>You can associate as many as 50 tags with a segment.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html\">Tagging Amazon Web Services resources</a>.</p>"
+        }
+      }
+    },
+    "CreateSegmentResponse":{
+      "type":"structure",
+      "required":["segment"],
+      "members":{
+        "segment":{
+          "shape":"Segment",
+          "documentation":"<p>A structure that contains the complete information about the segment that was just created.</p>"
+        }
+      }
+    },
+    "CwDimensionSafeName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[\\S]+$"
+    },
+    "CwLogGroupSafeName":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._/]+$"
+    },
+    "DeleteExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "experiment",
+        "project"
+      ],
+      "members":{
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment to delete.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment to delete.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "DeleteExperimentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "feature",
+        "project"
+      ],
+      "members":{
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature to delete.</p>",
+          "location":"uri",
+          "locationName":"feature"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the feature to delete.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "DeleteFeatureResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "launch",
+        "project"
+      ],
+      "members":{
+        "launch":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch to delete.</p>",
+          "location":"uri",
+          "locationName":"launch"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch to delete.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "DeleteLaunchResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteProjectRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to delete.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "DeleteProjectResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSegmentRequest":{
+      "type":"structure",
+      "required":["segment"],
+      "members":{
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>Specifies the segment to delete.</p>",
+          "location":"uri",
+          "locationName":"segment"
+        }
+      }
+    },
+    "DeleteSegmentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":160,
+      "min":0,
+      "pattern":".*"
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "DoubleValueList":{
+      "type":"list",
+      "member":{"shape":"Double"},
+      "max":100800,
+      "min":0
+    },
+    "EntityId":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":".*"
+    },
+    "EntityOverrideMap":{
+      "type":"map",
+      "key":{"shape":"EntityId"},
+      "value":{"shape":"VariationName"},
+      "max":2500,
+      "min":0
+    },
+    "ErrorCodeEnum":{
+      "type":"string",
+      "documentation":"<p>Recommended errors from AWS API standards: https://w.amazon.com/bin/view/AWS/API_Standards/Exceptions ErrorCode = &quot;ValidationException&quot;|&quot;ServiceQuotaExceededException&quot;|&quot;AccessDeniedException&quot;|&quot;ResourceNotFoundException&quot;|&quot;ConflictException&quot;|&quot;ThrottlingException&quot;|&quot;InternalServerException&quot;|string;</p>",
+      "max":64,
+      "min":1
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".*"
+    },
+    "EvaluateFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "feature",
+        "project"
+      ],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>An internal ID that represents a unique user of the application. This <code>entityID</code> is checked against any override rules assigned for this feature.</p>"
+        },
+        "evaluationContext":{
+          "shape":"JsonValue",
+          "documentation":"<p>A JSON object of attributes that you can optionally pass in as part of the evaluation event sent to Evidently from the user session. Evidently can use this value to match user sessions with defined audience segments. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html\">Use segments to focus your audience</a>.</p> <p>If you include this parameter, the value must be a JSON object. A JSON array is not supported.</p>",
+          "jsonvalue":true
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature being evaluated.</p>",
+          "location":"uri",
+          "locationName":"feature"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains this feature.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "EvaluateFeatureResponse":{
+      "type":"structure",
+      "members":{
+        "details":{
+          "shape":"JsonValue",
+          "documentation":"<p>If this user was assigned to a launch or experiment, this field lists the launch or experiment name.</p>",
+          "jsonvalue":true
+        },
+        "reason":{
+          "shape":"String",
+          "documentation":"<p>Specifies the reason that the user session was assigned this variation. Possible values include <code>DEFAULT</code>, meaning the user was served the default variation; <code>LAUNCH_RULE_MATCH</code>, if the user session was enrolled in a launch; <code>EXPERIMENT_RULE_MATCH</code>, if the user session was enrolled in an experiment; or <code>ENTITY_OVERRIDES_MATCH</code>, if the user's <code>entityId</code> matches an override rule.</p>"
+        },
+        "value":{
+          "shape":"VariableValue",
+          "documentation":"<p>The value assigned to this variation to differentiate it from the other variations of this feature.</p>"
+        },
+        "variation":{
+          "shape":"String",
+          "documentation":"<p>The name of the variation that was served to the user session.</p>"
+        }
+      }
+    },
+    "EvaluationRequest":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "feature"
+      ],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>An internal ID that represents a unique user session of the application. This <code>entityID</code> is checked against any override rules assigned for this feature.</p>"
+        },
+        "evaluationContext":{
+          "shape":"JsonValue",
+          "documentation":"<p>A JSON block of attributes that you can optionally pass in. This JSON block is included in the evaluation events sent to Evidently from the user session. </p>",
+          "jsonvalue":true
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature being evaluated.</p>"
+        }
+      },
+      "documentation":"<p>This structure assigns a feature variation to one user session.</p>"
+    },
+    "EvaluationRequestsList":{
+      "type":"list",
+      "member":{"shape":"EvaluationRequest"},
+      "max":20,
+      "min":1
+    },
+    "EvaluationResult":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "feature"
+      ],
+      "members":{
+        "details":{
+          "shape":"JsonValue",
+          "documentation":"<p>If this user was assigned to a launch or experiment, this field lists the launch or experiment name.</p>",
+          "jsonvalue":true
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>An internal ID that represents a unique user session of the application.</p>"
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature being evaluated.</p>"
+        },
+        "project":{
+          "shape":"Arn",
+          "documentation":"<p>The name or ARN of the project that contains the feature being evaluated.</p>"
+        },
+        "reason":{
+          "shape":"String",
+          "documentation":"<p>Specifies the reason that the user session was assigned this variation. Possible values include <code>DEFAULT</code>, meaning the user was served the default variation; <code>LAUNCH_RULE_MATCH</code>, if the user session was enrolled in a launch; or <code>EXPERIMENT_RULE_MATCH</code>, if the user session was enrolled in an experiment.</p>"
+        },
+        "value":{
+          "shape":"VariableValue",
+          "documentation":"<p>The value assigned to this variation to differentiate it from the other variations of this feature.</p>"
+        },
+        "variation":{
+          "shape":"String",
+          "documentation":"<p>The name of the variation that was served to the user session.</p>"
+        }
+      },
+      "documentation":"<p>This structure displays the results of one feature evaluation assignment to one user session.</p>"
+    },
+    "EvaluationResultsList":{
+      "type":"list",
+      "member":{"shape":"EvaluationResult"}
+    },
+    "EvaluationRule":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "name":{
+          "shape":"RuleName",
+          "documentation":"<p>The name of the experiment or launch.</p>"
+        },
+        "type":{
+          "shape":"RuleType",
+          "documentation":"<p>This value is <code>aws.evidently.splits</code> if this is an evaluation rule for a launch, and it is <code>aws.evidently.onlineab</code> if this is an evaluation rule for an experiment.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the information about an evaluation rule for this feature, if it is used in a launch or experiment.</p>"
+    },
+    "EvaluationRulesList":{
+      "type":"list",
+      "member":{"shape":"EvaluationRule"}
+    },
+    "Event":{
+      "type":"structure",
+      "required":[
+        "data",
+        "timestamp",
+        "type"
+      ],
+      "members":{
+        "data":{
+          "shape":"JsonValue",
+          "documentation":"<p>The event data.</p>",
+          "jsonvalue":true
+        },
+        "timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the event.</p>"
+        },
+        "type":{
+          "shape":"EventType",
+          "documentation":"<p> <code>aws.evidently.evaluation</code> specifies an evaluation event, which determines which feature variation that a user sees. <code>aws.evidently.custom</code> specifies a custom event, which generates metrics from user actions such as clicks and checkouts.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the information about one evaluation event or custom event sent to Evidently. This is a JSON payload. If this event specifies a pre-defined event type, the payload must follow the defined event schema.</p>"
+    },
+    "EventList":{
+      "type":"list",
+      "member":{"shape":"Event"},
+      "max":50,
+      "min":0
+    },
+    "EventType":{
+      "type":"string",
+      "enum":[
+        "aws.evidently.evaluation",
+        "aws.evidently.custom"
+      ]
+    },
+    "Experiment":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "lastUpdatedTime",
+        "name",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"ExperimentArn",
+          "documentation":"<p>The ARN of the experiment.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment is first created.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the experiment.</p>"
+        },
+        "execution":{
+          "shape":"ExperimentExecution",
+          "documentation":"<p>A structure that contains the date and time that the experiment started and ended.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment was most recently updated.</p>"
+        },
+        "metricGoals":{
+          "shape":"MetricGoalsList",
+          "documentation":"<p>An array of structures that defines the metrics used for the experiment, and whether a higher or lower value for each metric is the goal.</p>"
+        },
+        "name":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment.</p>"
+        },
+        "onlineAbDefinition":{
+          "shape":"OnlineAbDefinition",
+          "documentation":"<p>A structure that contains the configuration of which variation to use as the \"control\" version. The \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.</p>"
+        },
+        "project":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The name or ARN of the project that contains this experiment.</p>"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>This value is used when Evidently assigns a particular user session to the experiment. It helps create a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>.</p>"
+        },
+        "samplingRate":{
+          "shape":"SplitWeight",
+          "documentation":"<p>In thousandths of a percent, the amount of the available audience that is allocated to this experiment. The available audience is the total audience minus the audience that you have allocated to overrides or current launches of this feature.</p> <p>This is represented in thousandths of a percent, so a value of 10,000 is 10% of the available audience.</p>"
+        },
+        "schedule":{
+          "shape":"ExperimentSchedule",
+          "documentation":"<p>A structure that contains the time and date that Evidently completed the analysis of the experiment.</p>"
+        },
+        "segment":{
+          "shape":"SegmentArn",
+          "documentation":"<p>The audience segment being used for the experiment, if a segment is being used.</p>"
+        },
+        "status":{
+          "shape":"ExperimentStatus",
+          "documentation":"<p>The current state of the experiment.</p>"
+        },
+        "statusReason":{
+          "shape":"Description",
+          "documentation":"<p>If the experiment was stopped, this is the string that was entered by the person who stopped the experiment, to explain why it was stopped.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this experiment.</p>"
+        },
+        "treatments":{
+          "shape":"TreatmentList",
+          "documentation":"<p>An array of structures that describe the configuration of each feature variation used in the experiment.</p>"
+        },
+        "type":{
+          "shape":"ExperimentType",
+          "documentation":"<p>The type of this experiment. Currently, this value must be <code>aws.experiment.onlineab</code>.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing the configuration details of an experiment.</p>"
+    },
+    "ExperimentArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[-a-zA-Z0-9._]*/experiment/[-a-zA-Z0-9._]*"
+    },
+    "ExperimentBaseStat":{
+      "type":"string",
+      "enum":["Mean"]
+    },
+    "ExperimentExecution":{
+      "type":"structure",
+      "members":{
+        "endedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment ended.</p>"
+        },
+        "startedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment started.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the date and time that the experiment started and ended.</p>"
+    },
+    "ExperimentList":{
+      "type":"list",
+      "member":{"shape":"Experiment"}
+    },
+    "ExperimentName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "ExperimentReport":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"JsonValue",
+          "documentation":"<p>The content of the report.</p>",
+          "jsonvalue":true
+        },
+        "metricName":{
+          "shape":"CwDimensionSafeName",
+          "documentation":"<p>The name of the metric that is analyzed in this experiment report.</p>"
+        },
+        "reportName":{
+          "shape":"ExperimentReportName",
+          "documentation":"<p>The type of analysis used for this report.</p>"
+        },
+        "treatmentName":{
+          "shape":"TreatmentName",
+          "documentation":"<p>The name of the variation that this report pertains to.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains results of an experiment.</p>"
+    },
+    "ExperimentReportList":{
+      "type":"list",
+      "member":{"shape":"ExperimentReport"},
+      "max":1000,
+      "min":0
+    },
+    "ExperimentReportName":{
+      "type":"string",
+      "enum":["BayesianInference"]
+    },
+    "ExperimentReportNameList":{
+      "type":"list",
+      "member":{"shape":"ExperimentReportName"},
+      "max":5,
+      "min":0
+    },
+    "ExperimentResultRequestType":{
+      "type":"string",
+      "enum":[
+        "BaseStat",
+        "TreatmentEffect",
+        "ConfidenceInterval",
+        "PValue"
+      ]
+    },
+    "ExperimentResultRequestTypeList":{
+      "type":"list",
+      "member":{"shape":"ExperimentResultRequestType"},
+      "max":5,
+      "min":0
+    },
+    "ExperimentResultResponseType":{
+      "type":"string",
+      "enum":[
+        "Mean",
+        "TreatmentEffect",
+        "ConfidenceIntervalUpperBound",
+        "ConfidenceIntervalLowerBound",
+        "PValue"
+      ]
+    },
+    "ExperimentResultsData":{
+      "type":"structure",
+      "members":{
+        "metricName":{
+          "shape":"CwDimensionSafeName",
+          "documentation":"<p>The name of the metric.</p>"
+        },
+        "resultStat":{
+          "shape":"ExperimentResultResponseType",
+          "documentation":"<p>The experiment statistic that these results pertain to.</p>"
+        },
+        "treatmentName":{
+          "shape":"TreatmentName",
+          "documentation":"<p>The treatment, or variation, that returned the <code>values</code> in this structure.</p>"
+        },
+        "values":{
+          "shape":"DoubleValueList",
+          "documentation":"<p>The values for the <code>metricName</code> that were recorded in the experiment.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains experiment results for one metric that is monitored in the experiment.</p>"
+    },
+    "ExperimentResultsDataList":{
+      "type":"list",
+      "member":{"shape":"ExperimentResultsData"},
+      "max":1000,
+      "min":0
+    },
+    "ExperimentSchedule":{
+      "type":"structure",
+      "members":{
+        "analysisCompleteTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time and date that Evidently completed the analysis of the experiment.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the time and date that Evidently completed the analysis of the experiment.</p>"
+    },
+    "ExperimentStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "UPDATING",
+        "RUNNING",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "ExperimentStopDesiredState":{
+      "type":"string",
+      "enum":[
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "ExperimentType":{
+      "type":"string",
+      "enum":["aws.evidently.onlineab"]
+    },
+    "Feature":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "evaluationStrategy",
+        "lastUpdatedTime",
+        "name",
+        "status",
+        "valueType",
+        "variations"
+      ],
+      "members":{
+        "arn":{
+          "shape":"FeatureArn",
+          "documentation":"<p>The ARN of the feature.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the feature is created.</p>"
+        },
+        "defaultVariation":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation that is used as the default variation. The default variation is served to users who are not allocated to any ongoing launches or experiments of this feature.</p> <p>This variation must also be listed in the <code>variations</code> structure.</p> <p>If you omit <code>defaultVariation</code>, the first variation listed in the <code>variations</code> structure is used as the default variation.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the feature.</p>"
+        },
+        "entityOverrides":{
+          "shape":"EntityOverrideMap",
+          "documentation":"<p>A set of key-value pairs that specify users who should always be served a specific variation of a feature. Each key specifies a user using their user ID, account ID, or some other identifier. The value specifies the name of the variation that the user is to be served.</p> <p>For the override to be successful, the value of the key must match the <code>entityId</code> used in the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation.</p>"
+        },
+        "evaluationRules":{
+          "shape":"EvaluationRulesList",
+          "documentation":"<p>An array of structures that define the evaluation rules for the feature.</p>"
+        },
+        "evaluationStrategy":{
+          "shape":"FeatureEvaluationStrategy",
+          "documentation":"<p>If this value is <code>ALL_RULES</code>, the traffic allocation specified by any ongoing launches or experiments is being used. If this is <code>DEFAULT_VARIATION</code>, the default variation is being served to all users.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the feature was most recently updated.</p>"
+        },
+        "name":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature.</p>"
+        },
+        "project":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The name or ARN of the project that contains the feature.</p>"
+        },
+        "status":{
+          "shape":"FeatureStatus",
+          "documentation":"<p>The current state of the feature.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this feature.</p>"
+        },
+        "valueType":{
+          "shape":"VariationValueType",
+          "documentation":"<p>Defines the type of value used to define the different feature variations. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-variationtypes.html\">Variation types</a> </p>"
+        },
+        "variations":{
+          "shape":"VariationsList",
+          "documentation":"<p>An array of structures that contain the configuration of the feature's different variations.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains information about one Evidently feature in your account.</p>"
+    },
+    "FeatureArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[-a-zA-Z0-9._]*/feature/[-a-zA-Z0-9._]*"
+    },
+    "FeatureEvaluationStrategy":{
+      "type":"string",
+      "enum":[
+        "ALL_RULES",
+        "DEFAULT_VARIATION"
+      ]
+    },
+    "FeatureName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "FeatureStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "UPDATING"
+      ]
+    },
+    "FeatureSummariesList":{
+      "type":"list",
+      "member":{"shape":"FeatureSummary"}
+    },
+    "FeatureSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "evaluationStrategy",
+        "lastUpdatedTime",
+        "name",
+        "status"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the feature.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the feature is created.</p>"
+        },
+        "defaultVariation":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation that is used as the default variation. The default variation is served to users who are not allocated to any ongoing launches or experiments of this feature.</p>"
+        },
+        "evaluationRules":{
+          "shape":"EvaluationRulesList",
+          "documentation":"<p>An array of structures that define</p>"
+        },
+        "evaluationStrategy":{
+          "shape":"FeatureEvaluationStrategy",
+          "documentation":"<p>If this value is <code>ALL_RULES</code>, the traffic allocation specified by any ongoing launches or experiments is being used. If this is <code>DEFAULT_VARIATION</code>, the default variation is being served to all users.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the feature was most recently updated.</p>"
+        },
+        "name":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the feature.</p>"
+        },
+        "status":{
+          "shape":"FeatureStatus",
+          "documentation":"<p>The current state of the feature.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this feature.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains information about one Evidently feature in your account.</p>"
+    },
+    "FeatureToVariationMap":{
+      "type":"map",
+      "key":{"shape":"FeatureName"},
+      "value":{"shape":"VariationName"}
+    },
+    "GetExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "experiment",
+        "project"
+      ],
+      "members":{
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment that you want to see the details of.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "GetExperimentResponse":{
+      "type":"structure",
+      "members":{
+        "experiment":{
+          "shape":"Experiment",
+          "documentation":"<p>A structure containing the configuration details of the experiment.</p>"
+        }
+      }
+    },
+    "GetExperimentResultsRequest":{
+      "type":"structure",
+      "required":[
+        "experiment",
+        "metricNames",
+        "project",
+        "treatmentNames"
+      ],
+      "members":{
+        "baseStat":{
+          "shape":"ExperimentBaseStat",
+          "documentation":"<p>The statistic used to calculate experiment results. Currently the only valid value is <code>mean</code>, which uses the mean of the collected values as the statistic.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment ended, if it is completed. This must be no longer than 30 days after the experiment start time.</p>"
+        },
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment to retrieve the results of.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "metricNames":{
+          "shape":"MetricNameList",
+          "documentation":"<p>The names of the experiment metrics that you want to see the results of.</p>"
+        },
+        "period":{
+          "shape":"ResultsPeriod",
+          "documentation":"<p>In seconds, the amount of time to aggregate results together. </p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment that you want to see the results of.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "reportNames":{
+          "shape":"ExperimentReportNameList",
+          "documentation":"<p>The names of the report types that you want to see. Currently, <code>BayesianInference</code> is the only valid value.</p>"
+        },
+        "resultStats":{
+          "shape":"ExperimentResultRequestTypeList",
+          "documentation":"<p>The statistics that you want to see in the returned results.</p> <ul> <li> <p> <code>PValue</code> specifies to use p-values for the results. A p-value is used in hypothesis testing to measure how often you are willing to make a mistake in rejecting the null hypothesis. A general practice is to reject the null hypothesis and declare that the results are statistically significant when the p-value is less than 0.05.</p> </li> <li> <p> <code>ConfidenceInterval</code> specifies a confidence interval for the results. The confidence interval represents the range of values for the chosen metric that is likely to contain the true difference between the <code>baseStat</code> of a variation and the baseline. Evidently returns the 95% confidence interval. </p> </li> <li> <p> <code>TreatmentEffect</code> is the difference in the statistic specified by the <code>baseStat</code> parameter between each variation and the default variation. </p> </li> <li> <p> <code>BaseStat</code> returns the statistical values collected for the metric for each variation. The statistic uses the same statistic specified in the <code>baseStat</code> parameter. Therefore, if <code>baseStat</code> is <code>mean</code>, this returns the mean of the values collected for each variation.</p> </li> </ul>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment started.</p>"
+        },
+        "treatmentNames":{
+          "shape":"TreatmentNameList",
+          "documentation":"<p>The names of the experiment treatments that you want to see the results for.</p>"
+        }
+      }
+    },
+    "GetExperimentResultsResponse":{
+      "type":"structure",
+      "members":{
+        "details":{
+          "shape":"String",
+          "documentation":"<p>If the experiment doesn't yet have enough events to provide valid results, this field is returned with the message <code>Not enough events to generate results</code>. If there are enough events to provide valid results, this field is not returned.</p>"
+        },
+        "reports":{
+          "shape":"ExperimentReportList",
+          "documentation":"<p>An array of structures that include the reports that you requested.</p>"
+        },
+        "resultsData":{
+          "shape":"ExperimentResultsDataList",
+          "documentation":"<p>An array of structures that include experiment results including metric names and values. </p>"
+        },
+        "timestamps":{
+          "shape":"TimestampList",
+          "documentation":"<p>The timestamps of each result returned.</p>"
+        }
+      }
+    },
+    "GetFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "feature",
+        "project"
+      ],
+      "members":{
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature that you want to retrieve information for.</p>",
+          "location":"uri",
+          "locationName":"feature"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the feature.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "GetFeatureResponse":{
+      "type":"structure",
+      "required":["feature"],
+      "members":{
+        "feature":{
+          "shape":"Feature",
+          "documentation":"<p>A structure containing the configuration details of the feature.</p>"
+        }
+      }
+    },
+    "GetLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "launch",
+        "project"
+      ],
+      "members":{
+        "launch":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch that you want to see the details of.</p>",
+          "location":"uri",
+          "locationName":"launch"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "GetLaunchResponse":{
+      "type":"structure",
+      "members":{
+        "launch":{
+          "shape":"Launch",
+          "documentation":"<p>A structure containing the configuration details of the launch.</p>"
+        }
+      }
+    },
+    "GetProjectRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that you want to see the details of.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "GetProjectResponse":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"Project",
+          "documentation":"<p>A structure containing the configuration details of the project.</p>"
+        }
+      }
+    },
+    "GetSegmentRequest":{
+      "type":"structure",
+      "required":["segment"],
+      "members":{
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>The ARN of the segment to return information for.</p>",
+          "location":"uri",
+          "locationName":"segment"
+        }
+      }
+    },
+    "GetSegmentResponse":{
+      "type":"structure",
+      "required":["segment"],
+      "members":{
+        "segment":{
+          "shape":"Segment",
+          "documentation":"<p>A structure that contains the complete information about the segment.</p>"
+        }
+      }
+    },
+    "GroupName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "GroupToWeightMap":{
+      "type":"map",
+      "key":{"shape":"GroupName"},
+      "value":{"shape":"SplitWeight"},
+      "max":5,
+      "min":0
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Unexpected error while processing the request. Retry the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "JsonPath":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*"
+    },
+    "JsonValue":{"type":"string"},
+    "Launch":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "lastUpdatedTime",
+        "name",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"LaunchArn",
+          "documentation":"<p>The ARN of the launch.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the launch is created.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the launch.</p>"
+        },
+        "execution":{
+          "shape":"LaunchExecution",
+          "documentation":"<p>A structure that contains information about the start and end times of the launch.</p>"
+        },
+        "groups":{
+          "shape":"LaunchGroupList",
+          "documentation":"<p>An array of structures that define the feature variations that are being used in the launch.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the launch was most recently updated.</p>"
+        },
+        "metricMonitors":{
+          "shape":"MetricMonitorList",
+          "documentation":"<p>An array of structures that define the metrics that are being used to monitor the launch performance.</p>"
+        },
+        "name":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch.</p>"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>This value is used when Evidently assigns a particular user session to the launch, to help create a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>.</p>"
+        },
+        "scheduledSplitsDefinition":{
+          "shape":"ScheduledSplitsLaunchDefinition",
+          "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch.</p>"
+        },
+        "status":{
+          "shape":"LaunchStatus",
+          "documentation":"<p>The current state of the launch.</p>"
+        },
+        "statusReason":{
+          "shape":"Description",
+          "documentation":"<p>If the launch was stopped, this is the string that was entered by the person who stopped the launch, to explain why it was stopped.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this launch.</p>"
+        },
+        "type":{
+          "shape":"LaunchType",
+          "documentation":"<p>The type of launch.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the configuration details of one Evidently launch.</p>"
+    },
+    "LaunchArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[-a-zA-Z0-9._]*/launch/[-a-zA-Z0-9._]*"
+    },
+    "LaunchExecution":{
+      "type":"structure",
+      "members":{
+        "endedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the launch ended.</p>"
+        },
+        "startedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the launch started.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains information about the start and end times of the launch.</p>"
+    },
+    "LaunchGroup":{
+      "type":"structure",
+      "required":[
+        "featureVariations",
+        "name"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the launch group.</p>"
+        },
+        "featureVariations":{
+          "shape":"FeatureToVariationMap",
+          "documentation":"<p>The feature variation for this launch group. This is a key-value pair.</p>"
+        },
+        "name":{
+          "shape":"GroupName",
+          "documentation":"<p>The name of the launch group.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines one launch group in a launch. A launch group is a variation of the feature that you are including in the launch.</p>"
+    },
+    "LaunchGroupConfig":{
+      "type":"structure",
+      "required":[
+        "feature",
+        "name",
+        "variation"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the launch group.</p>"
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The feature that this launch is using.</p>"
+        },
+        "name":{
+          "shape":"GroupName",
+          "documentation":"<p>A name for this launch group.</p>"
+        },
+        "variation":{
+          "shape":"VariationName",
+          "documentation":"<p>The feature variation to use for this launch group.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines one launch group in a launch. A launch group is a variation of the feature that you are including in the launch.</p>"
+    },
+    "LaunchGroupConfigList":{
+      "type":"list",
+      "member":{"shape":"LaunchGroupConfig"},
+      "max":5,
+      "min":1
+    },
+    "LaunchGroupList":{
+      "type":"list",
+      "member":{"shape":"LaunchGroup"}
+    },
+    "LaunchName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "LaunchStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "UPDATING",
+        "RUNNING",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "LaunchStopDesiredState":{
+      "type":"string",
+      "enum":[
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "LaunchType":{
+      "type":"string",
+      "enum":["aws.evidently.splits"]
+    },
+    "LaunchesList":{
+      "type":"list",
+      "member":{"shape":"Launch"}
+    },
+    "ListExperimentsRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxExperiments",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListExperiments</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to return the experiment list from.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "status":{
+          "shape":"ExperimentStatus",
+          "documentation":"<p>Use this optional parameter to limit the returned results to only the experiments with the status that you specify here.</p>",
+          "location":"querystring",
+          "locationName":"status"
+        }
+      }
+    },
+    "ListExperimentsResponse":{
+      "type":"structure",
+      "members":{
+        "experiments":{
+          "shape":"ExperimentList",
+          "documentation":"<p>An array of structures that contain the configuration details of the experiments in the specified project.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListExperiments</code> operation to return the next set of results.</p>"
+        }
+      }
+    },
+    "ListFeaturesRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxFeatures",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListFeatures</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to return the feature list from.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "ListFeaturesResponse":{
+      "type":"structure",
+      "members":{
+        "features":{
+          "shape":"FeatureSummariesList",
+          "documentation":"<p>An array of structures that contain the configuration details of the features in the specified project.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListFeatures</code> operation to return the next set of results.</p>"
+        }
+      }
+    },
+    "ListLaunchesRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxLaunches",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListLaunches</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to return the launch list from.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "status":{
+          "shape":"LaunchStatus",
+          "documentation":"<p>Use this optional parameter to limit the returned results to only the launches with the status that you specify here.</p>",
+          "location":"querystring",
+          "locationName":"status"
+        }
+      }
+    },
+    "ListLaunchesResponse":{
+      "type":"structure",
+      "members":{
+        "launches":{
+          "shape":"LaunchesList",
+          "documentation":"<p>An array of structures that contain the configuration details of the launches in the specified project.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListLaunches</code> operation to return the next set of results.</p>"
+        }
+      }
+    },
+    "ListProjectsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxProjects",
+          "documentation":"<p>The maximum number of results to include in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListProjects</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListProjectsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListProjects</code> operation to return the next set of results.</p>"
+        },
+        "projects":{
+          "shape":"ProjectSummariesList",
+          "documentation":"<p>An array of structures that contain the configuration details of the projects in the Region.</p>"
+        }
+      }
+    },
+    "ListSegmentReferencesRequest":{
+      "type":"structure",
+      "required":[
+        "segment",
+        "type"
+      ],
+      "members":{
+        "maxResults":{
+          "shape":"MaxReferences",
+          "documentation":"<p>The maximum number of results to include in the response. If you omit this, the default of 50 is used.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListSegmentReferences</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>The ARN of the segment that you want to view information for.</p>",
+          "location":"uri",
+          "locationName":"segment"
+        },
+        "type":{
+          "shape":"SegmentReferenceResourceType",
+          "documentation":"<p>Specifies whether to return information about launches or experiments that use this segment.</p>",
+          "location":"querystring",
+          "locationName":"type"
+        }
+      }
+    },
+    "ListSegmentReferencesResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListSegmentReferences</code> operation to return the next set of results.</p>"
+        },
+        "referencedBy":{
+          "shape":"RefResourceList",
+          "documentation":"<p>An array of structures, where each structure contains information about one experiment or launch that uses this segment. </p>"
+        }
+      }
+    },
+    "ListSegmentsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxSegments",
+          "documentation":"<p>The maximum number of results to include in the response. If you omit this, the default of 50 is used.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use when requesting the next set of results. You received this token from a previous <code>ListSegments</code> operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListSegmentsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListSegments</code> operation to return the next set of results.</p>"
+        },
+        "segments":{
+          "shape":"SegmentList",
+          "documentation":"<p>An array of structures that contain information about the segments in this Region.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that you want to see the tags of.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with the resource you specified.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaxExperiments":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxFeatures":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxLaunches":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxProjects":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "MaxReferences":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxSegments":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "MetricDefinition":{
+      "type":"structure",
+      "members":{
+        "entityIdKey":{
+          "shape":"JsonPath",
+          "documentation":"<p>The entity, such as a user or session, that does an action that causes a metric value to be recorded.</p>"
+        },
+        "eventPattern":{
+          "shape":"JsonValue",
+          "documentation":"<p>The EventBridge event pattern that defines how the metric is recorded.</p> <p>For more information about EventBridge event patterns, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html\">Amazon EventBridge event patterns</a>.</p>",
+          "jsonvalue":true
+        },
+        "name":{
+          "shape":"CwDimensionSafeName",
+          "documentation":"<p>The name of the metric.</p>"
+        },
+        "unitLabel":{
+          "shape":"MetricUnitLabel",
+          "documentation":"<p>The label for the units that the metric is measuring.</p>"
+        },
+        "valueKey":{
+          "shape":"JsonPath",
+          "documentation":"<p>The value that is tracked to produce the metric.</p>"
+        }
+      },
+      "documentation":"<p>This structure defines a metric that is being used to evaluate the variations during a launch or experiment.</p>"
+    },
+    "MetricDefinitionConfig":{
+      "type":"structure",
+      "required":[
+        "entityIdKey",
+        "name",
+        "valueKey"
+      ],
+      "members":{
+        "entityIdKey":{
+          "shape":"JsonPath",
+          "documentation":"<p>The entity, such as a user or session, that does an action that causes a metric value to be recorded. An example is <code>userDetails.userID</code>.</p>"
+        },
+        "eventPattern":{
+          "shape":"MetricDefinitionConfigEventPatternString",
+          "documentation":"<p>The EventBridge event pattern that defines how the metric is recorded.</p> <p>For more information about EventBridge event patterns, see <a href=\"https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-patterns.html\">Amazon EventBridge event patterns</a>.</p>",
+          "jsonvalue":true
+        },
+        "name":{
+          "shape":"CwDimensionSafeName",
+          "documentation":"<p>A name for the metric.</p>"
+        },
+        "unitLabel":{
+          "shape":"MetricUnitLabel",
+          "documentation":"<p>A label for the units that the metric is measuring.</p>"
+        },
+        "valueKey":{
+          "shape":"JsonPath",
+          "documentation":"<p>The value that is tracked to produce the metric.</p>"
+        }
+      },
+      "documentation":"<p>This structure defines a metric that you want to use to evaluate the variations during a launch or experiment.</p>"
+    },
+    "MetricDefinitionConfigEventPatternString":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "MetricGoal":{
+      "type":"structure",
+      "required":["metricDefinition"],
+      "members":{
+        "desiredChange":{
+          "shape":"ChangeDirectionEnum",
+          "documentation":"<p> <code>INCREASE</code> means that a variation with a higher number for this metric is performing better.</p> <p> <code>DECREASE</code> means that a variation with a lower number for this metric is performing better.</p>"
+        },
+        "metricDefinition":{
+          "shape":"MetricDefinition",
+          "documentation":"<p>A structure that contains details about the metric.</p>"
+        }
+      },
+      "documentation":"<p>A structure that tells Evidently whether higher or lower values are desired for a metric that is used in an experiment.</p>"
+    },
+    "MetricGoalConfig":{
+      "type":"structure",
+      "required":["metricDefinition"],
+      "members":{
+        "desiredChange":{
+          "shape":"ChangeDirectionEnum",
+          "documentation":"<p> <code>INCREASE</code> means that a variation with a higher number for this metric is performing better.</p> <p> <code>DECREASE</code> means that a variation with a lower number for this metric is performing better.</p>"
+        },
+        "metricDefinition":{
+          "shape":"MetricDefinitionConfig",
+          "documentation":"<p>A structure that contains details about the metric.</p>"
+        }
+      },
+      "documentation":"<p>Use this structure to tell Evidently whether higher or lower values are desired for a metric that is used in an experiment.</p>"
+    },
+    "MetricGoalConfigList":{
+      "type":"list",
+      "member":{"shape":"MetricGoalConfig"},
+      "max":3,
+      "min":1
+    },
+    "MetricGoalsList":{
+      "type":"list",
+      "member":{"shape":"MetricGoal"},
+      "max":3,
+      "min":1
+    },
+    "MetricMonitor":{
+      "type":"structure",
+      "required":["metricDefinition"],
+      "members":{
+        "metricDefinition":{
+          "shape":"MetricDefinition",
+          "documentation":"<p>A structure that defines the metric.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines a metric to be used to monitor performance of the variations during a launch.</p>"
+    },
+    "MetricMonitorConfig":{
+      "type":"structure",
+      "required":["metricDefinition"],
+      "members":{
+        "metricDefinition":{
+          "shape":"MetricDefinitionConfig",
+          "documentation":"<p>A structure that defines the metric.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines a metric to be used to monitor performance of the variations during a launch.</p>"
+    },
+    "MetricMonitorConfigList":{
+      "type":"list",
+      "member":{"shape":"MetricMonitorConfig"},
+      "max":3,
+      "min":0
+    },
+    "MetricMonitorList":{
+      "type":"list",
+      "member":{"shape":"MetricMonitor"},
+      "max":3,
+      "min":0
+    },
+    "MetricNameList":{
+      "type":"list",
+      "member":{"shape":"CwDimensionSafeName"},
+      "max":1,
+      "min":1
+    },
+    "MetricUnitLabel":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":".*"
+    },
+    "OnlineAbConfig":{
+      "type":"structure",
+      "members":{
+        "controlTreatmentName":{
+          "shape":"TreatmentName",
+          "documentation":"<p>The name of the variation that is to be the default variation that the other variations are compared to.</p>"
+        },
+        "treatmentWeights":{
+          "shape":"TreatmentToWeightMap",
+          "documentation":"<p>A set of key-value pairs. The keys are variation names, and the values are the portion of experiment traffic to be assigned to that variation. Specify the traffic portion in thousandths of a percent, so 20,000 for a variation would allocate 20% of the experiment traffic to that variation.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the configuration of which variation to use as the \"control\" version. The \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.</p>"
+    },
+    "OnlineAbDefinition":{
+      "type":"structure",
+      "members":{
+        "controlTreatmentName":{
+          "shape":"TreatmentName",
+          "documentation":"<p>The name of the variation that is the default variation that the other variations are compared to.</p>"
+        },
+        "treatmentWeights":{
+          "shape":"TreatmentToWeightMap",
+          "documentation":"<p>A set of key-value pairs. The keys are variation names, and the values are the portion of experiment traffic to be assigned to that variation. The traffic portion is specified in thousandths of a percent, so 20,000 for a variation would allocate 20% of the experiment traffic to that variation.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains the configuration of which variation to use as the \"control\" version. The \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.</p>"
+    },
+    "PrimitiveBoolean":{"type":"boolean"},
+    "Project":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "lastUpdatedTime",
+        "name",
+        "status"
+      ],
+      "members":{
+        "activeExperimentCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of ongoing experiments currently in the project.</p>"
+        },
+        "activeLaunchCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of ongoing launches currently in the project.</p>"
+        },
+        "appConfigResource":{
+          "shape":"ProjectAppConfigResource",
+          "documentation":"<p>This structure defines the configuration of how your application integrates with AppConfig to run client-side evaluation.</p>"
+        },
+        "arn":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The name or ARN of the project.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the project is created.</p>"
+        },
+        "dataDelivery":{
+          "shape":"ProjectDataDelivery",
+          "documentation":"<p>A structure that contains information about where Evidently is to store evaluation events for longer term storage.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The user-entered description of the project.</p>"
+        },
+        "experimentCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of experiments currently in the project. This includes all experiments that have been created and not deleted, whether they are ongoing or not.</p>"
+        },
+        "featureCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of features currently in the project.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the project was most recently updated.</p>"
+        },
+        "launchCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of launches currently in the project. This includes all launches that have been created and not deleted, whether they are ongoing or not.</p>"
+        },
+        "name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "status":{
+          "shape":"ProjectStatus",
+          "documentation":"<p>The current state of the project.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this project.</p>"
+        }
+      },
+      "documentation":"<p>This structure defines a project, which is the logical object in Evidently that can contain features, launches, and experiments. Use projects to group similar features together.</p>"
+    },
+    "ProjectAppConfigResource":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "configurationProfileId",
+        "environmentId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"AppConfigResourceId",
+          "documentation":"<p>The ID of the AppConfig application to use for client-side evaluation. </p>"
+        },
+        "configurationProfileId":{
+          "shape":"AppConfigResourceId",
+          "documentation":"<p>The ID of the AppConfig profile to use for client-side evaluation. </p>"
+        },
+        "environmentId":{
+          "shape":"AppConfigResourceId",
+          "documentation":"<p>The ID of the AppConfig environment to use for client-side evaluation. This must be an environment that is within the application that you specify for <code>applicationId</code>.</p>"
+        }
+      },
+      "documentation":"<p>This is a structure that defines the configuration of how your application integrates with AppConfig to run client-side evaluation.</p>"
+    },
+    "ProjectAppConfigResourceConfig":{
+      "type":"structure",
+      "members":{
+        "applicationId":{
+          "shape":"AppConfigResourceId",
+          "documentation":"<p>The ID of the AppConfig application to use for client-side evaluation. </p>"
+        },
+        "environmentId":{
+          "shape":"AppConfigResourceId",
+          "documentation":"<p>The ID of the AppConfig environment to use for client-side evaluation. This must be an environment that is within the application that you specify for <code>applicationId</code>.</p>"
+        }
+      },
+      "documentation":"<p>Use this parameter to configure client-side evaluation for your project. Client-side evaluation allows your application to assign variations to user sessions locally instead of by calling the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation to assign the variations. This mitigates the latency and availability risks that come with an API call.</p> <p> <code>ProjectAppConfigResource</code> is a structure that defines the configuration of how your application integrates with AppConfig to run client-side evaluation.</p>"
+    },
+    "ProjectArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[-a-zA-Z0-9._]*"
+    },
+    "ProjectDataDelivery":{
+      "type":"structure",
+      "members":{
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogsDestination",
+          "documentation":"<p>If the project stores evaluation events in CloudWatch Logs, this structure stores the log group name.</p>"
+        },
+        "s3Destination":{
+          "shape":"S3Destination",
+          "documentation":"<p>If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about where Evidently is to store evaluation events for longer term storage.</p>"
+    },
+    "ProjectDataDeliveryConfig":{
+      "type":"structure",
+      "members":{
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogsDestinationConfig",
+          "documentation":"<p>If the project stores evaluation events in CloudWatch Logs, this structure stores the log group name.</p>"
+        },
+        "s3Destination":{
+          "shape":"S3DestinationConfig",
+          "documentation":"<p>If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about where Evidently is to store evaluation events for longer term storage.</p>"
+    },
+    "ProjectName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "ProjectRef":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"(^[a-zA-Z0-9._-]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:project/[a-zA-Z0-9._-]*)"
+    },
+    "ProjectStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "UPDATING"
+      ]
+    },
+    "ProjectSummariesList":{
+      "type":"list",
+      "member":{"shape":"ProjectSummary"}
+    },
+    "ProjectSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "lastUpdatedTime",
+        "name",
+        "status"
+      ],
+      "members":{
+        "activeExperimentCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of experiments currently in the project.</p>"
+        },
+        "activeLaunchCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of ongoing launches currently in the project.</p>"
+        },
+        "arn":{
+          "shape":"ProjectArn",
+          "documentation":"<p>The name or ARN of the project.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the project is created.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the project.</p>"
+        },
+        "experimentCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of experiments currently in the project.</p>"
+        },
+        "featureCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of features currently in the project.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the project was most recently updated.</p>"
+        },
+        "launchCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of launches currently in the project, including launches that are ongoing, completed, and not started yet.</p>"
+        },
+        "name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "status":{
+          "shape":"ProjectStatus",
+          "documentation":"<p>The current state of the project.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this project.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains configuration information about an Evidently project.</p>"
+    },
+    "PutProjectEventsRequest":{
+      "type":"structure",
+      "required":[
+        "events",
+        "project"
+      ],
+      "members":{
+        "events":{
+          "shape":"EventList",
+          "documentation":"<p>An array of event structures that contain the performance data that is being sent to Evidently.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to write the events to.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "PutProjectEventsResponse":{
+      "type":"structure",
+      "members":{
+        "eventResults":{
+          "shape":"PutProjectEventsResultEntryList",
+          "documentation":"<p>A structure that contains Evidently's response to the sent events, including an event ID and error codes, if any.</p>"
+        },
+        "failedEventCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of events in the operation that could not be used by Evidently.</p>"
+        }
+      }
+    },
+    "PutProjectEventsResultEntry":{
+      "type":"structure",
+      "members":{
+        "errorCode":{
+          "shape":"ErrorCodeEnum",
+          "documentation":"<p>If the <code>PutProjectEvents</code> operation has an error, the error code is returned here.</p>"
+        },
+        "errorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>If the <code>PutProjectEvents</code> operation has an error, the error message is returned here.</p>"
+        },
+        "eventId":{
+          "shape":"Uuid",
+          "documentation":"<p>A unique ID assigned to this <code>PutProjectEvents</code> operation. </p>"
+        }
+      },
+      "documentation":"<p>A structure that contains Evidently's response to the sent events, including an event ID and error codes, if any. </p>"
+    },
+    "PutProjectEventsResultEntryList":{
+      "type":"list",
+      "member":{"shape":"PutProjectEventsResultEntry"}
+    },
+    "RandomizationSalt":{
+      "type":"string",
+      "max":127,
+      "min":0,
+      "pattern":".*"
+    },
+    "RefResource":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the experiment or launch.</p>"
+        },
+        "endTime":{
+          "shape":"String",
+          "documentation":"<p>The day and time that this experiment or launch ended.</p>"
+        },
+        "lastUpdatedOn":{
+          "shape":"String",
+          "documentation":"<p>The day and time that this experiment or launch was most recently updated.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the experiment or launch.</p>"
+        },
+        "startTime":{
+          "shape":"String",
+          "documentation":"<p>The day and time that this experiment or launch started.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the experiment or launch.</p>"
+        },
+        "type":{
+          "shape":"String",
+          "documentation":"<p>Specifies whether the resource that this structure contains information about is an experiment or a launch.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains information about one experiment or launch that uses the specified segment. </p>"
+    },
+    "RefResourceList":{
+      "type":"list",
+      "member":{"shape":"RefResource"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource that caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource that is associated with the error.</p>"
+        }
+      },
+      "documentation":"<p>The request references a resource that does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResultsPeriod":{
+      "type":"long",
+      "max":90000,
+      "min":300
+    },
+    "RuleName":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "RuleType":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "S3BucketSafeName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^[a-z0-9][-a-z0-9]*[a-z0-9]$"
+    },
+    "S3Destination":{
+      "type":"structure",
+      "members":{
+        "bucket":{
+          "shape":"S3BucketSafeName",
+          "documentation":"<p>The name of the bucket in which Evidently stores evaluation events.</p>"
+        },
+        "prefix":{
+          "shape":"S3PrefixSafeName",
+          "documentation":"<p>The bucket prefix in which Evidently stores evaluation events.</p>"
+        }
+      },
+      "documentation":"<p>If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix.</p>"
+    },
+    "S3DestinationConfig":{
+      "type":"structure",
+      "members":{
+        "bucket":{
+          "shape":"S3BucketSafeName",
+          "documentation":"<p>The name of the bucket in which Evidently stores evaluation events.</p>"
+        },
+        "prefix":{
+          "shape":"S3PrefixSafeName",
+          "documentation":"<p>The bucket prefix in which Evidently stores evaluation events.</p>"
+        }
+      },
+      "documentation":"<p>If the project stores evaluation events in an Amazon S3 bucket, this structure stores the bucket name and bucket prefix.</p>"
+    },
+    "S3PrefixSafeName":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9!_.*'()/]*$"
+    },
+    "ScheduledSplit":{
+      "type":"structure",
+      "required":["startTime"],
+      "members":{
+        "groupWeights":{
+          "shape":"GroupToWeightMap",
+          "documentation":"<p>The traffic allocation percentages among the feature variations during one step of a launch. This is a set of key-value pairs. The keys are variation names. The values represent the percentage of traffic to allocate to that variation during this step.</p> <p>The values is expressed in thousandths of a percent, so assigning a weight of 50000 assigns 50% of traffic to that variation.</p> <p>If the sum of the weights for all the variations in a segment override does not add up to 100,000, then the remaining traffic that matches this segment is not assigned by this segment override, and instead moves on to the next segment override or the default traffic split.</p>"
+        },
+        "segmentOverrides":{
+          "shape":"SegmentOverridesList",
+          "documentation":"<p>Use this parameter to specify different traffic splits for one or more audience <i>segments</i>. A segment is a portion of your audience that share one or more characteristics. Examples could be Chrome browser users, users in Europe, or Firefox browser users in Europe who also fit other criteria that your application collects, such as age.</p> <p>This parameter is an array of up to six segment override objects. Each of these objects specifies a segment that you have already created, and defines the traffic split for that segment.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that this step of the launch starts.</p>"
+        }
+      },
+      "documentation":"<p>This structure defines the traffic allocation percentages among the feature variations during one step of a launch, and the start time of that step.</p>"
+    },
+    "ScheduledSplitConfig":{
+      "type":"structure",
+      "required":[
+        "groupWeights",
+        "startTime"
+      ],
+      "members":{
+        "groupWeights":{
+          "shape":"GroupToWeightMap",
+          "documentation":"<p>The traffic allocation percentages among the feature variations during one step of a launch. This is a set of key-value pairs. The keys are variation names. The values represent the percentage of traffic to allocate to that variation during this step.</p> <p>The values is expressed in thousandths of a percent, so assigning a weight of 50000 assigns 50% of traffic to that variation.</p> <p>If the sum of the weights for all the variations in a segment override does not add up to 100,000, then the remaining traffic that matches this segment is not assigned by this segment override, and instead moves on to the next segment override or the default traffic split.</p>"
+        },
+        "segmentOverrides":{
+          "shape":"SegmentOverridesList",
+          "documentation":"<p>Use this parameter to specify different traffic splits for one or more audience <i>segments</i>. A segment is a portion of your audience that share one or more characteristics. Examples could be Chrome browser users, users in Europe, or Firefox browser users in Europe who also fit other criteria that your application collects, such as age.</p> <p>This parameter is an array of up to six segment override objects. Each of these objects specifies a segment that you have already created, and defines the traffic split for that segment.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that this step of the launch starts.</p>"
+        }
+      },
+      "documentation":"<p>This structure defines the traffic allocation percentages among the feature variations during one step of a launch, and the start time of that step.</p>"
+    },
+    "ScheduledSplitConfigList":{
+      "type":"list",
+      "member":{"shape":"ScheduledSplitConfig"},
+      "max":6,
+      "min":1
+    },
+    "ScheduledSplitsLaunchConfig":{
+      "type":"structure",
+      "required":["steps"],
+      "members":{
+        "steps":{
+          "shape":"ScheduledSplitConfigList",
+          "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch. This also defines the start time of each step.</p>"
+        }
+      },
+      "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of a launch. This also defines the start time of each step.</p>"
+    },
+    "ScheduledSplitsLaunchDefinition":{
+      "type":"structure",
+      "members":{
+        "steps":{
+          "shape":"ScheduledStepList",
+          "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch. This also defines the start time of each step.</p>"
+        }
+      },
+      "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of a launch. This also defines the start time of each step.</p>"
+    },
+    "ScheduledStepList":{
+      "type":"list",
+      "member":{"shape":"ScheduledSplit"},
+      "max":6,
+      "min":1
+    },
+    "Segment":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "createdTime",
+        "lastUpdatedTime",
+        "name",
+        "pattern"
+      ],
+      "members":{
+        "arn":{
+          "shape":"SegmentArn",
+          "documentation":"<p>The ARN of the segment.</p>"
+        },
+        "createdTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that this segment was created.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The customer-created description for this segment.</p>"
+        },
+        "experimentCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of experiments that this segment is used in. This count includes all current experiments, not just those that are currently running.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that this segment was most recently updated.</p>"
+        },
+        "launchCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of launches that this segment is used in. This count includes all current launches, not just those that are currently running.</p>"
+        },
+        "name":{
+          "shape":"SegmentName",
+          "documentation":"<p>The name of the segment.</p>"
+        },
+        "pattern":{
+          "shape":"SegmentPattern",
+          "documentation":"<p>The pattern that defines the attributes to use to evalute whether a user session will be in the segment. For more information about the pattern syntax, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html\">Segment rule pattern syntax</a>.</p>",
+          "jsonvalue":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tag keys and values associated with this launch.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains information about one audience <i>segment</i>. You can use segments in your experiments and launches to narrow the user sessions used for experiment or launch to only the user sessions that match one or more criteria.</p>"
+    },
+    "SegmentArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:[^:]*:[^:]*:[^:]*:[^:]*:segment/[-a-zA-Z0-9._]*"
+    },
+    "SegmentList":{
+      "type":"list",
+      "member":{"shape":"Segment"}
+    },
+    "SegmentName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "SegmentOverride":{
+      "type":"structure",
+      "required":[
+        "evaluationOrder",
+        "segment",
+        "weights"
+      ],
+      "members":{
+        "evaluationOrder":{
+          "shape":"Long",
+          "documentation":"<p>A number indicating the order to use to evaluate segment overrides, if there are more than one. Segment overrides with lower numbers are evaluated first.</p>"
+        },
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>The ARN of the segment to use.</p>"
+        },
+        "weights":{
+          "shape":"GroupToWeightMap",
+          "documentation":"<p>The traffic allocation percentages among the feature variations to assign to this segment. This is a set of key-value pairs. The keys are variation names. The values represent the amount of traffic to allocate to that variation for this segment. This is expressed in thousandths of a percent, so a weight of 50000 represents 50% of traffic.</p>"
+        }
+      },
+      "documentation":"<p>This structure specifies a segment that you have already created, and defines the traffic split for that segment to be used in a launch.</p>"
+    },
+    "SegmentOverridesList":{
+      "type":"list",
+      "member":{"shape":"SegmentOverride"},
+      "max":6,
+      "min":0
+    },
+    "SegmentPattern":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "SegmentRef":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"(^[-a-zA-Z0-9._]*$)|(arn:[^:]*:[^:]*:[^:]*:[^:]*:segment/[-a-zA-Z0-9._]*)"
+    },
+    "SegmentReferenceResourceType":{
+      "type":"string",
+      "enum":[
+        "EXPERIMENT",
+        "LAUNCH"
+      ]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The ID of the service quota that was exceeded.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource that caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource that is associated with the error.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The ID of the service that is associated with the error.</p>"
+        }
+      },
+      "documentation":"<p>The request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The service was unavailable. Retry the request.</p>",
+      "error":{"httpStatusCode":503},
+      "exception":true,
+      "fault":true
+    },
+    "SplitWeight":{
+      "type":"long",
+      "max":100000,
+      "min":0
+    },
+    "StartExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "analysisCompleteTime",
+        "experiment",
+        "project"
+      ],
+      "members":{
+        "analysisCompleteTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time to end the experiment. This must be no more than 30 days after the experiment starts.</p>"
+        },
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment to start.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment to start.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "StartExperimentResponse":{
+      "type":"structure",
+      "members":{
+        "startedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the experiment started.</p>"
+        }
+      }
+    },
+    "StartLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "launch",
+        "project"
+      ],
+      "members":{
+        "launch":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch to start.</p>",
+          "location":"uri",
+          "locationName":"launch"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch to start.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "StartLaunchResponse":{
+      "type":"structure",
+      "required":["launch"],
+      "members":{
+        "launch":{
+          "shape":"Launch",
+          "documentation":"<p>A structure that contains information about the launch that was started.</p>"
+        }
+      }
+    },
+    "StopExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "experiment",
+        "project"
+      ],
+      "members":{
+        "desiredState":{
+          "shape":"ExperimentStopDesiredState",
+          "documentation":"<p>Specify whether the experiment is to be considered <code>COMPLETED</code> or <code>CANCELLED</code> after it stops.</p>"
+        },
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment to stop.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment to stop.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "reason":{
+          "shape":"Description",
+          "documentation":"<p>A string that describes why you are stopping the experiment.</p>"
+        }
+      }
+    },
+    "StopExperimentResponse":{
+      "type":"structure",
+      "members":{
+        "endedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the experiment stopped.</p>"
+        }
+      }
+    },
+    "StopLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "launch",
+        "project"
+      ],
+      "members":{
+        "desiredState":{
+          "shape":"LaunchStopDesiredState",
+          "documentation":"<p>Specify whether to consider the launch as <code>COMPLETED</code> or <code>CANCELLED</code> after it stops.</p>"
+        },
+        "launch":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch to stop.</p>",
+          "location":"uri",
+          "locationName":"launch"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch that you want to stop.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "reason":{
+          "shape":"Description",
+          "documentation":"<p>A string that describes why you are stopping the launch.</p>"
+        }
+      }
+    },
+    "StopLaunchResponse":{
+      "type":"structure",
+      "members":{
+        "endedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the launch stopped.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the CloudWatch Evidently resource that you're adding tags to.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs to associate with the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TestSegmentPatternRequest":{
+      "type":"structure",
+      "required":[
+        "pattern",
+        "payload"
+      ],
+      "members":{
+        "pattern":{
+          "shape":"SegmentPattern",
+          "documentation":"<p>The pattern to test.</p>",
+          "jsonvalue":true
+        },
+        "payload":{
+          "shape":"JsonValue",
+          "documentation":"<p>A sample <code>evaluationContext</code> JSON block to test against the specified pattern.</p>",
+          "jsonvalue":true
+        }
+      }
+    },
+    "TestSegmentPatternResponse":{
+      "type":"structure",
+      "required":["match"],
+      "members":{
+        "match":{
+          "shape":"Boolean",
+          "documentation":"<p>Returns <code>true</code> if the pattern matches the payload.</p>"
+        }
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The ID of the service quota that was exceeded.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The ID of the service that is associated with the error.</p>"
+        }
+      },
+      "documentation":"<p>The request was denied because of request throttling. Retry the request.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TimestampList":{
+      "type":"list",
+      "member":{"shape":"Timestamp"},
+      "max":100800,
+      "min":0
+    },
+    "Treatment":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the treatment.</p>"
+        },
+        "featureVariations":{
+          "shape":"FeatureToVariationMap",
+          "documentation":"<p>The feature variation used for this treatment. This is a key-value pair. The key is the feature name, and the value is the variation name.</p>"
+        },
+        "name":{
+          "shape":"TreatmentName",
+          "documentation":"<p>The name of this treatment.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines one treatment in an experiment. A treatment is a variation of the feature that you are including in the experiment.</p>"
+    },
+    "TreatmentConfig":{
+      "type":"structure",
+      "required":[
+        "feature",
+        "name",
+        "variation"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description for this treatment.</p>"
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The feature that this experiment is testing.</p>"
+        },
+        "name":{
+          "shape":"TreatmentName",
+          "documentation":"<p>A name for this treatment.</p>"
+        },
+        "variation":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation to use as this treatment in the experiment.</p>"
+        }
+      },
+      "documentation":"<p>A structure that defines one treatment in an experiment. A treatment is a variation of the feature that you are including in the experiment.</p>"
+    },
+    "TreatmentConfigList":{
+      "type":"list",
+      "member":{"shape":"TreatmentConfig"},
+      "max":5,
+      "min":0
+    },
+    "TreatmentList":{
+      "type":"list",
+      "member":{"shape":"Treatment"},
+      "max":5,
+      "min":2
+    },
+    "TreatmentName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "TreatmentNameList":{
+      "type":"list",
+      "member":{"shape":"TreatmentName"},
+      "max":5,
+      "min":1
+    },
+    "TreatmentToWeightMap":{
+      "type":"map",
+      "key":{"shape":"TreatmentName"},
+      "value":{"shape":"SplitWeight"}
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the CloudWatch Evidently resource that you're removing tags from.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of tag keys to remove from the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateExperimentRequest":{
+      "type":"structure",
+      "required":[
+        "experiment",
+        "project"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the experiment.</p>"
+        },
+        "experiment":{
+          "shape":"ExperimentName",
+          "documentation":"<p>The name of the experiment to update.</p>",
+          "location":"uri",
+          "locationName":"experiment"
+        },
+        "metricGoals":{
+          "shape":"MetricGoalConfigList",
+          "documentation":"<p>An array of structures that defines the metrics used for the experiment, and whether a higher or lower value for each metric is the goal.</p>"
+        },
+        "onlineAbConfig":{
+          "shape":"OnlineAbConfig",
+          "documentation":"<p>A structure that contains the configuration of which variation o use as the \"control\" version. The \"control\" version is used for comparison with other variations. This structure also specifies how much experiment traffic is allocated to each variation.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the experiment that you want to update.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>When Evidently assigns a particular user session to an experiment, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the experiment name as the <code>randomizationSalt</code>.</p>"
+        },
+        "removeSegment":{
+          "shape":"PrimitiveBoolean",
+          "documentation":"<p>Removes a segment from being used in an experiment. You can't use this parameter if the experiment is currently running.</p>"
+        },
+        "samplingRate":{
+          "shape":"SplitWeight",
+          "documentation":"<p>The portion of the available audience that you want to allocate to this experiment, in thousandths of a percent. The available audience is the total audience minus the audience that you have allocated to overrides or current launches of this feature.</p> <p>This is represented in thousandths of a percent. For example, specify 20,000 to allocate 20% of the available audience.</p>",
+          "box":true
+        },
+        "segment":{
+          "shape":"SegmentRef",
+          "documentation":"<p>Adds an audience <i>segment</i> to an experiment. When a segment is used in an experiment, only user sessions that match the segment pattern are used in the experiment. You can't use this parameter if the experiment is currently running.</p>"
+        },
+        "treatments":{
+          "shape":"TreatmentConfigList",
+          "documentation":"<p>An array of structures that define the variations being tested in the experiment.</p>"
+        }
+      }
+    },
+    "UpdateExperimentResponse":{
+      "type":"structure",
+      "required":["experiment"],
+      "members":{
+        "experiment":{
+          "shape":"Experiment",
+          "documentation":"<p>A structure containing the configuration details of the experiment that was updated.</p>"
+        }
+      }
+    },
+    "UpdateFeatureRequest":{
+      "type":"structure",
+      "required":[
+        "feature",
+        "project"
+      ],
+      "members":{
+        "addOrUpdateVariations":{
+          "shape":"VariationConfigsList",
+          "documentation":"<p>To update variation configurations for this feature, or add new ones, specify this structure. In this array, include any variations that you want to add or update. If the array includes a variation name that already exists for this feature, it is updated. If it includes a new variation name, it is added as a new variation.</p>"
+        },
+        "defaultVariation":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation to use as the default variation. The default variation is served to users who are not allocated to any ongoing launches or experiments of this feature.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the feature.</p>"
+        },
+        "entityOverrides":{
+          "shape":"EntityOverrideMap",
+          "documentation":"<p>Specified users that should always be served a specific variation of a feature. Each user is specified by a key-value pair . For each key, specify a user by entering their user ID, account ID, or some other identifier. For the value, specify the name of the variation that they are to be served.</p> <p>This parameter is limited to 2500 overrides or a total of 40KB. The 40KB limit includes an overhead of 6 bytes per override.</p>"
+        },
+        "evaluationStrategy":{
+          "shape":"FeatureEvaluationStrategy",
+          "documentation":"<p>Specify <code>ALL_RULES</code> to activate the traffic allocation specified by any ongoing launches or experiments. Specify <code>DEFAULT_VARIATION</code> to serve the default variation to all users instead.</p>"
+        },
+        "feature":{
+          "shape":"FeatureName",
+          "documentation":"<p>The name of the feature to be updated.</p>",
+          "location":"uri",
+          "locationName":"feature"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the feature to be updated.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "removeVariations":{
+          "shape":"VariationNameList",
+          "documentation":"<p>Removes a variation from the feature. If the variation you specify doesn't exist, then this makes no change and does not report an error.</p> <p>This operation fails if you try to remove a variation that is part of an ongoing launch or experiment.</p>"
+        }
+      }
+    },
+    "UpdateFeatureResponse":{
+      "type":"structure",
+      "required":["feature"],
+      "members":{
+        "feature":{
+          "shape":"Feature",
+          "documentation":"<p>A structure that contains information about the updated feature.</p>"
+        }
+      }
+    },
+    "UpdateLaunchRequest":{
+      "type":"structure",
+      "required":[
+        "launch",
+        "project"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description for the launch.</p>"
+        },
+        "groups":{
+          "shape":"LaunchGroupConfigList",
+          "documentation":"<p>An array of structures that contains the feature and variations that are to be used for the launch.</p>"
+        },
+        "launch":{
+          "shape":"LaunchName",
+          "documentation":"<p>The name of the launch that is to be updated.</p>",
+          "location":"uri",
+          "locationName":"launch"
+        },
+        "metricMonitors":{
+          "shape":"MetricMonitorConfigList",
+          "documentation":"<p>An array of structures that define the metrics that will be used to monitor the launch performance.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that contains the launch that you want to update.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "randomizationSalt":{
+          "shape":"RandomizationSalt",
+          "documentation":"<p>When Evidently assigns a particular user session to a launch, it must use a randomization ID to determine which variation the user session is served. This randomization ID is a combination of the entity ID and <code>randomizationSalt</code>. If you omit <code>randomizationSalt</code>, Evidently uses the launch name as the <code>randomizationSalt</code>.</p>"
+        },
+        "scheduledSplitsConfig":{
+          "shape":"ScheduledSplitsLaunchConfig",
+          "documentation":"<p>An array of structures that define the traffic allocation percentages among the feature variations during each step of the launch.</p>"
+        }
+      }
+    },
+    "UpdateLaunchResponse":{
+      "type":"structure",
+      "required":["launch"],
+      "members":{
+        "launch":{
+          "shape":"Launch",
+          "documentation":"<p>A structure that contains the new configuration of the launch that was updated.</p>"
+        }
+      }
+    },
+    "UpdateProjectDataDeliveryRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogsDestinationConfig",
+          "documentation":"<p>A structure containing the CloudWatch Logs log group where you want to store evaluation events.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project that you want to modify the data storage options for.</p>",
+          "location":"uri",
+          "locationName":"project"
+        },
+        "s3Destination":{
+          "shape":"S3DestinationConfig",
+          "documentation":"<p>A structure containing the S3 bucket name and bucket prefix where you want to store evaluation events.</p>"
+        }
+      }
+    },
+    "UpdateProjectDataDeliveryResponse":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"Project",
+          "documentation":"<p>A structure containing details about the project that you updated.</p>"
+        }
+      }
+    },
+    "UpdateProjectRequest":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "appConfigResource":{
+          "shape":"ProjectAppConfigResourceConfig",
+          "documentation":"<p>Use this parameter if the project will use client-side evaluation powered by AppConfig. Client-side evaluation allows your application to assign variations to user sessions locally instead of by calling the <a href=\"https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html\">EvaluateFeature</a> operation. This mitigates the latency and availability risks that come with an API call. allows you to</p> <p>This parameter is a structure that contains information about the AppConfig application that will be used for client-side evaluation.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>An optional description of the project.</p>"
+        },
+        "project":{
+          "shape":"ProjectRef",
+          "documentation":"<p>The name or ARN of the project to update.</p>",
+          "location":"uri",
+          "locationName":"project"
+        }
+      }
+    },
+    "UpdateProjectResponse":{
+      "type":"structure",
+      "required":["project"],
+      "members":{
+        "project":{
+          "shape":"Project",
+          "documentation":"<p>A structure containing information about the updated project.</p>"
+        }
+      }
+    },
+    "Uuid":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The parameter that caused the exception.</p>"
+        },
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>A reason for the error.</p>"
+        }
+      },
+      "documentation":"<p>The value of a parameter in the request caused an error.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "message",
+        "name"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The error name.</p>"
+        }
+      },
+      "documentation":"<p>A structure containing an error name and message.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "VariableValue":{
+      "type":"structure",
+      "members":{
+        "boolValue":{
+          "shape":"Boolean",
+          "documentation":"<p>If this feature uses the Boolean variation type, this field contains the Boolean value of this variation.</p>"
+        },
+        "doubleValue":{
+          "shape":"Double",
+          "documentation":"<p>If this feature uses the double integer variation type, this field contains the double integer value of this variation.</p>"
+        },
+        "longValue":{
+          "shape":"VariableValueLongValueLong",
+          "documentation":"<p>If this feature uses the long variation type, this field contains the long value of this variation.</p>"
+        },
+        "stringValue":{
+          "shape":"VariableValueStringValueString",
+          "documentation":"<p>If this feature uses the string variation type, this field contains the string value of this variation.</p>"
+        }
+      },
+      "documentation":"<p>The value assigned to a feature variation. This structure must contain exactly one field. It can be <code>boolValue</code>, <code>doubleValue</code>, <code>longValue</code>, or <code>stringValue</code>.</p>",
+      "union":true
+    },
+    "VariableValueLongValueLong":{
+      "type":"long",
+      "box":true,
+      "max":9007199254740991,
+      "min":-9007199254740991
+    },
+    "VariableValueStringValueString":{
+      "type":"string",
+      "max":512,
+      "min":0
+    },
+    "Variation":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation.</p>"
+        },
+        "value":{
+          "shape":"VariableValue",
+          "documentation":"<p>The value assigned to this variation.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the name and variation value of one variation of a feature.</p>"
+    },
+    "VariationConfig":{
+      "type":"structure",
+      "required":[
+        "name",
+        "value"
+      ],
+      "members":{
+        "name":{
+          "shape":"VariationName",
+          "documentation":"<p>The name of the variation.</p>"
+        },
+        "value":{
+          "shape":"VariableValue",
+          "documentation":"<p>The value assigned to this variation.</p>"
+        }
+      },
+      "documentation":"<p>This structure contains the name and variation value of one variation of a feature.</p>"
+    },
+    "VariationConfigsList":{
+      "type":"list",
+      "member":{"shape":"VariationConfig"},
+      "max":5,
+      "min":1
+    },
+    "VariationName":{
+      "type":"string",
+      "max":127,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9._]*$"
+    },
+    "VariationNameList":{
+      "type":"list",
+      "member":{"shape":"VariationName"},
+      "max":5,
+      "min":0
+    },
+    "VariationValueType":{
+      "type":"string",
+      "enum":[
+        "STRING",
+        "LONG",
+        "DOUBLE",
+        "BOOLEAN"
+      ]
+    },
+    "VariationsList":{
+      "type":"list",
+      "member":{"shape":"Variation"}
+    }
+  },
+  "documentation":"<p>You can use Amazon CloudWatch Evidently to safely validate new features by serving them to a specified percentage of your users while you roll out the feature. You can monitor the performance of the new feature to help you decide when to ramp up traffic to your users. This helps you reduce risk and identify unintended consequences before you fully launch the feature.</p> <p>You can also conduct A/B experiments to make feature design decisions based on evidence and data. An experiment can test as many as five variations at once. Evidently collects experiment data and analyzes it using statistical methods. It also provides clear recommendations about which variations perform better. You can test both user-facing features and backend features.</p>"
+}

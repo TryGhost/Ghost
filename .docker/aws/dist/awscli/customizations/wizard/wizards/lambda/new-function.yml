@@ -1,0 +1,145 @@
+version: "0.2"
+title: Create An AWS Lambda Function
+description: This wizard will create a new AWS Lambda function for you
+plan:
+  basics:
+    shortname: Intro
+    description: Provide function name and runtime
+    values:
+      function_name:
+        type: prompt
+        description: Function name
+      runtime:
+        type: prompt
+        description: Select the Lambda runtime
+        choices:
+          - actual_value: python2.7
+            display: Python 2.7
+          - actual_value: python3.6
+            display: Python 3.6
+          - actual_value: python3.7
+            display:  Python 3.7
+          - actual_value: nodejs4.3
+            display: Node.js 4.3
+          - actual_value: nodejs6.10
+            display:  Node.js 6.10
+          - actual_value: nodejs8.10
+            display:  Node.js 8.10
+          - actual_value: java8
+            display:  Java 8
+          - actual_value: dotnetcore1.0
+            display: .NET Core 1.0 (C#)
+          - actual_value: dotnetcore2.0
+            display: .NET Core 2.0 (C#)
+          - actual_value: dotnetcore2.1
+            display: .NET Core 2.1 (C#)
+          - actual_value: go1.
+            display:  Go 1.x
+  role:
+    shortname: Permissions
+    description: Provide Role to be used by Lmanbda function
+    values:
+      existing_roles:
+        type: apicall
+        operation: iam.ListRoles
+        params: {}
+        query: "sort_by(Roles[].{display: RoleName, actual_value: Arn}, &display)"
+        cache: true
+      role_arn:
+        type: prompt
+        description: Select the role to use
+        choices: existing_roles
+  handler:
+    shortname: Handler
+    description: Provide handler and code location
+    values:
+      handler:
+        type: prompt
+        description: Enter the handler for your function
+      zip_filename:
+        type: prompt
+        completer: file_completer
+        description: Enter location of your code zip file
+  preview:
+    shortname: Preview
+    description: Preview results
+    values:
+      preview_cli_command_value:
+        type: template
+        value: |
+          aws lambda create-function \
+            --function-name '{function_name}' \
+            --role '{role_arn}' \
+            --runtime '{runtime}' \
+            --handler '{handler}' \
+            --zip-file fileb://{zip_filename}
+      preview_cfn_template_value:
+        type: template
+        value: |
+          Resources:
+            {function_name}:
+              Type: "AWS::Lambda::Function"
+              Properties:
+                FunctionName: {function_name}
+                Runtime: {runtime}
+                Handler: {handler}
+                Role: {role_arn}
+                Code:
+                  # Replace the below properties after uploading code zip file to S3
+                  S3Bucket: REPLACE-WITH-BUCKET-NAME
+                  S3Key: REPLACE-WITH-KEY-NAME
+      preview_value:
+        type: template
+        value: |
+          {%if {preview_type} == preview_cli_command %}
+          {preview_cli_command_value}
+          {% endif %}
+          {%if {preview_type} == preview_cfn_template %}
+          {preview_cfn_template_value}
+          {% endif %}
+      preview_type:
+        type: prompt
+        description: Select an preview format
+        choices:
+          - display: None
+            actual_value: preview_none
+          - display: AWS CLI command
+            actual_value: preview_cli_command
+          - display: AWS CloudFormation template
+            actual_value: preview_cfn_template
+        details:
+          value: preview_value
+          visible: True
+          description: "Preview"
+  __DONE__:
+execute:
+  default:
+    - type: apicall
+      operation: lambda.CreateFunction
+      output_var: function_arn
+      query: FunctionArn
+      params:
+        FunctionName: "{function_name}"
+        Role: "{role_arn}"
+        Runtime: "{runtime}"
+        Handler: "{handler}"
+        Code:
+          ZipFile:
+            __wizard__:File:
+              path: "{zip_filename}"
+__OUTPUT__:
+  value: |
+    Wizard successfully created Lambda Function:
+      Function name: {function_name}
+      Function ARN: {function_arn}
+
+    {% if {preview_type} == preview_cli_command %}
+    Steps to create function is equivalent to running the following sample AWS CLI commands:
+
+    {preview_cli_command_value}
+    {% endif %}
+    {% if {preview_type} == preview_cfn_template %}
+    Steps to create function is equivalent to deploying the following sample AWS CloudFormation template:
+
+    {preview_cfn_template_value}
+    {% endif %}

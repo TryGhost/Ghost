@@ -1,0 +1,1744 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-09-15",
+    "endpointPrefix":"trustedadvisor",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"TrustedAdvisor Public API",
+    "serviceId":"TrustedAdvisor",
+    "signatureVersion":"v4",
+    "signingName":"trustedadvisor",
+    "uid":"trustedadvisor-2022-09-15"
+  },
+  "operations":{
+    "BatchUpdateRecommendationResourceExclusion":{
+      "name":"BatchUpdateRecommendationResourceExclusion",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/batch-update-recommendation-resource-exclusion",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchUpdateRecommendationResourceExclusionRequest"},
+      "output":{"shape":"BatchUpdateRecommendationResourceExclusionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Update one or more exclusion status for a list of recommendation resources</p>",
+      "idempotent":true
+    },
+    "GetOrganizationRecommendation":{
+      "name":"GetOrganizationRecommendation",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/organization-recommendations/{organizationRecommendationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetOrganizationRecommendationRequest"},
+      "output":{"shape":"GetOrganizationRecommendationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get a specific recommendation within an AWS Organizations organization. This API supports only prioritized recommendations. </p>"
+    },
+    "GetRecommendation":{
+      "name":"GetRecommendation",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/recommendations/{recommendationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRecommendationRequest"},
+      "output":{"shape":"GetRecommendationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get a specific Recommendation</p>"
+    },
+    "ListChecks":{
+      "name":"ListChecks",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/checks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListChecksRequest"},
+      "output":{"shape":"ListChecksResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List a filterable set of Checks</p>"
+    },
+    "ListOrganizationRecommendationAccounts":{
+      "name":"ListOrganizationRecommendationAccounts",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/organization-recommendations/{organizationRecommendationIdentifier}/accounts",
+        "responseCode":200
+      },
+      "input":{"shape":"ListOrganizationRecommendationAccountsRequest"},
+      "output":{"shape":"ListOrganizationRecommendationAccountsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the accounts that own the resources for an organization aggregate recommendation. This API only supports prioritized recommendations. </p>"
+    },
+    "ListOrganizationRecommendationResources":{
+      "name":"ListOrganizationRecommendationResources",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/organization-recommendations/{organizationRecommendationIdentifier}/resources",
+        "responseCode":200
+      },
+      "input":{"shape":"ListOrganizationRecommendationResourcesRequest"},
+      "output":{"shape":"ListOrganizationRecommendationResourcesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List Resources of a Recommendation within an Organization. This API only supports prioritized recommendations. </p>"
+    },
+    "ListOrganizationRecommendations":{
+      "name":"ListOrganizationRecommendations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/organization-recommendations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListOrganizationRecommendationsRequest"},
+      "output":{"shape":"ListOrganizationRecommendationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List a filterable set of Recommendations within an Organization. This API only supports prioritized recommendations. </p>"
+    },
+    "ListRecommendationResources":{
+      "name":"ListRecommendationResources",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/recommendations/{recommendationIdentifier}/resources",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRecommendationResourcesRequest"},
+      "output":{"shape":"ListRecommendationResourcesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List Resources of a Recommendation</p>"
+    },
+    "ListRecommendations":{
+      "name":"ListRecommendations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/recommendations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRecommendationsRequest"},
+      "output":{"shape":"ListRecommendationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List a filterable set of Recommendations</p>"
+    },
+    "UpdateOrganizationRecommendationLifecycle":{
+      "name":"UpdateOrganizationRecommendationLifecycle",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/organization-recommendations/{organizationRecommendationIdentifier}/lifecycle",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateOrganizationRecommendationLifecycleRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Update the lifecycle of a Recommendation within an Organization. This API only supports prioritized recommendations. </p>",
+      "idempotent":true
+    },
+    "UpdateRecommendationLifecycle":{
+      "name":"UpdateRecommendationLifecycle",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/recommendations/{recommendationIdentifier}/lifecycle",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRecommendationLifecycleRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Update the lifecyle of a Recommendation. This API only supports prioritized recommendations.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception that access has been denied due to insufficient access</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d+$"
+    },
+    "AccountRecommendationArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor::\\d{12}:recommendation\\/[\\w-]+$"
+    },
+    "AccountRecommendationIdentifier":{
+      "type":"string",
+      "max":200,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor::\\d{12}:recommendation\\/[\\w-]+$"
+    },
+    "AccountRecommendationLifecycleSummary":{
+      "type":"structure",
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID</p>"
+        },
+        "accountRecommendationArn":{
+          "shape":"AccountRecommendationArn",
+          "documentation":"<p>The Recommendation ARN</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was last updated</p>"
+        },
+        "lifecycleStage":{
+          "shape":"RecommendationLifecycleStage",
+          "documentation":"<p>The lifecycle stage from AWS Trusted Advisor Priority</p>"
+        },
+        "updateReason":{
+          "shape":"RecommendationUpdateReason",
+          "documentation":"<p>Reason for the lifecycle stage change</p>"
+        },
+        "updateReasonCode":{
+          "shape":"UpdateRecommendationLifecycleStageReasonCode",
+          "documentation":"<p>Reason code for the lifecycle state change</p>"
+        },
+        "updatedOnBehalfOf":{
+          "shape":"String",
+          "documentation":"<p>The person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        },
+        "updatedOnBehalfOfJobTitle":{
+          "shape":"String",
+          "documentation":"<p>The job title of the person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        }
+      },
+      "documentation":"<p>Summary of an AccountRecommendationLifecycle for an Organization Recommendation</p>"
+    },
+    "AccountRecommendationLifecycleSummaryList":{
+      "type":"list",
+      "member":{"shape":"AccountRecommendationLifecycleSummary"}
+    },
+    "BatchUpdateRecommendationResourceExclusionRequest":{
+      "type":"structure",
+      "required":["recommendationResourceExclusions"],
+      "members":{
+        "recommendationResourceExclusions":{
+          "shape":"RecommendationResourceExclusionList",
+          "documentation":"<p>A list of recommendation resource ARNs and exclusion status to update</p>"
+        }
+      }
+    },
+    "BatchUpdateRecommendationResourceExclusionResponse":{
+      "type":"structure",
+      "required":["batchUpdateRecommendationResourceExclusionErrors"],
+      "members":{
+        "batchUpdateRecommendationResourceExclusionErrors":{
+          "shape":"UpdateRecommendationResourceExclusionErrorList",
+          "documentation":"<p>A list of recommendation resource ARNs whose exclusion status failed to update, if any</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CheckArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor:::check\\/[\\w-]+$"
+    },
+    "CheckIdentifier":{
+      "type":"string",
+      "max":64,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor:::check\\/[\\w-]+$"
+    },
+    "CheckSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "awsServices",
+        "description",
+        "id",
+        "metadata",
+        "name",
+        "pillars",
+        "source"
+      ],
+      "members":{
+        "arn":{
+          "shape":"CheckArn",
+          "documentation":"<p>The ARN of the AWS Trusted Advisor Check</p>"
+        },
+        "awsServices":{
+          "shape":"RecommendationAwsServiceList",
+          "documentation":"<p>The AWS Services that the Check applies to</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>A description of what the AWS Trusted Advisor Check is monitoring</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the AWS Trusted Advisor Check</p>"
+        },
+        "metadata":{
+          "shape":"StringMap",
+          "documentation":"<p>The column headings for the metadata returned in the resource</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the AWS Trusted Advisor Check</p>"
+        },
+        "pillars":{
+          "shape":"RecommendationPillarList",
+          "documentation":"<p>The Recommendation pillars that the AWS Trusted Advisor Check falls under</p>"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>"
+        }
+      },
+      "documentation":"<p>A summary of an AWS Trusted Advisor Check</p>"
+    },
+    "CheckSummaryList":{
+      "type":"list",
+      "member":{"shape":"CheckSummary"}
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception that the request was denied due to conflictions in state</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "ExclusionStatus":{
+      "type":"string",
+      "enum":[
+        "excluded",
+        "included"
+      ]
+    },
+    "GetOrganizationRecommendationRequest":{
+      "type":"structure",
+      "required":["organizationRecommendationIdentifier"],
+      "members":{
+        "organizationRecommendationIdentifier":{
+          "shape":"OrganizationRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier</p>",
+          "location":"uri",
+          "locationName":"organizationRecommendationIdentifier"
+        }
+      }
+    },
+    "GetOrganizationRecommendationResponse":{
+      "type":"structure",
+      "members":{
+        "organizationRecommendation":{
+          "shape":"OrganizationRecommendation",
+          "documentation":"<p>The Recommendation</p>"
+        }
+      }
+    },
+    "GetRecommendationRequest":{
+      "type":"structure",
+      "required":["recommendationIdentifier"],
+      "members":{
+        "recommendationIdentifier":{
+          "shape":"AccountRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier</p>",
+          "location":"uri",
+          "locationName":"recommendationIdentifier"
+        }
+      }
+    },
+    "GetRecommendationResponse":{
+      "type":"structure",
+      "members":{
+        "recommendation":{
+          "shape":"Recommendation",
+          "documentation":"<p>The Recommendation</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception to notify that an unexpected internal error occurred during processing of the request</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ListChecksRequest":{
+      "type":"structure",
+      "members":{
+        "awsService":{
+          "shape":"RecommendationAwsService",
+          "documentation":"<p>The aws service associated with the check</p>",
+          "location":"querystring",
+          "locationName":"awsService"
+        },
+        "language":{
+          "shape":"RecommendationLanguage",
+          "documentation":"<p>The ISO 639-1 code for the language that you want your checks to appear in.</p>",
+          "location":"querystring",
+          "locationName":"language"
+        },
+        "maxResults":{
+          "shape":"ListChecksRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListChecksRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "pillar":{
+          "shape":"RecommendationPillar",
+          "documentation":"<p>The pillar of the check</p>",
+          "location":"querystring",
+          "locationName":"pillar"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the check</p>",
+          "location":"querystring",
+          "locationName":"source"
+        }
+      }
+    },
+    "ListChecksRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListChecksRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListChecksResponse":{
+      "type":"structure",
+      "required":["checkSummaries"],
+      "members":{
+        "checkSummaries":{
+          "shape":"CheckSummaryList",
+          "documentation":"<p>The list of Checks</p>"
+        },
+        "nextToken":{
+          "shape":"ListChecksResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        }
+      }
+    },
+    "ListChecksResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationAccountsRequest":{
+      "type":"structure",
+      "required":["organizationRecommendationIdentifier"],
+      "members":{
+        "affectedAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>An account affected by this organization recommendation</p>",
+          "location":"querystring",
+          "locationName":"affectedAccountId"
+        },
+        "maxResults":{
+          "shape":"ListOrganizationRecommendationAccountsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationAccountsRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "organizationRecommendationIdentifier":{
+          "shape":"OrganizationRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier</p>",
+          "location":"uri",
+          "locationName":"organizationRecommendationIdentifier"
+        }
+      }
+    },
+    "ListOrganizationRecommendationAccountsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListOrganizationRecommendationAccountsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationAccountsResponse":{
+      "type":"structure",
+      "required":["accountRecommendationLifecycleSummaries"],
+      "members":{
+        "accountRecommendationLifecycleSummaries":{
+          "shape":"AccountRecommendationLifecycleSummaryList",
+          "documentation":"<p>The account recommendations lifecycles that are applicable to the Recommendation</p>"
+        },
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationAccountsResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        }
+      }
+    },
+    "ListOrganizationRecommendationAccountsResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationResourcesRequest":{
+      "type":"structure",
+      "required":["organizationRecommendationIdentifier"],
+      "members":{
+        "affectedAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>An account affected by this organization recommendation</p>",
+          "location":"querystring",
+          "locationName":"affectedAccountId"
+        },
+        "exclusionStatus":{
+          "shape":"ExclusionStatus",
+          "documentation":"<p>The exclusion status of the resource</p>",
+          "location":"querystring",
+          "locationName":"exclusionStatus"
+        },
+        "maxResults":{
+          "shape":"ListOrganizationRecommendationResourcesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationResourcesRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "organizationRecommendationIdentifier":{
+          "shape":"OrganizationRecommendationIdentifier",
+          "documentation":"<p>The AWS Organization organization's Recommendation identifier</p>",
+          "location":"uri",
+          "locationName":"organizationRecommendationIdentifier"
+        },
+        "regionCode":{
+          "shape":"String",
+          "documentation":"<p>The AWS Region code of the resource</p>",
+          "location":"querystring",
+          "locationName":"regionCode"
+        },
+        "status":{
+          "shape":"ResourceStatus",
+          "documentation":"<p>The status of the resource</p>",
+          "location":"querystring",
+          "locationName":"status"
+        }
+      }
+    },
+    "ListOrganizationRecommendationResourcesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListOrganizationRecommendationResourcesRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationResourcesResponse":{
+      "type":"structure",
+      "required":["organizationRecommendationResourceSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationResourcesResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        },
+        "organizationRecommendationResourceSummaries":{
+          "shape":"OrganizationRecommendationResourceSummaryList",
+          "documentation":"<p>A list of Recommendation Resources</p>"
+        }
+      }
+    },
+    "ListOrganizationRecommendationResourcesResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationsRequest":{
+      "type":"structure",
+      "members":{
+        "afterLastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>After the last update of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"afterLastUpdatedAt"
+        },
+        "awsService":{
+          "shape":"RecommendationAwsService",
+          "documentation":"<p>The aws service associated with the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"awsService"
+        },
+        "beforeLastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Before the last update of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"beforeLastUpdatedAt"
+        },
+        "checkIdentifier":{
+          "shape":"CheckIdentifier",
+          "documentation":"<p>The check identifier of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"checkIdentifier"
+        },
+        "maxResults":{
+          "shape":"ListOrganizationRecommendationsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationsRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "pillar":{
+          "shape":"RecommendationPillar",
+          "documentation":"<p>The pillar of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"pillar"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"source"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"status"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>The type of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"type"
+        }
+      }
+    },
+    "ListOrganizationRecommendationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListOrganizationRecommendationsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListOrganizationRecommendationsResponse":{
+      "type":"structure",
+      "required":["organizationRecommendationSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"ListOrganizationRecommendationsResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        },
+        "organizationRecommendationSummaries":{
+          "shape":"OrganizationRecommendationSummaryList",
+          "documentation":"<p>The list of Recommendations</p>"
+        }
+      }
+    },
+    "ListOrganizationRecommendationsResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListRecommendationResourcesRequest":{
+      "type":"structure",
+      "required":["recommendationIdentifier"],
+      "members":{
+        "exclusionStatus":{
+          "shape":"ExclusionStatus",
+          "documentation":"<p>The exclusion status of the resource</p>",
+          "location":"querystring",
+          "locationName":"exclusionStatus"
+        },
+        "maxResults":{
+          "shape":"ListRecommendationResourcesRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListRecommendationResourcesRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "recommendationIdentifier":{
+          "shape":"AccountRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier</p>",
+          "location":"uri",
+          "locationName":"recommendationIdentifier"
+        },
+        "regionCode":{
+          "shape":"String",
+          "documentation":"<p>The AWS Region code of the resource</p>",
+          "location":"querystring",
+          "locationName":"regionCode"
+        },
+        "status":{
+          "shape":"ResourceStatus",
+          "documentation":"<p>The status of the resource</p>",
+          "location":"querystring",
+          "locationName":"status"
+        }
+      }
+    },
+    "ListRecommendationResourcesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListRecommendationResourcesRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListRecommendationResourcesResponse":{
+      "type":"structure",
+      "required":["recommendationResourceSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"ListRecommendationResourcesResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        },
+        "recommendationResourceSummaries":{
+          "shape":"RecommendationResourceSummaryList",
+          "documentation":"<p>A list of Recommendation Resources</p>"
+        }
+      }
+    },
+    "ListRecommendationResourcesResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListRecommendationsRequest":{
+      "type":"structure",
+      "members":{
+        "afterLastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>After the last update of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"afterLastUpdatedAt"
+        },
+        "awsService":{
+          "shape":"RecommendationAwsService",
+          "documentation":"<p>The aws service associated with the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"awsService"
+        },
+        "beforeLastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Before the last update of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"beforeLastUpdatedAt"
+        },
+        "checkIdentifier":{
+          "shape":"CheckIdentifier",
+          "documentation":"<p>The check identifier of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"checkIdentifier"
+        },
+        "maxResults":{
+          "shape":"ListRecommendationsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"ListRecommendationsRequestNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "pillar":{
+          "shape":"RecommendationPillar",
+          "documentation":"<p>The pillar of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"pillar"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"source"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"status"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>The type of the Recommendation</p>",
+          "location":"querystring",
+          "locationName":"type"
+        }
+      }
+    },
+    "ListRecommendationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "ListRecommendationsRequestNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "ListRecommendationsResponse":{
+      "type":"structure",
+      "required":["recommendationSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"ListRecommendationsResponseNextTokenString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. </p>"
+        },
+        "recommendationSummaries":{
+          "shape":"RecommendationSummaryList",
+          "documentation":"<p>The list of Recommendations</p>"
+        }
+      }
+    },
+    "ListRecommendationsResponseNextTokenString":{
+      "type":"string",
+      "max":10000,
+      "min":4
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "OrganizationRecommendation":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "description",
+        "id",
+        "name",
+        "pillars",
+        "resourcesAggregates",
+        "source",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"OrganizationRecommendationArn",
+          "documentation":"<p>The ARN of the Recommendation</p>"
+        },
+        "awsServices":{
+          "shape":"RecommendationAwsServiceList",
+          "documentation":"<p>The AWS Services that the Recommendation applies to</p>"
+        },
+        "checkArn":{
+          "shape":"String",
+          "documentation":"<p>The AWS Trusted Advisor Check ARN that relates to the Recommendation</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was created, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The creator, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>A description for AWS Trusted Advisor recommendations</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID which identifies where the Recommendation was produced</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was last updated</p>"
+        },
+        "lifecycleStage":{
+          "shape":"RecommendationLifecycleStage",
+          "documentation":"<p>The lifecycle stage from AWS Trusted Advisor Priority</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the AWS Trusted Advisor Recommendation</p>"
+        },
+        "pillarSpecificAggregates":{
+          "shape":"RecommendationPillarSpecificAggregates",
+          "documentation":"<p>The pillar aggregations for cost savings</p>"
+        },
+        "pillars":{
+          "shape":"RecommendationPillarList",
+          "documentation":"<p>The Pillars that the Recommendation is optimizing</p>"
+        },
+        "resolvedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was resolved</p>"
+        },
+        "resourcesAggregates":{
+          "shape":"RecommendationResourcesAggregates",
+          "documentation":"<p>An aggregation of all resources</p>"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>Whether the Recommendation was automated or generated by AWS Trusted Advisor Priority</p>"
+        },
+        "updateReason":{
+          "shape":"RecommendationUpdateReason",
+          "documentation":"<p>Reason for the lifecycle stage change</p>"
+        },
+        "updateReasonCode":{
+          "shape":"UpdateRecommendationLifecycleStageReasonCode",
+          "documentation":"<p>Reason code for the lifecycle state change</p>"
+        },
+        "updatedOnBehalfOf":{
+          "shape":"String",
+          "documentation":"<p>The person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        },
+        "updatedOnBehalfOfJobTitle":{
+          "shape":"String",
+          "documentation":"<p>The job title of the person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        }
+      },
+      "documentation":"<p>A Recommendation for accounts within an Organization</p>"
+    },
+    "OrganizationRecommendationArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor:::organization-recommendation\\/[\\w-]+$"
+    },
+    "OrganizationRecommendationIdentifier":{
+      "type":"string",
+      "max":200,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor:::organization-recommendation\\/[\\w-]+$"
+    },
+    "OrganizationRecommendationResourceSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "awsResourceId",
+        "id",
+        "lastUpdatedAt",
+        "metadata",
+        "recommendationArn",
+        "regionCode",
+        "status"
+      ],
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID</p>"
+        },
+        "arn":{
+          "shape":"RecommendationResourceArn",
+          "documentation":"<p>The ARN of the Recommendation Resource</p>"
+        },
+        "awsResourceId":{
+          "shape":"String",
+          "documentation":"<p>The AWS resource identifier</p>"
+        },
+        "exclusionStatus":{
+          "shape":"ExclusionStatus",
+          "documentation":"<p>The exclusion status of the Recommendation Resource</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Recommendation Resource</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation Resource was last updated</p>"
+        },
+        "metadata":{
+          "shape":"StringMap",
+          "documentation":"<p>Metadata associated with the Recommendation Resource</p>"
+        },
+        "recommendationArn":{
+          "shape":"OrganizationRecommendationArn",
+          "documentation":"<p>The Recommendation ARN</p>"
+        },
+        "regionCode":{
+          "shape":"RecommendationRegionCode",
+          "documentation":"<p>The AWS Region code that the Recommendation Resource is in</p>"
+        },
+        "status":{
+          "shape":"ResourceStatus",
+          "documentation":"<p>The current status of the Recommendation Resource</p>"
+        }
+      },
+      "documentation":"<p>Organization Recommendation Resource Summary</p>"
+    },
+    "OrganizationRecommendationResourceSummaryList":{
+      "type":"list",
+      "member":{"shape":"OrganizationRecommendationResourceSummary"}
+    },
+    "OrganizationRecommendationSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "name",
+        "pillars",
+        "resourcesAggregates",
+        "source",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"OrganizationRecommendationArn",
+          "documentation":"<p>The ARN of the Recommendation</p>"
+        },
+        "awsServices":{
+          "shape":"RecommendationAwsServiceList",
+          "documentation":"<p>The AWS Services that the Recommendation applies to</p>"
+        },
+        "checkArn":{
+          "shape":"String",
+          "documentation":"<p>The AWS Trusted Advisor Check ARN that relates to the Recommendation</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was created, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID which identifies where the Recommendation was produced</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was last updated</p>"
+        },
+        "lifecycleStage":{
+          "shape":"RecommendationLifecycleStage",
+          "documentation":"<p>The lifecycle stage from AWS Trusted Advisor Priority</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the AWS Trusted Advisor Recommendation</p>"
+        },
+        "pillarSpecificAggregates":{
+          "shape":"RecommendationPillarSpecificAggregates",
+          "documentation":"<p>The pillar aggregations for cost savings</p>"
+        },
+        "pillars":{
+          "shape":"RecommendationPillarList",
+          "documentation":"<p>The Pillars that the Recommendation is optimizing</p>"
+        },
+        "resourcesAggregates":{
+          "shape":"RecommendationResourcesAggregates",
+          "documentation":"<p>An aggregation of all resources</p>"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>Whether the Recommendation was automated or generated by AWS Trusted Advisor Priority</p>"
+        }
+      },
+      "documentation":"<p>Summary of recommendation for accounts within an Organization</p>"
+    },
+    "OrganizationRecommendationSummaryList":{
+      "type":"list",
+      "member":{"shape":"OrganizationRecommendationSummary"}
+    },
+    "Recommendation":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "description",
+        "id",
+        "name",
+        "pillars",
+        "resourcesAggregates",
+        "source",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"AccountRecommendationArn",
+          "documentation":"<p>The ARN of the Recommendation</p>"
+        },
+        "awsServices":{
+          "shape":"RecommendationAwsServiceList",
+          "documentation":"<p>The AWS Services that the Recommendation applies to</p>"
+        },
+        "checkArn":{
+          "shape":"String",
+          "documentation":"<p>The AWS Trusted Advisor Check ARN that relates to the Recommendation</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was created, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The creator, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>A description for AWS Trusted Advisor recommendations</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID which identifies where the Recommendation was produced</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was last updated</p>"
+        },
+        "lifecycleStage":{
+          "shape":"RecommendationLifecycleStage",
+          "documentation":"<p>The lifecycle stage from AWS Trusted Advisor Priority</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the AWS Trusted Advisor Recommendation</p>"
+        },
+        "pillarSpecificAggregates":{
+          "shape":"RecommendationPillarSpecificAggregates",
+          "documentation":"<p>The pillar aggregations for cost savings</p>"
+        },
+        "pillars":{
+          "shape":"RecommendationPillarList",
+          "documentation":"<p>The Pillars that the Recommendation is optimizing</p>"
+        },
+        "resolvedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was resolved</p>"
+        },
+        "resourcesAggregates":{
+          "shape":"RecommendationResourcesAggregates",
+          "documentation":"<p>An aggregation of all resources</p>"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>Whether the Recommendation was automated or generated by AWS Trusted Advisor Priority</p>"
+        },
+        "updateReason":{
+          "shape":"RecommendationUpdateReason",
+          "documentation":"<p>Reason for the lifecycle stage change</p>"
+        },
+        "updateReasonCode":{
+          "shape":"UpdateRecommendationLifecycleStageReasonCode",
+          "documentation":"<p>Reason code for the lifecycle state change</p>"
+        },
+        "updatedOnBehalfOf":{
+          "shape":"String",
+          "documentation":"<p>The person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        },
+        "updatedOnBehalfOfJobTitle":{
+          "shape":"String",
+          "documentation":"<p>The job title of the person on whose behalf a Technical Account Manager (TAM) updated the recommendation. This information is only available when a Technical Account Manager takes an action on a recommendation managed by AWS Trusted Advisor Priority </p>"
+        }
+      },
+      "documentation":"<p>A Recommendation for an Account</p>"
+    },
+    "RecommendationAwsService":{
+      "type":"string",
+      "max":30,
+      "min":2
+    },
+    "RecommendationAwsServiceList":{
+      "type":"list",
+      "member":{"shape":"RecommendationAwsService"}
+    },
+    "RecommendationCostOptimizingAggregates":{
+      "type":"structure",
+      "required":[
+        "estimatedMonthlySavings",
+        "estimatedPercentMonthlySavings"
+      ],
+      "members":{
+        "estimatedMonthlySavings":{
+          "shape":"Double",
+          "documentation":"<p>The estimated monthly savings</p>"
+        },
+        "estimatedPercentMonthlySavings":{
+          "shape":"Double",
+          "documentation":"<p>The estimated percently monthly savings</p>"
+        }
+      },
+      "documentation":"<p>Cost optimizing aggregates for a Recommendation</p>"
+    },
+    "RecommendationLanguage":{
+      "type":"string",
+      "enum":[
+        "en",
+        "ja",
+        "zh",
+        "fr",
+        "de",
+        "ko",
+        "zh_TW",
+        "it",
+        "es",
+        "pt_BR",
+        "id"
+      ]
+    },
+    "RecommendationLifecycleStage":{
+      "type":"string",
+      "enum":[
+        "in_progress",
+        "pending_response",
+        "dismissed",
+        "resolved"
+      ]
+    },
+    "RecommendationPillar":{
+      "type":"string",
+      "enum":[
+        "cost_optimizing",
+        "performance",
+        "security",
+        "service_limits",
+        "fault_tolerance",
+        "operational_excellence"
+      ]
+    },
+    "RecommendationPillarList":{
+      "type":"list",
+      "member":{"shape":"RecommendationPillar"}
+    },
+    "RecommendationPillarSpecificAggregates":{
+      "type":"structure",
+      "members":{
+        "costOptimizing":{
+          "shape":"RecommendationCostOptimizingAggregates",
+          "documentation":"<p>Cost optimizing aggregates</p>"
+        }
+      },
+      "documentation":"<p>Recommendation pillar aggregates</p>"
+    },
+    "RecommendationRegionCode":{
+      "type":"string",
+      "max":20,
+      "min":9
+    },
+    "RecommendationResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:[\\w-]+:trustedadvisor::\\d{12}:recommendation-resource\\/[\\w-]+\\/[\\w-]+$"
+    },
+    "RecommendationResourceExclusion":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "isExcluded"
+      ],
+      "members":{
+        "arn":{
+          "shape":"RecommendationResourceArn",
+          "documentation":"<p>The ARN of the Recommendation Resource</p>"
+        },
+        "isExcluded":{
+          "shape":"Boolean",
+          "documentation":"<p>The exclusion status</p>"
+        }
+      },
+      "documentation":"<p>The request entry for Recommendation Resource exclusion. Each entry is a combination of Recommendation Resource ARN and corresponding exclusion status</p>"
+    },
+    "RecommendationResourceExclusionList":{
+      "type":"list",
+      "member":{"shape":"RecommendationResourceExclusion"},
+      "max":100,
+      "min":1
+    },
+    "RecommendationResourceSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "awsResourceId",
+        "id",
+        "lastUpdatedAt",
+        "metadata",
+        "recommendationArn",
+        "regionCode",
+        "status"
+      ],
+      "members":{
+        "arn":{
+          "shape":"RecommendationResourceArn",
+          "documentation":"<p>The ARN of the Recommendation Resource</p>"
+        },
+        "awsResourceId":{
+          "shape":"String",
+          "documentation":"<p>The AWS resource identifier</p>"
+        },
+        "exclusionStatus":{
+          "shape":"ExclusionStatus",
+          "documentation":"<p>The exclusion status of the Recommendation Resource</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Recommendation Resource</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation Resource was last updated</p>"
+        },
+        "metadata":{
+          "shape":"StringMap",
+          "documentation":"<p>Metadata associated with the Recommendation Resource</p>"
+        },
+        "recommendationArn":{
+          "shape":"AccountRecommendationArn",
+          "documentation":"<p>The Recommendation ARN</p>"
+        },
+        "regionCode":{
+          "shape":"RecommendationRegionCode",
+          "documentation":"<p>The AWS Region code that the Recommendation Resource is in</p>"
+        },
+        "status":{
+          "shape":"ResourceStatus",
+          "documentation":"<p>The current status of the Recommendation Resource</p>"
+        }
+      },
+      "documentation":"<p>Summary of a Recommendation Resource</p>"
+    },
+    "RecommendationResourceSummaryList":{
+      "type":"list",
+      "member":{"shape":"RecommendationResourceSummary"}
+    },
+    "RecommendationResourcesAggregates":{
+      "type":"structure",
+      "required":[
+        "errorCount",
+        "okCount",
+        "warningCount"
+      ],
+      "members":{
+        "errorCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of AWS resources that were flagged to have errors according to the Trusted Advisor check</p>"
+        },
+        "okCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of AWS resources that were flagged to be OK according to the Trusted Advisor check</p>"
+        },
+        "warningCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of AWS resources that were flagged to have warning according to the Trusted Advisor check </p>"
+        }
+      },
+      "documentation":"<p>Aggregation of Recommendation Resources</p>"
+    },
+    "RecommendationSource":{
+      "type":"string",
+      "enum":[
+        "aws_config",
+        "compute_optimizer",
+        "cost_explorer",
+        "lse",
+        "manual",
+        "pse",
+        "rds",
+        "resilience",
+        "resilience_hub",
+        "security_hub",
+        "stir",
+        "ta_check",
+        "well_architected"
+      ]
+    },
+    "RecommendationStatus":{
+      "type":"string",
+      "enum":[
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "RecommendationSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "name",
+        "pillars",
+        "resourcesAggregates",
+        "source",
+        "status",
+        "type"
+      ],
+      "members":{
+        "arn":{
+          "shape":"AccountRecommendationArn",
+          "documentation":"<p>The ARN of the Recommendation</p>"
+        },
+        "awsServices":{
+          "shape":"RecommendationAwsServiceList",
+          "documentation":"<p>The AWS Services that the Recommendation applies to</p>"
+        },
+        "checkArn":{
+          "shape":"String",
+          "documentation":"<p>The AWS Trusted Advisor Check ARN that relates to the Recommendation</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was created, if created by AWS Trusted Advisor Priority</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID which identifies where the Recommendation was produced</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>When the Recommendation was last updated</p>"
+        },
+        "lifecycleStage":{
+          "shape":"RecommendationLifecycleStage",
+          "documentation":"<p>The lifecycle stage from AWS Trusted Advisor Priority</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the AWS Trusted Advisor Recommendation</p>"
+        },
+        "pillarSpecificAggregates":{
+          "shape":"RecommendationPillarSpecificAggregates",
+          "documentation":"<p>The pillar aggregations for cost savings</p>"
+        },
+        "pillars":{
+          "shape":"RecommendationPillarList",
+          "documentation":"<p>The Pillars that the Recommendation is optimizing</p>"
+        },
+        "resourcesAggregates":{
+          "shape":"RecommendationResourcesAggregates",
+          "documentation":"<p>An aggregation of all resources</p>"
+        },
+        "source":{
+          "shape":"RecommendationSource",
+          "documentation":"<p>The source of the Recommendation</p>"
+        },
+        "status":{
+          "shape":"RecommendationStatus",
+          "documentation":"<p>The status of the Recommendation</p>"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>Whether the Recommendation was automated or generated by AWS Trusted Advisor Priority</p>"
+        }
+      },
+      "documentation":"<p>Summary of Recommendation for an Account</p>"
+    },
+    "RecommendationSummaryList":{
+      "type":"list",
+      "member":{"shape":"RecommendationSummary"}
+    },
+    "RecommendationType":{
+      "type":"string",
+      "enum":[
+        "standard",
+        "priority"
+      ]
+    },
+    "RecommendationUpdateReason":{
+      "type":"string",
+      "max":4096,
+      "min":10,
+      "pattern":"^[\\s\\S]*$",
+      "sensitive":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception that the requested resource has not been found</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceStatus":{
+      "type":"string",
+      "enum":[
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "String":{"type":"string"},
+    "StringMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception to notify that requests are being throttled</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UpdateOrganizationRecommendationLifecycleRequest":{
+      "type":"structure",
+      "required":[
+        "lifecycleStage",
+        "organizationRecommendationIdentifier"
+      ],
+      "members":{
+        "lifecycleStage":{
+          "shape":"UpdateRecommendationLifecycleStage",
+          "documentation":"<p>The new lifecycle stage</p>"
+        },
+        "organizationRecommendationIdentifier":{
+          "shape":"OrganizationRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier for AWS Trusted Advisor Priority recommendations</p>",
+          "location":"uri",
+          "locationName":"organizationRecommendationIdentifier"
+        },
+        "updateReason":{
+          "shape":"RecommendationUpdateReason",
+          "documentation":"<p>Reason for the lifecycle stage change</p>"
+        },
+        "updateReasonCode":{
+          "shape":"UpdateRecommendationLifecycleStageReasonCode",
+          "documentation":"<p>Reason code for the lifecycle state change</p>"
+        }
+      }
+    },
+    "UpdateRecommendationLifecycleRequest":{
+      "type":"structure",
+      "required":[
+        "lifecycleStage",
+        "recommendationIdentifier"
+      ],
+      "members":{
+        "lifecycleStage":{
+          "shape":"UpdateRecommendationLifecycleStage",
+          "documentation":"<p>The new lifecycle stage</p>"
+        },
+        "recommendationIdentifier":{
+          "shape":"AccountRecommendationIdentifier",
+          "documentation":"<p>The Recommendation identifier for AWS Trusted Advisor Priority recommendations</p>",
+          "location":"uri",
+          "locationName":"recommendationIdentifier"
+        },
+        "updateReason":{
+          "shape":"RecommendationUpdateReason",
+          "documentation":"<p>Reason for the lifecycle stage change</p>"
+        },
+        "updateReasonCode":{
+          "shape":"UpdateRecommendationLifecycleStageReasonCode",
+          "documentation":"<p>Reason code for the lifecycle state change</p>"
+        }
+      }
+    },
+    "UpdateRecommendationLifecycleStage":{
+      "type":"string",
+      "enum":[
+        "pending_response",
+        "in_progress",
+        "dismissed",
+        "resolved"
+      ]
+    },
+    "UpdateRecommendationLifecycleStageReasonCode":{
+      "type":"string",
+      "enum":[
+        "non_critical_account",
+        "temporary_account",
+        "valid_business_case",
+        "other_methods_available",
+        "low_priority",
+        "not_applicable",
+        "other"
+      ]
+    },
+    "UpdateRecommendationResourceExclusionError":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"RecommendationResourceArn",
+          "documentation":"<p>The ARN of the Recommendation Resource</p>"
+        },
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message</p>"
+        }
+      },
+      "documentation":"<p>The error entry for Recommendation Resource exclusion. Each entry is a combination of Recommendation Resource ARN, error code and error message</p>"
+    },
+    "UpdateRecommendationResourceExclusionErrorList":{
+      "type":"list",
+      "member":{"shape":"UpdateRecommendationResourceExclusionError"}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Exception that the request failed to satisfy service constraints</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>TrustedAdvisor Public API</p>"
+}

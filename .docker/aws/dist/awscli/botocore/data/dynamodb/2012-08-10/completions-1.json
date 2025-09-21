@@ -1,0 +1,266 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Backup": {
+      "operation": "ListBackups",
+      "resourceIdentifier": {
+        "BackupArn": "BackupSummaries[].BackupArn",
+        "BackupType": "BackupSummaries[].BackupType"
+      }
+    },
+    "GlobalTable": {
+      "operation": "ListGlobalTables",
+      "resourceIdentifier": {
+        "GlobalTableName": "GlobalTables[].GlobalTableName"
+      }
+    },
+    "Table": {
+      "operation": "ListTables",
+      "resourceIdentifier": {
+        "TableName": "TableNames[]"
+      }
+    }
+  },
+  "operations": {
+    "DeleteBackup": {
+      "BackupArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupArn"
+          }
+        ]
+      }
+    },
+    "DeleteItem": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "DeleteTable": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "DescribeBackup": {
+      "BackupArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupArn"
+          }
+        ]
+      }
+    },
+    "DescribeContinuousBackups": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "DescribeGlobalTable": {
+      "GlobalTableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GlobalTable",
+            "resourceIdentifier": "GlobalTableName"
+          }
+        ]
+      }
+    },
+    "DescribeGlobalTableSettings": {
+      "GlobalTableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GlobalTable",
+            "resourceIdentifier": "GlobalTableName"
+          }
+        ]
+      }
+    },
+    "DescribeTable": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "DescribeTimeToLive": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "GetItem": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "ListBackups": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      },
+      "BackupType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupType"
+          }
+        ]
+      }
+    },
+    "PutItem": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "Query": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "RestoreTableFromBackup": {
+      "BackupArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupArn"
+          }
+        ]
+      }
+    },
+    "Scan": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "UpdateContinuousBackups": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "UpdateGlobalTable": {
+      "GlobalTableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GlobalTable",
+            "resourceIdentifier": "GlobalTableName"
+          }
+        ]
+      }
+    },
+    "UpdateGlobalTableSettings": {
+      "GlobalTableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GlobalTable",
+            "resourceIdentifier": "GlobalTableName"
+          }
+        ]
+      }
+    },
+    "UpdateItem": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "UpdateTable": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    },
+    "UpdateTimeToLive": {
+      "TableName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Table",
+            "resourceIdentifier": "TableName"
+          }
+        ]
+      }
+    }
+  }
+}

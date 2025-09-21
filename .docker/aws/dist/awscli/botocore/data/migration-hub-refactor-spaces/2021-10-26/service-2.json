@@ -1,0 +1,2899 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-10-26",
+    "endpointPrefix":"refactor-spaces",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"AWS Migration Hub Refactor Spaces",
+    "serviceId":"Migration Hub Refactor Spaces",
+    "signatureVersion":"v4",
+    "signingName":"refactor-spaces",
+    "uid":"migration-hub-refactor-spaces-2021-10-26"
+  },
+  "operations":{
+    "CreateApplication":{
+      "name":"CreateApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateApplicationRequest"},
+      "output":{"shape":"CreateApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Amazon Web Services Migration Hub Refactor Spaces application. The account that owns the environment also owns the applications created inside the environment, regardless of the account that creates the application. Refactor Spaces provisions an Amazon API Gateway, API Gateway VPC link, and Network Load Balancer for the application proxy inside your account.</p> <p>In environments created with a <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType\">CreateEnvironment:NetworkFabricType</a> of <code>NONE</code> you need to configure <a href=\"https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/amazon-vpc-to-amazon-vpc-connectivity-options.html\"> VPC to VPC connectivity</a> between your service VPC and the application proxy VPC to route traffic through the application proxy to a service with a private URL endpoint. For more information, see <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/getting-started-create-application.html\"> Create an application</a> in the <i>Refactor Spaces User Guide</i>. </p>"
+    },
+    "CreateEnvironment":{
+      "name":"CreateEnvironment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateEnvironmentRequest"},
+      "output":{"shape":"CreateEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Amazon Web Services Migration Hub Refactor Spaces environment. The caller owns the environment resource, and all Refactor Spaces applications, services, and routes created within the environment. They are referred to as the <i>environment owner</i>. The environment owner has cross-account visibility and control of Refactor Spaces resources that are added to the environment by other accounts that the environment is shared with.</p> <p>When creating an environment with a <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType\">CreateEnvironment:NetworkFabricType</a> of <code>TRANSIT_GATEWAY</code>, Refactor Spaces provisions a transit gateway to enable services in VPCs to communicate directly across accounts. If <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType\">CreateEnvironment:NetworkFabricType</a> is <code>NONE</code>, Refactor Spaces does not create a transit gateway and you must use your network infrastructure to route traffic to services with private URL endpoints.</p>"
+    },
+    "CreateRoute":{
+      "name":"CreateRoute",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateRouteRequest"},
+      "output":{"shape":"CreateRouteResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Amazon Web Services Migration Hub Refactor Spaces route. The account owner of the service resource is always the environment owner, regardless of which account creates the route. Routes target a service in the application. If an application does not have any routes, then the first route must be created as a <code>DEFAULT</code> <code>RouteType</code>.</p> <p>When created, the default route defaults to an active state so state is not a required input. However, like all other state values the state of the default route can be updated after creation, but only when all other routes are also inactive. Conversely, no route can be active without the default route also being active.</p> <p>When you create a route, Refactor Spaces configures the Amazon API Gateway to send traffic to the target service as follows:</p> <ul> <li> <p> <b>URL Endpoints</b> </p> <p>If the service has a URL endpoint, and the endpoint resolves to a private IP address, Refactor Spaces routes traffic using the API Gateway VPC link. If a service endpoint resolves to a public IP address, Refactor Spaces routes traffic over the public internet. Services can have HTTP or HTTPS URL endpoints. For HTTPS URLs, publicly-signed certificates are supported. Private Certificate Authorities (CAs) are permitted only if the CA's domain is also publicly resolvable. </p> <p>Refactor Spaces automatically resolves the public Domain Name System (DNS) names that are set in <code>CreateService:UrlEndpoint </code>when you create a service. The DNS names resolve when the DNS time-to-live (TTL) expires, or every 60 seconds for TTLs less than 60 seconds. This periodic DNS resolution ensures that the route configuration remains up-to-date. </p> <p/> <p> <b>One-time health check</b> </p> <p>A one-time health check is performed on the service when either the route is updated from inactive to active, or when it is created with an active state. If the health check fails, the route transitions the route state to <code>FAILED</code>, an error code of <code>SERVICE_ENDPOINT_HEALTH_CHECK_FAILURE</code> is provided, and no traffic is sent to the service.</p> <p>For private URLs, a target group is created on the Network Load Balancer and the load balancer target group runs default target health checks. By default, the health check is run against the service endpoint URL. Optionally, the health check can be performed against a different protocol, port, and/or path using the <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateService.html#migrationhubrefactorspaces-CreateService-request-UrlEndpoint\">CreateService:UrlEndpoint</a> parameter. All other health check settings for the load balancer use the default values described in the <a href=\"https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html\">Health checks for your target groups</a> in the <i>Elastic Load Balancing guide</i>. The health check is considered successful if at least one target within the target group transitions to a healthy state.</p> <p/> </li> <li> <p> <b>Lambda function endpoints</b> </p> <p>If the service has an Lambda function endpoint, then Refactor Spaces configures the Lambda function's resource policy to allow the application's API Gateway to invoke the function.</p> <p>The Lambda function state is checked. If the function is not active, the function configuration is updated so that Lambda resources are provisioned. If the Lambda state is <code>Failed</code>, then the route creation fails. For more information, see the <a href=\"https://docs.aws.amazon.com/lambda/latest/dg/API_GetFunctionConfiguration.html#SSS-GetFunctionConfiguration-response-State\">GetFunctionConfiguration's State response parameter</a> in the <i>Lambda Developer Guide</i>.</p> <p>A check is performed to determine that a Lambda function with the specified ARN exists. If it does not exist, the health check fails. For public URLs, a connection is opened to the public endpoint. If the URL is not reachable, the health check fails. </p> </li> </ul> <p> <b>Environments without a network bridge</b> </p> <p>When you create environments without a network bridge (<a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType\">CreateEnvironment:NetworkFabricType</a> is <code>NONE)</code> and you use your own networking infrastructure, you need to configure <a href=\"https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/amazon-vpc-to-amazon-vpc-connectivity-options.html\">VPC to VPC connectivity</a> between your network and the application proxy VPC. Route creation from the application proxy to service endpoints will fail if your network is not configured to connect to the application proxy VPC. For more information, see <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/getting-started-create-role.html\"> Create a route</a> in the <i>Refactor Spaces User Guide</i>.</p> <p/>"
+    },
+    "CreateService":{
+      "name":"CreateService",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/services",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateServiceRequest"},
+      "output":{"shape":"CreateServiceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Amazon Web Services Migration Hub Refactor Spaces service. The account owner of the service is always the environment owner, regardless of which account in the environment creates the service. Services have either a URL endpoint in a virtual private cloud (VPC), or a Lambda function endpoint.</p> <important> <p>If an Amazon Web Services resource is launched in a service VPC, and you want it to be accessible to all of an environment’s services with VPCs and routes, apply the <code>RefactorSpacesSecurityGroup</code> to the resource. Alternatively, to add more cross-account constraints, apply your own security group.</p> </important>"
+    },
+    "DeleteApplication":{
+      "name":"DeleteApplication",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteApplicationRequest"},
+      "output":{"shape":"DeleteApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Web Services Migration Hub Refactor Spaces application. Before you can delete an application, you must first delete any services or routes within the application.</p>",
+      "idempotent":true
+    },
+    "DeleteEnvironment":{
+      "name":"DeleteEnvironment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{EnvironmentIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteEnvironmentRequest"},
+      "output":{"shape":"DeleteEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Web Services Migration Hub Refactor Spaces environment. Before you can delete an environment, you must first delete any applications and services within the environment.</p>",
+      "idempotent":true
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/resourcepolicy/{Identifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "output":{"shape":"DeleteResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the resource policy set for the environment. </p>",
+      "idempotent":true
+    },
+    "DeleteRoute":{
+      "name":"DeleteRoute",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes/{RouteIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteRouteRequest"},
+      "output":{"shape":"DeleteRouteResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Web Services Migration Hub Refactor Spaces route.</p>",
+      "idempotent":true
+    },
+    "DeleteService":{
+      "name":"DeleteService",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/services/{ServiceIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteServiceRequest"},
+      "output":{"shape":"DeleteServiceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Web Services Migration Hub Refactor Spaces service. </p>",
+      "idempotent":true
+    },
+    "GetApplication":{
+      "name":"GetApplication",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetApplicationRequest"},
+      "output":{"shape":"GetApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets an Amazon Web Services Migration Hub Refactor Spaces application.</p>"
+    },
+    "GetEnvironment":{
+      "name":"GetEnvironment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEnvironmentRequest"},
+      "output":{"shape":"GetEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets an Amazon Web Services Migration Hub Refactor Spaces environment.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/resourcepolicy/{Identifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets the resource-based permission policy that is set for the given environment. </p>"
+    },
+    "GetRoute":{
+      "name":"GetRoute",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes/{RouteIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRouteRequest"},
+      "output":{"shape":"GetRouteResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets an Amazon Web Services Migration Hub Refactor Spaces route.</p>"
+    },
+    "GetService":{
+      "name":"GetService",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/services/{ServiceIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetServiceRequest"},
+      "output":{"shape":"GetServiceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets an Amazon Web Services Migration Hub Refactor Spaces service. </p>"
+    },
+    "ListApplications":{
+      "name":"ListApplications",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationsRequest"},
+      "output":{"shape":"ListApplicationsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the Amazon Web Services Migration Hub Refactor Spaces applications within an environment. </p>"
+    },
+    "ListEnvironmentVpcs":{
+      "name":"ListEnvironmentVpcs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/vpcs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEnvironmentVpcsRequest"},
+      "output":{"shape":"ListEnvironmentVpcsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all Amazon Web Services Migration Hub Refactor Spaces service virtual private clouds (VPCs) that are part of the environment. </p>"
+    },
+    "ListEnvironments":{
+      "name":"ListEnvironments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEnvironmentsRequest"},
+      "output":{"shape":"ListEnvironmentsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists Amazon Web Services Migration Hub Refactor Spaces environments owned by a caller account or shared with the caller account. </p>"
+    },
+    "ListRoutes":{
+      "name":"ListRoutes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRoutesRequest"},
+      "output":{"shape":"ListRoutesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the Amazon Web Services Migration Hub Refactor Spaces routes within an application. </p>"
+    },
+    "ListServices":{
+      "name":"ListServices",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/services",
+        "responseCode":200
+      },
+      "input":{"shape":"ListServicesRequest"},
+      "output":{"shape":"ListServicesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the Amazon Web Services Migration Hub Refactor Spaces services within an application. </p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the tags of a resource. The caller account must be the same as the resource’s <code>OwnerAccountId</code>. Listing tags in other accounts is not supported. </p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/resourcepolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidResourcePolicyException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Attaches a resource-based permission policy to the Amazon Web Services Migration Hub Refactor Spaces environment. The policy must contain the same actions and condition statements as the <code>arn:aws:ram::aws:permission/AWSRAMDefaultPermissionRefactorSpacesEnvironment</code> permission in Resource Access Manager. The policy must not contain new lines or blank lines. </p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes the tags of a given resource. Tags are metadata which can be used to manage a resource. To tag a resource, the caller account must be the same as the resource’s <code>OwnerAccountId</code>. Tagging resources in other accounts is not supported.</p> <note> <p>Amazon Web Services Migration Hub Refactor Spaces does not propagate tags to orchestrated resources, such as an environment’s transit gateway.</p> </note>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds to or modifies the tags of the given resource. Tags are metadata which can be used to manage a resource. To untag a resource, the caller account must be the same as the resource’s <code>OwnerAccountId</code>. Untagging resources across accounts is not supported. </p>",
+      "idempotent":true
+    },
+    "UpdateRoute":{
+      "name":"UpdateRoute",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes/{RouteIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRouteRequest"},
+      "output":{"shape":"UpdateRouteResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p> Updates an Amazon Web Services Migration Hub Refactor Spaces route. </p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The user does not have sufficient access to perform this action. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^\\d{12}$"
+    },
+    "AdditionalDetails":{
+      "type":"map",
+      "key":{"shape":"AdditionalDetailsKey"},
+      "value":{"shape":"AdditionalDetailsValue"}
+    },
+    "AdditionalDetailsKey":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "AdditionalDetailsValue":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ApiGatewayEndpointType":{
+      "type":"string",
+      "enum":[
+        "REGIONAL",
+        "PRIVATE"
+      ]
+    },
+    "ApiGatewayId":{
+      "type":"string",
+      "max":10,
+      "min":10,
+      "pattern":"^[a-z0-9]{10}$"
+    },
+    "ApiGatewayProxyConfig":{
+      "type":"structure",
+      "members":{
+        "ApiGatewayId":{
+          "shape":"ApiGatewayId",
+          "documentation":"<p>The resource ID of the API Gateway for the proxy. </p>"
+        },
+        "EndpointType":{
+          "shape":"ApiGatewayEndpointType",
+          "documentation":"<p>The type of API Gateway endpoint created. </p>"
+        },
+        "NlbArn":{
+          "shape":"NlbArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Network Load Balancer configured by the API Gateway proxy. </p>"
+        },
+        "NlbName":{
+          "shape":"NlbName",
+          "documentation":"<p>The name of the Network Load Balancer that is configured by the API Gateway proxy. </p>"
+        },
+        "ProxyUrl":{
+          "shape":"Uri",
+          "documentation":"<p>The endpoint URL of the API Gateway proxy. </p>"
+        },
+        "StageName":{
+          "shape":"StageName",
+          "documentation":"<p>The name of the API Gateway stage. The name defaults to <code>prod</code>. </p>"
+        },
+        "VpcLinkId":{
+          "shape":"VpcLinkId",
+          "documentation":"<p>The <code>VpcLink</code> ID of the API Gateway proxy. </p>"
+        }
+      },
+      "documentation":"<p>A wrapper object holding the Amazon API Gateway proxy configuration. </p>"
+    },
+    "ApiGatewayProxyInput":{
+      "type":"structure",
+      "members":{
+        "EndpointType":{
+          "shape":"ApiGatewayEndpointType",
+          "documentation":"<p>The type of endpoint to use for the API Gateway proxy. If no value is specified in the request, the value is set to <code>REGIONAL</code> by default.</p> <p>If the value is set to <code>PRIVATE</code> in the request, this creates a private API endpoint that is isolated from the public internet. The private endpoint can only be accessed by using Amazon Virtual Private Cloud (Amazon VPC) interface endpoints for the Amazon API Gateway that has been granted access. For more information about creating a private connection with Refactor Spaces and interface endpoint (Amazon Web Services PrivateLink) availability, see <a href=\"https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/vpc-interface-endpoints.html\">Access Refactor Spaces using an interface endpoint (Amazon Web Services PrivateLink)</a>.</p>"
+        },
+        "StageName":{
+          "shape":"StageName",
+          "documentation":"<p>The name of the API Gateway stage. The name defaults to <code>prod</code>. </p>"
+        }
+      },
+      "documentation":"<p>A wrapper object holding the Amazon API Gateway endpoint input. </p>"
+    },
+    "ApiGatewayProxySummary":{
+      "type":"structure",
+      "members":{
+        "ApiGatewayId":{
+          "shape":"ApiGatewayId",
+          "documentation":"<p>The resource ID of the API Gateway for the proxy. </p>"
+        },
+        "EndpointType":{
+          "shape":"ApiGatewayEndpointType",
+          "documentation":"<p>The type of API Gateway endpoint created. </p>"
+        },
+        "NlbArn":{
+          "shape":"NlbArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Network Load Balancer configured by the API Gateway proxy. </p>"
+        },
+        "NlbName":{
+          "shape":"NlbName",
+          "documentation":"<p>The name of the Network Load Balancer that is configured by the API Gateway proxy. </p>"
+        },
+        "ProxyUrl":{
+          "shape":"Uri",
+          "documentation":"<p>The endpoint URL of the API Gateway proxy. </p>"
+        },
+        "StageName":{
+          "shape":"StageName",
+          "documentation":"<p>The name of the API Gateway stage. The name defaults to <code>prod</code>. </p>"
+        },
+        "VpcLinkId":{
+          "shape":"VpcLinkId",
+          "documentation":"<p>The <code>VpcLink</code> ID of the API Gateway proxy. </p>"
+        }
+      },
+      "documentation":"<p>A wrapper object holding the Amazon API Gateway proxy summary. </p>"
+    },
+    "ApplicationId":{
+      "type":"string",
+      "max":14,
+      "min":14,
+      "pattern":"^app-[0-9A-Za-z]{10}$"
+    },
+    "ApplicationName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^(?!app-)[a-zA-Z0-9]+[a-zA-Z0-9-_ ]+$"
+    },
+    "ApplicationState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED",
+        "UPDATING"
+      ]
+    },
+    "ApplicationSummaries":{
+      "type":"list",
+      "member":{"shape":"ApplicationSummary"}
+    },
+    "ApplicationSummary":{
+      "type":"structure",
+      "members":{
+        "ApiGatewayProxy":{
+          "shape":"ApiGatewayProxySummary",
+          "documentation":"<p>The endpoint URL of the Amazon API Gateway proxy. </p>"
+        },
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The unique identifier of the application. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application. </p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the application creator. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application is created. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the application resource. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the application owner (which is always the same as the environment owner account ID).</p>"
+        },
+        "ProxyType":{
+          "shape":"ProxyType",
+          "documentation":"<p>The proxy type of the proxy created within the application. </p>"
+        },
+        "State":{
+          "shape":"ApplicationState",
+          "documentation":"<p>The current state of the application. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the application. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the virtual private cloud (VPC). </p>"
+        }
+      },
+      "documentation":"<p>The list of <code>ApplicationSummary</code> objects. </p>"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CidrBlock":{"type":"string"},
+    "CidrBlocks":{
+      "type":"list",
+      "member":{"shape":"CidrBlock"},
+      "min":1
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[\\x20-\\x7E]{1,64}$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource. </p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of resource. </p>"
+        }
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "EnvironmentIdentifier",
+        "Name",
+        "ProxyType",
+        "VpcId"
+      ],
+      "members":{
+        "ApiGatewayProxy":{
+          "shape":"ApiGatewayProxyInput",
+          "documentation":"<p>A wrapper object holding the API Gateway endpoint type and stage name for the proxy. </p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name to use for the application. </p>"
+        },
+        "ProxyType":{
+          "shape":"ProxyType",
+          "documentation":"<p>The proxy type of the proxy created within the application. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the application. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair.</p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the virtual private cloud (VPC).</p>"
+        }
+      }
+    },
+    "CreateApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApiGatewayProxy":{
+          "shape":"ApiGatewayProxyInput",
+          "documentation":"<p>A wrapper object holding the API Gateway endpoint type and stage name for the proxy. </p>"
+        },
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application. The format for this ARN is <code>arn:aws:refactor-spaces:<i>region</i>:<i>account-id</i>:<i>resource-type/resource-id</i> </code>. For more information about ARNs, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\"> Amazon Resource Names (ARNs)</a> in the <i>Amazon Web Services General Reference</i>.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of application creator.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application is created.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment in which the application is created.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the application owner (which is always the same as the environment owner account ID).</p>"
+        },
+        "ProxyType":{
+          "shape":"ProxyType",
+          "documentation":"<p>The proxy type of the proxy created within the application. </p>"
+        },
+        "State":{
+          "shape":"ApplicationState",
+          "documentation":"<p>The current state of the application. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the application. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the Amazon VPC. </p>"
+        }
+      }
+    },
+    "CreateEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "NetworkFabricType"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the environment.</p>"
+        },
+        "Name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "NetworkFabricType":{
+          "shape":"NetworkFabricType",
+          "documentation":"<p>The network fabric type of the environment.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the environment. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair.</p>"
+        }
+      }
+    },
+    "CreateEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment is created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the environment.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment was last updated.</p>"
+        },
+        "Name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "NetworkFabricType":{
+          "shape":"NetworkFabricType",
+          "documentation":"<p>The network fabric type of the environment.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of environment owner.</p>"
+        },
+        "State":{
+          "shape":"EnvironmentState",
+          "documentation":"<p>The current state of the environment. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the created environment. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair..</p>"
+        }
+      }
+    },
+    "CreateRouteRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "RouteType",
+        "ServiceIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application within which the route is being created.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        },
+        "DefaultRoute":{
+          "shape":"DefaultRouteInput",
+          "documentation":"<p> Configuration for the default route type. </p>"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment in which the route is created.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "RouteType":{
+          "shape":"RouteType",
+          "documentation":"<p>The route type of the route. <code>DEFAULT</code> indicates that all traffic that does not match another route is forwarded to the default route. Applications must have a default route before any other routes can be created. <code>URI_PATH</code> indicates a route that is based on a URI path.</p>"
+        },
+        "ServiceIdentifier":{
+          "shape":"ServiceId",
+          "documentation":"<p>The ID of the service in which the route is created. Traffic that matches this route is forwarded to this service.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the route. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair.. </p>"
+        },
+        "UriPathRoute":{
+          "shape":"UriPathRouteInput",
+          "documentation":"<p>The configuration for the URI path route type. </p>"
+        }
+      }
+    },
+    "CreateRouteResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application in which the route is created.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the route. The format for this ARN is <code>arn:aws:refactor-spaces:<i>region</i>:<i>account-id</i>:<i>resource-type/resource-id</i> </code>. For more information about ARNs, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\"> Amazon Resource Names (ARNs)</a> in the <i>Amazon Web Services General Reference</i>.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route creator.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route is created.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route was last updated. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route owner.</p>"
+        },
+        "RouteId":{
+          "shape":"RouteId",
+          "documentation":"<p>The unique identifier of the route.</p>"
+        },
+        "RouteType":{
+          "shape":"RouteType",
+          "documentation":"<p>The route type of the route.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The ID of service in which the route is created. Traffic that matches this route is forwarded to this service.</p>"
+        },
+        "State":{
+          "shape":"RouteState",
+          "documentation":"<p>The current state of the route. Activation state only allows <code>ACTIVE</code> or <code>INACTIVE</code> as user inputs. <code>FAILED</code> is a route state that is system generated.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the created route. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        },
+        "UriPathRoute":{
+          "shape":"UriPathRouteInput",
+          "documentation":"<p>Configuration for the URI path route type. </p>"
+        }
+      }
+    },
+    "CreateServiceRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EndpointType",
+        "EnvironmentIdentifier",
+        "Name"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application which the service is created.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request.</p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the service.</p>"
+        },
+        "EndpointType":{
+          "shape":"ServiceEndpointType",
+          "documentation":"<p>The type of endpoint to use for the service. The type can be a URL in a VPC or an Lambda function.</p>"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment in which the service is created.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "LambdaEndpoint":{
+          "shape":"LambdaEndpointInput",
+          "documentation":"<p>The configuration for the Lambda endpoint type.</p>"
+        },
+        "Name":{
+          "shape":"ServiceName",
+          "documentation":"<p>The name of the service.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the service. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair.. </p>"
+        },
+        "UrlEndpoint":{
+          "shape":"UrlEndpointInput",
+          "documentation":"<p>The configuration for the URL endpoint type. When creating a route to a service, Refactor Spaces automatically resolves the address in the <code>UrlEndpointInput</code> object URL when the Domain Name System (DNS) time-to-live (TTL) expires, or every 60 seconds for TTLs less than 60 seconds.</p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC.</p>"
+        }
+      }
+    },
+    "CreateServiceResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application that the created service belongs to. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the service.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service creator.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service is created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the created service.</p>"
+        },
+        "EndpointType":{
+          "shape":"ServiceEndpointType",
+          "documentation":"<p>The endpoint type of the service.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "LambdaEndpoint":{
+          "shape":"LambdaEndpointInput",
+          "documentation":"<p>The configuration for the Lambda endpoint type.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ServiceName",
+          "documentation":"<p>The name of the service.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service owner.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service.</p>"
+        },
+        "State":{
+          "shape":"ServiceState",
+          "documentation":"<p>The current state of the service. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the created service. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair.. </p>"
+        },
+        "UrlEndpoint":{
+          "shape":"UrlEndpointInput",
+          "documentation":"<p>The configuration for the URL endpoint type. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC. </p>"
+        }
+      }
+    },
+    "DefaultRouteInput":{
+      "type":"structure",
+      "members":{
+        "ActivationState":{
+          "shape":"RouteActivationState",
+          "documentation":"<p>If set to <code>ACTIVE</code>, traffic is forwarded to this route’s service after the route is created. </p>"
+        }
+      },
+      "documentation":"<p> The configuration for the default route type. </p>"
+    },
+    "DeleteApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        }
+      }
+    },
+    "DeleteApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the application’s environment.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "State":{
+          "shape":"ApplicationState",
+          "documentation":"<p>The current state of the application. </p>"
+        }
+      }
+    },
+    "DeleteEnvironmentRequest":{
+      "type":"structure",
+      "required":["EnvironmentIdentifier"],
+      "members":{
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        }
+      }
+    },
+    "DeleteEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment was last updated. </p>"
+        },
+        "Name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "State":{
+          "shape":"EnvironmentState",
+          "documentation":"<p>The current state of the environment. </p>"
+        }
+      }
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourcePolicyIdentifier",
+          "documentation":"<p>Amazon Resource Name (ARN) of the resource associated with the policy. </p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        }
+      }
+    },
+    "DeleteResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteRouteRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "RouteIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application to delete the route from.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment to delete the route from.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "RouteIdentifier":{
+          "shape":"RouteId",
+          "documentation":"<p>The ID of the route to delete.</p>",
+          "location":"uri",
+          "locationName":"RouteIdentifier"
+        }
+      }
+    },
+    "DeleteRouteResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application that the route belongs to.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the route.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route was last updated. </p>"
+        },
+        "RouteId":{
+          "shape":"RouteId",
+          "documentation":"<p>The ID of the route to delete.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The ID of the service that the route belongs to.</p>"
+        },
+        "State":{
+          "shape":"RouteState",
+          "documentation":"<p>The current state of the route. </p>"
+        }
+      }
+    },
+    "DeleteServiceRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "ServiceIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>Deletes a Refactor Spaces service.</p> <note> <p>The <code>RefactorSpacesSecurityGroup</code> security group must be removed from all Amazon Web Services resources in the virtual private cloud (VPC) prior to deleting a service with a URL endpoint in a VPC.</p> </note>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment that the service is in.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "ServiceIdentifier":{
+          "shape":"ServiceId",
+          "documentation":"<p>The ID of the service to delete.</p>",
+          "location":"uri",
+          "locationName":"ServiceIdentifier"
+        }
+      }
+    },
+    "DeleteServiceResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application that the service is in.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the service.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ServiceName",
+          "documentation":"<p>The name of the service.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service.</p>"
+        },
+        "State":{
+          "shape":"ServiceState",
+          "documentation":"<p>The current state of the service. </p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-_\\s\\.\\!\\*\\#\\@\\']+$"
+    },
+    "Ec2TagValue":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^.*$"
+    },
+    "EnvironmentId":{
+      "type":"string",
+      "max":14,
+      "min":14,
+      "pattern":"^env-[0-9A-Za-z]{10}$"
+    },
+    "EnvironmentName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^(?!env-)[a-zA-Z0-9]+[a-zA-Z0-9-_ ]+$"
+    },
+    "EnvironmentState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "EnvironmentSummaries":{
+      "type":"list",
+      "member":{"shape":"EnvironmentSummary"}
+    },
+    "EnvironmentSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment is created. </p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the environment. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the environment resource. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment was last updated. </p>"
+        },
+        "Name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment. </p>"
+        },
+        "NetworkFabricType":{
+          "shape":"NetworkFabricType",
+          "documentation":"<p>The network fabric type of the environment. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the environment owner.</p>"
+        },
+        "State":{
+          "shape":"EnvironmentState",
+          "documentation":"<p>The current state of the environment. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the environment. </p>"
+        },
+        "TransitGatewayId":{
+          "shape":"TransitGatewayId",
+          "documentation":"<p>The ID of the Transit Gateway set up by the environment. </p>"
+        }
+      },
+      "documentation":"<p>The summary information for environments as a response to <code>ListEnvironments</code>. </p>"
+    },
+    "EnvironmentVpc":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the virtual private cloud (VPC) owner. </p>"
+        },
+        "CidrBlocks":{
+          "shape":"CidrBlocks",
+          "documentation":"<p>The list of Amazon Virtual Private Cloud (Amazon VPC) CIDR blocks. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the VPC is first added to the environment. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the VPC was last updated by the environment. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC. </p>"
+        },
+        "VpcName":{
+          "shape":"Ec2TagValue",
+          "documentation":"<p>The name of the VPC at the time it is added to the environment. </p>"
+        }
+      },
+      "documentation":"<p>Provides summary information for the <code>EnvironmentVpc</code> resource as a response to <code>ListEnvironmentVpc</code>.</p>"
+    },
+    "EnvironmentVpcs":{
+      "type":"list",
+      "member":{"shape":"EnvironmentVpc"}
+    },
+    "ErrorCode":{
+      "type":"string",
+      "enum":[
+        "INVALID_RESOURCE_STATE",
+        "RESOURCE_LIMIT_EXCEEDED",
+        "RESOURCE_CREATION_FAILURE",
+        "RESOURCE_UPDATE_FAILURE",
+        "SERVICE_ENDPOINT_HEALTH_CHECK_FAILURE",
+        "RESOURCE_DELETION_FAILURE",
+        "RESOURCE_RETRIEVAL_FAILURE",
+        "RESOURCE_IN_USE",
+        "RESOURCE_NOT_FOUND",
+        "STATE_TRANSITION_FAILURE",
+        "REQUEST_LIMIT_EXCEEDED",
+        "NOT_AUTHORIZED"
+      ]
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^[\\p{Alnum}\\p{Punct}\\p{Blank}]*$"
+    },
+    "ErrorResourceType":{
+      "type":"string",
+      "enum":[
+        "ENVIRONMENT",
+        "APPLICATION",
+        "ROUTE",
+        "SERVICE",
+        "TRANSIT_GATEWAY",
+        "TRANSIT_GATEWAY_ATTACHMENT",
+        "API_GATEWAY",
+        "NLB",
+        "TARGET_GROUP",
+        "LOAD_BALANCER_LISTENER",
+        "VPC_LINK",
+        "LAMBDA",
+        "VPC",
+        "SUBNET",
+        "ROUTE_TABLE",
+        "SECURITY_GROUP",
+        "VPC_ENDPOINT_SERVICE_CONFIGURATION",
+        "RESOURCE_SHARE",
+        "IAM_ROLE"
+      ]
+    },
+    "ErrorResponse":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the resource owner. </p>"
+        },
+        "AdditionalDetails":{
+          "shape":"AdditionalDetails",
+          "documentation":"<p>Additional details about the error. </p>"
+        },
+        "Code":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code associated with the error. </p>"
+        },
+        "Message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The message associated with the error. </p>"
+        },
+        "ResourceIdentifier":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The ID of the resource. </p>"
+        },
+        "ResourceType":{
+          "shape":"ErrorResourceType",
+          "documentation":"<p>The type of resource. </p>"
+        }
+      },
+      "documentation":"<p>Error associated with a resource returned for a Get or List resource response. </p>"
+    },
+    "GetApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        }
+      }
+    },
+    "GetApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "ApiGatewayProxy":{
+          "shape":"ApiGatewayProxyConfig",
+          "documentation":"<p>The endpoint URL of the API Gateway proxy. </p>"
+        },
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the application creator. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application is created. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the application resource. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the application was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the application owner (which is always the same as the environment owner account ID).</p>"
+        },
+        "ProxyType":{
+          "shape":"ProxyType",
+          "documentation":"<p>The proxy type of the proxy created within the application. </p>"
+        },
+        "State":{
+          "shape":"ApplicationState",
+          "documentation":"<p>The current state of the application. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the application. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the virtual private cloud (VPC). </p>"
+        }
+      }
+    },
+    "GetEnvironmentRequest":{
+      "type":"structure",
+      "required":["EnvironmentIdentifier"],
+      "members":{
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        }
+      }
+    },
+    "GetEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment is created. </p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the environment. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the environment resource. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the environment was last updated. </p>"
+        },
+        "Name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "NetworkFabricType":{
+          "shape":"NetworkFabricType",
+          "documentation":"<p>The network fabric type of the environment. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the environment owner.</p>"
+        },
+        "State":{
+          "shape":"EnvironmentState",
+          "documentation":"<p>The current state of the environment. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to assign to the environment. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        },
+        "TransitGatewayId":{
+          "shape":"TransitGatewayId",
+          "documentation":"<p>The ID of the Transit Gateway set up by the environment, if applicable.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"ResourcePolicyIdentifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource associated with the policy. </p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "Policy":{
+          "shape":"PolicyString",
+          "documentation":"<p>A JSON-formatted string for an Amazon Web Services resource-based policy. </p>"
+        }
+      }
+    },
+    "GetRouteRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "RouteIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application. </p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "RouteIdentifier":{
+          "shape":"RouteId",
+          "documentation":"<p>The ID of the route.</p>",
+          "location":"uri",
+          "locationName":"RouteIdentifier"
+        }
+      }
+    },
+    "GetRouteResponse":{
+      "type":"structure",
+      "members":{
+        "AppendSourcePath":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to <code>true</code>, this option appends the source path to the service URL endpoint.</p>"
+        },
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application that the route belongs to. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the route.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route creator.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the route is created. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>Unique identifier of the environment.</p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the route resource. </p>"
+        },
+        "IncludeChildPaths":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to match all subpaths of the given source path. If this value is <code>false</code>, requests must match the source path exactly before they are forwarded to this route's service. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route was last updated. </p>"
+        },
+        "Methods":{
+          "shape":"HttpMethods",
+          "documentation":"<p>A list of HTTP methods to match. An empty list matches all values. If a method is present, only HTTP requests using that method are forwarded to this route’s service. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route owner.</p>"
+        },
+        "PathResourceToId":{
+          "shape":"PathResourceToId",
+          "documentation":"<p>A mapping of Amazon API Gateway path resources to resource IDs. </p>"
+        },
+        "RouteId":{
+          "shape":"RouteId",
+          "documentation":"<p>The unique identifier of the route.</p> <p> <b>DEFAULT</b>: All traffic that does not match another route is forwarded to the default route. Applications must have a default route before any other routes can be created.</p> <p> <b>URI_PATH</b>: A route that is based on a URI path.</p>"
+        },
+        "RouteType":{
+          "shape":"RouteType",
+          "documentation":"<p>The type of route.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service.</p>"
+        },
+        "SourcePath":{
+          "shape":"UriPath",
+          "documentation":"<p>This is the path that Refactor Spaces uses to match traffic. Paths must start with <code>/</code> and are relative to the base of the application. To use path parameters in the source path, add a variable in curly braces. For example, the resource path {user} represents a path parameter called 'user'.</p>"
+        },
+        "State":{
+          "shape":"RouteState",
+          "documentation":"<p>The current state of the route. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the route. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        }
+      }
+    },
+    "GetServiceRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "ServiceIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment.</p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "ServiceIdentifier":{
+          "shape":"ServiceId",
+          "documentation":"<p>The ID of the service.</p>",
+          "location":"uri",
+          "locationName":"ServiceIdentifier"
+        }
+      }
+    },
+    "GetServiceResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application.</p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the service.</p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service creator.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the service is created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the service. </p>"
+        },
+        "EndpointType":{
+          "shape":"ServiceEndpointType",
+          "documentation":"<p>The endpoint type of the service.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment.</p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the service resource. </p>"
+        },
+        "LambdaEndpoint":{
+          "shape":"LambdaEndpointConfig",
+          "documentation":"<p>The configuration for the Lambda endpoint type.</p> <p>The <b>Arn</b> is the Amazon Resource Name (ARN) of the Lambda function associated with this service. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ServiceName",
+          "documentation":"<p>The name of the service.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service owner.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service.</p>"
+        },
+        "State":{
+          "shape":"ServiceState",
+          "documentation":"<p>The current state of the service. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the service. A tag is a label that you assign to an Amazon Web Services resource. Each tag consists of a key-value pair. </p>"
+        },
+        "UrlEndpoint":{
+          "shape":"UrlEndpointConfig",
+          "documentation":"<p>The configuration for the URL endpoint type.</p> <p>The <b>Url</b> isthe URL of the endpoint type.</p> <p>The <b>HealthUrl</b> is the health check URL of the endpoint type. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the virtual private cloud (VPC). </p>"
+        }
+      }
+    },
+    "HttpMethod":{
+      "type":"string",
+      "enum":[
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ]
+    },
+    "HttpMethods":{
+      "type":"list",
+      "member":{"shape":"HttpMethod"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>An unexpected error occurred while processing the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidResourcePolicyException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The resource policy is not valid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "LambdaArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:(aws[a-zA-Z-]*)?:lambda:[a-z]{2}((-gov)|(-iso(b?)))?-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9-_]+(:(\\$LATEST|[a-zA-Z0-9-_]+))?$"
+    },
+    "LambdaEndpointConfig":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Lambda endpoint. </p>"
+        }
+      },
+      "documentation":"<p>The configuration for the Lambda endpoint type. </p>"
+    },
+    "LambdaEndpointInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Lambda function or alias.</p>"
+        }
+      },
+      "documentation":"<p>The input for the Lambda endpoint type. </p>"
+    },
+    "LambdaEndpointSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Lambda endpoint. </p>"
+        }
+      },
+      "documentation":"<p>The summary for the Lambda endpoint type. </p>"
+    },
+    "ListApplicationsRequest":{
+      "type":"structure",
+      "required":["EnvironmentIdentifier"],
+      "members":{
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListApplicationsResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationSummaryList":{
+          "shape":"ApplicationSummaries",
+          "documentation":"<p>The list of <code>ApplicationSummary</code> objects. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        }
+      }
+    },
+    "ListEnvironmentVpcsRequest":{
+      "type":"structure",
+      "required":["EnvironmentIdentifier"],
+      "members":{
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListEnvironmentVpcsResponse":{
+      "type":"structure",
+      "members":{
+        "EnvironmentVpcList":{
+          "shape":"EnvironmentVpcs",
+          "documentation":"<p>The list of <code>EnvironmentVpc</code> objects. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        }
+      }
+    },
+    "ListEnvironmentsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListEnvironmentsResponse":{
+      "type":"structure",
+      "members":{
+        "EnvironmentSummaryList":{
+          "shape":"EnvironmentSummaries",
+          "documentation":"<p>The list of <code>EnvironmentSummary</code> objects. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        }
+      }
+    },
+    "ListRoutesRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application. </p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListRoutesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        },
+        "RouteSummaryList":{
+          "shape":"RouteSummaries",
+          "documentation":"<p>The list of <code>RouteSummary</code> objects. </p>"
+        }
+      }
+    },
+    "ListServicesRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The ID of the application. </p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListServicesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        },
+        "ServiceSummaryList":{
+          "shape":"ServiceSummaries",
+          "documentation":"<p> The list of <code>ServiceSummary</code> objects. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource. </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tags assigned to the resource. </p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NetworkFabricType":{
+      "type":"string",
+      "enum":[
+        "TRANSIT_GATEWAY",
+        "NONE"
+      ]
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9/\\+\\=]{0,2048}$"
+    },
+    "NlbArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws:elasticloadbalancing:[a-zA-Z0-9\\-]+:\\w{12}:[a-zA-Z_0-9+=,.@\\-_/]+$"
+    },
+    "NlbName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^(?!internal-)[a-zA-Z0-9]+[a-zA-Z0-9-_ ]+.*[^-]$"
+    },
+    "PathResourceToId":{
+      "type":"map",
+      "key":{"shape":"PathResourceToIdKey"},
+      "value":{"shape":"PathResourceToIdValue"}
+    },
+    "PathResourceToIdKey":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PathResourceToIdValue":{
+      "type":"string",
+      "max":10,
+      "min":10,
+      "pattern":"^[a-z0-9]{10}$"
+    },
+    "PolicyString":{
+      "type":"string",
+      "max":300000,
+      "min":1,
+      "pattern":"^.*\\S.*$"
+    },
+    "ProxyType":{
+      "type":"string",
+      "enum":["API_GATEWAY"]
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "Policy",
+        "ResourceArn"
+      ],
+      "members":{
+        "Policy":{
+          "shape":"PolicyString",
+          "documentation":"<p>A JSON-formatted string for an Amazon Web Services resource-based policy. </p>"
+        },
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to which the policy is being attached. </p>"
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws:refactor-spaces:[a-zA-Z0-9\\-]+:\\w{12}:[a-zA-Z_0-9+=,.@\\-_/]+$"
+    },
+    "ResourceIdentifier":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"(^(env|svc|pxy|rte|app)-([0-9A-Za-z]{10}$))"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource. </p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of resource. </p>"
+        }
+      },
+      "documentation":"<p>The request references a resource that does not exist. </p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourcePolicyIdentifier":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws:refactor-spaces:[a-zA-Z0-9\\-]+:\\w{12}:[a-zA-Z_0-9+=,.@\\-_/]+$"
+    },
+    "RetryAfterSeconds":{"type":"integer"},
+    "RouteActivationState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INACTIVE"
+      ]
+    },
+    "RouteId":{
+      "type":"string",
+      "max":14,
+      "min":14,
+      "pattern":"^rte-[0-9A-Za-z]{10}$"
+    },
+    "RouteState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED",
+        "UPDATING",
+        "INACTIVE"
+      ]
+    },
+    "RouteSummaries":{
+      "type":"list",
+      "member":{"shape":"RouteSummary"}
+    },
+    "RouteSummary":{
+      "type":"structure",
+      "members":{
+        "AppendSourcePath":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to <code>true</code>, this option appends the source path to the service URL endpoint.</p>"
+        },
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The unique identifier of the application. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the route. </p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route creator. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route is created. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the route resource. </p>"
+        },
+        "IncludeChildPaths":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to match all subpaths of the given source path. If this value is <code>false</code>, requests must match the source path exactly before they are forwarded to this route's service.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the route was last updated. </p>"
+        },
+        "Methods":{
+          "shape":"HttpMethods",
+          "documentation":"<p>A list of HTTP methods to match. An empty list matches all values. If a method is present, only HTTP requests using that method are forwarded to this route’s service. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the route owner.</p>"
+        },
+        "PathResourceToId":{
+          "shape":"PathResourceToId",
+          "documentation":"<p>A mapping of Amazon API Gateway path resources to resource IDs. </p>"
+        },
+        "RouteId":{
+          "shape":"RouteId",
+          "documentation":"<p>The unique identifier of the route. </p>"
+        },
+        "RouteType":{
+          "shape":"RouteType",
+          "documentation":"<p>The route type of the route. </p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service. </p>"
+        },
+        "SourcePath":{
+          "shape":"UriPath",
+          "documentation":"<p>This is the path that Refactor Spaces uses to match traffic. Paths must start with <code>/</code> and are relative to the base of the application. To use path parameters in the source path, add a variable in curly braces. For example, the resource path {user} represents a path parameter called 'user'.</p>"
+        },
+        "State":{
+          "shape":"RouteState",
+          "documentation":"<p>The current state of the route. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the route. </p>"
+        }
+      },
+      "documentation":"<p>The summary information for the routes as a response to <code>ListRoutes</code>. </p>"
+    },
+    "RouteType":{
+      "type":"string",
+      "enum":[
+        "DEFAULT",
+        "URI_PATH"
+      ]
+    },
+    "ServiceEndpointType":{
+      "type":"string",
+      "enum":[
+        "LAMBDA",
+        "URL"
+      ]
+    },
+    "ServiceId":{
+      "type":"string",
+      "max":14,
+      "min":14,
+      "pattern":"^svc-[0-9A-Za-z]{10}$"
+    },
+    "ServiceName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^(?!svc-)[a-zA-Z0-9]+[a-zA-Z0-9-_ ]+$"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service quota requirement to identify originating quota. Reached throttling quota exception. </p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource. </p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of resource. </p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Service quota requirement to identify originating service. Reached throttling quota exception service code. </p>"
+        }
+      },
+      "documentation":"<p>The request would cause a service quota to be exceeded. </p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ServiceSummaries":{
+      "type":"list",
+      "member":{"shape":"ServiceSummary"}
+    },
+    "ServiceSummary":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p>The unique identifier of the application. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the service. </p>"
+        },
+        "CreatedByAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service creator. </p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service is created. </p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the service. </p>"
+        },
+        "EndpointType":{
+          "shape":"ServiceEndpointType",
+          "documentation":"<p>The endpoint type of the service. </p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The unique identifier of the environment. </p>"
+        },
+        "Error":{
+          "shape":"ErrorResponse",
+          "documentation":"<p>Any error associated with the service resource. </p>"
+        },
+        "LambdaEndpoint":{
+          "shape":"LambdaEndpointSummary",
+          "documentation":"<p>A summary of the configuration for the Lambda endpoint type. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp that indicates when the service was last updated. </p>"
+        },
+        "Name":{
+          "shape":"ServiceName",
+          "documentation":"<p>The name of the service. </p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account ID of the service owner.</p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p>The unique identifier of the service. </p>"
+        },
+        "State":{
+          "shape":"ServiceState",
+          "documentation":"<p>The current state of the service. </p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags assigned to the service. </p>"
+        },
+        "UrlEndpoint":{
+          "shape":"UrlEndpointSummary",
+          "documentation":"<p>The summary of the configuration for the URL endpoint type. </p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the virtual private cloud (VPC). </p>"
+        }
+      },
+      "documentation":"<p>A summary for the service as a response to <code>ListServices</code>. </p>"
+    },
+    "StageName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[-a-zA-Z0-9_]*$"
+    },
+    "String":{"type":"string"},
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "sensitive":true
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagMapKeyString"},
+      "value":{"shape":"TagMapValueString"},
+      "documentation":"<p>A collection of up to 50 unique tags</p>",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "TagMapKeyString":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:).+"
+    },
+    "TagMapValueString":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The new or modified tags for the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service quota requirement to identify originating quota. Reached throttling quota exception. </p>"
+        },
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds to wait before retrying. </p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Service quota requirement to identify originating service. Reached throttling quota exception service code. </p>"
+        }
+      },
+      "documentation":"<p>Request was denied because the request was throttled. </p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TransitGatewayId":{
+      "type":"string",
+      "max":21,
+      "min":21,
+      "pattern":"^tgw-[-a-f0-9]{17}$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource. </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The list of keys of the tags to be removed from the resource. </p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateRouteRequest":{
+      "type":"structure",
+      "required":[
+        "ActivationState",
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "RouteIdentifier"
+      ],
+      "members":{
+        "ActivationState":{
+          "shape":"RouteActivationState",
+          "documentation":"<p> If set to <code>ACTIVE</code>, traffic is forwarded to this route’s service after the route is updated. </p>"
+        },
+        "ApplicationIdentifier":{
+          "shape":"ApplicationId",
+          "documentation":"<p> The ID of the application within which the route is being updated. </p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"EnvironmentId",
+          "documentation":"<p> The ID of the environment in which the route is being updated. </p>",
+          "location":"uri",
+          "locationName":"EnvironmentIdentifier"
+        },
+        "RouteIdentifier":{
+          "shape":"RouteId",
+          "documentation":"<p> The unique identifier of the route to update. </p>",
+          "location":"uri",
+          "locationName":"RouteIdentifier"
+        }
+      }
+    },
+    "UpdateRouteResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationId":{
+          "shape":"ApplicationId",
+          "documentation":"<p> The ID of the application in which the route is being updated. </p>"
+        },
+        "Arn":{
+          "shape":"ResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the route. The format for this ARN is <code>arn:aws:refactor-spaces:<i>region</i>:<i>account-id</i>:<i>resource-type/resource-id</i> </code>. For more information about ARNs, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\"> Amazon Resource Names (ARNs)</a> in the <i>Amazon Web Services General Reference</i>. </p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p> A timestamp that indicates when the route was last updated. </p>"
+        },
+        "RouteId":{
+          "shape":"RouteId",
+          "documentation":"<p> The unique identifier of the route. </p>"
+        },
+        "ServiceId":{
+          "shape":"ServiceId",
+          "documentation":"<p> The ID of service in which the route was created. Traffic that matches this route is forwarded to this service. </p>"
+        },
+        "State":{
+          "shape":"RouteState",
+          "documentation":"<p> The current state of the route. </p>"
+        }
+      }
+    },
+    "Uri":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^https?://[-a-zA-Z0-9+\\x38@#/%?=~_|!:,.;]*[-a-zA-Z0-9+\\x38@#/%=~_|]$"
+    },
+    "UriPath":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^(/([a-zA-Z0-9._:-]+|\\{[a-zA-Z0-9._:-]+\\}))+$"
+    },
+    "UriPathRouteInput":{
+      "type":"structure",
+      "required":[
+        "ActivationState",
+        "SourcePath"
+      ],
+      "members":{
+        "ActivationState":{
+          "shape":"RouteActivationState",
+          "documentation":"<p>If set to <code>ACTIVE</code>, traffic is forwarded to this route’s service after the route is created. </p>"
+        },
+        "AppendSourcePath":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to <code>true</code>, this option appends the source path to the service URL endpoint.</p>"
+        },
+        "IncludeChildPaths":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to match all subpaths of the given source path. If this value is <code>false</code>, requests must match the source path exactly before they are forwarded to this route's service. </p>"
+        },
+        "Methods":{
+          "shape":"HttpMethods",
+          "documentation":"<p>A list of HTTP methods to match. An empty list matches all values. If a method is present, only HTTP requests using that method are forwarded to this route’s service. </p>"
+        },
+        "SourcePath":{
+          "shape":"UriPath",
+          "documentation":"<p>This is the path that Refactor Spaces uses to match traffic. Paths must start with <code>/</code> and are relative to the base of the application. To use path parameters in the source path, add a variable in curly braces. For example, the resource path {user} represents a path parameter called 'user'.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for the URI path route type. </p>"
+    },
+    "UrlEndpointConfig":{
+      "type":"structure",
+      "members":{
+        "HealthUrl":{
+          "shape":"Uri",
+          "documentation":"<p>The health check URL of the URL endpoint type. </p>"
+        },
+        "Url":{
+          "shape":"Uri",
+          "documentation":"<p>The HTTP URL endpoint. </p>"
+        }
+      },
+      "documentation":"<p>The configuration for the URL endpoint type. </p>"
+    },
+    "UrlEndpointInput":{
+      "type":"structure",
+      "required":["Url"],
+      "members":{
+        "HealthUrl":{
+          "shape":"Uri",
+          "documentation":"<p>The health check URL of the URL endpoint type. If the URL is a public endpoint, the <code>HealthUrl</code> must also be a public endpoint. If the URL is a private endpoint inside a virtual private cloud (VPC), the health URL must also be a private endpoint, and the host must be the same as the URL. </p>"
+        },
+        "Url":{
+          "shape":"Uri",
+          "documentation":"<p>The URL to route traffic to. The URL must be an <a href=\"https://datatracker.ietf.org/doc/html/rfc3986\">rfc3986-formatted URL</a>. If the host is a domain name, the name must be resolvable over the public internet. If the scheme is <code>https</code>, the top level domain of the host must be listed in the <a href=\"https://www.iana.org/domains/root/db\">IANA root zone database</a>. </p>"
+        }
+      },
+      "documentation":"<p>The configuration for the URL endpoint type. </p>"
+    },
+    "UrlEndpointSummary":{
+      "type":"structure",
+      "members":{
+        "HealthUrl":{
+          "shape":"Uri",
+          "documentation":"<p>The health check URL of the URL endpoint type. If the URL is a public endpoint, the <code>HealthUrl</code> must also be a public endpoint. If the URL is a private endpoint inside a virtual private cloud (VPC), the health URL must also be a private endpoint, and the host must be the same as the URL.</p>"
+        },
+        "Url":{
+          "shape":"Uri",
+          "documentation":"<p> The URL to route traffic to. The URL must be an <a href=\"https://datatracker.ietf.org/doc/html/rfc3986\">rfc3986-formatted URL</a>. If the host is a domain name, the name must be resolvable over the public internet. If the scheme is <code>https</code>, the top level domain of the host must be listed in the <a href=\"https://www.iana.org/domains/root/db\">IANA root zone database</a>. </p>"
+        }
+      },
+      "documentation":"<p>The summary of the configuration for the URL endpoint type. </p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The input does not satisfy the constraints specified by an Amazon Web Service. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VpcId":{
+      "type":"string",
+      "max":21,
+      "min":12,
+      "pattern":"^vpc-[-a-f0-9]{8}([-a-f0-9]{9})?$"
+    },
+    "VpcLinkId":{
+      "type":"string",
+      "max":10,
+      "min":10,
+      "pattern":"^[a-z0-9]{10}$"
+    }
+  },
+  "documentation":"<p><fullname>Amazon Web Services Migration Hub Refactor Spaces</fullname> <p>This API reference provides descriptions, syntax, and other details about each of the actions and data types for Amazon Web Services Migration Hub Refactor Spaces (Refactor Spaces). The topic for each action shows the API request parameters and the response. Alternatively, you can use one of the Amazon Web Services SDKs to access an API that is tailored to the programming language or platform that you're using. For more information, see <a href=\"https://aws.amazon.com/tools/#SDKs\">Amazon Web Services SDKs</a>.</p> <p>To share Refactor Spaces environments with other Amazon Web Services accounts or with Organizations and their OUs, use Resource Access Manager's <code>CreateResourceShare</code> API. See <a href=\"https://docs.aws.amazon.com/ram/latest/APIReference/API_CreateResourceShare.html\">CreateResourceShare</a> in the <i>Amazon Web Services RAM API Reference</i>.</p></p>"
+}

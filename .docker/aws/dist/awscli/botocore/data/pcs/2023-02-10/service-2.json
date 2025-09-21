@@ -1,0 +1,1989 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-02-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"pcs",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Parallel Computing Service",
+    "serviceId":"PCS",
+    "signatureVersion":"v4",
+    "signingName":"pcs",
+    "targetPrefix":"AWSParallelComputingService",
+    "uid":"pcs-2023-02-10"
+  },
+  "operations":{
+    "CreateCluster":{
+      "name":"CreateCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateClusterRequest"},
+      "output":{"shape":"CreateClusterResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a cluster in your account. PCS creates the cluster controller in a service-owned account. The cluster controller communicates with the cluster resources in your account. The subnets and security groups for the cluster must already exist before you use this API action.</p> <note> <p>It takes time for PCS to create the cluster. The cluster is in a <code>Creating</code> state until it is ready to use. There can only be 1 cluster in a <code>Creating</code> state per Amazon Web Services Region per Amazon Web Services account. <code>CreateCluster</code> fails with a <code>ServiceQuotaExceededException</code> if there is already a cluster in a <code>Creating</code> state.</p> </note>",
+      "idempotent":true
+    },
+    "CreateComputeNodeGroup":{
+      "name":"CreateComputeNodeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateComputeNodeGroupRequest"},
+      "output":{"shape":"CreateComputeNodeGroupResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a managed set of compute nodes. You associate a compute node group with a cluster through 1 or more PCS queues or as part of the login fleet. A compute node group includes the definition of the compute properties and lifecycle management. PCS uses the information you provide to this API action to launch compute nodes in your account. You can only specify subnets in the same Amazon VPC as your cluster. You receive billing charges for the compute nodes that PCS launches in your account. You must already have a launch template before you call this API. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html\">Launch an instance from a launch template</a> in the <i>Amazon Elastic Compute Cloud User Guide for Linux Instances</i>.</p>",
+      "idempotent":true
+    },
+    "CreateQueue":{
+      "name":"CreateQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateQueueRequest"},
+      "output":{"shape":"CreateQueueResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a job queue. You must associate 1 or more compute node groups with the queue. You can associate 1 compute node group with multiple queues.</p>",
+      "idempotent":true
+    },
+    "DeleteCluster":{
+      "name":"DeleteCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteClusterRequest"},
+      "output":{"shape":"DeleteClusterResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a cluster and all its linked resources. You must delete all queues and compute node groups associated with the cluster before you can delete the cluster.</p>",
+      "idempotent":true
+    },
+    "DeleteComputeNodeGroup":{
+      "name":"DeleteComputeNodeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteComputeNodeGroupRequest"},
+      "output":{"shape":"DeleteComputeNodeGroupResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a compute node group. You must delete all queues associated with the compute node group first.</p>",
+      "idempotent":true
+    },
+    "DeleteQueue":{
+      "name":"DeleteQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteQueueRequest"},
+      "output":{"shape":"DeleteQueueResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a job queue. If the compute node group associated with this queue isn't associated with any other queues, PCS terminates all the compute nodes for this queue.</p>",
+      "idempotent":true
+    },
+    "GetCluster":{
+      "name":"GetCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetClusterRequest"},
+      "output":{"shape":"GetClusterResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns detailed information about a running cluster in your account. This API action provides networking information, endpoint information for communication with the scheduler, and provisioning status.</p>"
+    },
+    "GetComputeNodeGroup":{
+      "name":"GetComputeNodeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetComputeNodeGroupRequest"},
+      "output":{"shape":"GetComputeNodeGroupResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns detailed information about a compute node group. This API action provides networking information, EC2 instance type, compute node group status, and scheduler (such as Slurm) configuration.</p>"
+    },
+    "GetQueue":{
+      "name":"GetQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetQueueRequest"},
+      "output":{"shape":"GetQueueResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns detailed information about a queue. The information includes the compute node groups that the queue uses to schedule jobs.</p>"
+    },
+    "ListClusters":{
+      "name":"ListClusters",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListClustersRequest"},
+      "output":{"shape":"ListClustersResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of running clusters in your account.</p>"
+    },
+    "ListComputeNodeGroups":{
+      "name":"ListComputeNodeGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListComputeNodeGroupsRequest"},
+      "output":{"shape":"ListComputeNodeGroupsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all compute node groups associated with a cluster.</p>"
+    },
+    "ListQueues":{
+      "name":"ListQueues",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListQueuesRequest"},
+      "output":{"shape":"ListQueuesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all queues associated with a cluster.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of all tags on an PCS resource.</p>"
+    },
+    "RegisterComputeNodeGroupInstance":{
+      "name":"RegisterComputeNodeGroupInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RegisterComputeNodeGroupInstanceRequest"},
+      "output":{"shape":"RegisterComputeNodeGroupInstanceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p><important> <p>This API action isn't intended for you to use.</p> </important> <p>PCS uses this API action to register the compute nodes it launches in your account.</p></p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds or edits tags on an PCS resource. Each tag consists of a tag key and a tag value. The tag key and tag value are case-sensitive strings. The tag value can be an empty (null) string. To add a tag, specify a new tag key and a tag value. To edit a tag, specify an existing tag key and a new tag value.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes tags from an PCS resource. To delete a tag, specify the tag key and the Amazon Resource Name (ARN) of the PCS resource.</p>",
+      "idempotent":true
+    },
+    "UpdateComputeNodeGroup":{
+      "name":"UpdateComputeNodeGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateComputeNodeGroupRequest"},
+      "output":{"shape":"UpdateComputeNodeGroupResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates a compute node group. You can update many of the fields related to your compute node group including the configurations for networking, compute nodes, and settings specific to your scheduler (such as Slurm).</p>",
+      "idempotent":true
+    },
+    "UpdateQueue":{
+      "name":"UpdateQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateQueueRequest"},
+      "output":{"shape":"UpdateQueueResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the compute node group configuration of a queue. Use this API to change the compute node groups that the queue can send jobs to.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have permission to perform the action.</p> <p> <u>Examples</u> </p> <ul> <li> <p>The launch template instance profile doesn't pass <code>iam:PassRole</code> verification.</p> </li> <li> <p>There is a mismatch between the account ID and cluster ID.</p> </li> <li> <p>The cluster ID doesn't exist.</p> </li> <li> <p>The EC2 instance isn't present.</p> </li> </ul>",
+      "exception":true
+    },
+    "Accounting":{
+      "type":"structure",
+      "required":["mode"],
+      "members":{
+        "mode":{
+          "shape":"AccountingMode",
+          "documentation":"<p>The default value for <code>mode</code> is <code>STANDARD</code>. A value of <code>STANDARD</code> means Slurm accounting is enabled.</p>"
+        },
+        "defaultPurgeTimeInDays":{
+          "shape":"AccountingDefaultPurgeTimeInDaysInteger",
+          "documentation":"<p>The default value for all purge settings for <code>slurmdbd.conf</code>. For more information, see the <a href=\"https://slurm.schedmd.com/slurmdbd.conf.html\">slurmdbd.conf documentation at SchedMD</a>.</p> <p>The default value for <code>defaultPurgeTimeInDays</code> is <code>-1</code>.</p> <p>A value of <code>-1</code> means there is no purge time and records persist as long as the cluster exists.</p> <important> <p> <code>0</code> isn't a valid value.</p> </important>"
+        }
+      },
+      "documentation":"<p>The accounting configuration includes configurable settings for Slurm accounting. It's a property of the <b>ClusterSlurmConfiguration</b> object.</p>"
+    },
+    "AccountingDefaultPurgeTimeInDaysInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10000,
+      "min":-1
+    },
+    "AccountingMode":{
+      "type":"string",
+      "enum":[
+        "STANDARD",
+        "NONE"
+      ]
+    },
+    "AccountingRequest":{
+      "type":"structure",
+      "required":["mode"],
+      "members":{
+        "mode":{
+          "shape":"AccountingMode",
+          "documentation":"<p>The default value for <code>mode</code> is <code>STANDARD</code>. A value of <code>STANDARD</code> means Slurm accounting is enabled.</p>"
+        },
+        "defaultPurgeTimeInDays":{
+          "shape":"AccountingRequestDefaultPurgeTimeInDaysInteger",
+          "documentation":"<p>The default value for all purge settings for <code>slurmdbd.conf</code>. For more information, see the <a href=\"https://slurm.schedmd.com/slurmdbd.conf.html\">slurmdbd.conf documentation at SchedMD</a>.</p> <p>The default value for <code>defaultPurgeTimeInDays</code> is <code>-1</code>.</p> <p>A value of <code>-1</code> means there is no purge time and records persist as long as the cluster exists.</p> <important> <p> <code>0</code> isn't a valid value.</p> </important>"
+        }
+      },
+      "documentation":"<p>The accounting configuration includes configurable settings for Slurm accounting. It's a property of the <b>ClusterSlurmConfiguration</b> object.</p>"
+    },
+    "AccountingRequestDefaultPurgeTimeInDaysInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10000,
+      "min":-1
+    },
+    "AmiId":{
+      "type":"string",
+      "pattern":"ami-[a-z0-9]+"
+    },
+    "Arn":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:aws.*:pcs:.*:[0-9]{12}:.*/[a-z0-9_\\-]+"
+    },
+    "BootstrapId":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"[\\S]+"
+    },
+    "Cluster":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "status",
+        "createdAt",
+        "modifiedAt",
+        "scheduler",
+        "size",
+        "networking"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name that identifies the cluster.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the cluster.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the cluster.</p>"
+        },
+        "status":{
+          "shape":"ClusterStatus",
+          "documentation":"<p>The provisioning status of the cluster.</p> <note> <p>The provisioning status doesn't indicate the overall health of the cluster.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "scheduler":{"shape":"Scheduler"},
+        "size":{
+          "shape":"Size",
+          "documentation":"<p>The size of the cluster.</p> <ul> <li> <p> <code>SMALL</code>: 32 compute nodes and 256 jobs</p> </li> <li> <p> <code>MEDIUM</code>: 512 compute nodes and 8192 jobs</p> </li> <li> <p> <code>LARGE</code>: 2048 compute nodes and 16,384 jobs</p> </li> </ul>"
+        },
+        "slurmConfiguration":{
+          "shape":"ClusterSlurmConfiguration",
+          "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+        },
+        "networking":{"shape":"Networking"},
+        "endpoints":{
+          "shape":"Endpoints",
+          "documentation":"<p>The list of endpoints available for interaction with the scheduler.</p>"
+        },
+        "errorInfo":{
+          "shape":"ErrorInfoList",
+          "documentation":"<p>The list of errors that occurred during cluster provisioning.</p>"
+        }
+      },
+      "documentation":"<p>The cluster resource and configuration.</p>"
+    },
+    "ClusterIdentifier":{
+      "type":"string",
+      "pattern":"(pcs_[a-zA-Z0-9]+|[A-Za-z][A-Za-z0-9-]{2,40})"
+    },
+    "ClusterList":{
+      "type":"list",
+      "member":{"shape":"ClusterSummary"}
+    },
+    "ClusterName":{
+      "type":"string",
+      "max":40,
+      "min":3,
+      "pattern":"(?!pcs_)^[A-Za-z][A-Za-z0-9-]+"
+    },
+    "ClusterSlurmConfiguration":{
+      "type":"structure",
+      "members":{
+        "scaleDownIdleTimeInSeconds":{
+          "shape":"ClusterSlurmConfigurationScaleDownIdleTimeInSecondsInteger",
+          "documentation":"<p>The time (in seconds) before an idle node is scaled down.</p> <p>Default: <code>600</code> </p>"
+        },
+        "slurmCustomSettings":{
+          "shape":"SlurmCustomSettings",
+          "documentation":"<p>Additional Slurm-specific configuration that directly maps to Slurm settings.</p>"
+        },
+        "authKey":{
+          "shape":"SlurmAuthKey",
+          "documentation":"<p>The shared Slurm key for authentication, also known as the <b>cluster secret</b>.</p>"
+        },
+        "accounting":{
+          "shape":"Accounting",
+          "documentation":"<p>The accounting configuration includes configurable settings for Slurm accounting.</p>"
+        }
+      },
+      "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+    },
+    "ClusterSlurmConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "scaleDownIdleTimeInSeconds":{
+          "shape":"ClusterSlurmConfigurationRequestScaleDownIdleTimeInSecondsInteger",
+          "documentation":"<p>The time (in seconds) before an idle node is scaled down.</p> <p>Default: <code>600</code> </p>"
+        },
+        "slurmCustomSettings":{
+          "shape":"SlurmCustomSettings",
+          "documentation":"<p>Additional Slurm-specific configuration that directly maps to Slurm settings.</p>"
+        },
+        "accounting":{
+          "shape":"AccountingRequest",
+          "documentation":"<p>The accounting configuration includes configurable settings for Slurm accounting.</p>"
+        }
+      },
+      "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+    },
+    "ClusterSlurmConfigurationRequestScaleDownIdleTimeInSecondsInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ClusterSlurmConfigurationScaleDownIdleTimeInSecondsInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ClusterStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATE_FAILED",
+        "DELETE_FAILED",
+        "UPDATE_FAILED",
+        "SUSPENDING",
+        "SUSPENDED"
+      ]
+    },
+    "ClusterSummary":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "createdAt",
+        "modifiedAt",
+        "status"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name that identifies the cluster.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the cluster.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the cluster.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "status":{
+          "shape":"ClusterStatus",
+          "documentation":"<p>The provisioning status of the cluster.</p> <note> <p>The provisioning status doesn't indicate the overall health of the cluster.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        }
+      },
+      "documentation":"<p>The object returned by the <code>ListClusters</code> API action.</p>"
+    },
+    "ComputeNodeGroup":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "clusterId",
+        "createdAt",
+        "modifiedAt",
+        "status",
+        "subnetIds",
+        "customLaunchTemplate",
+        "iamInstanceProfileArn",
+        "scalingConfiguration",
+        "instanceConfigs"
+      ],
+      "members":{
+        "name":{
+          "shape":"ComputeNodeGroupName",
+          "documentation":"<p>The name that identifies the compute node group.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the compute node group.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the compute node group.</p>"
+        },
+        "clusterId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the cluster of the compute node group.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "status":{
+          "shape":"ComputeNodeGroupStatus",
+          "documentation":"<p>The provisioning status of the compute node group.</p> <note> <p>The provisioning status doesn't indicate the overall health of the compute node group.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        },
+        "amiId":{
+          "shape":"AmiId",
+          "documentation":"<p>The ID of the Amazon Machine Image (AMI) that PCS uses to launch instances. If not provided, PCS uses the AMI ID specified in the custom launch template.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>The list of subnet IDs where instances are provisioned by the compute node group. The subnets must be in the same VPC as the cluster.</p>"
+        },
+        "purchaseOption":{
+          "shape":"PurchaseOption",
+          "documentation":"<p>Specifies how EC2 instances are purchased on your behalf. PCS supports On-Demand Instances, Spot Instances, and Amazon EC2 Capacity Blocks for ML. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-purchasing-options.html\">Amazon EC2 billing and purchasing options</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>. For more information about PCS support for Capacity Blocks, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/capacity-blocks.html\">Using Amazon EC2 Capacity Blocks for ML with PCS</a> in the <i>PCS User Guide</i>. If you don't provide this option, it defaults to On-Demand.</p>"
+        },
+        "customLaunchTemplate":{"shape":"CustomLaunchTemplate"},
+        "iamInstanceProfileArn":{
+          "shape":"InstanceProfileArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM instance profile used to pass an IAM role when launching EC2 instances. The role contained in your instance profile must have the <code>pcs:RegisterComputeNodeGroupInstance</code> permission and the role name must start with <code>AWSPCS</code> or must have the path <code>/aws-pcs/</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/security-instance-profiles.html\">IAM instance profiles for PCS</a> in the <i>PCS User Guide</i>.</p>"
+        },
+        "scalingConfiguration":{"shape":"ScalingConfiguration"},
+        "instanceConfigs":{
+          "shape":"InstanceList",
+          "documentation":"<p>A list of EC2 instance configurations that PCS can provision in the compute node group.</p>"
+        },
+        "spotOptions":{"shape":"SpotOptions"},
+        "slurmConfiguration":{"shape":"ComputeNodeGroupSlurmConfiguration"},
+        "errorInfo":{
+          "shape":"ErrorInfoList",
+          "documentation":"<p>The list of errors that occurred during compute node group provisioning.</p>"
+        }
+      },
+      "documentation":"<p>A compute node group associated with a cluster.</p>"
+    },
+    "ComputeNodeGroupConfiguration":{
+      "type":"structure",
+      "members":{
+        "computeNodeGroupId":{
+          "shape":"String",
+          "documentation":"<p>The compute node group ID for the compute node group configuration.</p>"
+        }
+      },
+      "documentation":"<p>The compute node group configuration for a queue.</p>"
+    },
+    "ComputeNodeGroupConfigurationList":{
+      "type":"list",
+      "member":{"shape":"ComputeNodeGroupConfiguration"}
+    },
+    "ComputeNodeGroupIdentifier":{
+      "type":"string",
+      "pattern":"(pcs_[a-zA-Z0-9]+|[A-Za-z][A-Za-z0-9-]{2,25})"
+    },
+    "ComputeNodeGroupList":{
+      "type":"list",
+      "member":{"shape":"ComputeNodeGroupSummary"}
+    },
+    "ComputeNodeGroupName":{
+      "type":"string",
+      "max":25,
+      "min":3,
+      "pattern":"(?!pcs_)^[A-Za-z][A-Za-z0-9-]+"
+    },
+    "ComputeNodeGroupSlurmConfiguration":{
+      "type":"structure",
+      "members":{
+        "slurmCustomSettings":{
+          "shape":"SlurmCustomSettings",
+          "documentation":"<p>Additional Slurm-specific configuration that directly maps to Slurm settings.</p>"
+        }
+      },
+      "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+    },
+    "ComputeNodeGroupSlurmConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "slurmCustomSettings":{
+          "shape":"SlurmCustomSettings",
+          "documentation":"<p>Additional Slurm-specific configuration that directly maps to Slurm settings.</p>"
+        }
+      },
+      "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+    },
+    "ComputeNodeGroupStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATE_FAILED",
+        "DELETE_FAILED",
+        "UPDATE_FAILED",
+        "DELETED",
+        "SUSPENDING",
+        "SUSPENDED"
+      ]
+    },
+    "ComputeNodeGroupSummary":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "clusterId",
+        "createdAt",
+        "modifiedAt",
+        "status"
+      ],
+      "members":{
+        "name":{
+          "shape":"ComputeNodeGroupName",
+          "documentation":"<p>The name that identifies the compute node group.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the compute node group.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the compute node group.</p>"
+        },
+        "clusterId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the cluster of the compute node group.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "status":{
+          "shape":"ComputeNodeGroupStatus",
+          "documentation":"<p>The provisioning status of the compute node group.</p> <note> <p>The provisioning status doesn't indicate the overall health of the compute node group.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        }
+      },
+      "documentation":"<p>The object returned by the <code>ListComputeNodeGroups</code> API action.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The unique identifier of the resource that caused the conflict exception. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type or category of the resource that caused the conflict exception.\" </p>"
+        }
+      },
+      "documentation":"<p>Your request has conflicting operations. This can occur if you're trying to perform more than 1 operation on the same resource at the same time.</p> <p> <u>Examples</u> </p> <ul> <li> <p>A cluster with the same name already exists.</p> </li> <li> <p>A cluster isn't in <code>ACTIVE</code> status.</p> </li> <li> <p>A cluster to delete is in an unstable state. For example, because it still has <code>ACTIVE</code> node groups or queues.</p> </li> <li> <p>A queue already exists in a cluster.</p> </li> </ul>",
+      "exception":true
+    },
+    "CreateClusterRequest":{
+      "type":"structure",
+      "required":[
+        "clusterName",
+        "scheduler",
+        "size",
+        "networking"
+      ],
+      "members":{
+        "clusterName":{
+          "shape":"ClusterName",
+          "documentation":"<p>A name to identify the cluster. Example: <code>MyCluster</code> </p>"
+        },
+        "scheduler":{
+          "shape":"SchedulerRequest",
+          "documentation":"<p>The cluster management and job scheduling software associated with the cluster.</p>"
+        },
+        "size":{
+          "shape":"Size",
+          "documentation":"<p>A value that determines the maximum number of compute nodes in the cluster and the maximum number of jobs (active and queued).</p> <ul> <li> <p> <code>SMALL</code>: 32 compute nodes and 256 jobs</p> </li> <li> <p> <code>MEDIUM</code>: 512 compute nodes and 8192 jobs</p> </li> <li> <p> <code>LARGE</code>: 2048 compute nodes and 16,384 jobs</p> </li> </ul>"
+        },
+        "networking":{
+          "shape":"NetworkingRequest",
+          "documentation":"<p>The networking configuration used to set up the cluster's control plane.</p>"
+        },
+        "slurmConfiguration":{
+          "shape":"ClusterSlurmConfigurationRequest",
+          "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"RequestTagMap",
+          "documentation":"<p>1 or more tags added to the resource. Each tag consists of a tag key and tag value. The tag value is optional and can be an empty string.</p>"
+        }
+      }
+    },
+    "CreateClusterResponse":{
+      "type":"structure",
+      "members":{
+        "cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The cluster resource.</p>"
+        }
+      }
+    },
+    "CreateComputeNodeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "computeNodeGroupName",
+        "subnetIds",
+        "customLaunchTemplate",
+        "iamInstanceProfileArn",
+        "scalingConfiguration",
+        "instanceConfigs"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster to create a compute node group in.</p>"
+        },
+        "computeNodeGroupName":{
+          "shape":"ComputeNodeGroupName",
+          "documentation":"<p>A name to identify the cluster. Example: <code>MyCluster</code> </p>"
+        },
+        "amiId":{
+          "shape":"AmiId",
+          "documentation":"<p> The ID of the Amazon Machine Image (AMI) that PCS uses to launch compute nodes (Amazon EC2 instances). If you don't provide this value, PCS uses the AMI ID specified in the custom launch template.</p>"
+        },
+        "subnetIds":{
+          "shape":"StringList",
+          "documentation":"<p>The list of subnet IDs where the compute node group launches instances. Subnets must be in the same VPC as the cluster.</p>"
+        },
+        "purchaseOption":{
+          "shape":"PurchaseOption",
+          "documentation":"<p>Specifies how EC2 instances are purchased on your behalf. PCS supports On-Demand Instances, Spot Instances, and Amazon EC2 Capacity Blocks for ML. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-purchasing-options.html\">Amazon EC2 billing and purchasing options</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>. For more information about PCS support for Capacity Blocks, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/capacity-blocks.html\">Using Amazon EC2 Capacity Blocks for ML with PCS</a> in the <i>PCS User Guide</i>. If you don't provide this option, it defaults to On-Demand.</p>"
+        },
+        "customLaunchTemplate":{"shape":"CustomLaunchTemplate"},
+        "iamInstanceProfileArn":{
+          "shape":"InstanceProfileArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM instance profile used to pass an IAM role when launching EC2 instances. The role contained in your instance profile must have the <code>pcs:RegisterComputeNodeGroupInstance</code> permission and the role name must start with <code>AWSPCS</code> or must have the path <code>/aws-pcs/</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/security-instance-profiles.html\">IAM instance profiles for PCS</a> in the <i>PCS User Guide</i>.</p>"
+        },
+        "scalingConfiguration":{
+          "shape":"ScalingConfigurationRequest",
+          "documentation":"<p>Specifies the boundaries of the compute node group auto scaling.</p>"
+        },
+        "instanceConfigs":{
+          "shape":"InstanceList",
+          "documentation":"<p>A list of EC2 instance configurations that PCS can provision in the compute node group.</p>"
+        },
+        "spotOptions":{"shape":"SpotOptions"},
+        "slurmConfiguration":{
+          "shape":"ComputeNodeGroupSlurmConfigurationRequest",
+          "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"RequestTagMap",
+          "documentation":"<p>1 or more tags added to the resource. Each tag consists of a tag key and tag value. The tag value is optional and can be an empty string.</p>"
+        }
+      }
+    },
+    "CreateComputeNodeGroupResponse":{
+      "type":"structure",
+      "members":{
+        "computeNodeGroup":{"shape":"ComputeNodeGroup"}
+      }
+    },
+    "CreateQueueRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "queueName"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster for which to create a queue.</p>"
+        },
+        "queueName":{
+          "shape":"QueueName",
+          "documentation":"<p>A name to identify the queue.</p>"
+        },
+        "computeNodeGroupConfigurations":{
+          "shape":"ComputeNodeGroupConfigurationList",
+          "documentation":"<p>The list of compute node group configurations to associate with the queue. Queues assign jobs to associated compute node groups.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"RequestTagMap",
+          "documentation":"<p>1 or more tags added to the resource. Each tag consists of a tag key and tag value. The tag value is optional and can be an empty string.</p>"
+        }
+      }
+    },
+    "CreateQueueResponse":{
+      "type":"structure",
+      "members":{
+        "queue":{"shape":"Queue"}
+      }
+    },
+    "CustomLaunchTemplate":{
+      "type":"structure",
+      "required":[
+        "id",
+        "version"
+      ],
+      "members":{
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 launch template to use to provision instances.</p> <p> Example: <code>lt-xxxx</code> </p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the EC2 launch template to use to provision instances.</p>"
+        }
+      },
+      "documentation":"<p>An Amazon EC2 launch template PCS uses to launch compute nodes.</p>"
+    },
+    "DeleteClusterRequest":{
+      "type":"structure",
+      "required":["clusterIdentifier"],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteClusterResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteComputeNodeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "computeNodeGroupIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the compute node group.</p>"
+        },
+        "computeNodeGroupIdentifier":{
+          "shape":"ComputeNodeGroupIdentifier",
+          "documentation":"<p>The name or ID of the compute node group to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteComputeNodeGroupResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteQueueRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "queueIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the queue.</p>"
+        },
+        "queueIdentifier":{
+          "shape":"QueueIdentifier",
+          "documentation":"<p>The name or ID of the queue to delete.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteQueueResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Endpoint":{
+      "type":"structure",
+      "required":[
+        "type",
+        "privateIpAddress",
+        "port"
+      ],
+      "members":{
+        "type":{
+          "shape":"EndpointType",
+          "documentation":"<p>Indicates the type of endpoint running at the specific IP address.</p>"
+        },
+        "privateIpAddress":{
+          "shape":"String",
+          "documentation":"<p>For clusters that use IPv4, this is the endpoint's private IP address.</p> <p>Example: <code>10.1.2.3</code> </p> <p>For clusters configured to use IPv6, this is an empty string.</p>"
+        },
+        "publicIpAddress":{
+          "shape":"String",
+          "documentation":"<p>The endpoint's public IP address.</p> <p>Example: <code>192.0.2.1</code> </p>"
+        },
+        "ipv6Address":{
+          "shape":"String",
+          "documentation":"<p>The endpoint's IPv6 address.</p> <p>Example: <code>2001:db8::1</code> </p>"
+        },
+        "port":{
+          "shape":"String",
+          "documentation":"<p>The endpoint's connection port number.</p> <p> Example: <code>1234</code> </p>"
+        }
+      },
+      "documentation":"<p>An endpoint available for interaction with the scheduler.</p>"
+    },
+    "EndpointType":{
+      "type":"string",
+      "enum":[
+        "SLURMCTLD",
+        "SLURMDBD"
+      ]
+    },
+    "Endpoints":{
+      "type":"list",
+      "member":{"shape":"Endpoint"}
+    },
+    "ErrorInfo":{
+      "type":"structure",
+      "members":{
+        "code":{
+          "shape":"String",
+          "documentation":"<p>The short-form error code.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The detailed error information.</p>"
+        }
+      },
+      "documentation":"<p>An error that occurred during resource creation.</p>"
+    },
+    "ErrorInfoList":{
+      "type":"list",
+      "member":{"shape":"ErrorInfo"}
+    },
+    "GetClusterRequest":{
+      "type":"structure",
+      "required":["clusterIdentifier"],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the queue.</p>"
+        }
+      }
+    },
+    "GetClusterResponse":{
+      "type":"structure",
+      "members":{
+        "cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The cluster resource.</p>"
+        }
+      }
+    },
+    "GetComputeNodeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "computeNodeGroupIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster.</p>"
+        },
+        "computeNodeGroupIdentifier":{
+          "shape":"ComputeNodeGroupIdentifier",
+          "documentation":"<p>The name or ID of the compute node group.</p>"
+        }
+      }
+    },
+    "GetComputeNodeGroupResponse":{
+      "type":"structure",
+      "members":{
+        "computeNodeGroup":{"shape":"ComputeNodeGroup"}
+      }
+    },
+    "GetQueueRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "queueIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the queue.</p>"
+        },
+        "queueIdentifier":{
+          "shape":"QueueIdentifier",
+          "documentation":"<p>The name or ID of the queue.</p>"
+        }
+      }
+    },
+    "GetQueueResponse":{
+      "type":"structure",
+      "members":{
+        "queue":{"shape":"Queue"}
+      }
+    },
+    "InstanceConfig":{
+      "type":"structure",
+      "members":{
+        "instanceType":{
+          "shape":"String",
+          "documentation":"<p>The EC2 instance type that PCS can provision in the compute node group.</p> <p> Example: <code>t2.xlarge</code> </p>"
+        }
+      },
+      "documentation":"<p>An EC2 instance configuration PCS uses to launch compute nodes.</p>"
+    },
+    "InstanceList":{
+      "type":"list",
+      "member":{"shape":"InstanceConfig"}
+    },
+    "InstanceProfileArn":{
+      "type":"string",
+      "pattern":"arn:aws([a-zA-Z-]{0,10})?:iam::[0-9]{12}:instance-profile/([!-~]{1,510}/)?([\\w+=,.@-]{1,128})"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>PCS can't process your request right now. Try again later.</p>",
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ListClustersRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results. The default is 10 results, and the maximum allowed page size is 100 results. A value of 0 uses the default.</p>"
+        }
+      }
+    },
+    "ListClustersResponse":{
+      "type":"structure",
+      "required":["clusters"],
+      "members":{
+        "clusters":{
+          "shape":"ClusterList",
+          "documentation":"<p>The list of clusters.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        }
+      }
+    },
+    "ListComputeNodeGroupsRequest":{
+      "type":"structure",
+      "required":["clusterIdentifier"],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster to list compute node groups for.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results. The default is 10 results, and the maximum allowed page size is 100 results. A value of 0 uses the default.</p>"
+        }
+      }
+    },
+    "ListComputeNodeGroupsResponse":{
+      "type":"structure",
+      "required":["computeNodeGroups"],
+      "members":{
+        "computeNodeGroups":{
+          "shape":"ComputeNodeGroupList",
+          "documentation":"<p>The list of compute node groups for the cluster.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        }
+      }
+    },
+    "ListQueuesRequest":{
+      "type":"structure",
+      "required":["clusterIdentifier"],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster to list queues for.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results. The default is 10 results, and the maximum allowed page size is 100 results. A value of 0 uses the default.</p>"
+        }
+      }
+    },
+    "ListQueuesResponse":{
+      "type":"structure",
+      "required":["queues"],
+      "members":{
+        "queues":{
+          "shape":"QueueList",
+          "documentation":"<p>The list of queues associated with the cluster.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The value of <code>nextToken</code> is a unique pagination token for each page of results returned. If <code>nextToken</code> is returned, there are more results available. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token returns an <code>HTTP 400 InvalidToken</code> error.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which to list tags.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"ResponseTagMap",
+          "documentation":"<p>1 or more tags added to the resource. Each tag consists of a tag key and tag value. The tag value is optional and can be an empty string.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NetworkType":{
+      "type":"string",
+      "enum":[
+        "IPV4",
+        "IPV6"
+      ]
+    },
+    "Networking":{
+      "type":"structure",
+      "members":{
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>The ID of the subnet where PCS creates an Elastic Network Interface (ENI) to enable communication between managed controllers and PCS resources. The subnet must have an available IP address, cannot reside in Outposts, Wavelength, or an Amazon Web Services Local Zone.</p> <p> Example: <code>subnet-abcd1234</code> </p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>The list of security group IDs associated with the Elastic Network Interface (ENI) created in subnets.</p> <p>The following rules are required:</p> <ul> <li> <p>Inbound rule 1</p> <ul> <li> <p>Protocol: All</p> </li> <li> <p>Ports: All</p> </li> <li> <p>Source: Self</p> </li> </ul> </li> <li> <p>Outbound rule 1</p> <ul> <li> <p>Protocol: All</p> </li> <li> <p>Ports: All</p> </li> <li> <p>Destination: 0.0.0.0/0 (IPv4) or ::/0 (IPv6)</p> </li> </ul> </li> <li> <p>Outbound rule 2</p> <ul> <li> <p>Protocol: All</p> </li> <li> <p>Ports: All</p> </li> <li> <p>Destination: Self</p> </li> </ul> </li> </ul>"
+        },
+        "networkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The IP address version the cluster uses. The default is <code>IPV4</code>.</p>"
+        }
+      },
+      "documentation":"<p>The networking configuration for the cluster's control plane.</p>"
+    },
+    "NetworkingRequest":{
+      "type":"structure",
+      "members":{
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>The list of subnet IDs where PCS creates an Elastic Network Interface (ENI) to enable communication between managed controllers and PCS resources. Subnet IDs have the form <code>subnet-0123456789abcdef0</code>.</p> <p>Subnets can't be in Outposts, Wavelength or an Amazon Web Services Local Zone.</p> <note> <p>PCS currently supports only 1 subnet in this list.</p> </note>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>A list of security group IDs associated with the Elastic Network Interface (ENI) created in subnets.</p>"
+        },
+        "networkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The IP address version the cluster uses. The default is <code>IPV4</code>.</p>"
+        }
+      },
+      "documentation":"<p>The networking configuration for the cluster's control plane.</p>"
+    },
+    "PurchaseOption":{
+      "type":"string",
+      "enum":[
+        "ONDEMAND",
+        "SPOT",
+        "CAPACITY_BLOCK"
+      ]
+    },
+    "Queue":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "clusterId",
+        "createdAt",
+        "modifiedAt",
+        "status",
+        "computeNodeGroupConfigurations"
+      ],
+      "members":{
+        "name":{
+          "shape":"QueueName",
+          "documentation":"<p>The name that identifies the queue.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the queue.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the queue.</p>"
+        },
+        "clusterId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the cluster of the queue.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "status":{
+          "shape":"QueueStatus",
+          "documentation":"<p>The provisioning status of the queue.</p> <note> <p>The provisioning status doesn't indicate the overall health of the queue.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        },
+        "computeNodeGroupConfigurations":{
+          "shape":"ComputeNodeGroupConfigurationList",
+          "documentation":"<p>The list of compute node group configurations associated with the queue. Queues assign jobs to associated compute node groups.</p>"
+        },
+        "errorInfo":{
+          "shape":"ErrorInfoList",
+          "documentation":"<p>The list of errors that occurred during queue provisioning.</p>"
+        }
+      },
+      "documentation":"<p>A queue resource.</p>"
+    },
+    "QueueIdentifier":{
+      "type":"string",
+      "pattern":"(pcs_[a-zA-Z0-9]+|[A-Za-z][A-Za-z0-9-]{2,25})"
+    },
+    "QueueList":{
+      "type":"list",
+      "member":{"shape":"QueueSummary"}
+    },
+    "QueueName":{
+      "type":"string",
+      "max":25,
+      "min":3,
+      "pattern":"(?!pcs_)^[A-Za-z][A-Za-z0-9-]+"
+    },
+    "QueueStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATE_FAILED",
+        "DELETE_FAILED",
+        "UPDATE_FAILED",
+        "SUSPENDING",
+        "SUSPENDED"
+      ]
+    },
+    "QueueSummary":{
+      "type":"structure",
+      "required":[
+        "name",
+        "id",
+        "arn",
+        "clusterId",
+        "createdAt",
+        "modifiedAt",
+        "status"
+      ],
+      "members":{
+        "name":{
+          "shape":"QueueName",
+          "documentation":"<p>The name that identifies the queue.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The generated unique ID of the queue.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) of the queue.</p>"
+        },
+        "clusterId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the cluster of the queue.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the resource was modified.</p>"
+        },
+        "status":{
+          "shape":"QueueStatus",
+          "documentation":"<p>The provisioning status of the queue.</p> <note> <p> The provisioning status doesn't indicate the overall health of the queue.</p> </note> <important> <p>The resource enters the <code>SUSPENDING</code> and <code>SUSPENDED</code> states when the scheduler is beyond end of life and we have suspended the cluster. When in these states, you can't use the cluster. The cluster controller is down and all compute instances are terminated. The resources still count toward your service quotas. You can delete a resource if its status is <code>SUSPENDED</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions_faq.html\">Frequently asked questions about Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> </important>"
+        }
+      },
+      "documentation":"<p>The object returned by the <code>ListQueues</code> API action.</p>"
+    },
+    "RegisterComputeNodeGroupInstanceRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "bootstrapId"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster to register the compute node group instance in.</p>"
+        },
+        "bootstrapId":{
+          "shape":"BootstrapId",
+          "documentation":"<p>The client-generated token to allow for retries.</p>"
+        }
+      }
+    },
+    "RegisterComputeNodeGroupInstanceResponse":{
+      "type":"structure",
+      "required":[
+        "nodeID",
+        "sharedSecret",
+        "endpoints"
+      ],
+      "members":{
+        "nodeID":{
+          "shape":"String",
+          "documentation":"<p>The scheduler node ID for this instance.</p>"
+        },
+        "sharedSecret":{
+          "shape":"SharedSecret",
+          "documentation":"<p>For the Slurm scheduler, this is the shared Munge key the scheduler uses to authenticate compute node group instances.</p>"
+        },
+        "endpoints":{
+          "shape":"Endpoints",
+          "documentation":"<p>The list of endpoints available for interaction with the scheduler.</p>"
+        }
+      }
+    },
+    "RequestTagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The unique identifier of the resource that was not found. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type or category of the resource that was not found. </p>"
+        }
+      },
+      "documentation":"<p>The requested resource can't be found. The cluster, node group, or queue you're attempting to get, update, list, or delete doesn't exist.</p> <p> <u>Examples</u> </p>",
+      "exception":true
+    },
+    "ResponseTagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "SBClientToken":{
+      "type":"string",
+      "max":100,
+      "min":8
+    },
+    "ScalingConfiguration":{
+      "type":"structure",
+      "required":[
+        "minInstanceCount",
+        "maxInstanceCount"
+      ],
+      "members":{
+        "minInstanceCount":{
+          "shape":"ScalingConfigurationMinInstanceCountInteger",
+          "documentation":"<p>The lower bound of the number of instances allowed in the compute fleet.</p>"
+        },
+        "maxInstanceCount":{
+          "shape":"ScalingConfigurationMaxInstanceCountInteger",
+          "documentation":"<p>The upper bound of the number of instances allowed in the compute fleet.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the boundaries of the compute node group auto scaling.</p>"
+    },
+    "ScalingConfigurationMaxInstanceCountInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ScalingConfigurationMinInstanceCountInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ScalingConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "minInstanceCount",
+        "maxInstanceCount"
+      ],
+      "members":{
+        "minInstanceCount":{
+          "shape":"ScalingConfigurationRequestMinInstanceCountInteger",
+          "documentation":"<p>The lower bound of the number of instances allowed in the compute fleet.</p>"
+        },
+        "maxInstanceCount":{
+          "shape":"ScalingConfigurationRequestMaxInstanceCountInteger",
+          "documentation":"<p>The upper bound of the number of instances allowed in the compute fleet.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the boundaries of the compute node group auto scaling.</p>"
+    },
+    "ScalingConfigurationRequestMaxInstanceCountInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "ScalingConfigurationRequestMinInstanceCountInteger":{
+      "type":"integer",
+      "box":true,
+      "min":0
+    },
+    "Scheduler":{
+      "type":"structure",
+      "required":[
+        "type",
+        "version"
+      ],
+      "members":{
+        "type":{
+          "shape":"SchedulerType",
+          "documentation":"<p>The software PCS uses to manage cluster scaling and job scheduling.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the specified scheduling software that PCS uses to manage cluster scaling and job scheduling. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions.html\">Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> <p>Valid Values: <code>23.11 | 24.05 | 24.11</code> </p>"
+        }
+      },
+      "documentation":"<p>The cluster management and job scheduling software associated with the cluster.</p>"
+    },
+    "SchedulerRequest":{
+      "type":"structure",
+      "required":[
+        "type",
+        "version"
+      ],
+      "members":{
+        "type":{
+          "shape":"SchedulerType",
+          "documentation":"<p>The software PCS uses to manage cluster scaling and job scheduling.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the specified scheduling software that PCS uses to manage cluster scaling and job scheduling. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-versions.html\">Slurm versions in PCS</a> in the <i>PCS User Guide</i>.</p> <p>Valid Values: <code>23.11 | 24.05 | 24.11</code> </p>"
+        }
+      },
+      "documentation":"<p>The cluster management and job scheduling software associated with the cluster.</p>"
+    },
+    "SchedulerType":{
+      "type":"string",
+      "enum":["SLURM"]
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "pattern":"sg-\\w{8,17}"
+    },
+    "SecurityGroupIdList":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "serviceCode"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p> The service code associated with the quota that was exceeded. </p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p> The unique identifier of the resource that caused the quota to be exceeded. </p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p> The type or category of the resource that caused the quota to be exceeded. </p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p> The <b>quota code</b> of the service quota that was exceeded. </p>"
+        }
+      },
+      "documentation":"<p>You exceeded your service quota. Service quotas, also referred to as limits, are the maximum number of service resources or operations for your Amazon Web Services account. To learn how to increase your service quota, see <a href=\"https://docs.aws.amazon.com/servicequotas/latest/userguide/request-quota-increase.html\">Requesting a quota increase</a> in the <i>Service Quotas User Guide</i> </p> <p> <u>Examples</u> </p> <ul> <li> <p>The max number of clusters or queues has been reached for the account.</p> </li> <li> <p>The max number of compute node groups has been reached for the associated cluster.</p> </li> <li> <p>The total of <code>maxInstances</code> across all compute node groups has been reached for associated cluster.</p> </li> </ul>",
+      "exception":true
+    },
+    "SharedSecret":{
+      "type":"string",
+      "sensitive":true
+    },
+    "Size":{
+      "type":"string",
+      "enum":[
+        "SMALL",
+        "MEDIUM",
+        "LARGE"
+      ]
+    },
+    "SlurmAuthKey":{
+      "type":"structure",
+      "required":[
+        "secretArn",
+        "secretVersion"
+      ],
+      "members":{
+        "secretArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the shared Slurm key.</p>"
+        },
+        "secretVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the shared Slurm key.</p>"
+        }
+      },
+      "documentation":"<p>The shared Slurm key for authentication, also known as the <b>cluster secret</b>.</p>"
+    },
+    "SlurmCustomSetting":{
+      "type":"structure",
+      "required":[
+        "parameterName",
+        "parameterValue"
+      ],
+      "members":{
+        "parameterName":{
+          "shape":"String",
+          "documentation":"<p>PCS supports configuration of the following Slurm parameters:</p> <ul> <li> <p>For <b>clusters</b> </p> <ul> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_Prolog_1\"> <code>Prolog</code> </a> </p> </li> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_Epilog_1\"> <code>Epilog</code> </a> </p> </li> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_SelectTypeParameters\"> <code>SelectTypeParameters</code> </a> </p> </li> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_AccountingStorageEnforce\"> <code>AccountingStorageEnforce</code> </a> </p> <important> <p>PCS supports a subset of the options for <code>AccountingStorageEnforce</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/slurm-accounting.html\">Slurm accounting in PCS</a> in the <i>PCS User Guide</i>.</p> </important> </li> </ul> </li> <li> <p>For <b>compute node groups</b> </p> <ul> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_Weight\"> <code>Weight</code> </a> </p> </li> <li> <p> <a href=\"https://slurm.schedmd.com/slurm.conf.html#OPT_Weight\"> <code>RealMemory</code> </a> </p> </li> </ul> </li> </ul>"
+        },
+        "parameterValue":{
+          "shape":"String",
+          "documentation":"<p>The values for the configured Slurm settings.</p>"
+        }
+      },
+      "documentation":"<p>Additional settings that directly map to Slurm settings.</p>"
+    },
+    "SlurmCustomSettings":{
+      "type":"list",
+      "member":{"shape":"SlurmCustomSetting"}
+    },
+    "SpotAllocationStrategy":{
+      "type":"string",
+      "enum":[
+        "lowest-price",
+        "capacity-optimized",
+        "price-capacity-optimized"
+      ]
+    },
+    "SpotOptions":{
+      "type":"structure",
+      "members":{
+        "allocationStrategy":{
+          "shape":"SpotAllocationStrategy",
+          "documentation":"<p>The Amazon EC2 allocation strategy PCS uses to provision EC2 instances. PCS supports <b>lowest price</b>, <b>capacity optimized</b>, and <b>price capacity optimized</b>. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-allocation-strategy.html\">Use allocation strategies to determine how EC2 Fleet or Spot Fleet fulfills Spot and On-Demand capacity</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>. If you don't provide this option, it defaults to <b>price capacity optimized</b>.</p>"
+        }
+      },
+      "documentation":"<p>Additional configuration when you specify <code>SPOT</code> as the <code>purchaseOption</code> for the <code>CreateComputeNodeGroup</code> API action.</p>"
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SubnetId":{
+      "type":"string",
+      "pattern":"subnet-\\w{8,17}"
+    },
+    "SubnetIdList":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "min":1
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "tags":{
+          "shape":"RequestTagMap",
+          "documentation":"<p>1 or more tags added to the resource. Each tag consists of a tag key and tag value. The tag value is optional and can be an empty string.</p>"
+        }
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p> The number of seconds to wait before retrying the request. </p>"
+        }
+      },
+      "documentation":"<p>Your request exceeded a request rate quota. Check the resource's request rate quota and try again.</p>",
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>1 or more tag keys to remove from the resource. Specify only tag keys and not tag values.</p>"
+        }
+      }
+    },
+    "UpdateComputeNodeGroupRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "computeNodeGroupIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the compute node group.</p>"
+        },
+        "computeNodeGroupIdentifier":{
+          "shape":"ComputeNodeGroupIdentifier",
+          "documentation":"<p>The name or ID of the compute node group.</p>"
+        },
+        "amiId":{
+          "shape":"AmiId",
+          "documentation":"<p>The ID of the Amazon Machine Image (AMI) that PCS uses to launch instances. If not provided, PCS uses the AMI ID specified in the custom launch template.</p>"
+        },
+        "subnetIds":{
+          "shape":"StringList",
+          "documentation":"<p>The list of subnet IDs where the compute node group provisions instances. The subnets must be in the same VPC as the cluster.</p>"
+        },
+        "customLaunchTemplate":{"shape":"CustomLaunchTemplate"},
+        "purchaseOption":{
+          "shape":"PurchaseOption",
+          "documentation":"<p>Specifies how EC2 instances are purchased on your behalf. PCS supports On-Demand Instances, Spot Instances, and Amazon EC2 Capacity Blocks for ML. For more information, see <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-purchasing-options.html\">Amazon EC2 billing and purchasing options</a> in the <i>Amazon Elastic Compute Cloud User Guide</i>. For more information about PCS support for Capacity Blocks, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/capacity-blocks.html\">Using Amazon EC2 Capacity Blocks for ML with PCS</a> in the <i>PCS User Guide</i>. If you don't provide this option, it defaults to On-Demand.</p>"
+        },
+        "spotOptions":{"shape":"SpotOptions"},
+        "scalingConfiguration":{
+          "shape":"ScalingConfigurationRequest",
+          "documentation":"<p>Specifies the boundaries of the compute node group auto scaling.</p>"
+        },
+        "iamInstanceProfileArn":{
+          "shape":"InstanceProfileArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM instance profile used to pass an IAM role when launching EC2 instances. The role contained in your instance profile must have the <code>pcs:RegisterComputeNodeGroupInstance</code> permission and the role name must start with <code>AWSPCS</code> or must have the path <code>/aws-pcs/</code>. For more information, see <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide/security-instance-profiles.html\">IAM instance profiles for PCS</a> in the <i>PCS User Guide</i>.</p>"
+        },
+        "slurmConfiguration":{
+          "shape":"UpdateComputeNodeGroupSlurmConfigurationRequest",
+          "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateComputeNodeGroupResponse":{
+      "type":"structure",
+      "members":{
+        "computeNodeGroup":{"shape":"ComputeNodeGroup"}
+      }
+    },
+    "UpdateComputeNodeGroupSlurmConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "slurmCustomSettings":{
+          "shape":"SlurmCustomSettings",
+          "documentation":"<p>Additional Slurm-specific configuration that directly maps to Slurm settings.</p>"
+        }
+      },
+      "documentation":"<p>Additional options related to the Slurm scheduler.</p>"
+    },
+    "UpdateQueueRequest":{
+      "type":"structure",
+      "required":[
+        "clusterIdentifier",
+        "queueIdentifier"
+      ],
+      "members":{
+        "clusterIdentifier":{
+          "shape":"ClusterIdentifier",
+          "documentation":"<p>The name or ID of the cluster of the queue.</p>"
+        },
+        "queueIdentifier":{
+          "shape":"QueueIdentifier",
+          "documentation":"<p>The name or ID of the queue.</p>"
+        },
+        "computeNodeGroupConfigurations":{
+          "shape":"ComputeNodeGroupConfigurationList",
+          "documentation":"<p>The list of compute node group configurations to associate with the queue. Queues assign jobs to associated compute node groups.</p>"
+        },
+        "clientToken":{
+          "shape":"SBClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, the subsequent retries with the same client token return the result from the original successful request and they have no additional effect. If you don't specify a client token, the CLI and SDK automatically generate 1 for you.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateQueueResponse":{
+      "type":"structure",
+      "members":{
+        "queue":{"shape":"Queue"}
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p> The specific reason or cause of the validation error. </p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p> A list of fields or properties that failed validation. </p>"
+        }
+      },
+      "documentation":"<p>The request isn't valid.</p> <p> <u>Examples</u> </p> <ul> <li> <p>Your request contains malformed JSON or unsupported characters.</p> </li> <li> <p>The scheduler version isn't supported.</p> </li> <li> <p>There are networking related errors, such as network validation failure.</p> </li> <li> <p>AMI type is <code>CUSTOM</code> and the launch template doesn't define the AMI ID, or the AMI type is AL2 and the launch template defines the AMI.</p> </li> </ul>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The message body of the exception.</p>"
+        }
+      },
+      "documentation":"<p>Stores information about a field in a request that caused an exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    }
+  },
+  "documentation":"<p>Parallel Computing Service (PCS) is a managed service that makes it easier for you to run and scale your high performance computing (HPC) workloads, and build scientific and engineering models on Amazon Web Services using Slurm. For more information, see the <a href=\"https://docs.aws.amazon.com/pcs/latest/userguide\">Parallel Computing Service User Guide</a>.</p> <p>This reference describes the actions and data types of the service management API. You can use the Amazon Web Services SDKs to call the API actions in software, or use the Command Line Interface (CLI) to call the API actions manually. These API actions manage the service through an Amazon Web Services account.</p> <p>The API actions operate on PCS resources. A <i>resource</i> is an entity in Amazon Web Services that you can work with. Amazon Web Services services create resources when you use the features of the service. Examples of PCS resources include clusters, compute node groups, and queues. For more information about resources in Amazon Web Services, see <a href=\"https://docs.aws.amazon.com/resource-explorer/latest/userguide/getting-started-terms-and-concepts.html#term-resource\">Resource</a> in the <i>Resource Explorer User Guide</i>. </p> <p>An PCS <i>compute node</i> is an Amazon EC2 instance. You don't launch compute nodes directly. PCS uses configuration information that you provide to launch compute nodes in your Amazon Web Services account. You receive billing charges for your running compute nodes. PCS automatically terminates your compute nodes when you delete the PCS resources related to those compute nodes.</p>"
+}

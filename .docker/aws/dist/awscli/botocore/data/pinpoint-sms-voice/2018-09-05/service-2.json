@@ -1,0 +1,677 @@
+{
+  "metadata" : {
+    "apiVersion" : "2018-09-05",
+    "endpointPrefix" : "sms-voice.pinpoint",
+    "signingName" : "sms-voice",
+    "serviceAbbreviation":"Pinpoint SMS Voice",
+    "serviceFullName" : "Amazon Pinpoint SMS and Voice Service",
+    "serviceId" : "Pinpoint SMS Voice",
+    "protocol" : "rest-json",
+    "jsonVersion" : "1.1",
+    "uid" : "pinpoint-sms-voice-2018-09-05",
+    "signatureVersion" : "v4"
+  },
+  "operations" : {
+    "CreateConfigurationSet" : {
+      "name" : "CreateConfigurationSet",
+      "http" : {
+        "method" : "POST",
+        "requestUri" : "/v1/sms-voice/configuration-sets",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "CreateConfigurationSetRequest"
+      },
+      "output" : {
+        "shape" : "CreateConfigurationSetResponse",
+        "documentation" : "CreateConfigurationSetResponse"
+      },
+      "errors" : [ {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "LimitExceededException",
+        "documentation" : "LimitExceededException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      }, {
+        "shape" : "AlreadyExistsException",
+        "documentation" : "AlreadyExistsException"
+      } ],
+      "documentation" : "Create a new configuration set. After you create the configuration set, you can add one or more event destinations to it."
+    },
+    "CreateConfigurationSetEventDestination" : {
+      "name" : "CreateConfigurationSetEventDestination",
+      "http" : {
+        "method" : "POST",
+        "requestUri" : "/v1/sms-voice/configuration-sets/{ConfigurationSetName}/event-destinations",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "CreateConfigurationSetEventDestinationRequest"
+      },
+      "output" : {
+        "shape" : "CreateConfigurationSetEventDestinationResponse",
+        "documentation" : "CreateConfigurationSetEventDestinationResponse"
+      },
+      "errors" : [ {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "LimitExceededException",
+        "documentation" : "LimitExceededException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      }, {
+        "shape" : "NotFoundException",
+        "documentation" : "NotFoundException"
+      }, {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "AlreadyExistsException",
+        "documentation" : "AlreadyExistsException"
+      } ],
+      "documentation" : "Create a new event destination in a configuration set."
+    },
+    "DeleteConfigurationSet" : {
+      "name" : "DeleteConfigurationSet",
+      "http" : {
+        "method" : "DELETE",
+        "requestUri" : "/v1/sms-voice/configuration-sets/{ConfigurationSetName}",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "DeleteConfigurationSetRequest"
+      },
+      "output" : {
+        "shape" : "DeleteConfigurationSetResponse",
+        "documentation" : "DeleteConfigurationSetResponse"
+      },
+      "errors" : [ {
+        "shape" : "NotFoundException",
+        "documentation" : "NotFoundException"
+      }, {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      } ],
+      "documentation" : "Deletes an existing configuration set."
+    },
+    "DeleteConfigurationSetEventDestination" : {
+      "name" : "DeleteConfigurationSetEventDestination",
+      "http" : {
+        "method" : "DELETE",
+        "requestUri" : "/v1/sms-voice/configuration-sets/{ConfigurationSetName}/event-destinations/{EventDestinationName}",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "DeleteConfigurationSetEventDestinationRequest"
+      },
+      "output" : {
+        "shape" : "DeleteConfigurationSetEventDestinationResponse",
+        "documentation" : "DeleteConfigurationSetEventDestinationResponse"
+      },
+      "errors" : [ {
+        "shape" : "NotFoundException",
+        "documentation" : "NotFoundException"
+      }, {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      } ],
+      "documentation" : "Deletes an event destination in a configuration set."
+    },
+    "GetConfigurationSetEventDestinations" : {
+      "name" : "GetConfigurationSetEventDestinations",
+      "http" : {
+        "method" : "GET",
+        "requestUri" : "/v1/sms-voice/configuration-sets/{ConfigurationSetName}/event-destinations",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "GetConfigurationSetEventDestinationsRequest"
+      },
+      "output" : {
+        "shape" : "GetConfigurationSetEventDestinationsResponse",
+        "documentation" : "GetConfigurationSetEventDestinationsResponse"
+      },
+      "errors" : [ {
+        "shape" : "NotFoundException",
+        "documentation" : "NotFoundException"
+      }, {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      } ],
+      "documentation" : "Obtain information about an event destination, including the types of events it reports, the Amazon Resource Name (ARN) of the destination, and the name of the event destination."
+    },
+    "SendVoiceMessage" : {
+      "name" : "SendVoiceMessage",
+      "http" : {
+        "method" : "POST",
+        "requestUri" : "/v1/sms-voice/voice/message",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "SendVoiceMessageRequest"
+      },
+      "output" : {
+        "shape" : "SendVoiceMessageResponse",
+        "documentation" : "SendVoiceMessageResponse"
+      },
+      "errors" : [ {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      } ],
+      "documentation" : "Create a new voice message and send it to a recipient's phone number."
+    },
+    "UpdateConfigurationSetEventDestination" : {
+      "name" : "UpdateConfigurationSetEventDestination",
+      "http" : {
+        "method" : "PUT",
+        "requestUri" : "/v1/sms-voice/configuration-sets/{ConfigurationSetName}/event-destinations/{EventDestinationName}",
+        "responseCode" : 200
+      },
+      "input" : {
+        "shape" : "UpdateConfigurationSetEventDestinationRequest"
+      },
+      "output" : {
+        "shape" : "UpdateConfigurationSetEventDestinationResponse",
+        "documentation" : "UpdateConfigurationSetEventDestinationResponse"
+      },
+      "errors" : [ {
+        "shape" : "NotFoundException",
+        "documentation" : "NotFoundException"
+      }, {
+        "shape" : "TooManyRequestsException",
+        "documentation" : "TooManyRequestsException"
+      }, {
+        "shape" : "BadRequestException",
+        "documentation" : "BadRequestException"
+      }, {
+        "shape" : "InternalServiceErrorException",
+        "documentation" : "InternalServiceErrorException"
+      } ],
+      "documentation" : "Update an event destination in a configuration set. An event destination is a location that you publish information about your voice calls to. For example, you can log an event to an Amazon CloudWatch destination when a call fails."
+    }
+  },
+  "shapes" : {
+    "AlreadyExistsException" : {
+      "type" : "structure",
+      "documentation" : "The resource specified in your request already exists.",
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "exception" : true,
+      "error" : {
+        "httpStatusCode" : 409
+      }
+    },
+    "BadRequestException" : {
+      "type" : "structure",
+      "documentation" : "The input you provided is invalid.",
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "exception" : true,
+      "error" : {
+        "httpStatusCode" : 400
+      }
+    },
+    "Boolean" : {
+      "type" : "boolean"
+    },
+    "CallInstructionsMessageType" : {
+      "type" : "structure",
+      "members" : {
+        "Text" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "The language to use when delivering the message. For a complete list of supported languages, see the Amazon Polly Developer Guide."
+        }
+      },
+      "documentation" : "An object that defines a message that contains text formatted using Amazon Pinpoint Voice Instructions markup.",
+      "required" : [ ]
+    },
+    "CloudWatchLogsDestination" : {
+      "type" : "structure",
+      "members" : {
+        "IamRoleArn" : {
+          "shape" : "String",
+          "documentation" : "The Amazon Resource Name (ARN) of an Amazon Identity and Access Management (IAM) role that is able to write event data to an Amazon CloudWatch destination."
+        },
+        "LogGroupArn" : {
+          "shape" : "String",
+          "documentation" : "The name of the Amazon CloudWatch Log Group that you want to record events in."
+        }
+      },
+      "documentation" : "An object that contains information about an event destination that sends data to Amazon CloudWatch Logs.",
+      "required" : [ ]
+    },
+    "CreateConfigurationSetEventDestinationRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "ConfigurationSetName",
+          "documentation" : "ConfigurationSetName"
+        },
+        "EventDestination" : {
+          "shape" : "EventDestinationDefinition"
+        },
+        "EventDestinationName" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "A name that identifies the event destination."
+        }
+      },
+      "documentation" : "Create a new event destination in a configuration set.",
+      "required" : [ "ConfigurationSetName" ]
+    },
+    "CreateConfigurationSetEventDestinationResponse" : {
+      "type" : "structure",
+      "members" : { },
+      "documentation" : "An empty object that indicates that the event destination was created successfully."
+    },
+    "CreateConfigurationSetRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "WordCharactersWithDelimiters",
+          "documentation" : "The name that you want to give the configuration set."
+        }
+      },
+      "documentation" : "A request to create a new configuration set."
+    },
+    "CreateConfigurationSetResponse" : {
+      "type" : "structure",
+      "members" : { },
+      "documentation" : "An empty object that indicates that the configuration set was successfully created."
+    },
+    "DeleteConfigurationSetEventDestinationRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "ConfigurationSetName",
+          "documentation" : "ConfigurationSetName"
+        },
+        "EventDestinationName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "EventDestinationName",
+          "documentation" : "EventDestinationName"
+        }
+      },
+      "required" : [ "EventDestinationName", "ConfigurationSetName" ]
+    },
+    "DeleteConfigurationSetEventDestinationResponse" : {
+      "type" : "structure",
+      "members" : { },
+      "documentation" : "An empty object that indicates that the event destination was deleted successfully."
+    },
+    "DeleteConfigurationSetRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "ConfigurationSetName",
+          "documentation" : "ConfigurationSetName"
+        }
+      },
+      "required" : [ "ConfigurationSetName" ]
+    },
+    "DeleteConfigurationSetResponse" : {
+      "type" : "structure",
+      "members" : { },
+      "documentation" : "An empty object that indicates that the configuration set was deleted successfully."
+    },
+    "EventDestination" : {
+      "type" : "structure",
+      "members" : {
+        "CloudWatchLogsDestination" : {
+          "shape" : "CloudWatchLogsDestination"
+        },
+        "Enabled" : {
+          "shape" : "Boolean",
+          "documentation" : "Indicates whether or not the event destination is enabled. If the event destination is enabled, then Amazon Pinpoint sends response data to the specified event destination."
+        },
+        "KinesisFirehoseDestination" : {
+          "shape" : "KinesisFirehoseDestination"
+        },
+        "MatchingEventTypes" : {
+          "shape" : "EventTypes"
+        },
+        "Name" : {
+          "shape" : "String",
+          "documentation" : "A name that identifies the event destination configuration."
+        },
+        "SnsDestination" : {
+          "shape" : "SnsDestination"
+        }
+      },
+      "documentation" : "An object that defines an event destination."
+    },
+    "EventDestinationDefinition" : {
+      "type" : "structure",
+      "members" : {
+        "CloudWatchLogsDestination" : {
+          "shape" : "CloudWatchLogsDestination"
+        },
+        "Enabled" : {
+          "shape" : "Boolean",
+          "documentation" : "Indicates whether or not the event destination is enabled. If the event destination is enabled, then Amazon Pinpoint sends response data to the specified event destination."
+        },
+        "KinesisFirehoseDestination" : {
+          "shape" : "KinesisFirehoseDestination"
+        },
+        "MatchingEventTypes" : {
+          "shape" : "EventTypes"
+        },
+        "SnsDestination" : {
+          "shape" : "SnsDestination"
+        }
+      },
+      "documentation" : "An object that defines a single event destination.",
+      "required" : [ ]
+    },
+    "EventDestinations" : {
+      "type" : "list",
+      "documentation" : "An array of EventDestination objects. Each EventDestination object includes ARNs and other information that define an event destination.",
+      "member" : {
+        "shape" : "EventDestination"
+      }
+    },
+    "EventType" : {
+      "type" : "string",
+      "documentation" : "The types of events that are sent to the event destination.",
+      "enum" : [ "INITIATED_CALL", "RINGING", "ANSWERED", "COMPLETED_CALL", "BUSY", "FAILED", "NO_ANSWER" ]
+    },
+    "EventTypes" : {
+      "type" : "list",
+      "documentation" : "An array of EventDestination objects. Each EventDestination object includes ARNs and other information that define an event destination.",
+      "member" : {
+        "shape" : "EventType"
+      }
+    },
+    "GetConfigurationSetEventDestinationsRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "ConfigurationSetName",
+          "documentation" : "ConfigurationSetName"
+        }
+      },
+      "required" : [ "ConfigurationSetName" ]
+    },
+    "GetConfigurationSetEventDestinationsResponse" : {
+      "type" : "structure",
+      "members" : {
+        "EventDestinations" : {
+          "shape" : "EventDestinations"
+        }
+      },
+      "documentation" : "An object that contains information about an event destination."
+    },
+    "InternalServiceErrorException" : {
+      "type" : "structure",
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "documentation" : "The API encountered an unexpected error and couldn't complete the request. You might be able to successfully issue the request again in the future.",
+      "exception" : true,
+      "error" : {
+        "httpStatusCode" : 500
+      }
+    },
+    "KinesisFirehoseDestination" : {
+      "type" : "structure",
+      "members" : {
+        "DeliveryStreamArn" : {
+          "shape" : "String",
+          "documentation" : "The Amazon Resource Name (ARN) of an IAM role that can write data to an Amazon Kinesis Data Firehose stream."
+        },
+        "IamRoleArn" : {
+          "shape" : "String",
+          "documentation" : "The Amazon Resource Name (ARN) of the Amazon Kinesis Data Firehose destination that you want to use in the event destination."
+        }
+      },
+      "documentation" : "An object that contains information about an event destination that sends data to Amazon Kinesis Data Firehose.",
+      "required" : [ ]
+    },
+    "LimitExceededException" : {
+      "type" : "structure",
+      "documentation" : "There are too many instances of the specified resource type.",
+      "exception" : true,
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "error" : {
+        "httpStatusCode" : 412
+      }
+    },
+    "NonEmptyString" : {
+      "type" : "string"
+    },
+    "NotFoundException" : {
+      "type" : "structure",
+      "documentation" : "The resource you attempted to access doesn't exist.",
+      "exception" : true,
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "error" : {
+        "httpStatusCode" : 404
+      }
+    },
+    "PlainTextMessageType" : {
+      "type" : "structure",
+      "members" : {
+        "LanguageCode" : {
+          "shape" : "String",
+          "documentation" : "The language to use when delivering the message. For a complete list of supported languages, see the Amazon Polly Developer Guide."
+        },
+        "Text" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "The plain (not SSML-formatted) text to deliver to the recipient."
+        },
+        "VoiceId" : {
+          "shape" : "String",
+          "documentation" : "The name of the voice that you want to use to deliver the message. For a complete list of supported voices, see the Amazon Polly Developer Guide."
+        }
+      },
+      "documentation" : "An object that defines a message that contains unformatted text.",
+      "required" : [ ]
+    },
+    "SSMLMessageType" : {
+      "type" : "structure",
+      "members" : {
+        "LanguageCode" : {
+          "shape" : "String",
+          "documentation" : "The language to use when delivering the message. For a complete list of supported languages, see the Amazon Polly Developer Guide."
+        },
+        "Text" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "The SSML-formatted text to deliver to the recipient."
+        },
+        "VoiceId" : {
+          "shape" : "String",
+          "documentation" : "The name of the voice that you want to use to deliver the message. For a complete list of supported voices, see the Amazon Polly Developer Guide."
+        }
+      },
+      "documentation" : "An object that defines a message that contains SSML-formatted text.",
+      "required" : [ ]
+    },
+    "SendVoiceMessageRequest" : {
+      "type" : "structure",
+      "members" : {
+        "CallerId" : {
+          "shape" : "String",
+          "documentation" : "The phone number that appears on recipients' devices when they receive the message."
+        },
+        "ConfigurationSetName" : {
+          "shape" : "WordCharactersWithDelimiters",
+          "documentation" : "The name of the configuration set that you want to use to send the message."
+        },
+        "Content" : {
+          "shape" : "VoiceMessageContent"
+        },
+        "DestinationPhoneNumber" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "The phone number that you want to send the voice message to."
+        },
+        "OriginationPhoneNumber" : {
+          "shape" : "NonEmptyString",
+          "documentation" : "The phone number that Amazon Pinpoint should use to send the voice message. This isn't necessarily the phone number that appears on recipients' devices when they receive the message, because you can specify a CallerId parameter in the request."
+        }
+      },
+      "documentation" : "SendVoiceMessageRequest"
+    },
+    "SendVoiceMessageResponse" : {
+      "type" : "structure",
+      "members" : {
+        "MessageId" : {
+          "shape" : "String",
+          "documentation" : "A unique identifier for the voice message."
+        }
+      },
+      "documentation" : "An object that that contains the Message ID of a Voice message that was sent successfully."
+    },
+    "SnsDestination" : {
+      "type" : "structure",
+      "members" : {
+        "TopicArn" : {
+          "shape" : "String",
+          "documentation" : "The Amazon Resource Name (ARN) of the Amazon SNS topic that you want to publish events to."
+        }
+      },
+      "documentation" : "An object that contains information about an event destination that sends data to Amazon SNS.",
+      "required" : [ ]
+    },
+    "String" : {
+      "type" : "string"
+    },
+    "TooManyRequestsException" : {
+      "type" : "structure",
+      "documentation" : "You've issued too many requests to the resource. Wait a few minutes, and then try again.",
+      "exception" : true,
+      "members" : {
+        "Message" : {
+          "shape" : "String"
+        }
+      },
+      "error" : {
+        "httpStatusCode" : 429
+      }
+    },
+    "UpdateConfigurationSetEventDestinationRequest" : {
+      "type" : "structure",
+      "members" : {
+        "ConfigurationSetName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "ConfigurationSetName",
+          "documentation" : "ConfigurationSetName"
+        },
+        "EventDestination" : {
+          "shape" : "EventDestinationDefinition"
+        },
+        "EventDestinationName" : {
+          "shape" : "__string",
+          "location" : "uri",
+          "locationName" : "EventDestinationName",
+          "documentation" : "EventDestinationName"
+        }
+      },
+      "documentation" : "UpdateConfigurationSetEventDestinationRequest",
+      "required" : [ "EventDestinationName", "ConfigurationSetName" ]
+    },
+    "UpdateConfigurationSetEventDestinationResponse" : {
+      "type" : "structure",
+      "members" : { },
+      "documentation" : "An empty object that indicates that the event destination was updated successfully."
+    },
+    "VoiceMessageContent" : {
+      "type" : "structure",
+      "members" : {
+        "CallInstructionsMessage" : {
+          "shape" : "CallInstructionsMessageType"
+        },
+        "PlainTextMessage" : {
+          "shape" : "PlainTextMessageType"
+        },
+        "SSMLMessage" : {
+          "shape" : "SSMLMessageType"
+        }
+      },
+      "documentation" : "An object that contains a voice message and information about the recipient that you want to send it to."
+    },
+    "WordCharactersWithDelimiters" : {
+      "type" : "string"
+    },
+    "__boolean" : {
+      "type" : "boolean"
+    },
+    "__double" : {
+      "type" : "double"
+    },
+    "__integer" : {
+      "type" : "integer"
+    },
+    "__long" : {
+      "type" : "long"
+    },
+    "__string" : {
+      "type" : "string"
+    },
+    "__timestampIso8601" : {
+      "type" : "timestamp",
+      "timestampFormat" : "iso8601"
+    },
+    "__timestampUnix" : {
+      "type" : "timestamp",
+      "timestampFormat" : "unixTimestamp"
+    }
+  },
+  "documentation" : "Pinpoint SMS and Voice Messaging public facing APIs"
+}

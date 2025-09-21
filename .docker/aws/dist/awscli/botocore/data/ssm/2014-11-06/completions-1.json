@@ -1,0 +1,1773 @@
+{
+  "version": "1.0",
+  "resources": {
+    "AutomationExecution": {
+      "operation": "DescribeAutomationExecutions",
+      "resourceIdentifier": {
+        "AutomationExecutionId": "AutomationExecutionMetadataList[].AutomationExecutionId",
+        "Mode": "AutomationExecutionMetadataList[].Mode",
+        "TargetParameterName": "AutomationExecutionMetadataList[].TargetParameterName",
+        "TargetMaps": "AutomationExecutionMetadataList[].TargetMaps",
+        "Target": "AutomationExecutionMetadataList[].Target"
+      }
+    },
+    "InstanceInformation": {
+      "operation": "DescribeInstanceInformation",
+      "resourceIdentifier": {
+        "ActivationId": "InstanceInformationList[].ActivationId",
+        "IamRole": "InstanceInformationList[].IamRole",
+        "AssociationStatus": "InstanceInformationList[].AssociationStatus"
+      }
+    },
+    "InventoryDeletion": {
+      "operation": "DescribeInventoryDeletions",
+      "resourceIdentifier": {
+        "DeletionId": "InventoryDeletions[].DeletionId",
+        "TypeName": "InventoryDeletions[].TypeName"
+      }
+    },
+    "MaintenanceWindow": {
+      "operation": "DescribeMaintenanceWindows",
+      "resourceIdentifier": {
+        "WindowId": "WindowIdentities[].WindowId",
+        "Enabled": "WindowIdentities[].Enabled",
+        "Duration": "WindowIdentities[].Duration",
+        "Cutoff": "WindowIdentities[].Cutoff"
+      }
+    },
+    "Parameter": {
+      "operation": "DescribeParameters",
+      "resourceIdentifier": {
+        "Type": "Parameters[].Type",
+        "KeyId": "Parameters[].KeyId",
+        "Description": "Parameters[].Description",
+        "AllowedPattern": "Parameters[].AllowedPattern"
+      }
+    },
+    "PatchBaseline": {
+      "operation": "DescribePatchBaselines",
+      "resourceIdentifier": {
+        "BaselineId": "BaselineIdentities[].BaselineId",
+        "OperatingSystem": "BaselineIdentities[].OperatingSystem"
+      }
+    },
+    "PatchGroup": {
+      "operation": "DescribePatchGroups",
+      "resourceIdentifier": {
+        "PatchGroup": "Mappings[].PatchGroup"
+      }
+    },
+    "Association": {
+      "operation": "ListAssociations",
+      "resourceIdentifier": {
+        "AssociationId": "Associations[].AssociationId",
+        "AssociationVersion": "Associations[].AssociationVersion",
+        "ScheduleExpression": "Associations[].ScheduleExpression",
+        "AssociationName": "Associations[].AssociationName"
+      }
+    },
+    "CommandInvocation": {
+      "operation": "ListCommandInvocations",
+      "resourceIdentifier": {
+        "InstanceId": "CommandInvocations[].InstanceId"
+      }
+    },
+    "Command": {
+      "operation": "ListCommands",
+      "resourceIdentifier": {
+        "CommandId": "Commands[].CommandId",
+        "DocumentName": "Commands[].DocumentName",
+        "Comment": "Commands[].Comment",
+        "Parameters": "Commands[].Parameters",
+        "InstanceIds": "Commands[].InstanceIds",
+        "Targets": "Commands[].Targets",
+        "OutputS3Region": "Commands[].OutputS3Region",
+        "OutputS3BucketName": "Commands[].OutputS3BucketName",
+        "OutputS3KeyPrefix": "Commands[].OutputS3KeyPrefix",
+        "MaxConcurrency": "Commands[].MaxConcurrency",
+        "MaxErrors": "Commands[].MaxErrors",
+        "NotificationConfig": "Commands[].NotificationConfig",
+        "CloudWatchOutputConfig": "Commands[].CloudWatchOutputConfig"
+      }
+    },
+    "ComplianceItem": {
+      "operation": "ListComplianceItems",
+      "resourceIdentifier": {
+        "Details": "ComplianceItems[].Details"
+      }
+    },
+    "Document": {
+      "operation": "ListDocuments",
+      "resourceIdentifier": {
+        "Name": "DocumentIdentifiers[].Name",
+        "DocumentVersion": "DocumentIdentifiers[].DocumentVersion",
+        "DocumentFormat": "DocumentIdentifiers[].DocumentFormat",
+        "TargetType": "DocumentIdentifiers[].TargetType",
+        "Tags": "DocumentIdentifiers[].Tags"
+      }
+    },
+    "ResourceComplianceSummary": {
+      "operation": "ListResourceComplianceSummaries",
+      "resourceIdentifier": {
+        "ComplianceType": "ResourceComplianceSummaryItems[].ComplianceType",
+        "ResourceType": "ResourceComplianceSummaryItems[].ResourceType",
+        "ResourceId": "ResourceComplianceSummaryItems[].ResourceId",
+        "ExecutionSummary": "ResourceComplianceSummaryItems[].ExecutionSummary"
+      }
+    },
+    "ResourceDataSync": {
+      "operation": "ListResourceDataSync",
+      "resourceIdentifier": {
+        "SyncName": "ResourceDataSyncItems[].SyncName"
+      }
+    }
+  },
+  "operations": {
+    "AddTagsToResource": {
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      },
+      "Tags": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Tags"
+          }
+        ]
+      }
+    },
+    "CancelCommand": {
+      "CommandId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "CommandId"
+          }
+        ]
+      },
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "InstanceIds"
+          }
+        ]
+      }
+    },
+    "DeleteActivation": {
+      "ActivationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceInformation",
+            "resourceIdentifier": "ActivationId"
+          }
+        ]
+      }
+    },
+    "DeleteAssociation": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DeleteDocument": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteInventory": {
+      "TypeName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InventoryDeletion",
+            "resourceIdentifier": "TypeName"
+          }
+        ]
+      }
+    },
+    "DeleteMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DeleteParameter": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeletePatchBaseline": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      }
+    },
+    "DeleteResourceDataSync": {
+      "SyncName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceDataSync",
+            "resourceIdentifier": "SyncName"
+          }
+        ]
+      }
+    },
+    "DeregisterManagedInstance": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DeregisterPatchBaselineForPatchGroup": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      },
+      "PatchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchGroup",
+            "resourceIdentifier": "PatchGroup"
+          }
+        ]
+      }
+    },
+    "DeregisterTargetFromMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DeregisterTaskFromMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DescribeAssociation": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      },
+      "AssociationVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationVersion"
+          }
+        ]
+      }
+    },
+    "DescribeAssociationExecutionTargets": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DescribeAssociationExecutions": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DescribeAutomationStepExecutions": {
+      "AutomationExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "AutomationExecutionId"
+          }
+        ]
+      }
+    },
+    "DescribeDocument": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      }
+    },
+    "DescribeDocumentPermission": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DescribeEffectiveInstanceAssociations": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeEffectivePatchesForPatchBaseline": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      }
+    },
+    "DescribeInstanceAssociationsStatus": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInstancePatchStates": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "InstanceIds"
+          }
+        ]
+      }
+    },
+    "DescribeInstancePatchStatesForPatchGroup": {
+      "PatchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchGroup",
+            "resourceIdentifier": "PatchGroup"
+          }
+        ]
+      }
+    },
+    "DescribeInstancePatches": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInventoryDeletions": {
+      "DeletionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InventoryDeletion",
+            "resourceIdentifier": "DeletionId"
+          }
+        ]
+      }
+    },
+    "DescribeMaintenanceWindowExecutions": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DescribeMaintenanceWindowTargets": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DescribeMaintenanceWindowTasks": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "DescribePatchGroupState": {
+      "PatchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchGroup",
+            "resourceIdentifier": "PatchGroup"
+          }
+        ]
+      }
+    },
+    "GetAutomationExecution": {
+      "AutomationExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "AutomationExecutionId"
+          }
+        ]
+      }
+    },
+    "GetCommandInvocation": {
+      "CommandId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "CommandId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetConnectionStatus": {
+      "Target": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "Target"
+          }
+        ]
+      }
+    },
+    "GetDefaultPatchBaseline": {
+      "OperatingSystem": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "OperatingSystem"
+          }
+        ]
+      }
+    },
+    "GetDeployablePatchSnapshotForInstance": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetDocument": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      },
+      "DocumentFormat": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentFormat"
+          }
+        ]
+      }
+    },
+    "GetInventorySchema": {
+      "TypeName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InventoryDeletion",
+            "resourceIdentifier": "TypeName"
+          }
+        ]
+      }
+    },
+    "GetMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "GetMaintenanceWindowTask": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      }
+    },
+    "GetParameter": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetParameterHistory": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetPatchBaseline": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      }
+    },
+    "GetPatchBaselineForPatchGroup": {
+      "PatchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchGroup",
+            "resourceIdentifier": "PatchGroup"
+          }
+        ]
+      },
+      "OperatingSystem": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "OperatingSystem"
+          }
+        ]
+      }
+    },
+    "LabelParameterVersion": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListAssociationVersions": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "ListCommandInvocations": {
+      "CommandId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "CommandId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "Details": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ComplianceItem",
+            "resourceIdentifier": "Details"
+          }
+        ]
+      }
+    },
+    "ListCommands": {
+      "CommandId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "CommandId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "ListComplianceItems": {
+      "ResourceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      },
+      "ResourceTypes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      }
+    },
+    "ListDocumentVersions": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListInventoryEntries": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "TypeName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InventoryDeletion",
+            "resourceIdentifier": "TypeName"
+          }
+        ]
+      }
+    },
+    "ListTagsForResource": {
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      }
+    },
+    "ModifyDocumentPermission": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "PutComplianceItems": {
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      },
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ComplianceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ComplianceType"
+          }
+        ]
+      },
+      "ExecutionSummary": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ExecutionSummary"
+          }
+        ]
+      }
+    },
+    "PutInventory": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "PutParameter": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Type"
+          }
+        ]
+      },
+      "KeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "KeyId"
+          }
+        ]
+      },
+      "AllowedPattern": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "AllowedPattern"
+          }
+        ]
+      }
+    },
+    "RegisterDefaultPatchBaseline": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      }
+    },
+    "RegisterPatchBaselineForPatchGroup": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      },
+      "PatchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchGroup",
+            "resourceIdentifier": "PatchGroup"
+          }
+        ]
+      }
+    },
+    "RegisterTargetWithMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      },
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "RegisterTaskWithMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "MaxConcurrency": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxConcurrency"
+          }
+        ]
+      },
+      "MaxErrors": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxErrors"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "RemoveTagsFromResource": {
+      "ResourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceType"
+          }
+        ]
+      },
+      "ResourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ResourceComplianceSummary",
+            "resourceIdentifier": "ResourceId"
+          }
+        ]
+      }
+    },
+    "SendAutomationSignal": {
+      "AutomationExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "AutomationExecutionId"
+          }
+        ]
+      }
+    },
+    "SendCommand": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "InstanceIds"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "DocumentName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "DocumentName"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      },
+      "Comment": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Comment"
+          }
+        ]
+      },
+      "Parameters": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Parameters"
+          }
+        ]
+      },
+      "OutputS3Region": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "OutputS3Region"
+          }
+        ]
+      },
+      "OutputS3BucketName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "OutputS3BucketName"
+          }
+        ]
+      },
+      "OutputS3KeyPrefix": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "OutputS3KeyPrefix"
+          }
+        ]
+      },
+      "MaxConcurrency": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxConcurrency"
+          }
+        ]
+      },
+      "MaxErrors": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxErrors"
+          }
+        ]
+      },
+      "NotificationConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "NotificationConfig"
+          }
+        ]
+      },
+      "CloudWatchOutputConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "CloudWatchOutputConfig"
+          }
+        ]
+      }
+    },
+    "StartAssociationsOnce": {
+      "AssociationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "StartAutomationExecution": {
+      "DocumentName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "DocumentName"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      },
+      "Parameters": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Parameters"
+          }
+        ]
+      },
+      "Mode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "Mode"
+          }
+        ]
+      },
+      "TargetParameterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "TargetParameterName"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "TargetMaps": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "TargetMaps"
+          }
+        ]
+      },
+      "MaxConcurrency": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxConcurrency"
+          }
+        ]
+      },
+      "MaxErrors": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxErrors"
+          }
+        ]
+      }
+    },
+    "StartSession": {
+      "Target": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "Target"
+          }
+        ]
+      },
+      "DocumentName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "DocumentName"
+          }
+        ]
+      },
+      "Parameters": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Parameters"
+          }
+        ]
+      }
+    },
+    "StopAutomationExecution": {
+      "AutomationExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AutomationExecution",
+            "resourceIdentifier": "AutomationExecutionId"
+          }
+        ]
+      },
+      "Type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Type"
+          }
+        ]
+      }
+    },
+    "UpdateAssociation": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      },
+      "Parameters": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Parameters"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      },
+      "ScheduleExpression": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "ScheduleExpression"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "AssociationName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationName"
+          }
+        ]
+      },
+      "AssociationVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Association",
+            "resourceIdentifier": "AssociationVersion"
+          }
+        ]
+      }
+    },
+    "UpdateAssociationStatus": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "AssociationStatus": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceInformation",
+            "resourceIdentifier": "AssociationStatus"
+          }
+        ]
+      }
+    },
+    "UpdateDocument": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      },
+      "DocumentFormat": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentFormat"
+          }
+        ]
+      },
+      "TargetType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "TargetType"
+          }
+        ]
+      }
+    },
+    "UpdateDocumentDefaultVersion": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "DocumentVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "DocumentVersion"
+          }
+        ]
+      }
+    },
+    "UpdateMaintenanceWindow": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Duration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "Duration"
+          }
+        ]
+      },
+      "Cutoff": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "Cutoff"
+          }
+        ]
+      },
+      "Enabled": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "Enabled"
+          }
+        ]
+      }
+    },
+    "UpdateMaintenanceWindowTarget": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "UpdateMaintenanceWindowTask": {
+      "WindowId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MaintenanceWindow",
+            "resourceIdentifier": "WindowId"
+          }
+        ]
+      },
+      "Targets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "Targets"
+          }
+        ]
+      },
+      "MaxConcurrency": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxConcurrency"
+          }
+        ]
+      },
+      "MaxErrors": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Command",
+            "resourceIdentifier": "MaxErrors"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "UpdateManagedInstanceRole": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CommandInvocation",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "IamRole": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceInformation",
+            "resourceIdentifier": "IamRole"
+          }
+        ]
+      }
+    },
+    "UpdatePatchBaseline": {
+      "BaselineId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PatchBaseline",
+            "resourceIdentifier": "BaselineId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Document",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Parameter",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    }
+  }
+}

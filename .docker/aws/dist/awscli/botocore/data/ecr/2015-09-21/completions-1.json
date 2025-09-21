@@ -1,0 +1,425 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Repository": {
+      "operation": "DescribeRepositories",
+      "resourceIdentifier": {
+        "registryId": "repositories[].registryId",
+        "repositoryName": "repositories[].repositoryName"
+      }
+    }
+  },
+  "operations": {
+    "BatchCheckLayerAvailability": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "BatchDeleteImage": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "BatchGetImage": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "CompleteLayerUpload": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteLifecyclePolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteRepository": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteRepositoryPolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DescribeImages": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DescribeRepositories": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetAuthorizationToken": {
+      "registryIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      }
+    },
+    "GetDownloadUrlForLayer": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetLifecyclePolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetLifecyclePolicyPreview": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetRepositoryPolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "InitiateLayerUpload": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "ListImages": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PutImage": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PutLifecyclePolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "SetRepositoryPolicy": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "StartLifecyclePolicyPreview": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "UploadLayerPart": {
+      "registryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "registryId"
+          }
+        ]
+      },
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    }
+  }
+}

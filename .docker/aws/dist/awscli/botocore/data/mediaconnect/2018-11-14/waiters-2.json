@@ -1,0 +1,104 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "FlowActive" : {
+      "description" : "Wait until a flow is active",
+      "delay" : 3,
+      "maxAttempts" : 40,
+      "operation" : "DescribeFlow",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "success",
+        "expected" : "ACTIVE"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "retry",
+        "expected" : "STARTING"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "retry",
+        "expected" : "UPDATING"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "InternalServerErrorException"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "ServiceUnavailableException"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "failure",
+        "expected" : "STANDBY"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      } ]
+    },
+    "FlowDeleted" : {
+      "description" : "Wait until a flow is deleted",
+      "delay" : 3,
+      "maxAttempts" : 40,
+      "operation" : "DescribeFlow",
+      "acceptors" : [ {
+        "matcher" : "error",
+        "state" : "success",
+        "expected" : "NotFoundException"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "retry",
+        "expected" : "DELETING"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "InternalServerErrorException"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "ServiceUnavailableException"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      } ]
+    },
+    "FlowStandby" : {
+      "description" : "Wait until a flow is in standby mode",
+      "delay" : 3,
+      "maxAttempts" : 40,
+      "operation" : "DescribeFlow",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "success",
+        "expected" : "STANDBY"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "retry",
+        "expected" : "STOPPING"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "InternalServerErrorException"
+      }, {
+        "matcher" : "error",
+        "state" : "retry",
+        "expected" : "ServiceUnavailableException"
+      }, {
+        "matcher" : "path",
+        "argument" : "Flow.Status",
+        "state" : "failure",
+        "expected" : "ERROR"
+      } ]
+    }
+  }
+}

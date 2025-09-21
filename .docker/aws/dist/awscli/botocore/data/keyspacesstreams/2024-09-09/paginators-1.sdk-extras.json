@@ -1,0 +1,18 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+        "GetStream": {
+            "non_aggregate_keys": [
+                "streamStatus",
+                "streamLabel",
+                "creationRequestDateTime",
+                "keyspaceName",
+                "tableName", 
+                "streamArn",
+                "streamViewType"
+            ]
+        }
+    }
+  }
+}

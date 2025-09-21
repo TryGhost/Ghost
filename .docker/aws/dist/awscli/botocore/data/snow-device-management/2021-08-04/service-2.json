@@ -1,0 +1,1331 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-08-04",
+    "endpointPrefix":"snow-device-management",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"AWS Snow Device Management",
+    "serviceId":"Snow Device Management",
+    "signatureVersion":"v4",
+    "signingName":"snow-device-management",
+    "uid":"snow-device-management-2021-08-04"
+  },
+  "operations":{
+    "CancelTask":{
+      "name":"CancelTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/task/{taskId}/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelTaskInput"},
+      "output":{"shape":"CancelTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Sends a cancel request for a specified task. You can cancel a task only if it's still in a <code>QUEUED</code> state. Tasks that are already running can't be cancelled.</p> <note> <p>A task might still run if it's processed from the queue before the <code>CancelTask</code> operation changes the task's state.</p> </note>"
+    },
+    "CreateTask":{
+      "name":"CreateTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/task",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateTaskInput"},
+      "output":{"shape":"CreateTaskOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Instructs one or more devices to start a task, such as unlocking or rebooting.</p>"
+    },
+    "DescribeDevice":{
+      "name":"DescribeDevice",
+      "http":{
+        "method":"POST",
+        "requestUri":"/managed-device/{managedDeviceId}/describe",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeDeviceInput"},
+      "output":{"shape":"DescribeDeviceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Checks device-specific information, such as the device type, software version, IP addresses, and lock status.</p>"
+    },
+    "DescribeDeviceEc2Instances":{
+      "name":"DescribeDeviceEc2Instances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/managed-device/{managedDeviceId}/resources/ec2/describe",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeDeviceEc2Input"},
+      "output":{"shape":"DescribeDeviceEc2Output"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Checks the current state of the Amazon EC2 instances. The output is similar to <code>describeDevice</code>, but the results are sourced from the device cache in the Amazon Web Services Cloud and include a subset of the available fields. </p>"
+    },
+    "DescribeExecution":{
+      "name":"DescribeExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/task/{taskId}/execution/{managedDeviceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeExecutionInput"},
+      "output":{"shape":"DescribeExecutionOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Checks the status of a remote task running on one or more target devices.</p>"
+    },
+    "DescribeTask":{
+      "name":"DescribeTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/task/{taskId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeTaskInput"},
+      "output":{"shape":"DescribeTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Checks the metadata for a given task on a device. </p>"
+    },
+    "ListDeviceResources":{
+      "name":"ListDeviceResources",
+      "http":{
+        "method":"GET",
+        "requestUri":"/managed-device/{managedDeviceId}/resources",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDeviceResourcesInput"},
+      "output":{"shape":"ListDeviceResourcesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of the Amazon Web Services resources available for a device. Currently, Amazon EC2 instances are the only supported resource type.</p>"
+    },
+    "ListDevices":{
+      "name":"ListDevices",
+      "http":{
+        "method":"GET",
+        "requestUri":"/managed-devices",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevicesInput"},
+      "output":{"shape":"ListDevicesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all devices on your Amazon Web Services account that have Amazon Web Services Snow Device Management enabled in the Amazon Web Services Region where the command is run.</p>"
+    },
+    "ListExecutions":{
+      "name":"ListExecutions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/executions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListExecutionsInput"},
+      "output":{"shape":"ListExecutionsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the status of tasks for one or more target devices.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of tags for a managed device or task.</p>"
+    },
+    "ListTasks":{
+      "name":"ListTasks",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tasks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTasksInput"},
+      "output":{"shape":"ListTasksOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of tasks that can be filtered by state.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds or replaces tags on a device or task.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes a tag from a device or task.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AttachmentStatus":{
+      "type":"string",
+      "enum":[
+        "ATTACHING",
+        "ATTACHED",
+        "DETACHING",
+        "DETACHED"
+      ]
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CancelTaskInput":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task that you are attempting to cancel. You can retrieve a task ID by using the <code>ListTasks</code> operation.</p>",
+          "location":"uri",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "CancelTaskOutput":{
+      "type":"structure",
+      "members":{
+        "taskId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the task that you are attempting to cancel.</p>"
+        }
+      }
+    },
+    "Capacity":{
+      "type":"structure",
+      "members":{
+        "available":{
+          "shape":"Long",
+          "documentation":"<p>The amount of capacity available for use on the device.</p>"
+        },
+        "name":{
+          "shape":"CapacityNameString",
+          "documentation":"<p>The name of the type of capacity, such as memory.</p>"
+        },
+        "total":{
+          "shape":"Long",
+          "documentation":"<p>The total capacity on the device.</p>"
+        },
+        "unit":{
+          "shape":"CapacityUnitString",
+          "documentation":"<p>The unit of measure for the type of capacity.</p>"
+        },
+        "used":{
+          "shape":"Long",
+          "documentation":"<p>The amount of capacity used on the device.</p>"
+        }
+      },
+      "documentation":"<p>The physical capacity of the Amazon Web Services Snow Family device. </p>"
+    },
+    "CapacityList":{
+      "type":"list",
+      "member":{"shape":"Capacity"},
+      "max":100,
+      "min":0
+    },
+    "CapacityNameString":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "CapacityUnitString":{
+      "type":"string",
+      "max":20,
+      "min":0
+    },
+    "Command":{
+      "type":"structure",
+      "members":{
+        "reboot":{
+          "shape":"Reboot",
+          "documentation":"<p>Reboots the device.</p>"
+        },
+        "unlock":{
+          "shape":"Unlock",
+          "documentation":"<p>Unlocks the device.</p>"
+        }
+      },
+      "documentation":"<p>The command given to the device to execute.</p>",
+      "union":true
+    },
+    "CpuOptions":{
+      "type":"structure",
+      "members":{
+        "coreCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of cores that the CPU can use.</p>"
+        },
+        "threadsPerCore":{
+          "shape":"Integer",
+          "documentation":"<p>The number of threads per core in the CPU.</p>"
+        }
+      },
+      "documentation":"<p>The options for how a device's CPU is configured.</p>"
+    },
+    "CreateTaskInput":{
+      "type":"structure",
+      "required":[
+        "command",
+        "targets"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token ensuring that the action is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        },
+        "command":{
+          "shape":"Command",
+          "documentation":"<p>The task to be performed. Only one task is executed on a device at a time.</p>"
+        },
+        "description":{
+          "shape":"TaskDescriptionString",
+          "documentation":"<p>A description of the task and its targets.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment. </p>"
+        },
+        "targets":{
+          "shape":"TargetList",
+          "documentation":"<p>A list of managed device IDs.</p>"
+        }
+      }
+    },
+    "CreateTaskOutput":{
+      "type":"structure",
+      "members":{
+        "taskArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the task that you created.</p>"
+        },
+        "taskId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the task that you created.</p>"
+        }
+      }
+    },
+    "DescribeDeviceEc2Input":{
+      "type":"structure",
+      "required":[
+        "instanceIds",
+        "managedDeviceId"
+      ],
+      "members":{
+        "instanceIds":{
+          "shape":"InstanceIdsList",
+          "documentation":"<p>A list of instance IDs associated with the managed device.</p>"
+        },
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the managed device.</p>",
+          "location":"uri",
+          "locationName":"managedDeviceId"
+        }
+      }
+    },
+    "DescribeDeviceEc2Output":{
+      "type":"structure",
+      "members":{
+        "instances":{
+          "shape":"InstanceSummaryList",
+          "documentation":"<p>A list of structures containing information about each instance. </p>"
+        }
+      }
+    },
+    "DescribeDeviceInput":{
+      "type":"structure",
+      "required":["managedDeviceId"],
+      "members":{
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the device that you are checking the information of.</p>",
+          "location":"uri",
+          "locationName":"managedDeviceId"
+        }
+      }
+    },
+    "DescribeDeviceOutput":{
+      "type":"structure",
+      "members":{
+        "associatedWithJob":{
+          "shape":"String",
+          "documentation":"<p>The ID of the job used when ordering the device.</p>"
+        },
+        "deviceCapacities":{
+          "shape":"CapacityList",
+          "documentation":"<p>The hardware specifications of the device. </p>"
+        },
+        "deviceState":{
+          "shape":"UnlockState",
+          "documentation":"<p>The current state of the device.</p>"
+        },
+        "deviceType":{
+          "shape":"String",
+          "documentation":"<p>The type of Amazon Web Services Snow Family device.</p>"
+        },
+        "lastReachedOutAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the device last contacted the Amazon Web Services Cloud. Indicates that the device is online.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the device last pushed an update to the Amazon Web Services Cloud. Indicates when the device cache was refreshed.</p>"
+        },
+        "managedDeviceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device.</p>"
+        },
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the device that you checked the information for.</p>"
+        },
+        "physicalNetworkInterfaces":{
+          "shape":"PhysicalNetworkInterfaceList",
+          "documentation":"<p>The network interfaces available on the device.</p>"
+        },
+        "software":{
+          "shape":"SoftwareInformation",
+          "documentation":"<p>The software installed on the device.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment. </p>"
+        }
+      }
+    },
+    "DescribeExecutionInput":{
+      "type":"structure",
+      "required":[
+        "managedDeviceId",
+        "taskId"
+      ],
+      "members":{
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the managed device.</p>",
+          "location":"uri",
+          "locationName":"managedDeviceId"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task that the action is describing.</p>",
+          "location":"uri",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "DescribeExecutionOutput":{
+      "type":"structure",
+      "members":{
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The ID of the execution.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the status of the execution was last updated.</p>"
+        },
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the managed device that the task is being executed on.</p>"
+        },
+        "startedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the execution began.</p>"
+        },
+        "state":{
+          "shape":"ExecutionState",
+          "documentation":"<p>The current state of the execution.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task being executed on the device.</p>"
+        }
+      }
+    },
+    "DescribeTaskInput":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task to be described.</p>",
+          "location":"uri",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "DescribeTaskOutput":{
+      "type":"structure",
+      "members":{
+        "completedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the task was completed.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the <code>CreateTask</code> operation was called.</p>"
+        },
+        "description":{
+          "shape":"TaskDescriptionString",
+          "documentation":"<p>The description provided of the task and managed devices.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the state of the task was last updated.</p>"
+        },
+        "state":{
+          "shape":"TaskState",
+          "documentation":"<p>The current state of the task.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment.</p>"
+        },
+        "targets":{
+          "shape":"TargetList",
+          "documentation":"<p>The managed devices that the task was sent to.</p>"
+        },
+        "taskArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the task.</p>"
+        },
+        "taskId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the task.</p>"
+        }
+      }
+    },
+    "DeviceSummary":{
+      "type":"structure",
+      "members":{
+        "associatedWithJob":{
+          "shape":"String",
+          "documentation":"<p>The ID of the job used to order the device.</p>"
+        },
+        "managedDeviceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device.</p>"
+        },
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the device.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment.</p>"
+        }
+      },
+      "documentation":"<p>Identifying information about the device.</p>"
+    },
+    "DeviceSummaryList":{
+      "type":"list",
+      "member":{"shape":"DeviceSummary"}
+    },
+    "EbsInstanceBlockDevice":{
+      "type":"structure",
+      "members":{
+        "attachTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the attachment was initiated.</p>"
+        },
+        "deleteOnTermination":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that indicates whether the volume is deleted on instance termination.</p>"
+        },
+        "status":{
+          "shape":"AttachmentStatus",
+          "documentation":"<p>The attachment state.</p>"
+        },
+        "volumeId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Amazon EBS volume.</p>"
+        }
+      },
+      "documentation":"<p>Describes a parameter used to set up an Amazon Elastic Block Store (Amazon EBS) volume in a block device mapping.</p>"
+    },
+    "ExecutionId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ExecutionState":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "IN_PROGRESS",
+        "CANCELED",
+        "FAILED",
+        "SUCCEEDED",
+        "REJECTED",
+        "TIMED_OUT"
+      ]
+    },
+    "ExecutionSummary":{
+      "type":"structure",
+      "members":{
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The ID of the execution.</p>"
+        },
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the managed device that the task is being executed on.</p>"
+        },
+        "state":{
+          "shape":"ExecutionState",
+          "documentation":"<p>The state of the execution.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task.</p>"
+        }
+      },
+      "documentation":"<p>The summary of a task execution on a specified device.</p>"
+    },
+    "ExecutionSummaryList":{
+      "type":"list",
+      "member":{"shape":"ExecutionSummary"}
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[!-~]+"
+    },
+    "Instance":{
+      "type":"structure",
+      "members":{
+        "amiLaunchIndex":{
+          "shape":"Integer",
+          "documentation":"<p>The Amazon Machine Image (AMI) launch index, which you can use to find this instance in the launch group. </p>"
+        },
+        "blockDeviceMappings":{
+          "shape":"InstanceBlockDeviceMappingList",
+          "documentation":"<p>Any block device mapping entries for the instance.</p>"
+        },
+        "cpuOptions":{
+          "shape":"CpuOptions",
+          "documentation":"<p>The CPU options for the instance.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the instance was created.</p>"
+        },
+        "imageId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the AMI used to launch the instance.</p>"
+        },
+        "instanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the instance.</p>"
+        },
+        "instanceType":{
+          "shape":"String",
+          "documentation":"<p>The instance type.</p>"
+        },
+        "privateIpAddress":{
+          "shape":"String",
+          "documentation":"<p>The private IPv4 address assigned to the instance.</p>"
+        },
+        "publicIpAddress":{
+          "shape":"String",
+          "documentation":"<p>The public IPv4 address assigned to the instance.</p>"
+        },
+        "rootDeviceName":{
+          "shape":"String",
+          "documentation":"<p>The device name of the root device volume (for example, <code>/dev/sda1</code>). </p>"
+        },
+        "securityGroups":{
+          "shape":"SecurityGroupIdentifierList",
+          "documentation":"<p>The security groups for the instance.</p>"
+        },
+        "state":{"shape":"InstanceState"},
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the instance was last updated.</p>"
+        }
+      },
+      "documentation":"<p>The description of an instance. Currently, Amazon EC2 instances are the only supported instance type.</p>"
+    },
+    "InstanceBlockDeviceMapping":{
+      "type":"structure",
+      "members":{
+        "deviceName":{
+          "shape":"String",
+          "documentation":"<p>The block device name.</p>"
+        },
+        "ebs":{
+          "shape":"EbsInstanceBlockDevice",
+          "documentation":"<p>The parameters used to automatically set up Amazon Elastic Block Store (Amazon EBS) volumes when the instance is launched. </p>"
+        }
+      },
+      "documentation":"<p>The description of a block device mapping.</p>"
+    },
+    "InstanceBlockDeviceMappingList":{
+      "type":"list",
+      "member":{"shape":"InstanceBlockDeviceMapping"}
+    },
+    "InstanceIdsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "InstanceState":{
+      "type":"structure",
+      "members":{
+        "code":{
+          "shape":"Integer",
+          "documentation":"<p>The state of the instance as a 16-bit unsigned integer. </p> <p>The high byte is all of the bits between 2^8 and (2^16)-1, which equals decimal values between 256 and 65,535. These numerical values are used for internal purposes and should be ignored. </p> <p>The low byte is all of the bits between 2^0 and (2^8)-1, which equals decimal values between 0 and 255. </p> <p>The valid values for the instance state code are all in the range of the low byte. These values are: </p> <ul> <li> <p> <code>0</code> : <code>pending</code> </p> </li> <li> <p> <code>16</code> : <code>running</code> </p> </li> <li> <p> <code>32</code> : <code>shutting-down</code> </p> </li> <li> <p> <code>48</code> : <code>terminated</code> </p> </li> <li> <p> <code>64</code> : <code>stopping</code> </p> </li> <li> <p> <code>80</code> : <code>stopped</code> </p> </li> </ul> <p>You can ignore the high byte value by zeroing out all of the bits above 2^8 or 256 in decimal. </p>"
+        },
+        "name":{
+          "shape":"InstanceStateName",
+          "documentation":"<p>The current state of the instance.</p>"
+        }
+      },
+      "documentation":"<p>The description of the current state of an instance.</p>"
+    },
+    "InstanceStateName":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "RUNNING",
+        "SHUTTING_DOWN",
+        "TERMINATED",
+        "STOPPING",
+        "STOPPED"
+      ]
+    },
+    "InstanceSummary":{
+      "type":"structure",
+      "members":{
+        "instance":{
+          "shape":"Instance",
+          "documentation":"<p>A structure containing details about the instance.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>When the instance summary was last updated.</p>"
+        }
+      },
+      "documentation":"<p>The details about the instance.</p>"
+    },
+    "InstanceSummaryList":{
+      "type":"list",
+      "member":{"shape":"InstanceSummary"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An unexpected error occurred while processing the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "IpAddressAssignment":{
+      "type":"string",
+      "enum":[
+        "DHCP",
+        "STATIC"
+      ]
+    },
+    "JobId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ListDeviceResourcesInput":{
+      "type":"structure",
+      "required":["managedDeviceId"],
+      "members":{
+        "managedDeviceId":{
+          "shape":"ManagedDeviceId",
+          "documentation":"<p>The ID of the managed device that you are listing the resources of.</p>",
+          "location":"uri",
+          "locationName":"managedDeviceId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of resources per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "type":{
+          "shape":"ListDeviceResourcesInputTypeString",
+          "documentation":"<p>A structure used to filter the results by type of resource.</p>",
+          "location":"querystring",
+          "locationName":"type"
+        }
+      }
+    },
+    "ListDeviceResourcesInputTypeString":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "ListDeviceResourcesOutput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of results.</p>"
+        },
+        "resources":{
+          "shape":"ResourceSummaryList",
+          "documentation":"<p>A structure defining the resource's type, Amazon Resource Name (ARN), and ID.</p>"
+        }
+      }
+    },
+    "ListDevicesInput":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job used to order the device.</p>",
+          "location":"querystring",
+          "locationName":"jobId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of devices to list per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDevicesOutput":{
+      "type":"structure",
+      "members":{
+        "devices":{
+          "shape":"DeviceSummaryList",
+          "documentation":"<p>A list of device structures that contain information about the device.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of devices.</p>"
+        }
+      }
+    },
+    "ListExecutionsInput":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of tasks to list per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of tasks.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "state":{
+          "shape":"ExecutionState",
+          "documentation":"<p>A structure used to filter the tasks by their current state.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The ID of the task.</p>",
+          "location":"querystring",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "ListExecutionsOutput":{
+      "type":"structure",
+      "members":{
+        "executions":{
+          "shape":"ExecutionSummaryList",
+          "documentation":"<p>A list of executions. Each execution contains the task ID, the device that the task is executing on, the execution ID, and the status of the execution.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of executions.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device or task.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of tags for the device or task.</p>"
+        }
+      }
+    },
+    "ListTasksInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of tasks per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of tasks.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "state":{
+          "shape":"TaskState",
+          "documentation":"<p>A structure used to filter the list of tasks.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        }
+      }
+    },
+    "ListTasksOutput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to continue to the next page of tasks.</p>"
+        },
+        "tasks":{
+          "shape":"TaskSummaryList",
+          "documentation":"<p>A list of task structures containing details about each task.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "ManagedDeviceId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[a-zA-Z0-9+/=]*"
+    },
+    "PhysicalConnectorType":{
+      "type":"string",
+      "enum":[
+        "RJ45",
+        "SFP_PLUS",
+        "QSFP",
+        "RJ45_2",
+        "WIFI"
+      ]
+    },
+    "PhysicalNetworkInterface":{
+      "type":"structure",
+      "members":{
+        "defaultGateway":{
+          "shape":"String",
+          "documentation":"<p>The default gateway of the device.</p>"
+        },
+        "ipAddress":{
+          "shape":"String",
+          "documentation":"<p>The IP address of the device.</p>"
+        },
+        "ipAddressAssignment":{
+          "shape":"IpAddressAssignment",
+          "documentation":"<p>A value that describes whether the IP address is dynamic or persistent.</p>"
+        },
+        "macAddress":{
+          "shape":"String",
+          "documentation":"<p>The MAC address of the device.</p>"
+        },
+        "netmask":{
+          "shape":"String",
+          "documentation":"<p>The netmask used to divide the IP address into subnets.</p>"
+        },
+        "physicalConnectorType":{
+          "shape":"PhysicalConnectorType",
+          "documentation":"<p>The physical connector type.</p>"
+        },
+        "physicalNetworkInterfaceId":{
+          "shape":"String",
+          "documentation":"<p>The physical network interface ID.</p>"
+        }
+      },
+      "documentation":"<p>The details about the physical network interface for the device.</p>"
+    },
+    "PhysicalNetworkInterfaceList":{
+      "type":"list",
+      "member":{"shape":"PhysicalNetworkInterface"}
+    },
+    "Reboot":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>A structure used to reboot the device.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request references a resource that doesn't exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceSummary":{
+      "type":"structure",
+      "required":["resourceType"],
+      "members":{
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type.</p>"
+        }
+      },
+      "documentation":"<p>A summary of a resource available on the device.</p>"
+    },
+    "ResourceSummaryList":{
+      "type":"list",
+      "member":{"shape":"ResourceSummary"}
+    },
+    "SecurityGroupIdentifier":{
+      "type":"structure",
+      "members":{
+        "groupId":{
+          "shape":"String",
+          "documentation":"<p>The security group ID.</p>"
+        },
+        "groupName":{
+          "shape":"String",
+          "documentation":"<p>The security group name.</p>"
+        }
+      },
+      "documentation":"<p>Information about the device's security group.</p>"
+    },
+    "SecurityGroupIdentifierList":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupIdentifier"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SoftwareInformation":{
+      "type":"structure",
+      "members":{
+        "installState":{
+          "shape":"String",
+          "documentation":"<p>The state of the software that is installed or that is being installed on the device.</p>"
+        },
+        "installedVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the software currently installed on the device.</p>"
+        },
+        "installingVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the software being installed on the device.</p>"
+        }
+      },
+      "documentation":"<p>Information about the software on the device.</p>"
+    },
+    "String":{"type":"string"},
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device or task.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment.</p>"
+        }
+      }
+    },
+    "TargetList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":10,
+      "min":1
+    },
+    "TaskDescriptionString":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[A-Za-z0-9 _.,!#]*"
+    },
+    "TaskId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "TaskState":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "CANCELED",
+        "COMPLETED"
+      ]
+    },
+    "TaskSummary":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "state":{
+          "shape":"TaskState",
+          "documentation":"<p>The state of the task assigned to one or many devices.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment.</p>"
+        },
+        "taskArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the task.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The task ID.</p>"
+        }
+      },
+      "documentation":"<p>Information about the task assigned to one or many devices.</p>"
+    },
+    "TaskSummaryList":{
+      "type":"list",
+      "member":{"shape":"TaskSummary"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Unlock":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>A structure used to unlock a device.</p>"
+    },
+    "UnlockState":{
+      "type":"string",
+      "enum":[
+        "UNLOCKED",
+        "LOCKED",
+        "UNLOCKING"
+      ]
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device or task.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>Optional metadata that you assign to a resource. You can use tags to categorize a resource in different ways, such as by purpose, owner, or environment.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>Amazon Web Services Snow Device Management documentation.</p>"
+}

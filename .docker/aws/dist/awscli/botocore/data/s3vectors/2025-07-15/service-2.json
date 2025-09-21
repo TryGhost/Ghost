@@ -1,0 +1,1444 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2025-07-15",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"s3vectors",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon S3 Vectors",
+    "serviceId":"S3Vectors",
+    "signatureVersion":"v4",
+    "signingName":"s3vectors",
+    "uid":"s3vectors-2025-07-15"
+  },
+  "operations":{
+    "CreateIndex":{
+      "name":"CreateIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateIndex",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateIndexInput"},
+      "output":{"shape":"CreateIndexOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Creates a vector index within a vector bucket. To specify the vector bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN).</p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:CreateIndex</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "CreateVectorBucket":{
+      "name":"CreateVectorBucket",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateVectorBucket",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateVectorBucketInput"},
+      "output":{"shape":"CreateVectorBucketOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Creates a vector bucket in the Amazon Web Services Region that you want your bucket to be in. </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:CreateVectorBucket</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "DeleteIndex":{
+      "name":"DeleteIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteIndex",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteIndexInput"},
+      "output":{"shape":"DeleteIndexOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Deletes a vector index. To specify the vector index, you can either use both the vector bucket name and vector index name, or use the vector index Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:DeleteIndex</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "DeleteVectorBucket":{
+      "name":"DeleteVectorBucket",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteVectorBucket",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteVectorBucketInput"},
+      "output":{"shape":"DeleteVectorBucketOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Deletes a vector bucket. All vector indexes in the vector bucket must be deleted before the vector bucket can be deleted. To perform this operation, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:DeleteVectorBucket</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "DeleteVectorBucketPolicy":{
+      "name":"DeleteVectorBucketPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteVectorBucketPolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteVectorBucketPolicyInput"},
+      "output":{"shape":"DeleteVectorBucketPolicyOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Deletes a vector bucket policy. To specify the bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN).</p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:DeleteVectorBucketPolicy</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "DeleteVectors":{
+      "name":"DeleteVectors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteVectors",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteVectorsInput"},
+      "output":{"shape":"DeleteVectorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"KmsInvalidKeyUsageException"},
+        {"shape":"InternalServerException"},
+        {"shape":"KmsInvalidStateException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"KmsNotFoundException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"KmsDisabledException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Deletes one or more vectors in a vector index. To specify the vector index, you can either use both the vector bucket name and vector index name, or use the vector index Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:DeleteVectors</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "GetIndex":{
+      "name":"GetIndex",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetIndex",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIndexInput"},
+      "output":{"shape":"GetIndexOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Returns vector index attributes. To specify the vector index, you can either use both the vector bucket name and the vector index name, or use the vector index Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:GetIndex</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "GetVectorBucket":{
+      "name":"GetVectorBucket",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetVectorBucket",
+        "responseCode":200
+      },
+      "input":{"shape":"GetVectorBucketInput"},
+      "output":{"shape":"GetVectorBucketOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Returns vector bucket attributes. To specify the bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:GetVectorBucket</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "GetVectorBucketPolicy":{
+      "name":"GetVectorBucketPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetVectorBucketPolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"GetVectorBucketPolicyInput"},
+      "output":{"shape":"GetVectorBucketPolicyOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Gets details about a vector bucket policy. To specify the bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:GetVectorBucketPolicy</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "GetVectors":{
+      "name":"GetVectors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetVectors",
+        "responseCode":200
+      },
+      "input":{"shape":"GetVectorsInput"},
+      "output":{"shape":"GetVectorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"KmsInvalidKeyUsageException"},
+        {"shape":"InternalServerException"},
+        {"shape":"KmsInvalidStateException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"KmsNotFoundException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"KmsDisabledException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Returns vector attributes. To specify the vector index, you can either use both the vector bucket name and the vector index name, or use the vector index Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:GetVectors</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "ListIndexes":{
+      "name":"ListIndexes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListIndexes",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIndexesInput"},
+      "output":{"shape":"ListIndexesOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Returns a list of all the vector indexes within the specified vector bucket. To specify the bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:ListIndexes</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "ListVectorBuckets":{
+      "name":"ListVectorBuckets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListVectorBuckets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListVectorBucketsInput"},
+      "output":{"shape":"ListVectorBucketsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Returns a list of all the vector buckets that are owned by the authenticated sender of the request.</p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:ListVectorBuckets</code> permission to use this operation. </p> </dd> </dl></p>"
+    },
+    "ListVectors":{
+      "name":"ListVectors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListVectors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListVectorsInput"},
+      "output":{"shape":"ListVectorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>List vectors in the specified vector index. To specify the vector index, you can either use both the vector bucket name and the vector index name, or use the vector index Amazon Resource Name (ARN). </p> <p> <code>ListVectors</code> operations proceed sequentially; however, for faster performance on a large number of vectors in a vector index, applications can request a parallel <code>ListVectors</code> operation by providing the <code>segmentCount</code> and <code>segmentIndex</code> parameters.</p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:ListVectors</code> permission to use this operation. Additional permissions are required based on the request parameters you specify:</p> <ul> <li> <p>With only <code>s3vectors:ListVectors</code> permission, you can list vector keys when <code>returnData</code> and <code>returnMetadata</code> are both set to false or not specified..</p> </li> <li> <p>If you set <code>returnData</code> or <code>returnMetadata</code> to true, you must have both <code>s3vectors:ListVectors</code> and <code>s3vectors:GetVectors</code> permissions. The request fails with a <code>403 Forbidden</code> error if you request vector data or metadata without the <code>s3vectors:GetVectors</code> permission.</p> </li> </ul> </dd> </dl></p>"
+    },
+    "PutVectorBucketPolicy":{
+      "name":"PutVectorBucketPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutVectorBucketPolicy",
+        "responseCode":200
+      },
+      "input":{"shape":"PutVectorBucketPolicyInput"},
+      "output":{"shape":"PutVectorBucketPolicyOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Creates a bucket policy for a vector bucket. To specify the bucket, you must use either the vector bucket name or the vector bucket Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:PutVectorBucketPolicy</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "PutVectors":{
+      "name":"PutVectors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutVectors",
+        "responseCode":200
+      },
+      "input":{"shape":"PutVectorsInput"},
+      "output":{"shape":"PutVectorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"KmsInvalidKeyUsageException"},
+        {"shape":"InternalServerException"},
+        {"shape":"KmsInvalidStateException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"KmsNotFoundException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"KmsDisabledException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Adds one or more vectors to a vector index. To specify the vector index, you can either use both the vector bucket name and the vector index name, or use the vector index Amazon Resource Name (ARN). </p> <p>For more information about limits, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-limitations.html\">Limitations and restrictions</a> in the <i>Amazon S3 User Guide</i>.</p> <note> <p>When inserting vector data into your vector index, you must provide the vector data as <code>float32</code> (32-bit floating point) values. If you pass higher-precision values to an Amazon Web Services SDK, S3 Vectors converts the values to 32-bit floating point before storing them, and <code>GetVectors</code>, <code>ListVectors</code>, and <code>QueryVectors</code> operations return the float32 values. Different Amazon Web Services SDKs may have different default numeric types, so ensure your vectors are properly formatted as <code>float32</code> values regardless of which SDK you're using. For example, in Python, use <code>numpy.float32</code> or explicitly cast your values.</p> </note> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:PutVectors</code> permission to use this operation. </p> </dd> </dl></p>",
+      "idempotent":true
+    },
+    "QueryVectors":{
+      "name":"QueryVectors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/QueryVectors",
+        "responseCode":200
+      },
+      "input":{"shape":"QueryVectorsInput"},
+      "output":{"shape":"QueryVectorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"KmsInvalidKeyUsageException"},
+        {"shape":"InternalServerException"},
+        {"shape":"KmsInvalidStateException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"KmsNotFoundException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"KmsDisabledException"}
+      ],
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Performs an approximate nearest neighbor search query in a vector index using a query vector. By default, it returns the keys of approximate nearest neighbors. You can optionally include the computed distance (between the query vector and each vector in the response), the vector data, and metadata of each vector in the response. </p> <p>To specify the vector index, you can either use both the vector bucket name and the vector index name, or use the vector index Amazon Resource Name (ARN). </p> <dl> <dt>Permissions</dt> <dd> <p>You must have the <code>s3vectors:QueryVectors</code> permission to use this operation. Additional permissions are required based on the request parameters you specify:</p> <ul> <li> <p>With only <code>s3vectors:QueryVectors</code> permission, you can retrieve vector keys of approximate nearest neighbors and computed distances between these vectors. This permission is sufficient only when you don't set any metadata filters and don't request vector data or metadata (by keeping the <code>returnMetadata</code> parameter set to <code>false</code> or not specified).</p> </li> <li> <p>If you specify a metadata filter or set <code>returnMetadata</code> to true, you must have both <code>s3vectors:QueryVectors</code> and <code>s3vectors:GetVectors</code> permissions. The request fails with a <code>403 Forbidden error</code> if you request metadata filtering, vector data, or metadata without the <code>s3vectors:GetVectors</code> permission.</p> </li> </ul> </dd> </dl></p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>Access denied.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request failed because a vector bucket name or a vector index name already exists. Vector bucket names must be unique within your Amazon Web Services account for each Amazon Web Services Region. Vector index names must be unique within your vector bucket. Choose a different vector bucket name or vector index name, and try again.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateIndexInput":{
+      "type":"structure",
+      "required":[
+        "indexName",
+        "dataType",
+        "dimension",
+        "distanceMetric"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket to create the vector index in. </p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector bucket to create the vector index in.</p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index to create. </p>"
+        },
+        "dataType":{
+          "shape":"DataType",
+          "documentation":"<p>The data type of the vectors to be inserted into the vector index. </p>"
+        },
+        "dimension":{
+          "shape":"Dimension",
+          "documentation":"<p>The dimensions of the vectors to be inserted into the vector index. </p>"
+        },
+        "distanceMetric":{
+          "shape":"DistanceMetric",
+          "documentation":"<p>The distance metric to be used for similarity search. </p>"
+        },
+        "metadataConfiguration":{
+          "shape":"MetadataConfiguration",
+          "documentation":"<p>The metadata configuration for the vector index. </p>"
+        }
+      }
+    },
+    "CreateIndexOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreateVectorBucketInput":{
+      "type":"structure",
+      "required":["vectorBucketName"],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket to create. </p>"
+        },
+        "encryptionConfiguration":{
+          "shape":"EncryptionConfiguration",
+          "documentation":"<p>The encryption configuration for the vector bucket. By default, if you don't specify, all new vectors in Amazon S3 vector buckets use server-side encryption with Amazon S3 managed keys (SSE-S3), specifically <code>AES256</code>. </p>"
+        }
+      }
+    },
+    "CreateVectorBucketOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DataType":{
+      "type":"string",
+      "enum":["float32"]
+    },
+    "DeleteIndexInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index to delete. </p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index to delete.</p>"
+        }
+      }
+    },
+    "DeleteIndexOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteVectorBucketInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket to delete.</p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The ARN of the vector bucket to delete.</p>"
+        }
+      }
+    },
+    "DeleteVectorBucketOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteVectorBucketPolicyInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket to delete the policy from.</p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The ARN of the vector bucket to delete the policy from.</p>"
+        }
+      }
+    },
+    "DeleteVectorBucketPolicyOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteVectorsInput":{
+      "type":"structure",
+      "required":["keys"],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index that contains a vector you want to delete.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index that contains a vector you want to delete.</p>"
+        },
+        "keys":{
+          "shape":"DeleteVectorsInputList",
+          "documentation":"<p>The keys of the vectors to delete. </p>"
+        }
+      }
+    },
+    "DeleteVectorsInputList":{
+      "type":"list",
+      "member":{"shape":"VectorKey"},
+      "max":500,
+      "min":1
+    },
+    "DeleteVectorsOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "Dimension":{
+      "type":"integer",
+      "box":true,
+      "max":4096,
+      "min":1
+    },
+    "DistanceMetric":{
+      "type":"string",
+      "enum":[
+        "euclidean",
+        "cosine"
+      ]
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "EncryptionConfiguration":{
+      "type":"structure",
+      "members":{
+        "sseType":{
+          "shape":"SseType",
+          "documentation":"<p>The server-side encryption type to use for the encryption configuration of the vector bucket. By default, if you don't specify, all new vectors in Amazon S3 vector buckets use server-side encryption with Amazon S3 managed keys (SSE-S3), specifically <code>AES256</code>.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Amazon Web Services Key Management Service (KMS) customer managed key ID to use for the encryption configuration. This parameter is allowed if and only if <code>sseType</code> is set to <code>aws:kms</code>.</p> <p>To specify the KMS key, you must use the format of the KMS key Amazon Resource Name (ARN).</p> <p>For example, specify Key ARN in the following format: <code>arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab</code> </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The encryption configuration for a vector bucket. By default, if you don't specify, all new vectors in Amazon S3 vector buckets use server-side encryption with Amazon S3 managed keys (SSE-S3), specifically <code>AES256</code>.</p></p>"
+    },
+    "ExceptionMessage":{"type":"string"},
+    "Float":{
+      "type":"float",
+      "box":true
+    },
+    "Float32VectorData":{
+      "type":"list",
+      "member":{"shape":"Float"}
+    },
+    "GetIndexInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index.</p>"
+        }
+      }
+    },
+    "GetIndexOutput":{
+      "type":"structure",
+      "required":["index"],
+      "members":{
+        "index":{
+          "shape":"Index",
+          "documentation":"<p>The attributes of the vector index.</p>"
+        }
+      }
+    },
+    "GetOutputVector":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"VectorKey",
+          "documentation":"<p>The name of the vector. </p>"
+        },
+        "data":{
+          "shape":"VectorData",
+          "documentation":"<p>The vector data of the vector. </p>"
+        },
+        "metadata":{
+          "shape":"VectorMetadata",
+          "documentation":"<p>Metadata about the vector. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector returned by the <code>GetVectors</code> operation.</p></p>"
+    },
+    "GetVectorBucketInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket to retrieve information about.</p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The ARN of the vector bucket to retrieve information about.</p>"
+        }
+      }
+    },
+    "GetVectorBucketOutput":{
+      "type":"structure",
+      "required":["vectorBucket"],
+      "members":{
+        "vectorBucket":{
+          "shape":"VectorBucket",
+          "documentation":"<p>The attributes of the vector bucket.</p>"
+        }
+      }
+    },
+    "GetVectorBucketPolicyInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket.</p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The ARN of the vector bucket.</p>"
+        }
+      }
+    },
+    "GetVectorBucketPolicyOutput":{
+      "type":"structure",
+      "members":{
+        "policy":{
+          "shape":"VectorBucketPolicy",
+          "documentation":"<p>The <code>JSON</code> that defines the policy.</p>"
+        }
+      }
+    },
+    "GetVectorsInput":{
+      "type":"structure",
+      "required":["keys"],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index.</p>"
+        },
+        "keys":{
+          "shape":"GetVectorsInputList",
+          "documentation":"<p>The names of the vectors you want to return attributes for. </p>"
+        },
+        "returnData":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to include the vector data in the response. The default value is <code>false</code>.</p>"
+        },
+        "returnMetadata":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to include metadata in the response. The default value is <code>false</code>.</p>"
+        }
+      }
+    },
+    "GetVectorsInputList":{
+      "type":"list",
+      "member":{"shape":"VectorKey"},
+      "max":100,
+      "min":1
+    },
+    "GetVectorsOutput":{
+      "type":"structure",
+      "required":["vectors"],
+      "members":{
+        "vectors":{
+          "shape":"GetVectorsOutputList",
+          "documentation":"<p>The attributes of the vectors.</p>"
+        }
+      }
+    },
+    "GetVectorsOutputList":{
+      "type":"list",
+      "member":{"shape":"GetOutputVector"}
+    },
+    "Index":{
+      "type":"structure",
+      "required":[
+        "vectorBucketName",
+        "indexName",
+        "indexArn",
+        "creationTime",
+        "dataType",
+        "dimension",
+        "distanceMetric"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector index.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the vector index was created. </p>"
+        },
+        "dataType":{
+          "shape":"DataType",
+          "documentation":"<p>The data type of the vectors inserted into the vector index. </p>"
+        },
+        "dimension":{
+          "shape":"Dimension",
+          "documentation":"<p>The number of values in the vectors that are inserted into the vector index. </p>"
+        },
+        "distanceMetric":{
+          "shape":"DistanceMetric",
+          "documentation":"<p>The distance metric to be used for similarity search. </p>"
+        },
+        "metadataConfiguration":{
+          "shape":"MetadataConfiguration",
+          "documentation":"<p>The metadata configuration for the vector index. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector index.</p></p>"
+    },
+    "IndexArn":{"type":"string"},
+    "IndexName":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "IndexSummary":{
+      "type":"structure",
+      "required":[
+        "vectorBucketName",
+        "indexName",
+        "indexArn",
+        "creationTime"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector index.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the vector index was created. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Summary information about a vector index.</p></p>"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request failed due to an internal server error.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "KmsDisabledException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The specified Amazon Web Services KMS key isn't enabled.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "KmsInvalidKeyUsageException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request was rejected for one of the following reasons: </p> <ul> <li> <p>The <code>KeyUsage</code> value of the KMS key is incompatible with the API operation.</p> </li> <li> <p>The encryption algorithm or signing algorithm specified for the operation is incompatible with the type of key material in the KMS key (<code>KeySpec</code>).</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html#API_Encrypt_Errors\">InvalidKeyUsageException</a> in the <i>Amazon Web Services Key Management Service API Reference</i>.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "KmsInvalidStateException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The key state of the KMS key isn't compatible with the operation.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html#API_Encrypt_Errors\">KMSInvalidStateException</a> in the <i>Amazon Web Services Key Management Service API Reference</i>.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"(arn:aws[-a-z0-9]*:kms:[-a-z0-9]*:[0-9]{12}:key/.+)"
+    },
+    "KmsNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The KMS key can't be found.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ListIndexesInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector indexes. </p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The ARN of the vector bucket that contains the vector indexes.</p>"
+        },
+        "maxResults":{
+          "shape":"ListIndexesMaxResults",
+          "documentation":"<p>The maximum number of items to be returned in the response. </p>"
+        },
+        "nextToken":{
+          "shape":"ListIndexesNextToken",
+          "documentation":"<p>The previous pagination token. </p>"
+        },
+        "prefix":{
+          "shape":"ListIndexesPrefix",
+          "documentation":"<p>Limits the response to vector indexes that begin with the specified prefix.</p>"
+        }
+      }
+    },
+    "ListIndexesMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":500,
+      "min":1
+    },
+    "ListIndexesNextToken":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "ListIndexesOutput":{
+      "type":"structure",
+      "required":["indexes"],
+      "members":{
+        "nextToken":{
+          "shape":"ListIndexesNextToken",
+          "documentation":"<p>The next pagination token.</p>"
+        },
+        "indexes":{
+          "shape":"ListIndexesOutputList",
+          "documentation":"<p>The attributes of the vector indexes</p>"
+        }
+      }
+    },
+    "ListIndexesOutputList":{
+      "type":"list",
+      "member":{"shape":"IndexSummary"}
+    },
+    "ListIndexesPrefix":{
+      "type":"string",
+      "max":63,
+      "min":1
+    },
+    "ListOutputVector":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"VectorKey",
+          "documentation":"<p>The name of the vector. </p>"
+        },
+        "data":{
+          "shape":"VectorData",
+          "documentation":"<p>The vector data of the vector. </p>"
+        },
+        "metadata":{
+          "shape":"VectorMetadata",
+          "documentation":"<p>Metadata about the vector. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector returned by the <code>ListVectors</code> operation.</p></p>"
+    },
+    "ListVectorBucketsInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListVectorBucketsMaxResults",
+          "documentation":"<p>The maximum number of vector buckets to be returned in the response. </p>"
+        },
+        "nextToken":{
+          "shape":"ListVectorBucketsNextToken",
+          "documentation":"<p>The previous pagination token. </p>"
+        },
+        "prefix":{
+          "shape":"ListVectorBucketsPrefix",
+          "documentation":"<p>Limits the response to vector buckets that begin with the specified prefix.</p>"
+        }
+      }
+    },
+    "ListVectorBucketsMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":500,
+      "min":1
+    },
+    "ListVectorBucketsNextToken":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "ListVectorBucketsOutput":{
+      "type":"structure",
+      "required":["vectorBuckets"],
+      "members":{
+        "nextToken":{
+          "shape":"ListVectorBucketsNextToken",
+          "documentation":"<p>The element is included in the response when there are more buckets to be listed with pagination. </p>"
+        },
+        "vectorBuckets":{
+          "shape":"ListVectorBucketsOutputList",
+          "documentation":"<p>The list of vector buckets owned by the requester. </p>"
+        }
+      }
+    },
+    "ListVectorBucketsOutputList":{
+      "type":"list",
+      "member":{"shape":"VectorBucketSummary"}
+    },
+    "ListVectorBucketsPrefix":{
+      "type":"string",
+      "max":63,
+      "min":1
+    },
+    "ListVectorsInput":{
+      "type":"structure",
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index.</p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The Amazon resource Name (ARN) of the vector index.</p>"
+        },
+        "maxResults":{
+          "shape":"ListVectorsMaxResults",
+          "documentation":"<p>The maximum number of vectors to return on a page.</p> <p>If you don't specify <code>maxResults</code>, the <code>ListVectors</code> operation uses a default value of 500.</p> <p>If the processed dataset size exceeds 1 MB before reaching the <code>maxResults</code> value, the operation stops and returns the vectors that are retrieved up to that point, along with a <code>nextToken</code> that you can use in a subsequent request to retrieve the next set of results.</p>"
+        },
+        "nextToken":{
+          "shape":"ListVectorsNextToken",
+          "documentation":"<p>Pagination token from a previous request. The value of this field is empty for an initial request.</p>"
+        },
+        "segmentCount":{
+          "shape":"ListVectorsSegmentCount",
+          "documentation":"<p>For a parallel <code>ListVectors</code> request, <code>segmentCount</code> represents the total number of vector segments into which the <code>ListVectors</code> operation will be divided. The value of <code>segmentCount</code> corresponds to the number of application workers that will perform the parallel <code>ListVectors</code> operation. For example, if you want to use four application threads to list vectors in a vector index, specify a <code>segmentCount</code> value of 4. </p> <p>If you specify a <code>segmentCount</code> value of 1, the <code>ListVectors</code> operation will be sequential rather than parallel.</p> <p>If you specify <code>segmentCount</code>, you must also specify <code>segmentIndex</code>.</p>"
+        },
+        "segmentIndex":{
+          "shape":"ListVectorsSegmentIndex",
+          "documentation":"<p>For a parallel <code>ListVectors</code> request, <code>segmentIndex</code> is the index of the segment from which to list vectors in the current request. It identifies an individual segment to be listed by an application worker. </p> <p>Segment IDs are zero-based, so the first segment is always 0. For example, if you want to use four application threads to list vectors in a vector index, then the first thread specifies a <code>segmentIndex</code> value of 0, the second thread specifies 1, and so on. </p> <p>The value of <code>segmentIndex</code> must be less than the value provided for <code>segmentCount</code>. </p> <p>If you provide <code>segmentIndex</code>, you must also provide <code>segmentCount</code>.</p>"
+        },
+        "returnData":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, the vector data of each vector will be included in the response. The default value is <code>false</code>.</p>"
+        },
+        "returnMetadata":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, the metadata associated with each vector will be included in the response. The default value is <code>false</code>.</p>"
+        }
+      }
+    },
+    "ListVectorsMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "ListVectorsNextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ListVectorsOutput":{
+      "type":"structure",
+      "required":["vectors"],
+      "members":{
+        "nextToken":{
+          "shape":"ListVectorsNextToken",
+          "documentation":"<p>Pagination token to be used in the subsequent request. The field is empty if no further pagination is required.</p>"
+        },
+        "vectors":{
+          "shape":"ListVectorsOutputList",
+          "documentation":"<p>Vectors in the current segment.</p>"
+        }
+      }
+    },
+    "ListVectorsOutputList":{
+      "type":"list",
+      "member":{"shape":"ListOutputVector"}
+    },
+    "ListVectorsSegmentCount":{
+      "type":"integer",
+      "box":true,
+      "max":16,
+      "min":1
+    },
+    "ListVectorsSegmentIndex":{
+      "type":"integer",
+      "box":true,
+      "max":15,
+      "min":0
+    },
+    "MetadataConfiguration":{
+      "type":"structure",
+      "required":["nonFilterableMetadataKeys"],
+      "members":{
+        "nonFilterableMetadataKeys":{
+          "shape":"NonFilterableMetadataKeys",
+          "documentation":"<p>Non-filterable metadata keys allow you to enrich vectors with additional context during storage and retrieval. Unlike default metadata keys, these keys can’t be used as query filters. Non-filterable metadata keys can be retrieved but can’t be searched, queried, or filtered. You can access non-filterable metadata keys of your vectors after finding the vectors. For more information about non-filterable metadata keys, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-vectors.html\">Vectors</a> and <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-limitations.html\">Limitations and restrictions</a> in the <i>Amazon S3 User Guide</i>. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The metadata configuration for a vector index.</p></p>"
+    },
+    "MetadataKey":{
+      "type":"string",
+      "max":63,
+      "min":1
+    },
+    "NonFilterableMetadataKeys":{
+      "type":"list",
+      "member":{"shape":"MetadataKey"},
+      "max":10,
+      "min":1
+    },
+    "NotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request was rejected because the specified resource can't be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "PutInputVector":{
+      "type":"structure",
+      "required":[
+        "key",
+        "data"
+      ],
+      "members":{
+        "key":{
+          "shape":"VectorKey",
+          "documentation":"<p>The name of the vector. The key uniquely identifies the vector in a vector index. </p>"
+        },
+        "data":{
+          "shape":"VectorData",
+          "documentation":"<p>The vector data of the vector. </p> <p>Vector dimensions must match the dimension count that's configured for the vector index.</p> <ul> <li> <p>For the <code>cosine</code> distance metric, zero vectors (vectors containing all zeros) aren't allowed.</p> </li> <li> <p>For both <code>cosine</code> and <code>euclidean</code> distance metrics, vector data must contain only valid floating-point values. Invalid values such as NaN (Not a Number) or Infinity aren't allowed.</p> </li> </ul>"
+        },
+        "metadata":{
+          "shape":"VectorMetadata",
+          "documentation":"<p>Metadata about the vector. All metadata entries undergo validation to ensure they meet the format requirements for size and data types.</p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector to add to a vector index.</p></p>"
+    },
+    "PutVectorBucketPolicyInput":{
+      "type":"structure",
+      "required":["policy"],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket.</p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector bucket.</p>"
+        },
+        "policy":{
+          "shape":"VectorBucketPolicy",
+          "documentation":"<p>The <code>JSON</code> that defines the policy. For more information about bucket policies for S3 Vectors, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-bucket-policy.html\">Managing vector bucket policies</a> in the <i>Amazon S3 User Guide</i>.</p>"
+        }
+      }
+    },
+    "PutVectorBucketPolicyOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "PutVectorsInput":{
+      "type":"structure",
+      "required":["vectors"],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index where you want to write vectors. </p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index where you want to write vectors.</p>"
+        },
+        "vectors":{
+          "shape":"PutVectorsInputList",
+          "documentation":"<p>The vectors to add to a vector index. The number of vectors in a single request must not exceed the resource capacity, otherwise the request will be rejected with the error <code>ServiceUnavailableException</code> with the error message \"Currently unable to handle the request\".</p>"
+        }
+      }
+    },
+    "PutVectorsInputList":{
+      "type":"list",
+      "member":{"shape":"PutInputVector"},
+      "max":500,
+      "min":1
+    },
+    "PutVectorsOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "QueryOutputVector":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"VectorKey",
+          "documentation":"<p>The key of the vector in the approximate nearest neighbor search.</p>"
+        },
+        "data":{
+          "shape":"VectorData",
+          "documentation":"<p>The vector data associated with the vector, if requested. </p>"
+        },
+        "metadata":{
+          "shape":"VectorMetadata",
+          "documentation":"<p>The metadata associated with the vector, if requested.</p>"
+        },
+        "distance":{
+          "shape":"Float",
+          "documentation":"<p>The measure of similarity between the vector in the response and the query vector.</p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector in the approximate nearest neighbor search.</p></p>"
+    },
+    "QueryVectorsInput":{
+      "type":"structure",
+      "required":[
+        "topK",
+        "queryVector"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket that contains the vector index. </p>"
+        },
+        "indexName":{
+          "shape":"IndexName",
+          "documentation":"<p>The name of the vector index that you want to query. </p>"
+        },
+        "indexArn":{
+          "shape":"IndexArn",
+          "documentation":"<p>The ARN of the vector index that you want to query.</p>"
+        },
+        "topK":{
+          "shape":"TopK",
+          "documentation":"<p>The number of results to return for each query.</p>"
+        },
+        "queryVector":{
+          "shape":"VectorData",
+          "documentation":"<p>The query vector. Ensure that the query vector has the same dimension as the dimension of the vector index that's being queried. For example, if your vector index contains vectors with 384 dimensions, your query vector must also have 384 dimensions. </p>"
+        },
+        "filter":{
+          "shape":"Document",
+          "documentation":"<p>Metadata filter to apply during the query. For more information about metadata keys, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-metadata-filtering.html\">Metadata filtering</a> in the <i>Amazon S3 User Guide</i>. </p>"
+        },
+        "returnMetadata":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to include metadata in the response. The default value is <code>false</code>.</p>"
+        },
+        "returnDistance":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to include the computed distance in the response. The default value is <code>false</code>.</p>"
+        }
+      }
+    },
+    "QueryVectorsOutput":{
+      "type":"structure",
+      "required":["vectors"],
+      "members":{
+        "vectors":{
+          "shape":"QueryVectorsOutputList",
+          "documentation":"<p>The vectors in the approximate nearest neighbor search.</p>"
+        }
+      }
+    },
+    "QueryVectorsOutputList":{
+      "type":"list",
+      "member":{"shape":"QueryOutputVector"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>Your request exceeds a service quota. </p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The service is unavailable. Wait briefly and retry your request. If it continues to fail, increase your waiting time between retries.</p>",
+      "error":{"httpStatusCode":503},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "SseType":{
+      "type":"string",
+      "enum":[
+        "AES256",
+        "aws:kms"
+      ]
+    },
+    "String":{"type":"string"},
+    "Timestamp":{"type":"timestamp"},
+    "TooManyRequestsException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "TopK":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>A list of specific validation failures that are encountered during input processing. Each entry in the list contains a path to the field that failed validation and a detailed message that explains why the validation failed. To satisfy multiple constraints, a field can appear multiple times in this list if it failed. You can use the information to identify and fix the specific validation issues in your request.</p>"
+        }
+      },
+      "documentation":"<p>The requested action isn't valid.</p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "path",
+        "message"
+      ],
+      "members":{
+        "path":{
+          "shape":"String",
+          "documentation":"<p>A path about the validation exception.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message about the validation exception.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a validation exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "VectorBucket":{
+      "type":"structure",
+      "required":[
+        "vectorBucketName",
+        "vectorBucketArn",
+        "creationTime"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket. </p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector bucket. </p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the vector bucket was created. </p>"
+        },
+        "encryptionConfiguration":{
+          "shape":"EncryptionConfiguration",
+          "documentation":"<p>The encryption configuration for the vector bucket.</p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The attributes of a vector bucket. </p></p>"
+    },
+    "VectorBucketArn":{"type":"string"},
+    "VectorBucketName":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "VectorBucketPolicy":{"type":"string"},
+    "VectorBucketSummary":{
+      "type":"structure",
+      "required":[
+        "vectorBucketName",
+        "vectorBucketArn",
+        "creationTime"
+      ],
+      "members":{
+        "vectorBucketName":{
+          "shape":"VectorBucketName",
+          "documentation":"<p>The name of the vector bucket. </p>"
+        },
+        "vectorBucketArn":{
+          "shape":"VectorBucketArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the vector bucket. </p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the vector bucket was created. </p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>Summary information about a vector bucket.</p></p>"
+    },
+    "VectorData":{
+      "type":"structure",
+      "members":{
+        "float32":{
+          "shape":"Float32VectorData",
+          "documentation":"<p>The vector data as 32-bit floating point numbers. The number of elements in this array must exactly match the dimension of the vector index where the operation is being performed.</p>"
+        }
+      },
+      "documentation":"<p><note> <p>Amazon S3 Vectors is in preview release for Amazon S3 and is subject to change.</p> </note> <p>The vector data in different formats.</p></p>",
+      "union":true
+    },
+    "VectorKey":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "VectorMetadata":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    }
+  },
+  "documentation":"<p>Amazon S3 vector buckets are a bucket type to store and search vectors with sub-second search times. They are designed to provide dedicated API operations for you to interact with vectors to do similarity search. Within a vector bucket, you use a vector index to organize and logically group your vector data. When you make a write or read request, you direct it to a single vector index. You store your vector data as vectors. A vector contains a key (a name that you assign), a multi-dimensional vector, and, optionally, metadata that describes a vector. The key uniquely identifies the vector in a vector index.</p>"
+}

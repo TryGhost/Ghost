@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "waiters": {
+    "EnvironmentReadyForDeployment": {
+      "operation": "GetEnvironment",
+      "delay": 30,
+      "maxAttempts": 999,
+      "acceptors": [
+        {
+          "state": "success",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "ReadyForDeployment"
+        },
+        {
+          "state": "failure",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "RolledBack"
+        },
+        {
+          "state": "failure",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "Reverted"
+        }
+      ]
+    },
+    "DeploymentComplete": {
+      "operation": "GetDeployment",
+      "delay": 30,
+      "maxAttempts": 999,
+      "acceptors": [
+        {
+          "state": "success",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "COMPLETE"
+        },
+        {
+          "state": "failure",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "ROLLED_BACK"
+        },
+        {
+          "state": "failure",
+          "matcher": "path",
+          "argument": "State",
+          "expected": "REVERTED"
+        }
+      ]
+    }
+  }
+}

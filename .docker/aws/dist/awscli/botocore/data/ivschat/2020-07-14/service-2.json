@@ -1,0 +1,1552 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-07-14",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"ivschat",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"ivschat",
+    "serviceFullName":"Amazon Interactive Video Service Chat",
+    "serviceId":"ivschat",
+    "signatureVersion":"v4",
+    "signingName":"ivschat",
+    "uid":"ivschat-2020-07-14"
+  },
+  "operations":{
+    "CreateChatToken":{
+      "name":"CreateChatToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateChatToken",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateChatTokenRequest"},
+      "output":{"shape":"CreateChatTokenResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an encrypted token that is used by a chat participant to establish an individual WebSocket chat connection to a room. When the token is used to connect to chat, the connection is valid for the session duration specified in the request. The token becomes invalid at the token-expiration timestamp included in the response.</p> <p>Use the <code>capabilities</code> field to permit an end user to send messages or moderate a room.</p> <p>The <code>attributes</code> field securely attaches structured data to the chat session; the data is included within each message sent by the end user and received by other participants in the room. Common use cases for attributes include passing end-user profile data like an icon, display name, colors, badges, and other display features.</p> <p>Encryption keys are owned by Amazon IVS Chat and never used directly by your application.</p>"
+    },
+    "CreateLoggingConfiguration":{
+      "name":"CreateLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateLoggingConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateLoggingConfigurationRequest"},
+      "output":{"shape":"CreateLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a logging configuration that allows clients to store and record sent messages.</p>"
+    },
+    "CreateRoom":{
+      "name":"CreateRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateRoom",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateRoomRequest"},
+      "output":{"shape":"CreateRoomResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a room that allows clients to connect and pass messages.</p>"
+    },
+    "DeleteLoggingConfiguration":{
+      "name":"DeleteLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteLoggingConfiguration",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteLoggingConfigurationRequest"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified logging configuration.</p>"
+    },
+    "DeleteMessage":{
+      "name":"DeleteMessage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteMessage",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteMessageRequest"},
+      "output":{"shape":"DeleteMessageResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Sends an event to a specific room which directs clients to delete a specific message; that is, unrender it from view and delete it from the client’s chat history. This event’s <code>EventName</code> is <code>aws:DELETE_MESSAGE</code>. This replicates the <a href=\"https://docs.aws.amazon.com/ivs/latest/chatmsgapireference/actions-deletemessage-publish.html\"> DeleteMessage</a> WebSocket operation in the Amazon IVS Chat Messaging API.</p>"
+    },
+    "DeleteRoom":{
+      "name":"DeleteRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteRoom",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteRoomRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified room.</p>"
+    },
+    "DisconnectUser":{
+      "name":"DisconnectUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DisconnectUser",
+        "responseCode":200
+      },
+      "input":{"shape":"DisconnectUserRequest"},
+      "output":{"shape":"DisconnectUserResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Disconnects all connections using a specified user ID from a room. This replicates the <a href=\"https://docs.aws.amazon.com/ivs/latest/chatmsgapireference/actions-disconnectuser-publish.html\"> DisconnectUser</a> WebSocket operation in the Amazon IVS Chat Messaging API.</p>"
+    },
+    "GetLoggingConfiguration":{
+      "name":"GetLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetLoggingConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLoggingConfigurationRequest"},
+      "output":{"shape":"GetLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets the specified logging configuration.</p>"
+    },
+    "GetRoom":{
+      "name":"GetRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetRoom",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRoomRequest"},
+      "output":{"shape":"GetRoomResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets the specified room.</p>"
+    },
+    "ListLoggingConfigurations":{
+      "name":"ListLoggingConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListLoggingConfigurations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLoggingConfigurationsRequest"},
+      "output":{"shape":"ListLoggingConfigurationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets summary information about all your logging configurations in the AWS region where the API request is processed.</p>"
+    },
+    "ListRooms":{
+      "name":"ListRooms",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListRooms",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRoomsRequest"},
+      "output":{"shape":"ListRoomsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets summary information about all your rooms in the AWS region where the API request is processed. Results are sorted in descending order of <code>updateTime</code>.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets information about AWS tags for the specified ARN.</p>"
+    },
+    "SendEvent":{
+      "name":"SendEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/SendEvent",
+        "responseCode":200
+      },
+      "input":{"shape":"SendEventRequest"},
+      "output":{"shape":"SendEventResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Sends an event to a room. Use this within your application’s business logic to send events to clients of a room; e.g., to notify clients to change the way the chat UI is rendered.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds or updates tags for the AWS resource with the specified ARN.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes tags from the resource with the specified ARN.</p>",
+      "idempotent":true
+    },
+    "UpdateLoggingConfiguration":{
+      "name":"UpdateLoggingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateLoggingConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLoggingConfigurationRequest"},
+      "output":{"shape":"UpdateLoggingConfigurationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a specified logging configuration.</p>"
+    },
+    "UpdateRoom":{
+      "name":"UpdateRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateRoom",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRoomRequest"},
+      "output":{"shape":"UpdateRoomResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PendingVerification"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a room’s configuration.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-z0-9-.]+"
+    },
+    "ChatToken":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ChatTokenAttributes":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"},
+      "sensitive":true
+    },
+    "ChatTokenCapabilities":{
+      "type":"list",
+      "member":{"shape":"ChatTokenCapability"}
+    },
+    "ChatTokenCapability":{
+      "type":"string",
+      "enum":[
+        "SEND_MESSAGE",
+        "DISCONNECT_USER",
+        "DELETE_MESSAGE"
+      ]
+    },
+    "CloudWatchLogsDestinationConfiguration":{
+      "type":"structure",
+      "required":["logGroupName"],
+      "members":{
+        "logGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>Name of the Amazon Cloudwatch Logs destination where chat activity will be logged.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a CloudWatch Logs location where chat logs will be stored.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p/>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateChatTokenRequest":{
+      "type":"structure",
+      "required":[
+        "roomIdentifier",
+        "userId"
+      ],
+      "members":{
+        "roomIdentifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room that the client is trying to access. Currently this must be an ARN. </p>"
+        },
+        "userId":{
+          "shape":"UserID",
+          "documentation":"<p>Application-provided ID that uniquely identifies the user associated with this token. This can be any UTF-8 encoded text.</p>"
+        },
+        "capabilities":{
+          "shape":"ChatTokenCapabilities",
+          "documentation":"<p>Set of capabilities that the user is allowed to perform in the room. Default: None (the capability to view messages is implicitly included in all requests).</p>"
+        },
+        "sessionDurationInMinutes":{
+          "shape":"SessionDurationInMinutes",
+          "documentation":"<p>Session duration (in minutes), after which the session expires. Default: 60 (1 hour).</p>"
+        },
+        "attributes":{
+          "shape":"ChatTokenAttributes",
+          "documentation":"<p>Application-provided attributes to encode into the token and attach to a chat session. Map keys and values can contain UTF-8 encoded text. The maximum length of this field is 1 KB total.</p>"
+        }
+      }
+    },
+    "CreateChatTokenResponse":{
+      "type":"structure",
+      "members":{
+        "token":{
+          "shape":"ChatToken",
+          "documentation":"<p>The issued client token, encrypted.</p>"
+        },
+        "tokenExpirationTime":{
+          "shape":"Time",
+          "documentation":"<p>Time after which the token is no longer valid and cannot be used to connect to a room. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "sessionExpirationTime":{
+          "shape":"Time",
+          "documentation":"<p>Time after which an end user's session is no longer valid. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        }
+      }
+    },
+    "CreateLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["destinationConfiguration"],
+      "members":{
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name. The value does not need to be unique.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged. There can be only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags to attach to the resource. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints on tags beyond what is documented there.</p>"
+        }
+      }
+    },
+    "CreateLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"LoggingConfigurationArn",
+          "documentation":"<p>Logging-configuration ARN, assigned by the system.</p>"
+        },
+        "id":{
+          "shape":"LoggingConfigurationID",
+          "documentation":"<p>Logging-configuration ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the logging configuration.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the logging configuration was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the logging configuration’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name, from the request (if specified).</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged, from the request. There is only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        },
+        "state":{
+          "shape":"CreateLoggingConfigurationState",
+          "documentation":"<p>The state of the logging configuration. When the state is <code>ACTIVE</code>, the configuration is ready to log chat content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource, from the request (if specified). Array of maps, each of the form <code>string:string (key:value)</code>.</p>"
+        }
+      }
+    },
+    "CreateLoggingConfigurationState":{
+      "type":"string",
+      "enum":["ACTIVE"]
+    },
+    "CreateRoomRequest":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name. The value does not need to be unique.</p>"
+        },
+        "maximumMessageRatePerSecond":{
+          "shape":"RoomMaxMessageRatePerSecond",
+          "documentation":"<p>Maximum number of messages per second that can be sent to the room (by all clients). Default: 10. </p>"
+        },
+        "maximumMessageLength":{
+          "shape":"RoomMaxMessageLength",
+          "documentation":"<p>Maximum number of characters in a single message. Messages are expected to be UTF-8 encoded and this limit applies specifically to rune/code-point count, not number of bytes. Default: 500.</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags to attach to the resource. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints beyond what is documented there.</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>Array of logging-configuration identifiers attached to the room.</p>"
+        }
+      }
+    },
+    "CreateRoomResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"RoomArn",
+          "documentation":"<p>Room ARN, assigned by the system.</p>"
+        },
+        "id":{
+          "shape":"RoomID",
+          "documentation":"<p>Room ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name, from the request (if specified).</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the room was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the room’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "maximumMessageRatePerSecond":{
+          "shape":"RoomMaxMessageRatePerSecond",
+          "documentation":"<p>Maximum number of messages per second that can be sent to the room (by all clients), from the request (if specified).</p>"
+        },
+        "maximumMessageLength":{
+          "shape":"RoomMaxMessageLength",
+          "documentation":"<p>Maximum number of characters in a single message, from the request (if specified).</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource, from the request (if specified).</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>Array of logging configurations attached to the room, from the request (if specified).</p>"
+        }
+      }
+    },
+    "DeleteLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"LoggingConfigurationIdentifier",
+          "documentation":"<p>Identifier of the logging configuration to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteMessageRequest":{
+      "type":"structure",
+      "required":[
+        "roomIdentifier",
+        "id"
+      ],
+      "members":{
+        "roomIdentifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room where the message should be deleted. Currently this must be an ARN. </p>"
+        },
+        "id":{
+          "shape":"MessageID",
+          "documentation":"<p>ID of the message to be deleted. This is the <code>Id</code> field in the received message (see <a href=\"https://docs.aws.amazon.com/ivs/latest/chatmsgapireference/actions-message-subscribe.html\"> Message (Subscribe)</a> in the Chat Messaging API).</p>"
+        },
+        "reason":{
+          "shape":"Reason",
+          "documentation":"<p>Reason for deleting the message.</p>"
+        }
+      }
+    },
+    "DeleteMessageResponse":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ID",
+          "documentation":"<p>Operation identifier, generated by Amazon IVS Chat.</p>"
+        }
+      }
+    },
+    "DeleteRoomRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room to be deleted. Currently this must be an ARN.</p>"
+        }
+      }
+    },
+    "DeliveryStreamName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "DestinationConfiguration":{
+      "type":"structure",
+      "members":{
+        "s3":{
+          "shape":"S3DestinationConfiguration",
+          "documentation":"<p>An Amazon S3 destination configuration where chat activity will be logged.</p>"
+        },
+        "cloudWatchLogs":{
+          "shape":"CloudWatchLogsDestinationConfiguration",
+          "documentation":"<p>An Amazon CloudWatch Logs destination configuration where chat activity will be logged.</p>"
+        },
+        "firehose":{
+          "shape":"FirehoseDestinationConfiguration",
+          "documentation":"<p>An Amazon Kinesis Data Firehose destination configuration where chat activity will be logged.</p>"
+        }
+      },
+      "documentation":"<p>A complex type that describes a location where chat logs will be stored. Each member represents the configuration of one log destination. For logging, you define only one type of destination (for CloudWatch Logs, Kinesis Firehose, or S3).</p>",
+      "union":true
+    },
+    "DisconnectUserRequest":{
+      "type":"structure",
+      "required":[
+        "roomIdentifier",
+        "userId"
+      ],
+      "members":{
+        "roomIdentifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room from which the user's clients should be disconnected. Currently this must be an ARN.</p>"
+        },
+        "userId":{
+          "shape":"UserID",
+          "documentation":"<p>ID of the user (connection) to disconnect from the room.</p>"
+        },
+        "reason":{
+          "shape":"Reason",
+          "documentation":"<p>Reason for disconnecting the user.</p>"
+        }
+      }
+    },
+    "DisconnectUserResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ErrorMessage":{"type":"string"},
+    "EventAttributes":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "EventName":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "FallbackResult":{
+      "type":"string",
+      "enum":[
+        "ALLOW",
+        "DENY"
+      ]
+    },
+    "FieldName":{"type":"string"},
+    "FirehoseDestinationConfiguration":{
+      "type":"structure",
+      "required":["deliveryStreamName"],
+      "members":{
+        "deliveryStreamName":{
+          "shape":"DeliveryStreamName",
+          "documentation":"<p>Name of the Amazon Kinesis Firehose delivery stream where chat activity will be logged.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a Kinesis Firehose location where chat logs will be stored.</p>"
+    },
+    "GetLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"LoggingConfigurationIdentifier",
+          "documentation":"<p>Identifier of the logging configuration to be retrieved.</p>"
+        }
+      }
+    },
+    "GetLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"LoggingConfigurationArn",
+          "documentation":"<p>Logging-configuration ARN, from the request (if <code>identifier</code> was an ARN).</p>"
+        },
+        "id":{
+          "shape":"LoggingConfigurationID",
+          "documentation":"<p>Logging-configuration ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the logging configuration.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the logging configuration was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the logging configuration’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name. This value does not need to be unique.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged. There is only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        },
+        "state":{
+          "shape":"LoggingConfigurationState",
+          "documentation":"<p>The state of the logging configuration. When the state is <code>ACTIVE</code>, the configuration is ready to log chat content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>.</p>"
+        }
+      }
+    },
+    "GetRoomRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room for which the configuration is to be retrieved. Currently this must be an ARN.</p>"
+        }
+      }
+    },
+    "GetRoomResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"RoomArn",
+          "documentation":"<p>Room ARN, from the request (if <code>identifier</code> was an ARN).</p>"
+        },
+        "id":{
+          "shape":"RoomID",
+          "documentation":"<p>Room ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name. The value does not need to be unique.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the room was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the room’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "maximumMessageRatePerSecond":{
+          "shape":"RoomMaxMessageRatePerSecond",
+          "documentation":"<p>Maximum number of messages per second that can be sent to the room (by all clients). Default: 10.</p>"
+        },
+        "maximumMessageLength":{
+          "shape":"RoomMaxMessageLength",
+          "documentation":"<p>Maximum number of characters in a single message. Messages are expected to be UTF-8 encoded and this limit applies specifically to rune/code-point count, not number of bytes. Default: 500.</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>.</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>Array of logging configurations attached to the room.</p>"
+        }
+      }
+    },
+    "ID":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p/>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "LambdaArn":{
+      "type":"string",
+      "max":170,
+      "min":0,
+      "pattern":"$|^arn:aws:lambda:[a-z0-9-]+:[0-9]{12}:function:.+.*"
+    },
+    "Limit":{"type":"integer"},
+    "ListLoggingConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The first logging configurations to retrieve. This is used for pagination; see the <code>nextToken</code> response field.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxLoggingConfigurationResults",
+          "documentation":"<p>Maximum number of logging configurations to return. Default: 50.</p>"
+        }
+      }
+    },
+    "ListLoggingConfigurationsResponse":{
+      "type":"structure",
+      "required":["loggingConfigurations"],
+      "members":{
+        "loggingConfigurations":{
+          "shape":"LoggingConfigurationList",
+          "documentation":"<p>List of the matching logging configurations (summary information only). There is only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more logging configurations than <code>maxResults</code>, use <code>nextToken</code> in the request to get the next set.</p>"
+        }
+      }
+    },
+    "ListRoomsRequest":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Filters the list to match the specified room name.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The first room to retrieve. This is used for pagination; see the <code>nextToken</code> response field.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxRoomResults",
+          "documentation":"<p>Maximum number of rooms to return. Default: 50.</p>"
+        },
+        "messageReviewHandlerUri":{
+          "shape":"LambdaArn",
+          "documentation":"<p>Filters the list to match the specified message review handler URI.</p>"
+        },
+        "loggingConfigurationIdentifier":{
+          "shape":"LoggingConfigurationIdentifier",
+          "documentation":"<p>Logging-configuration identifier.</p>"
+        }
+      }
+    },
+    "ListRoomsResponse":{
+      "type":"structure",
+      "required":["rooms"],
+      "members":{
+        "rooms":{
+          "shape":"RoomList",
+          "documentation":"<p>List of the matching rooms (summary information only).</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If there are more rooms than <code>maxResults</code>, use <code>nextToken</code> in the request to get the next set.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN of the resource to be retrieved. The ARN must be URL-encoded.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>.</p>"
+        }
+      }
+    },
+    "LogGroupName":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":"[\\.\\-_/#A-Za-z0-9]+"
+    },
+    "LoggingConfigurationArn":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws:ivschat:[a-z0-9-]+:[0-9]+:logging-configuration/[a-zA-Z0-9-]+"
+    },
+    "LoggingConfigurationID":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "LoggingConfigurationIdentifier":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws:ivschat:[a-z0-9-]+:[0-9]+:logging-configuration/[a-zA-Z0-9-]+"
+    },
+    "LoggingConfigurationIdentifierList":{
+      "type":"list",
+      "member":{"shape":"LoggingConfigurationIdentifier"},
+      "max":3,
+      "min":0
+    },
+    "LoggingConfigurationList":{
+      "type":"list",
+      "member":{"shape":"LoggingConfigurationSummary"}
+    },
+    "LoggingConfigurationName":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-_]*"
+    },
+    "LoggingConfigurationState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "CREATE_FAILED",
+        "DELETING",
+        "DELETE_FAILED",
+        "UPDATING",
+        "UPDATE_FAILED",
+        "ACTIVE"
+      ]
+    },
+    "LoggingConfigurationSummary":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"LoggingConfigurationArn",
+          "documentation":"<p>Logging-configuration ARN.</p>"
+        },
+        "id":{
+          "shape":"LoggingConfigurationID",
+          "documentation":"<p>Logging-configuration ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the logging configuration was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the logging configuration’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name. The value does not need to be unique.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged.</p>"
+        },
+        "state":{
+          "shape":"LoggingConfigurationState",
+          "documentation":"<p>The state of the logging configuration. When this is <code>ACTIVE</code>, the configuration is ready for logging chat content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags to attach to the resource. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints on tags beyond what is documented there.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about a logging configuration.</p>"
+    },
+    "MaxLoggingConfigurationResults":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "MaxRoomResults":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "MessageID":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "MessageReviewHandler":{
+      "type":"structure",
+      "members":{
+        "uri":{
+          "shape":"LambdaArn",
+          "documentation":"<p>Identifier of the message review handler. Currently this must be an ARN of a lambda function.</p>"
+        },
+        "fallbackResult":{
+          "shape":"FallbackResult",
+          "documentation":"<p>Specifies the fallback behavior (whether the message is allowed or denied) if the handler does not return a valid response, encounters an error, or times out. (For the timeout period, see <a href=\"https://docs.aws.amazon.com/ivs/latest/userguide/service-quotas.html\"> Service Quotas</a>.) If allowed, the message is delivered with returned content to all users connected to the room. If denied, the message is not delivered to any user. Default: <code>ALLOW</code>.</p>"
+        }
+      },
+      "documentation":"<p>Configuration information for optional message review.</p>"
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "PendingVerification":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Reason":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "ResourceArn":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws:ivschat:[a-z0-9-]+:[0-9]+:[a-z-]/[a-zA-Z0-9-]+"
+    },
+    "ResourceId":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p/>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":["ROOM"]
+    },
+    "RoomArn":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws:ivschat:[a-z0-9-]+:[0-9]+:room/[a-zA-Z0-9-]+"
+    },
+    "RoomID":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "RoomIdentifier":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws:ivschat:[a-z0-9-]+:[0-9]+:room/[a-zA-Z0-9-]+"
+    },
+    "RoomList":{
+      "type":"list",
+      "member":{"shape":"RoomSummary"}
+    },
+    "RoomMaxMessageLength":{
+      "type":"integer",
+      "box":true,
+      "max":500,
+      "min":1
+    },
+    "RoomMaxMessageRatePerSecond":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "RoomName":{
+      "type":"string",
+      "max":128,
+      "min":0,
+      "pattern":"[a-zA-Z0-9-_]*"
+    },
+    "RoomSummary":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"RoomArn",
+          "documentation":"<p>Room ARN.</p>"
+        },
+        "id":{
+          "shape":"RoomID",
+          "documentation":"<p>Room ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name. The value does not need to be unique.</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the room was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>. </p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the room’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>. </p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints beyond what is documented there.</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>List of logging-configuration identifiers attached to the room.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about a room.</p>"
+    },
+    "S3DestinationConfiguration":{
+      "type":"structure",
+      "required":["bucketName"],
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Name of the Amazon S3 bucket where chat activity will be logged.</p>"
+        }
+      },
+      "documentation":"<p>Specifies an S3 location where chat logs will be stored.</p>"
+    },
+    "SendEventRequest":{
+      "type":"structure",
+      "required":[
+        "roomIdentifier",
+        "eventName"
+      ],
+      "members":{
+        "roomIdentifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room to which the event will be sent. Currently this must be an ARN.</p>"
+        },
+        "eventName":{
+          "shape":"EventName",
+          "documentation":"<p>Application-defined name of the event to send to clients.</p>"
+        },
+        "attributes":{
+          "shape":"EventAttributes",
+          "documentation":"<p>Application-defined metadata to attach to the event sent to clients. The maximum length of the metadata is 1 KB total.</p>"
+        }
+      }
+    },
+    "SendEventResponse":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"ID",
+          "documentation":"<p>An identifier generated by Amazon IVS Chat. This identifier must be used in subsequent operations for this message, such as DeleteMessage.</p>"
+        }
+      }
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "limit"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p/>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p/>"
+        },
+        "limit":{
+          "shape":"Limit",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SessionDurationInMinutes":{
+      "type":"integer",
+      "box":true,
+      "max":180,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN of the resource to be tagged. The ARN must be URL-encoded.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Array of tags to be added or updated. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints beyond what is documented there.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "limit"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p/>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p/>"
+        },
+        "limit":{
+          "shape":"Limit",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The ARN of the resource to be untagged. The ARN must be URL-encoded.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Array of tags to be removed. Array of maps, each of the form <code>string:string (key:value)</code>. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no constraints beyond what is documented there.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateLoggingConfigurationRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"LoggingConfigurationIdentifier",
+          "documentation":"<p>Identifier of the logging configuration to be updated.</p>"
+        },
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name. The value does not need to be unique.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged. There can be only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        }
+      }
+    },
+    "UpdateLoggingConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"LoggingConfigurationArn",
+          "documentation":"<p>Logging-configuration ARN, from the request (if <code>identifier</code> was an ARN).</p>"
+        },
+        "id":{
+          "shape":"LoggingConfigurationID",
+          "documentation":"<p>Logging-configuration ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the logging configuration was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the logging configuration’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "name":{
+          "shape":"LoggingConfigurationName",
+          "documentation":"<p>Logging-configuration name, from the request (if specified).</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>A complex type that contains a destination configuration for where chat content will be logged, from the request. There is only one type of destination (<code>cloudWatchLogs</code>, <code>firehose</code>, or <code>s3</code>) in a <code>destinationConfiguration</code>.</p>"
+        },
+        "state":{
+          "shape":"UpdateLoggingConfigurationState",
+          "documentation":"<p>The state of the logging configuration. When the state is <code>ACTIVE</code>, the configuration is ready to log chat content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>. </p>"
+        }
+      }
+    },
+    "UpdateLoggingConfigurationState":{
+      "type":"string",
+      "enum":["ACTIVE"]
+    },
+    "UpdateRoomRequest":{
+      "type":"structure",
+      "required":["identifier"],
+      "members":{
+        "identifier":{
+          "shape":"RoomIdentifier",
+          "documentation":"<p>Identifier of the room to be updated. Currently this must be an ARN.</p>"
+        },
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name. The value does not need to be unique.</p>"
+        },
+        "maximumMessageRatePerSecond":{
+          "shape":"RoomMaxMessageRatePerSecond",
+          "documentation":"<p>Maximum number of messages per second that can be sent to the room (by all clients). Default: 10.</p>"
+        },
+        "maximumMessageLength":{
+          "shape":"RoomMaxMessageLength",
+          "documentation":"<p>The maximum number of characters in a single message. Messages are expected to be UTF-8 encoded and this limit applies specifically to rune/code-point count, not number of bytes. Default: 500.</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages. Specify an empty <code>uri</code> string to disassociate a message review handler from the specified room.</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>Array of logging-configuration identifiers attached to the room.</p>"
+        }
+      }
+    },
+    "UpdateRoomResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"RoomArn",
+          "documentation":"<p>Room ARN, from the request (if <code>identifier</code> was an ARN).</p>"
+        },
+        "id":{
+          "shape":"RoomID",
+          "documentation":"<p>Room ID, generated by the system. This is a relative identifier, the part of the ARN that uniquely identifies the room.</p>"
+        },
+        "name":{
+          "shape":"RoomName",
+          "documentation":"<p>Room name, from the request (if specified).</p>"
+        },
+        "createTime":{
+          "shape":"Time",
+          "documentation":"<p>Time when the room was created. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "updateTime":{
+          "shape":"Time",
+          "documentation":"<p>Time of the room’s last update. This is an ISO 8601 timestamp; <i>note that this is returned as a string</i>.</p>"
+        },
+        "maximumMessageRatePerSecond":{
+          "shape":"RoomMaxMessageRatePerSecond",
+          "documentation":"<p>Maximum number of messages per second that can be sent to the room (by all clients), from the request (if specified).</p>"
+        },
+        "maximumMessageLength":{
+          "shape":"RoomMaxMessageLength",
+          "documentation":"<p>Maximum number of characters in a single message, from the request (if specified).</p>"
+        },
+        "messageReviewHandler":{
+          "shape":"MessageReviewHandler",
+          "documentation":"<p>Configuration information for optional review of messages.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags attached to the resource. Array of maps, each of the form <code>string:string (key:value)</code>.</p>"
+        },
+        "loggingConfigurationIdentifiers":{
+          "shape":"LoggingConfigurationIdentifierList",
+          "documentation":"<p>Array of logging configurations attached to the room, from the request (if specified).</p>"
+        }
+      }
+    },
+    "UserID":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "sensitive":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p/>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"FieldName",
+          "documentation":"<p>Name of the field which failed validation.</p>"
+        },
+        "message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>Explanation of the reason for the validation error.</p>"
+        }
+      },
+      "documentation":"<p>This object is used in the ValidationException error.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "FIELD_VALIDATION_FAILED",
+        "OTHER"
+      ]
+    }
+  },
+  "documentation":"<p> <b>Introduction</b> </p> <p>The Amazon IVS Chat control-plane API enables you to create and manage Amazon IVS Chat resources. You also need to integrate with the <a href=\"https://docs.aws.amazon.com/ivs/latest/chatmsgapireference/chat-messaging-api.html\"> Amazon IVS Chat Messaging API</a>, to enable users to interact with chat rooms in real time.</p> <p>The API is an AWS regional service. For a list of supported regions and Amazon IVS Chat HTTPS service endpoints, see the Amazon IVS Chat information on the <a href=\"https://docs.aws.amazon.com/general/latest/gr/ivs.html\">Amazon IVS page</a> in the <i>AWS General Reference</i>. </p> <p>This document describes HTTP operations. There is a separate <i>messaging</i> API for managing Chat resources; see the <a href=\"https://docs.aws.amazon.com/ivs/latest/chatmsgapireference/chat-messaging-api.html\"> Amazon IVS Chat Messaging API Reference</a>.</p> <p> <b>Notes on terminology:</b> </p> <ul> <li> <p>You create service applications using the Amazon IVS Chat API. We refer to these as <i>applications</i>.</p> </li> <li> <p>You create front-end client applications (browser and Android/iOS apps) using the Amazon IVS Chat Messaging API. We refer to these as <i>clients</i>. </p> </li> </ul> <p> <b>Resources</b> </p> <p>The following resources are part of Amazon IVS Chat:</p> <ul> <li> <p> <b>LoggingConfiguration</b> — A configuration that allows customers to store and record sent messages in a chat room. See the Logging Configuration endpoints for more information.</p> </li> <li> <p> <b>Room</b> — The central Amazon IVS Chat resource through which clients connect to and exchange chat messages. See the Room endpoints for more information.</p> </li> </ul> <p> <b>Tagging</b> </p> <p>A <i>tag</i> is a metadata label that you assign to an AWS resource. A tag comprises a <i>key</i> and a <i>value</i>, both set by you. For example, you might set a tag as <code>topic:nature</code> to label a particular video category. See <a href=\"https://docs.aws.amazon.com/tag-editor/latest/userguide/best-practices-and-strats.html\">Best practices and strategies</a> in <i>Tagging Amazon Web Services Resources and Tag Editor</i> for details, including restrictions that apply to tags and \"Tag naming limits and requirements\"; Amazon IVS Chat has no service-specific constraints beyond what is documented there.</p> <p>Tags can help you identify and organize your AWS resources. For example, you can use the same tag for different resources to indicate that they are related. You can also use tags to manage access (see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html\">Access Tags</a>).</p> <p>The Amazon IVS Chat API has these tag-related operations: <a>TagResource</a>, <a>UntagResource</a>, and <a>ListTagsForResource</a>. The following resource supports tagging: Room.</p> <p>At most 50 tags can be applied to a resource.</p> <p> <b>API Access Security</b> </p> <p>Your Amazon IVS Chat applications (service applications and clients) must be authenticated and authorized to access Amazon IVS Chat resources. Note the differences between these concepts:</p> <ul> <li> <p> <i>Authentication</i> is about verifying identity. Requests to the Amazon IVS Chat API must be signed to verify your identity.</p> </li> <li> <p> <i>Authorization</i> is about granting permissions. Your IAM roles need to have permissions for Amazon IVS Chat API requests.</p> </li> </ul> <p>Users (viewers) connect to a room using secure access tokens that you create using the <a>CreateChatToken</a> operation through the AWS SDK. You call CreateChatToken for every user’s chat session, passing identity and authorization information about the user.</p> <p> <b>Signing API Requests</b> </p> <p>HTTP API requests must be signed with an AWS SigV4 signature using your AWS security credentials. The AWS Command Line Interface (CLI) and the AWS SDKs take care of signing the underlying API calls for you. However, if your application calls the Amazon IVS Chat HTTP API directly, it’s your responsibility to sign the requests.</p> <p>You generate a signature using valid AWS credentials for an IAM role that has permission to perform the requested action. For example, DeleteMessage requests must be made using an IAM role that has the <code>ivschat:DeleteMessage</code> permission.</p> <p>For more information:</p> <ul> <li> <p>Authentication and generating signatures — See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html\">Authenticating Requests (Amazon Web Services Signature Version 4)</a> in the <i>Amazon Web Services General Reference</i>.</p> </li> <li> <p>Managing Amazon IVS permissions — See <a href=\"https://docs.aws.amazon.com/ivs/latest/userguide/security-iam.html\">Identity and Access Management</a> on the Security page of the <i>Amazon IVS User Guide</i>.</p> </li> </ul> <p> <b>Amazon Resource Names (ARNs)</b> </p> <p>ARNs uniquely identify AWS resources. An ARN is required when you need to specify a resource unambiguously across all of AWS, such as in IAM policies and API calls. For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html\">Amazon Resource Names</a> in the <i>AWS General Reference</i>.</p>"
+}

@@ -1,0 +1,208 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Agent": {
+      "operation": "DescribeAgents",
+      "resourceIdentifier": {
+        "agentId": "agentsInfo[].agentId"
+      }
+    },
+    "ContinuousExport": {
+      "operation": "DescribeContinuousExports",
+      "resourceIdentifier": {
+        "startTime": "descriptions[].startTime"
+      }
+    },
+    "ExportTask": {
+      "operation": "DescribeExportTasks",
+      "resourceIdentifier": {
+        "exportId": "exportsInfo[].exportId"
+      }
+    },
+    "Tag": {
+      "operation": "DescribeTags",
+      "resourceIdentifier": {
+        "configurationType": "tags[].configurationType",
+        "configurationId": "tags[].configurationId"
+      }
+    }
+  },
+  "operations": {
+    "AssociateConfigurationItemsToApplication": {
+      "configurationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "DeleteApplications": {
+      "configurationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "DeleteTags": {
+      "configurationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "DescribeAgents": {
+      "agentIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Agent",
+            "resourceIdentifier": "agentId"
+          }
+        ]
+      }
+    },
+    "DescribeConfigurations": {
+      "configurationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "DescribeContinuousExports": {
+      "exportIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "exportId"
+          }
+        ]
+      }
+    },
+    "DescribeExportConfigurations": {
+      "exportIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "exportId"
+          }
+        ]
+      }
+    },
+    "DescribeExportTasks": {
+      "exportIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "exportId"
+          }
+        ]
+      }
+    },
+    "DisassociateConfigurationItemsFromApplication": {
+      "configurationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "ListConfigurations": {
+      "configurationType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationType"
+          }
+        ]
+      }
+    },
+    "ListServerNeighbors": {
+      "configurationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    },
+    "StartDataCollectionByAgentIds": {
+      "agentIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Agent",
+            "resourceIdentifier": "agentId"
+          }
+        ]
+      }
+    },
+    "StartExportTask": {
+      "startTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContinuousExport",
+            "resourceIdentifier": "startTime"
+          }
+        ]
+      }
+    },
+    "StopContinuousExport": {
+      "exportId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "exportId"
+          }
+        ]
+      }
+    },
+    "StopDataCollectionByAgentIds": {
+      "agentIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Agent",
+            "resourceIdentifier": "agentId"
+          }
+        ]
+      }
+    },
+    "UpdateApplication": {
+      "configurationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "configurationId"
+          }
+        ]
+      }
+    }
+  }
+}

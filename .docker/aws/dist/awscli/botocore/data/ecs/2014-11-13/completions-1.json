@@ -1,0 +1,155 @@
+{
+  "version": "1.0",
+  "resources": {
+    "ContainerInstance": {
+      "operation": "ListContainerInstances",
+      "resourceIdentifier": {
+        "containerInstanceArn": "containerInstanceArns[]"
+      }
+    },
+    "TaskDefinitionFamily": {
+      "operation": "ListTaskDefinitionFamilies",
+      "resourceIdentifier": {
+        "family": "families[]"
+      }
+    },
+    "TaskDefinition": {
+      "operation": "ListTaskDefinitions",
+      "resourceIdentifier": {
+        "taskDefinitionArn": "taskDefinitionArns[]"
+      }
+    }
+  },
+  "operations": {
+    "DeregisterContainerInstance": {
+      "containerInstance": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContainerInstance",
+            "resourceIdentifier": "containerInstanceArn"
+          }
+        ]
+      }
+    },
+    "DeregisterTaskDefinition": {
+      "taskDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinition",
+            "resourceIdentifier": "taskDefinitionArn"
+          }
+        ]
+      }
+    },
+    "DescribeTaskDefinition": {
+      "taskDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinition",
+            "resourceIdentifier": "taskDefinitionArn"
+          }
+        ]
+      }
+    },
+    "DiscoverPollEndpoint": {
+      "containerInstance": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContainerInstance",
+            "resourceIdentifier": "containerInstanceArn"
+          }
+        ]
+      }
+    },
+    "ListTasks": {
+      "containerInstance": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContainerInstance",
+            "resourceIdentifier": "containerInstanceArn"
+          }
+        ]
+      },
+      "family": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinitionFamily",
+            "resourceIdentifier": "family"
+          }
+        ]
+      }
+    },
+    "RegisterContainerInstance": {
+      "containerInstanceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContainerInstance",
+            "resourceIdentifier": "containerInstanceArn"
+          }
+        ]
+      }
+    },
+    "RegisterTaskDefinition": {
+      "family": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinitionFamily",
+            "resourceIdentifier": "family"
+          }
+        ]
+      }
+    },
+    "RunTask": {
+      "taskDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinition",
+            "resourceIdentifier": "taskDefinitionArn"
+          }
+        ]
+      }
+    },
+    "StartTask": {
+      "taskDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinition",
+            "resourceIdentifier": "taskDefinitionArn"
+          }
+        ]
+      }
+    },
+    "UpdateContainerAgent": {
+      "containerInstance": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ContainerInstance",
+            "resourceIdentifier": "containerInstanceArn"
+          }
+        ]
+      }
+    },
+    "UpdateService": {
+      "taskDefinition": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TaskDefinition",
+            "resourceIdentifier": "taskDefinitionArn"
+          }
+        ]
+      }
+    }
+  }
+}

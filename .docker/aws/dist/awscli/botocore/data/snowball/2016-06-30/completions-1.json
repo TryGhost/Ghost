@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Addresse": {
+      "operation": "DescribeAddresses",
+      "resourceIdentifier": {
+        "AddressId": "Addresses[].AddressId"
+      }
+    },
+    "Cluster": {
+      "operation": "ListClusters",
+      "resourceIdentifier": {
+        "ClusterId": "ClusterListEntries[].ClusterId",
+        "Description": "ClusterListEntries[].Description"
+      }
+    }
+  },
+  "operations": {
+    "CancelCluster": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "DescribeAddress": {
+      "AddressId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AddressId"
+          }
+        ]
+      }
+    },
+    "DescribeCluster": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "ListClusterJobs": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "UpdateCluster": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "AddressId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AddressId"
+          }
+        ]
+      }
+    },
+    "UpdateJob": {
+      "AddressId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AddressId"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    }
+  }
+}

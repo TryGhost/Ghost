@@ -1,0 +1,318 @@
+version: "0.2"
+title: Create An IAM Role and Policy
+description: This wizard will create a new IAM role for you
+plan:
+  ask_role_name:
+    shortname: Intro
+    description: Provide role name and description
+    values:
+      role_name:
+        type: prompt
+        description: Role name
+      role_description:
+        type: prompt
+        description: Role description
+  decide_role_type:
+    shortname: Trusted Entity
+    description: Select the trusted entity for the role
+    values:
+      # This will prompt the user using the 'description' value.
+      # The value the user enters is saved under the global variable
+      # 'name'.
+      role_type:
+        type: prompt
+        description: Select type of trusted entity
+        choices:
+          # There's also Web Identity and SAML but we're skipping that.
+          - display: AWS Service
+            actual_value: aws_service
+          - display: This AWS Account
+            actual_value: this_aws_account
+          - display: Another AWS Account
+            actual_value: aws_account
+      service_name:
+        type: prompt
+        description: Choose the service that will use this role
+        condition:
+          variable: role_type
+          equals: aws_service
+        choices:
+          - display: Amazon EC2
+            actual_value: ec2
+          - display: AWS Lambda
+            actual_value: lambda
+          - display: AWS CodeBuild
+            actual_value: codebuild
+          - display: Amazon EventBridge
+            actual_value: events
+      account_id:
+        type: prompt
+        description: Enter the Account ID that can use this role
+        condition:
+          variable: role_type
+          equals: aws_account
+      this_account_id:
+        # We need a separate condition here because
+        # the key for the value is associated with a single set of steps
+        # to populate this value.  Ideally we could have an "output_var"
+        # that lets us populate other vars so could have a single "account_id"
+        # that could be populated by any number of different values.
+        type: apicall
+        condition:
+          variable: role_type
+          equals: this_aws_account
+        operation: sts.GetCallerIdentity
+        params: {}
+        query: Account
+      trust_policy:
+        type: template
+        value: |
+          {{
+            "Version": "2008-10-17",
+            "Statement": [
+                {{
+                    "Action": "sts:AssumeRole",
+                    "Principal": {{
+                        {% if {role_type} == aws_service %}
+                        "Service": "{service_name}.amazonaws.com"
+                        {% endif %}
+                        {% if {role_type} == aws_account %}
+                        "AWS": "arn:aws:iam::{account_id}:root"
+                        {% endif %}
+                        {% if {role_type} == this_aws_account %}
+                        "AWS": "arn:aws:iam::{this_account_id}:root"
+                        {% endif %}
+                    }},
+                    "Effect": "Allow",
+                    "Sid": ""
+                }}
+            ]
+          }}
+  ask_role_permissions:
+    shortname: Permissions
+    description: Attach permissions policies
+    # The console by default asks you to pick an existing policy
+    # to attach to.  We'll just go with that behavior for now.
+    values:
+      version_id:
+        type: apicall
+        operation: iam.GetPolicy
+        params:
+          PolicyArn: "{policy_arn}"
+        query: "Policy.DefaultVersionId"
+        cache: true
+      policy_document:
+        type: apicall
+        operation: iam.GetPolicyVersion
+        params:
+          PolicyArn: "{policy_arn}"
+          VersionId: "{version_id}"
+        query: "PolicyVersion.Document"
+        cache: true
+      existing_policies:
+        type: apicall
+        operation: iam.ListPolicies
+        params:
+          Scope: All
+        query: "sort_by(Policies[?IsAttachable==`true`&&Path!=`/aws-service-role/`].{display: PolicyName, actual_value: Arn}, &display)"
+        cache: true
+        paginate: true
+      policy_arn:
+        type: prompt
+        description: Choose a policy to attach
+        choices: existing_policies
+        details:
+          value: policy_document
+          output: json
+          description: "Policy Document"
+  ask_profile_config:
+    shortname: CLI config
+    description: Determine CLI configuration
+    values:
+      wants_config_profile:
+        type: prompt
+        description: Do you want to create a new CLI profile with this role?
+        choices:
+          - display: Yes
+            actual_value: yes
+          - display: No
+            actual_value: no
+      new_profile_name:
+        type: prompt
+        description: Enter the name of the new profile
+        condition:
+          variable: wants_config_profile
+          equals: yes
+      existing_profiles:
+        type: sharedconfig
+        operation: ListProfiles
+      source_type:
+        type: prompt
+        description: Select the credential source
+        condition:
+          variable: wants_config_profile
+          equals: yes
+        choices:
+          - display: Source Profile
+            actual_value: wants_source_profile
+          - display: Environment Variables
+            actual_value: wants_env_source
+          - display: EC2 Instance Metadata
+            actual_value: wants_imds_source
+          - display: ECS Container Task Role
+            actual_value: wants_ecs_source
+      source_profile:
+        type: prompt
+        description: Name of the source profile
+        choices: existing_profiles
+        condition:
+          variable: source_type
+          equals: wants_source_profile
+  preview:
+    shortname: Preview
+    description: Preview results
+    values:
+      cli_config_cmd:
+        type: template
+        value: |
+          {% if {source_type} == wants_source_profile %}
+          aws configure set source_profile {source_profile} --profile {new_profile_name}
+          {% endif %}
+          {% if {source_type} == wants_env_source %}
+          aws configure set credential_source Environment --profile {new_profile_name}
+          {% endif %}
+          {% if {source_type} == wants_imds_source %}
+          aws configure set credential_source Ec2InstanceMetadata --profile {new_profile_name}
+          {% endif %}
+          {% if {source_type} == wants_ecs_source %}
+          aws configure set credential_source EcsContainer --profile {new_profile_name}
+          {% endif %}
+      preview_cli_command_value:
+        type: template
+        value: |
+          aws iam create-role \
+            --role-name "{role_name}" \
+            --description '{role_description}' \
+            --assume-role-policy-document \
+            '{{"Version": "2008-10-17","Statement":
+             [{{"Action": "sts:AssumeRole","Principal":
+             {% if {role_type} == aws_service %}
+             {{"Service": "{service_name}.amazonaws.com"}}{% endif %}
+             {% if {role_type} == aws_account %}
+             {{"AWS": "arn:aws:iam::{account_id}:root"}}{% endif %}
+             {% if {role_type} == this_aws_account %}
+             {{"AWS": "arn:aws:iam::{this_account_id}:root"}}{% endif %}
+          ,"Effect": "Allow","Sid": ""}}]}}'
+
+          aws iam attach-role-policy \
+            --role-name "{role_name}" \
+            --policy-arn '{policy_arn}'
+
+          {% if {wants_config_profile} == yes %}
+          {cli_config_cmd}
+
+          role_arn=$(aws iam get-role --role-name "{role_name}" \
+            --query Role.Arn --output text)
+
+          aws configure set role_arn "$role_arn" --profile {new_profile_name}
+          {% endif %}
+      preview_cfn_template_value:
+        type: template
+        value: |
+          Resources:
+            {role_name}:
+              Type: "AWS::IAM::Role"
+              Properties:
+                RoleName: {role_name}
+                {% if '{role_description}' != '' %}
+                Description: {role_description}
+                {% endif %}
+                AssumeRolePolicyDocument:
+                  Version: 2012-10-17
+                  Statement:
+                    - Effect: Allow
+                      Principal:
+                      {% if {role_type} == aws_service %}
+                        Service:
+                          - {service_name}.amazonaws.com
+                      {% endif %}
+                      {% if {role_type} == aws_account %}
+                        AWS:
+                          - arn:aws:iam::{account_id}:root
+                      {% endif %}
+                      {% if {role_type} == this_aws_account %}
+                        AWS:
+                          - arn:aws:iam::{this_account_id}:root
+                      {% endif %}
+                      Action:
+                        - 'sts:AssumeRole'
+                      Sid: ''
+                ManagedPolicyArns:
+                  - {policy_arn}
+      preview_value:
+        type: template
+        value: |
+          {%if {preview_type} == preview_cli_command %}
+          {preview_cli_command_value}
+          {% endif %}
+          {%if {preview_type} == preview_cfn_template %}
+          {preview_cfn_template_value}
+          {% endif %}
+      preview_type:
+        type: prompt
+        description: Select an preview format
+        choices:
+          - display: None
+            actual_value: preview_none
+          - display: AWS CLI command
+            actual_value: preview_cli_command
+          - display: AWS CloudFormation template
+            actual_value: preview_cfn_template
+        details:
+          value: preview_value
+          visible: True
+          description: "Preview"
+  __DONE__:
+execute:
+  default:
+    - type: apicall
+      operation: iam.CreateRole
+      params:
+        RoleName: "{role_name}"
+        AssumeRolePolicyDocument: "{trust_policy}"
+        Description: "{role_description}"
+      output_var: created_role_arn
+      query: Role.Arn
+    - type: apicall
+      operation: iam.AttachRolePolicy
+      params:
+        RoleName: "{role_name}"
+        PolicyArn: "{policy_arn}"
+  write_config_file:
+    - type: sharedconfig
+      operation: SetValues
+      condition:
+        variable: wants_config_profile
+        equals: yes
+      profile: "{new_profile_name}"
+      params:
+        source_profile: "{source_profile}"
+        # This role_arn comes from the `output_var` in the previous
+        # executor step.
+        role_arn: "{created_role_arn}"
+__OUTPUT__:
+  value: |
+    Wizard successfully created role with following properties:
+      Role name: {role_name}
+      Role ARN: {created_role_arn}
+
+    {% if {preview_type} == preview_cli_command %}
+    Steps to create role is equivalent to running the following sample AWS CLI commands:
+
+    {preview_cli_command_value}
+    {% endif %}
+    {% if {preview_type} == preview_cfn_template %}
+    Steps to create role is equivalent to deploying the following sample AWS CloudFormation template:
+
+    {preview_cfn_template_value}
+    {% endif %}

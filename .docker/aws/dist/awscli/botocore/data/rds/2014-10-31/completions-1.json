@@ -1,0 +1,2783 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Certificate": {
+      "operation": "DescribeCertificates",
+      "resourceIdentifier": {
+        "CertificateIdentifier": "Certificates[].CertificateIdentifier"
+      }
+    },
+    "DBClusterParameterGroup": {
+      "operation": "DescribeDBClusterParameterGroups",
+      "resourceIdentifier": {
+        "DBClusterParameterGroupName": "DBClusterParameterGroups[].DBClusterParameterGroupName"
+      }
+    },
+    "DBClusterSnapshot": {
+      "operation": "DescribeDBClusterSnapshots",
+      "resourceIdentifier": {
+        "DBClusterSnapshotIdentifier": "DBClusterSnapshots[].DBClusterSnapshotIdentifier"
+      }
+    },
+    "DBCluster": {
+      "operation": "DescribeDBClusters",
+      "resourceIdentifier": {
+        "AvailabilityZones": "DBClusters[].AvailabilityZones",
+        "DatabaseName": "DBClusters[].DatabaseName",
+        "BacktrackWindow": "DBClusters[].BacktrackWindow",
+        "Capacity": "DBClusters[].Capacity",
+        "EngineMode": "DBClusters[].EngineMode",
+        "ScalingConfigurationInfo": "DBClusters[].ScalingConfigurationInfo"
+      }
+    },
+    "DBEngineVersion": {
+      "operation": "DescribeDBEngineVersions",
+      "resourceIdentifier": {
+        "SupportedCharacterSets": "DBEngineVersions[].SupportedCharacterSets"
+      }
+    },
+    "DBInstance": {
+      "operation": "DescribeDBInstances",
+      "resourceIdentifier": {
+        "DBName": "DBInstances[].DBName",
+        "PreferredBackupWindow": "DBInstances[].PreferredBackupWindow",
+        "BackupRetentionPeriod": "DBInstances[].BackupRetentionPeriod",
+        "DBSecurityGroups": "DBInstances[].DBSecurityGroups",
+        "VpcSecurityGroups": "DBInstances[].VpcSecurityGroups",
+        "PreferredMaintenanceWindow": "DBInstances[].PreferredMaintenanceWindow",
+        "LatestRestorableTime": "DBInstances[].LatestRestorableTime",
+        "AutoMinorVersionUpgrade": "DBInstances[].AutoMinorVersionUpgrade",
+        "CharacterSetName": "DBInstances[].CharacterSetName",
+        "PubliclyAccessible": "DBInstances[].PubliclyAccessible",
+        "DBClusterIdentifier": "DBInstances[].DBClusterIdentifier",
+        "StorageEncrypted": "DBInstances[].StorageEncrypted",
+        "CACertificateIdentifier": "DBInstances[].CACertificateIdentifier",
+        "CopyTagsToSnapshot": "DBInstances[].CopyTagsToSnapshot",
+        "MonitoringInterval": "DBInstances[].MonitoringInterval",
+        "MonitoringRoleArn": "DBInstances[].MonitoringRoleArn",
+        "PromotionTier": "DBInstances[].PromotionTier",
+        "PerformanceInsightsKMSKeyId": "DBInstances[].PerformanceInsightsKMSKeyId",
+        "PerformanceInsightsRetentionPeriod": "DBInstances[].PerformanceInsightsRetentionPeriod",
+        "EnabledCloudwatchLogsExports": "DBInstances[].EnabledCloudwatchLogsExports",
+        "DeletionProtection": "DBInstances[].DeletionProtection"
+      }
+    },
+    "DBParameterGroup": {
+      "operation": "DescribeDBParameterGroups",
+      "resourceIdentifier": {
+        "DBParameterGroupName": "DBParameterGroups[].DBParameterGroupName",
+        "DBParameterGroupFamily": "DBParameterGroups[].DBParameterGroupFamily"
+      }
+    },
+    "DBSecurityGroup": {
+      "operation": "DescribeDBSecurityGroups",
+      "resourceIdentifier": {
+        "DBSecurityGroupName": "DBSecurityGroups[].DBSecurityGroupName",
+        "EC2SecurityGroups": "DBSecurityGroups[].EC2SecurityGroups"
+      }
+    },
+    "DBSnapshot": {
+      "operation": "DescribeDBSnapshots",
+      "resourceIdentifier": {
+        "DBSnapshotIdentifier": "DBSnapshots[].DBSnapshotIdentifier",
+        "DBInstanceIdentifier": "DBSnapshots[].DBInstanceIdentifier",
+        "Engine": "DBSnapshots[].Engine",
+        "AllocatedStorage": "DBSnapshots[].AllocatedStorage",
+        "Port": "DBSnapshots[].Port",
+        "AvailabilityZone": "DBSnapshots[].AvailabilityZone",
+        "MasterUsername": "DBSnapshots[].MasterUsername",
+        "EngineVersion": "DBSnapshots[].EngineVersion",
+        "LicenseModel": "DBSnapshots[].LicenseModel",
+        "SnapshotType": "DBSnapshots[].SnapshotType",
+        "Iops": "DBSnapshots[].Iops",
+        "SourceRegion": "DBSnapshots[].SourceRegion",
+        "SourceDBSnapshotIdentifier": "DBSnapshots[].SourceDBSnapshotIdentifier",
+        "StorageType": "DBSnapshots[].StorageType",
+        "TdeCredentialArn": "DBSnapshots[].TdeCredentialArn",
+        "KmsKeyId": "DBSnapshots[].KmsKeyId",
+        "ProcessorFeatures": "DBSnapshots[].ProcessorFeatures"
+      }
+    },
+    "DBSubnetGroup": {
+      "operation": "DescribeDBSubnetGroups",
+      "resourceIdentifier": {
+        "DBSubnetGroupName": "DBSubnetGroups[].DBSubnetGroupName",
+        "DBSubnetGroupDescription": "DBSubnetGroups[].DBSubnetGroupDescription"
+      }
+    },
+    "EventSubscription": {
+      "operation": "DescribeEventSubscriptions",
+      "resourceIdentifier": {
+        "SnsTopicArn": "EventSubscriptionsList[].SnsTopicArn",
+        "Enabled": "EventSubscriptionsList[].Enabled"
+      }
+    },
+    "Event": {
+      "operation": "DescribeEvents",
+      "resourceIdentifier": {
+        "SourceIdentifier": "Events[].SourceIdentifier",
+        "SourceType": "Events[].SourceType",
+        "EventCategories": "Events[].EventCategories"
+      }
+    },
+    "OptionGroup": {
+      "operation": "DescribeOptionGroups",
+      "resourceIdentifier": {
+        "OptionGroupName": "OptionGroupsList[].OptionGroupName",
+        "EngineName": "OptionGroupsList[].EngineName",
+        "MajorEngineVersion": "OptionGroupsList[].MajorEngineVersion"
+      }
+    },
+    "PendingMaintenanceAction": {
+      "operation": "DescribePendingMaintenanceActions",
+      "resourceIdentifier": {
+        "ResourceIdentifier": "PendingMaintenanceActions[].ResourceIdentifier"
+      }
+    },
+    "ReservedDBInstance": {
+      "operation": "DescribeReservedDBInstances",
+      "resourceIdentifier": {
+        "ReservedDBInstanceId": "ReservedDBInstances[].ReservedDBInstanceId",
+        "StartTime": "ReservedDBInstances[].StartTime",
+        "DBInstanceCount": "ReservedDBInstances[].DBInstanceCount"
+      }
+    },
+    "ReservedDBInstancesOffering": {
+      "operation": "DescribeReservedDBInstancesOfferings",
+      "resourceIdentifier": {
+        "ReservedDBInstancesOfferingId": "ReservedDBInstancesOfferings[].ReservedDBInstancesOfferingId",
+        "DBInstanceClass": "ReservedDBInstancesOfferings[].DBInstanceClass",
+        "Duration": "ReservedDBInstancesOfferings[].Duration",
+        "ProductDescription": "ReservedDBInstancesOfferings[].ProductDescription",
+        "OfferingType": "ReservedDBInstancesOfferings[].OfferingType",
+        "MultiAZ": "ReservedDBInstancesOfferings[].MultiAZ"
+      }
+    },
+    "SourceRegion": {
+      "operation": "DescribeSourceRegions",
+      "resourceIdentifier": {
+        "RegionName": "SourceRegions[].RegionName"
+      }
+    }
+  },
+  "operations": {
+    "AddRoleToDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "AddSourceIdentifierToSubscription": {
+      "SourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceIdentifier"
+          }
+        ]
+      }
+    },
+    "ApplyPendingMaintenanceAction": {
+      "ResourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PendingMaintenanceAction",
+            "resourceIdentifier": "ResourceIdentifier"
+          }
+        ]
+      }
+    },
+    "AuthorizeDBSecurityGroupIngress": {
+      "DBSecurityGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "DBSecurityGroupName"
+          }
+        ]
+      },
+      "EC2SecurityGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "EC2SecurityGroups"
+          }
+        ]
+      }
+    },
+    "BacktrackDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "CopyDBClusterSnapshot": {
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "SourceRegion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "SourceRegion"
+          }
+        ]
+      }
+    },
+    "CopyDBSnapshot": {
+      "SourceDBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "SourceDBSnapshotIdentifier"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "SourceRegion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "SourceRegion"
+          }
+        ]
+      }
+    },
+    "DeleteDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "DeleteDBClusterParameterGroup": {
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DeleteDBClusterSnapshot": {
+      "DBClusterSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterSnapshot",
+            "resourceIdentifier": "DBClusterSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "DeleteDBInstance": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "DeleteDBParameterGroup": {
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DeleteDBSecurityGroup": {
+      "DBSecurityGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "DBSecurityGroupName"
+          }
+        ]
+      }
+    },
+    "DeleteDBSnapshot": {
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "DeleteDBSubnetGroup": {
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      }
+    },
+    "DeleteOptionGroup": {
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeCertificates": {
+      "CertificateIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Certificate",
+            "resourceIdentifier": "CertificateIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusterBacktracks": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusterParameterGroups": {
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusterParameters": {
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusterSnapshotAttributes": {
+      "DBClusterSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterSnapshot",
+            "resourceIdentifier": "DBClusterSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusterSnapshots": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "DBClusterSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterSnapshot",
+            "resourceIdentifier": "DBClusterSnapshotIdentifier"
+          }
+        ]
+      },
+      "SnapshotType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "SnapshotType"
+          }
+        ]
+      }
+    },
+    "DescribeDBClusters": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBEngineVersions": {
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "DBParameterGroupFamily": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupFamily"
+          }
+        ]
+      },
+      "ListSupportedCharacterSets": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBEngineVersion",
+            "resourceIdentifier": "SupportedCharacterSets"
+          }
+        ]
+      }
+    },
+    "DescribeDBInstances": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBLogFiles": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBParameterGroups": {
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeDBParameters": {
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeDBSecurityGroups": {
+      "DBSecurityGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "DBSecurityGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeDBSnapshotAttributes": {
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeDBSnapshots": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      },
+      "SnapshotType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "SnapshotType"
+          }
+        ]
+      }
+    },
+    "DescribeDBSubnetGroups": {
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeEngineDefaultClusterParameters": {
+      "DBParameterGroupFamily": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupFamily"
+          }
+        ]
+      }
+    },
+    "DescribeEngineDefaultParameters": {
+      "DBParameterGroupFamily": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupFamily"
+          }
+        ]
+      }
+    },
+    "DescribeEventCategories": {
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      }
+    },
+    "DescribeEvents": {
+      "SourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceIdentifier"
+          }
+        ]
+      },
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstance",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      },
+      "Duration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "Duration"
+          }
+        ]
+      },
+      "EventCategories": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "EventCategories"
+          }
+        ]
+      }
+    },
+    "DescribeOptionGroupOptions": {
+      "EngineName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "EngineName"
+          }
+        ]
+      },
+      "MajorEngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "MajorEngineVersion"
+          }
+        ]
+      }
+    },
+    "DescribeOptionGroups": {
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "EngineName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "EngineName"
+          }
+        ]
+      },
+      "MajorEngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "MajorEngineVersion"
+          }
+        ]
+      }
+    },
+    "DescribeOrderableDBInstanceOptions": {
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "LicenseModel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "LicenseModel"
+          }
+        ]
+      }
+    },
+    "DescribePendingMaintenanceActions": {
+      "ResourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PendingMaintenanceAction",
+            "resourceIdentifier": "ResourceIdentifier"
+          }
+        ]
+      }
+    },
+    "DescribeReservedDBInstances": {
+      "ReservedDBInstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstance",
+            "resourceIdentifier": "ReservedDBInstanceId"
+          }
+        ]
+      },
+      "ReservedDBInstancesOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "ReservedDBInstancesOfferingId"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "Duration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "Duration"
+          }
+        ]
+      },
+      "ProductDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "ProductDescription"
+          }
+        ]
+      },
+      "OfferingType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "OfferingType"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      }
+    },
+    "DescribeReservedDBInstancesOfferings": {
+      "ReservedDBInstancesOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "ReservedDBInstancesOfferingId"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "Duration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "Duration"
+          }
+        ]
+      },
+      "ProductDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "ProductDescription"
+          }
+        ]
+      },
+      "OfferingType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "OfferingType"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      }
+    },
+    "DescribeSourceRegions": {
+      "RegionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SourceRegion",
+            "resourceIdentifier": "RegionName"
+          }
+        ]
+      }
+    },
+    "DescribeValidDBInstanceModifications": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "DownloadDBLogFilePortion": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "FailoverDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "ModifyCurrentDBClusterCapacity": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "Capacity": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "Capacity"
+          }
+        ]
+      }
+    },
+    "ModifyDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "NewDBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "BackupRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "BackupRetentionPeriod"
+          }
+        ]
+      },
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "PreferredBackupWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredBackupWindow"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "BacktrackWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "BacktrackWindow"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "ScalingConfiguration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "ScalingConfigurationInfo"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "ModifyDBClusterParameterGroup": {
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      }
+    },
+    "ModifyDBClusterSnapshotAttribute": {
+      "DBClusterSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterSnapshot",
+            "resourceIdentifier": "DBClusterSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "ModifyDBInstance": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "AllocatedStorage": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "AllocatedStorage"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "DBSecurityGroups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBSecurityGroups"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      },
+      "BackupRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "BackupRetentionPeriod"
+          }
+        ]
+      },
+      "PreferredBackupWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredBackupWindow"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "AutoMinorVersionUpgrade": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "AutoMinorVersionUpgrade"
+          }
+        ]
+      },
+      "LicenseModel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "LicenseModel"
+          }
+        ]
+      },
+      "Iops": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Iops"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "NewDBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "StorageType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "StorageType"
+          }
+        ]
+      },
+      "TdeCredentialArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "TdeCredentialArn"
+          }
+        ]
+      },
+      "CACertificateIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CACertificateIdentifier"
+          }
+        ]
+      },
+      "CopyTagsToSnapshot": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CopyTagsToSnapshot"
+          }
+        ]
+      },
+      "MonitoringInterval": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "MonitoringInterval"
+          }
+        ]
+      },
+      "PubliclyAccessible": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PubliclyAccessible"
+          }
+        ]
+      },
+      "MonitoringRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "MonitoringRoleArn"
+          }
+        ]
+      },
+      "PromotionTier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PromotionTier"
+          }
+        ]
+      },
+      "PerformanceInsightsKMSKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PerformanceInsightsKMSKeyId"
+          }
+        ]
+      },
+      "PerformanceInsightsRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PerformanceInsightsRetentionPeriod"
+          }
+        ]
+      },
+      "ProcessorFeatures": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "ProcessorFeatures"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "ModifyDBParameterGroup": {
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      }
+    },
+    "ModifyDBSnapshot": {
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      }
+    },
+    "ModifyDBSnapshotAttribute": {
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      }
+    },
+    "ModifyDBSubnetGroup": {
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "DBSubnetGroupDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupDescription"
+          }
+        ]
+      }
+    },
+    "ModifyEventSubscription": {
+      "SnsTopicArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "SnsTopicArn"
+          }
+        ]
+      },
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      },
+      "EventCategories": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "EventCategories"
+          }
+        ]
+      },
+      "Enabled": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSubscription",
+            "resourceIdentifier": "Enabled"
+          }
+        ]
+      }
+    },
+    "ModifyOptionGroup": {
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      }
+    },
+    "PromoteReadReplica": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "BackupRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "BackupRetentionPeriod"
+          }
+        ]
+      },
+      "PreferredBackupWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredBackupWindow"
+          }
+        ]
+      }
+    },
+    "PromoteReadReplicaDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "PurchaseReservedDBInstancesOffering": {
+      "ReservedDBInstancesOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "ReservedDBInstancesOfferingId"
+          }
+        ]
+      },
+      "ReservedDBInstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstance",
+            "resourceIdentifier": "ReservedDBInstanceId"
+          }
+        ]
+      },
+      "DBInstanceCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstance",
+            "resourceIdentifier": "DBInstanceCount"
+          }
+        ]
+      }
+    },
+    "RebootDBInstance": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "RemoveRoleFromDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "RemoveSourceIdentifierFromSubscription": {
+      "SourceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceIdentifier"
+          }
+        ]
+      }
+    },
+    "ResetDBClusterParameterGroup": {
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      }
+    },
+    "ResetDBParameterGroup": {
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      }
+    },
+    "RestoreDBClusterFromS3": {
+      "AvailabilityZones": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "AvailabilityZones"
+          }
+        ]
+      },
+      "BackupRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "BackupRetentionPeriod"
+          }
+        ]
+      },
+      "CharacterSetName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CharacterSetName"
+          }
+        ]
+      },
+      "DatabaseName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "DatabaseName"
+          }
+        ]
+      },
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "DBClusterParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBClusterParameterGroup",
+            "resourceIdentifier": "DBClusterParameterGroupName"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "MasterUsername": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "MasterUsername"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "PreferredBackupWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredBackupWindow"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "StorageEncrypted": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "StorageEncrypted"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "BacktrackWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "BacktrackWindow"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RestoreDBClusterFromSnapshot": {
+      "AvailabilityZones": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "AvailabilityZones"
+          }
+        ]
+      },
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "SnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      },
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "DatabaseName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "DatabaseName"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "BacktrackWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "BacktrackWindow"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "EngineMode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "EngineMode"
+          }
+        ]
+      },
+      "ScalingConfiguration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "ScalingConfigurationInfo"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RestoreDBClusterToPointInTime": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      },
+      "UseLatestRestorableTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "LatestRestorableTime"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "BacktrackWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBCluster",
+            "resourceIdentifier": "BacktrackWindow"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RestoreDBInstanceFromDBSnapshot": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      },
+      "PubliclyAccessible": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PubliclyAccessible"
+          }
+        ]
+      },
+      "AutoMinorVersionUpgrade": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "AutoMinorVersionUpgrade"
+          }
+        ]
+      },
+      "LicenseModel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "LicenseModel"
+          }
+        ]
+      },
+      "DBName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBName"
+          }
+        ]
+      },
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "Iops": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Iops"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "StorageType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "StorageType"
+          }
+        ]
+      },
+      "TdeCredentialArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "TdeCredentialArn"
+          }
+        ]
+      },
+      "CopyTagsToSnapshot": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CopyTagsToSnapshot"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "ProcessorFeatures": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "ProcessorFeatures"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RestoreDBInstanceFromS3": {
+      "DBName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBName"
+          }
+        ]
+      },
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "AllocatedStorage": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "AllocatedStorage"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "MasterUsername": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "MasterUsername"
+          }
+        ]
+      },
+      "DBSecurityGroups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBSecurityGroups"
+          }
+        ]
+      },
+      "VpcSecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "VpcSecurityGroups"
+          }
+        ]
+      },
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "DBParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBParameterGroup",
+            "resourceIdentifier": "DBParameterGroupName"
+          }
+        ]
+      },
+      "BackupRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "BackupRetentionPeriod"
+          }
+        ]
+      },
+      "PreferredBackupWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PreferredBackupWindow"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      },
+      "EngineVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "EngineVersion"
+          }
+        ]
+      },
+      "AutoMinorVersionUpgrade": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "AutoMinorVersionUpgrade"
+          }
+        ]
+      },
+      "LicenseModel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "LicenseModel"
+          }
+        ]
+      },
+      "Iops": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Iops"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "PubliclyAccessible": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PubliclyAccessible"
+          }
+        ]
+      },
+      "StorageType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "StorageType"
+          }
+        ]
+      },
+      "StorageEncrypted": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "StorageEncrypted"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "CopyTagsToSnapshot": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CopyTagsToSnapshot"
+          }
+        ]
+      },
+      "MonitoringInterval": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "MonitoringInterval"
+          }
+        ]
+      },
+      "MonitoringRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "MonitoringRoleArn"
+          }
+        ]
+      },
+      "PerformanceInsightsKMSKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PerformanceInsightsKMSKeyId"
+          }
+        ]
+      },
+      "PerformanceInsightsRetentionPeriod": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PerformanceInsightsRetentionPeriod"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "ProcessorFeatures": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "ProcessorFeatures"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RestoreDBInstanceToPointInTime": {
+      "UseLatestRestorableTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "LatestRestorableTime"
+          }
+        ]
+      },
+      "DBInstanceClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "DBInstanceClass"
+          }
+        ]
+      },
+      "Port": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Port"
+          }
+        ]
+      },
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "DBSubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSubnetGroup",
+            "resourceIdentifier": "DBSubnetGroupName"
+          }
+        ]
+      },
+      "MultiAZ": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedDBInstancesOffering",
+            "resourceIdentifier": "MultiAZ"
+          }
+        ]
+      },
+      "PubliclyAccessible": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "PubliclyAccessible"
+          }
+        ]
+      },
+      "AutoMinorVersionUpgrade": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "AutoMinorVersionUpgrade"
+          }
+        ]
+      },
+      "LicenseModel": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "LicenseModel"
+          }
+        ]
+      },
+      "DBName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBName"
+          }
+        ]
+      },
+      "Engine": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Engine"
+          }
+        ]
+      },
+      "Iops": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "Iops"
+          }
+        ]
+      },
+      "OptionGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OptionGroup",
+            "resourceIdentifier": "OptionGroupName"
+          }
+        ]
+      },
+      "CopyTagsToSnapshot": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "CopyTagsToSnapshot"
+          }
+        ]
+      },
+      "StorageType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "StorageType"
+          }
+        ]
+      },
+      "TdeCredentialArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "TdeCredentialArn"
+          }
+        ]
+      },
+      "EnableCloudwatchLogsExports": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "EnabledCloudwatchLogsExports"
+          }
+        ]
+      },
+      "ProcessorFeatures": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "ProcessorFeatures"
+          }
+        ]
+      },
+      "DeletionProtection": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DeletionProtection"
+          }
+        ]
+      }
+    },
+    "RevokeDBSecurityGroupIngress": {
+      "DBSecurityGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "DBSecurityGroupName"
+          }
+        ]
+      },
+      "EC2SecurityGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSecurityGroup",
+            "resourceIdentifier": "EC2SecurityGroups"
+          }
+        ]
+      }
+    },
+    "StartDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "StartDBInstance": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      }
+    },
+    "StopDBCluster": {
+      "DBClusterIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBInstance",
+            "resourceIdentifier": "DBClusterIdentifier"
+          }
+        ]
+      }
+    },
+    "StopDBInstance": {
+      "DBInstanceIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBInstanceIdentifier"
+          }
+        ]
+      },
+      "DBSnapshotIdentifier": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DBSnapshot",
+            "resourceIdentifier": "DBSnapshotIdentifier"
+          }
+        ]
+      }
+    }
+  }
+}

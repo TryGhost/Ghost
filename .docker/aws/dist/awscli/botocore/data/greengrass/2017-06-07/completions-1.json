@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "resources": {
+    "SubscriptionDefinition": {
+      "operation": "ListSubscriptionDefinitions",
+      "resourceIdentifier": {
+        "Name": "Definitions[].Name"
+      }
+    }
+  },
+  "operations": {
+    "UpdateCoreDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateDeviceDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateFunctionDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateGroup": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateLoggerDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateResourceDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateSubscriptionDefinition": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscriptionDefinition",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Operation": {
+      "operation": "ListOperations",
+      "resourceIdentifier": {
+        "Status": "Operations[].Status"
+      }
+    },
+    "Service": {
+      "operation": "ListServices",
+      "resourceIdentifier": {
+        "Id": "Services[].Id"
+      }
+    }
+  },
+  "operations": {
+    "DeleteNamespace": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "DeleteService": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "GetNamespace": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "GetService": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "UpdateInstanceCustomHealthStatus": {
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Operation",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "UpdateService": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    }
+  }
+}

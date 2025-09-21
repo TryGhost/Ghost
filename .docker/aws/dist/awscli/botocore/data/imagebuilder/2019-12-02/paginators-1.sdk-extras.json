@@ -1,0 +1,95 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+      "ListComponentBuildVersions": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListComponents": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListContainerRecipes": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListDistributionConfigurations": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImageBuildVersions": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImagePackages": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImagePipelineImages": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImagePipelines": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImageRecipes": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImageScanFindingAggregations": {
+        "non_aggregate_keys": [
+          "requestId",
+          "aggregationType"
+        ]
+      },
+      "ListImageScanFindings": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListImages": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListInfrastructureConfigurations": {
+        "non_aggregate_keys": [
+          "requestId"
+        ]
+      },
+      "ListLifecycleExecutionResources": {
+        "non_aggregate_keys": [
+          "lifecycleExecutionId",
+          "lifecycleExecutionState"
+        ]
+      },
+      "ListWorkflowExecutions": {
+        "non_aggregate_keys": [
+          "requestId",
+          "imageBuildVersionArn",
+          "message"
+        ]
+      },
+      "ListWorkflowStepExecutions": {
+        "non_aggregate_keys": [
+          "requestId",
+          "workflowBuildVersionArn",
+          "workflowExecutionId",
+          "imageBuildVersionArn",
+          "message"
+        ]
+      }
+    }
+  }
+}

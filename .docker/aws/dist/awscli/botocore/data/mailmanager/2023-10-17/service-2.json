@@ -1,0 +1,5285 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-10-17",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"mail-manager",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"MailManager",
+    "serviceId":"MailManager",
+    "signatureVersion":"v4",
+    "signingName":"ses",
+    "targetPrefix":"MailManagerSvc",
+    "uid":"mailmanager-2023-10-17"
+  },
+  "operations":{
+    "CreateAddonInstance":{
+      "name":"CreateAddonInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateAddonInstanceRequest"},
+      "output":{"shape":"CreateAddonInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates an Add On instance for the subscription indicated in the request. The resulting Amazon Resource Name (ARN) can be used in a conditional statement for a rule set or traffic policy. </p>",
+      "idempotent":true
+    },
+    "CreateAddonSubscription":{
+      "name":"CreateAddonSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateAddonSubscriptionRequest"},
+      "output":{"shape":"CreateAddonSubscriptionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a subscription for an Add On representing the acceptance of its terms of use and additional pricing. The subscription can then be used to create an instance for use in rule sets or traffic policies.</p>",
+      "idempotent":true
+    },
+    "CreateAddressList":{
+      "name":"CreateAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateAddressListRequest"},
+      "output":{"shape":"CreateAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new address list.</p>",
+      "idempotent":true
+    },
+    "CreateAddressListImportJob":{
+      "name":"CreateAddressListImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateAddressListImportJobRequest"},
+      "output":{"shape":"CreateAddressListImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates an import job for an address list.</p>",
+      "idempotent":true
+    },
+    "CreateArchive":{
+      "name":"CreateArchive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateArchiveRequest"},
+      "output":{"shape":"CreateArchiveResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new email archive resource for storing and retaining emails.</p>",
+      "idempotent":true
+    },
+    "CreateIngressPoint":{
+      "name":"CreateIngressPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateIngressPointRequest"},
+      "output":{"shape":"CreateIngressPointResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Provision a new ingress endpoint resource.</p>",
+      "idempotent":true
+    },
+    "CreateRelay":{
+      "name":"CreateRelay",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRelayRequest"},
+      "output":{"shape":"CreateRelayResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a relay resource which can be used in rules to relay incoming emails to defined relay destinations. </p>",
+      "idempotent":true
+    },
+    "CreateRuleSet":{
+      "name":"CreateRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRuleSetRequest"},
+      "output":{"shape":"CreateRuleSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Provision a new rule set.</p>",
+      "idempotent":true
+    },
+    "CreateTrafficPolicy":{
+      "name":"CreateTrafficPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateTrafficPolicyRequest"},
+      "output":{"shape":"CreateTrafficPolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Provision a new traffic policy resource.</p>",
+      "idempotent":true
+    },
+    "DeleteAddonInstance":{
+      "name":"DeleteAddonInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteAddonInstanceRequest"},
+      "output":{"shape":"DeleteAddonInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes an Add On instance.</p>",
+      "idempotent":true
+    },
+    "DeleteAddonSubscription":{
+      "name":"DeleteAddonSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteAddonSubscriptionRequest"},
+      "output":{"shape":"DeleteAddonSubscriptionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes an Add On subscription.</p>",
+      "idempotent":true
+    },
+    "DeleteAddressList":{
+      "name":"DeleteAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteAddressListRequest"},
+      "output":{"shape":"DeleteAddressListResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes an address list.</p>",
+      "idempotent":true
+    },
+    "DeleteArchive":{
+      "name":"DeleteArchive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteArchiveRequest"},
+      "output":{"shape":"DeleteArchiveResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Initiates deletion of an email archive. This changes the archive state to pending deletion. In this state, no new emails can be added, and existing archived emails become inaccessible (search, export, download). The archive and all of its contents will be permanently deleted 30 days after entering the pending deletion state, regardless of the configured retention period. </p>",
+      "idempotent":true
+    },
+    "DeleteIngressPoint":{
+      "name":"DeleteIngressPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteIngressPointRequest"},
+      "output":{"shape":"DeleteIngressPointResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Delete an ingress endpoint resource.</p>",
+      "idempotent":true
+    },
+    "DeleteRelay":{
+      "name":"DeleteRelay",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRelayRequest"},
+      "output":{"shape":"DeleteRelayResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes an existing relay resource.</p>",
+      "idempotent":true
+    },
+    "DeleteRuleSet":{
+      "name":"DeleteRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRuleSetRequest"},
+      "output":{"shape":"DeleteRuleSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Delete a rule set.</p>",
+      "idempotent":true
+    },
+    "DeleteTrafficPolicy":{
+      "name":"DeleteTrafficPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteTrafficPolicyRequest"},
+      "output":{"shape":"DeleteTrafficPolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Delete a traffic policy resource.</p>",
+      "idempotent":true
+    },
+    "DeregisterMemberFromAddressList":{
+      "name":"DeregisterMemberFromAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeregisterMemberFromAddressListRequest"},
+      "output":{"shape":"DeregisterMemberFromAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes a member from an address list.</p>",
+      "idempotent":true
+    },
+    "GetAddonInstance":{
+      "name":"GetAddonInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAddonInstanceRequest"},
+      "output":{"shape":"GetAddonInstanceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets detailed information about an Add On instance.</p>"
+    },
+    "GetAddonSubscription":{
+      "name":"GetAddonSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAddonSubscriptionRequest"},
+      "output":{"shape":"GetAddonSubscriptionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets detailed information about an Add On subscription.</p>"
+    },
+    "GetAddressList":{
+      "name":"GetAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAddressListRequest"},
+      "output":{"shape":"GetAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Fetch attributes of an address list.</p>"
+    },
+    "GetAddressListImportJob":{
+      "name":"GetAddressListImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetAddressListImportJobRequest"},
+      "output":{"shape":"GetAddressListImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Fetch attributes of an import job.</p>"
+    },
+    "GetArchive":{
+      "name":"GetArchive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveRequest"},
+      "output":{"shape":"GetArchiveResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the full details and current state of a specified email archive.</p>"
+    },
+    "GetArchiveExport":{
+      "name":"GetArchiveExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveExportRequest"},
+      "output":{"shape":"GetArchiveExportResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the details and current status of a specific email archive export job.</p>"
+    },
+    "GetArchiveMessage":{
+      "name":"GetArchiveMessage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveMessageRequest"},
+      "output":{"shape":"GetArchiveMessageResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a pre-signed URL that provides temporary download access to the specific email message stored in the archive. </p>"
+    },
+    "GetArchiveMessageContent":{
+      "name":"GetArchiveMessageContent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveMessageContentRequest"},
+      "output":{"shape":"GetArchiveMessageContentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the textual content of a specific email message stored in the archive. Attachments are not included. </p>"
+    },
+    "GetArchiveSearch":{
+      "name":"GetArchiveSearch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveSearchRequest"},
+      "output":{"shape":"GetArchiveSearchResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the details and current status of a specific email archive search job.</p>"
+    },
+    "GetArchiveSearchResults":{
+      "name":"GetArchiveSearchResults",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetArchiveSearchResultsRequest"},
+      "output":{"shape":"GetArchiveSearchResultsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the results of a completed email archive search job.</p>"
+    },
+    "GetIngressPoint":{
+      "name":"GetIngressPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetIngressPointRequest"},
+      "output":{"shape":"GetIngressPointResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Fetch ingress endpoint resource attributes.</p>"
+    },
+    "GetMemberOfAddressList":{
+      "name":"GetMemberOfAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetMemberOfAddressListRequest"},
+      "output":{"shape":"GetMemberOfAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Fetch attributes of a member in an address list.</p>"
+    },
+    "GetRelay":{
+      "name":"GetRelay",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRelayRequest"},
+      "output":{"shape":"GetRelayResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Fetch the relay resource and it's attributes.</p>"
+    },
+    "GetRuleSet":{
+      "name":"GetRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRuleSetRequest"},
+      "output":{"shape":"GetRuleSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Fetch attributes of a rule set.</p>"
+    },
+    "GetTrafficPolicy":{
+      "name":"GetTrafficPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTrafficPolicyRequest"},
+      "output":{"shape":"GetTrafficPolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Fetch attributes of a traffic policy resource.</p>"
+    },
+    "ListAddonInstances":{
+      "name":"ListAddonInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAddonInstancesRequest"},
+      "output":{"shape":"ListAddonInstancesResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all Add On instances in your account.</p>"
+    },
+    "ListAddonSubscriptions":{
+      "name":"ListAddonSubscriptions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAddonSubscriptionsRequest"},
+      "output":{"shape":"ListAddonSubscriptionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all Add On subscriptions in your account.</p>"
+    },
+    "ListAddressListImportJobs":{
+      "name":"ListAddressListImportJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAddressListImportJobsRequest"},
+      "output":{"shape":"ListAddressListImportJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists jobs for an address list.</p>"
+    },
+    "ListAddressLists":{
+      "name":"ListAddressLists",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAddressListsRequest"},
+      "output":{"shape":"ListAddressListsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists address lists for this account.</p>"
+    },
+    "ListArchiveExports":{
+      "name":"ListArchiveExports",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListArchiveExportsRequest"},
+      "output":{"shape":"ListArchiveExportsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of email archive export jobs.</p>"
+    },
+    "ListArchiveSearches":{
+      "name":"ListArchiveSearches",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListArchiveSearchesRequest"},
+      "output":{"shape":"ListArchiveSearchesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of email archive search jobs.</p>"
+    },
+    "ListArchives":{
+      "name":"ListArchives",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListArchivesRequest"},
+      "output":{"shape":"ListArchivesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of all email archives in your account.</p>"
+    },
+    "ListIngressPoints":{
+      "name":"ListIngressPoints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListIngressPointsRequest"},
+      "output":{"shape":"ListIngressPointsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List all ingress endpoint resources.</p>"
+    },
+    "ListMembersOfAddressList":{
+      "name":"ListMembersOfAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListMembersOfAddressListRequest"},
+      "output":{"shape":"ListMembersOfAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists members of an address list.</p>"
+    },
+    "ListRelays":{
+      "name":"ListRelays",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRelaysRequest"},
+      "output":{"shape":"ListRelaysResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all the existing relay resources.</p>"
+    },
+    "ListRuleSets":{
+      "name":"ListRuleSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRuleSetsRequest"},
+      "output":{"shape":"ListRuleSetsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List rule sets for this account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> Retrieves the list of tags (keys and values) assigned to the resource. </p>"
+    },
+    "ListTrafficPolicies":{
+      "name":"ListTrafficPolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTrafficPoliciesRequest"},
+      "output":{"shape":"ListTrafficPoliciesResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List traffic policy resources.</p>"
+    },
+    "RegisterMemberToAddressList":{
+      "name":"RegisterMemberToAddressList",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RegisterMemberToAddressListRequest"},
+      "output":{"shape":"RegisterMemberToAddressListResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Adds a member to an address list.</p>",
+      "idempotent":true
+    },
+    "StartAddressListImportJob":{
+      "name":"StartAddressListImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartAddressListImportJobRequest"},
+      "output":{"shape":"StartAddressListImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Starts an import job for an address list.</p>",
+      "idempotent":true
+    },
+    "StartArchiveExport":{
+      "name":"StartArchiveExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartArchiveExportRequest"},
+      "output":{"shape":"StartArchiveExportResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Initiates an export of emails from the specified archive.</p>"
+    },
+    "StartArchiveSearch":{
+      "name":"StartArchiveSearch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartArchiveSearchRequest"},
+      "output":{"shape":"StartArchiveSearchResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Initiates a search across emails in the specified archive.</p>"
+    },
+    "StopAddressListImportJob":{
+      "name":"StopAddressListImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopAddressListImportJobRequest"},
+      "output":{"shape":"StopAddressListImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops an ongoing import job for an address list.</p>",
+      "idempotent":true
+    },
+    "StopArchiveExport":{
+      "name":"StopArchiveExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopArchiveExportRequest"},
+      "output":{"shape":"StopArchiveExportResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops an in-progress export of emails from an archive.</p>"
+    },
+    "StopArchiveSearch":{
+      "name":"StopArchiveSearch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopArchiveSearchRequest"},
+      "output":{"shape":"StopArchiveSearchResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops an in-progress archive search job.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> Adds one or more tags (keys and values) to a specified resource. </p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> Remove one or more tags (keys and values) from a specified resource. </p>",
+      "idempotent":true
+    },
+    "UpdateArchive":{
+      "name":"UpdateArchive",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateArchiveRequest"},
+      "output":{"shape":"UpdateArchiveResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the attributes of an existing email archive.</p>",
+      "idempotent":true
+    },
+    "UpdateIngressPoint":{
+      "name":"UpdateIngressPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateIngressPointRequest"},
+      "output":{"shape":"UpdateIngressPointResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Update attributes of a provisioned ingress endpoint resource.</p>",
+      "idempotent":true
+    },
+    "UpdateRelay":{
+      "name":"UpdateRelay",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRelayRequest"},
+      "output":{"shape":"UpdateRelayResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates the attributes of an existing relay resource.</p>",
+      "idempotent":true
+    },
+    "UpdateRuleSet":{
+      "name":"UpdateRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRuleSetRequest"},
+      "output":{"shape":"UpdateRuleSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Update attributes of an already provisioned rule set.</p>",
+      "idempotent":true
+    },
+    "UpdateTrafficPolicy":{
+      "name":"UpdateTrafficPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTrafficPolicyRequest"},
+      "output":{"shape":"UpdateTrafficPolicyResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Update attributes of an already provisioned traffic policy resource.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AcceptAction":{
+      "type":"string",
+      "enum":[
+        "ALLOW",
+        "DENY"
+      ]
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when a user is denied access to a specific resource or action.</p>",
+      "exception":true
+    },
+    "ActionFailurePolicy":{
+      "type":"string",
+      "enum":[
+        "CONTINUE",
+        "DROP"
+      ]
+    },
+    "AddHeaderAction":{
+      "type":"structure",
+      "required":[
+        "HeaderName",
+        "HeaderValue"
+      ],
+      "members":{
+        "HeaderName":{
+          "shape":"HeaderName",
+          "documentation":"<p>The name of the header to add to an email. The header must be prefixed with \"X-\". Headers are added regardless of whether the header name pre-existed in the email.</p>"
+        },
+        "HeaderValue":{
+          "shape":"HeaderValue",
+          "documentation":"<p>The value of the header to add to the email.</p>"
+        }
+      },
+      "documentation":"<p>The action to add a header to a message. When executed, this action will add the given header to the message.</p>"
+    },
+    "AddonInstance":{
+      "type":"structure",
+      "members":{
+        "AddonInstanceId":{
+          "shape":"AddonInstanceId",
+          "documentation":"<p>The unique ID of the Add On instance.</p>"
+        },
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The subscription ID for the instance.</p>"
+        },
+        "AddonName":{
+          "shape":"AddonName",
+          "documentation":"<p>The name of the Add On for the instance.</p>"
+        },
+        "AddonInstanceArn":{
+          "shape":"AddonInstanceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Add On instance.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the Add On instance was created.</p>"
+        }
+      },
+      "documentation":"<p>An Add On instance represents a specific configuration of an Add On.</p>"
+    },
+    "AddonInstanceArn":{"type":"string"},
+    "AddonInstanceId":{
+      "type":"string",
+      "max":67,
+      "min":4,
+      "pattern":"ai-[a-zA-Z0-9]{1,64}"
+    },
+    "AddonInstances":{
+      "type":"list",
+      "member":{"shape":"AddonInstance"}
+    },
+    "AddonName":{"type":"string"},
+    "AddonSubscription":{
+      "type":"structure",
+      "members":{
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The unique ID of the Add On subscription.</p>"
+        },
+        "AddonName":{
+          "shape":"AddonName",
+          "documentation":"<p>The name of the Add On.</p>"
+        },
+        "AddonSubscriptionArn":{
+          "shape":"AddonSubscriptionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Add On subscription.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the Add On subscription was created.</p>"
+        }
+      },
+      "documentation":"<p>A subscription for an Add On representing the acceptance of its terms of use and additional pricing.</p>"
+    },
+    "AddonSubscriptionArn":{"type":"string"},
+    "AddonSubscriptionId":{
+      "type":"string",
+      "max":67,
+      "min":4,
+      "pattern":"as-[a-zA-Z0-9]{1,64}"
+    },
+    "AddonSubscriptions":{
+      "type":"list",
+      "member":{"shape":"AddonSubscription"}
+    },
+    "Address":{
+      "type":"string",
+      "max":320,
+      "min":3,
+      "sensitive":true
+    },
+    "AddressFilter":{
+      "type":"structure",
+      "members":{
+        "AddressPrefix":{
+          "shape":"AddressPrefix",
+          "documentation":"<p>Filter to limit the results to addresses having the provided prefix.</p>"
+        }
+      },
+      "documentation":"<p>Filtering options for ListMembersOfAddressList operation.</p>"
+    },
+    "AddressList":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "AddressListArn",
+        "AddressListName",
+        "CreatedTimestamp",
+        "LastUpdatedTimestamp"
+      ],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The identifier of the address list.</p>"
+        },
+        "AddressListArn":{
+          "shape":"AddressListArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the address list.</p>"
+        },
+        "AddressListName":{
+          "shape":"AddressListName",
+          "documentation":"<p>The user-friendly name of the address list.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the address list was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the address list was last updated.</p>"
+        }
+      },
+      "documentation":"<p>An address list contains a list of emails and domains that are used in MailManager Ingress endpoints and Rules for email management.</p>"
+    },
+    "AddressListArn":{"type":"string"},
+    "AddressListId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "AddressListName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "AddressLists":{
+      "type":"list",
+      "member":{"shape":"AddressList"}
+    },
+    "AddressPageSize":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "AddressPrefix":{
+      "type":"string",
+      "max":320,
+      "min":1,
+      "sensitive":true
+    },
+    "Analysis":{
+      "type":"structure",
+      "required":[
+        "Analyzer",
+        "ResultField"
+      ],
+      "members":{
+        "Analyzer":{
+          "shape":"AnalyzerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Add On.</p>"
+        },
+        "ResultField":{
+          "shape":"ResultField",
+          "documentation":"<p>The returned value from an Add On.</p>"
+        }
+      },
+      "documentation":"<p>The result of an analysis can be used in conditions to trigger actions. Analyses can inspect the email content and report a certain aspect of the email.</p>"
+    },
+    "AnalyzerArn":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9:_/+=,@.#-]+"
+    },
+    "Archive":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The unique identifier of the archive.</p>"
+        },
+        "ArchiveName":{
+          "shape":"ArchiveNameString",
+          "documentation":"<p>The unique name assigned to the archive.</p>"
+        },
+        "ArchiveState":{
+          "shape":"ArchiveState",
+          "documentation":"<p>The current state of the archive:</p> <ul> <li> <p> <code>ACTIVE</code> – The archive is ready and available for use. </p> </li> <li> <p> <code>PENDING_DELETION</code> – The archive has been marked for deletion and will be permanently deleted in 30 days. No further modifications can be made in this state. </p> </li> </ul>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the archive was last updated.</p>"
+        }
+      },
+      "documentation":"<p>An archive resource for storing and retaining emails.</p>"
+    },
+    "ArchiveAction":{
+      "type":"structure",
+      "required":["TargetArchive"],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the specified archive has been deleted.</p>"
+        },
+        "TargetArchive":{
+          "shape":"NameOrArn",
+          "documentation":"<p>The identifier of the archive to send the email to.</p>"
+        }
+      },
+      "documentation":"<p>The action to archive the email by delivering the email to an Amazon SES archive.</p>"
+    },
+    "ArchiveArn":{"type":"string"},
+    "ArchiveBooleanEmailAttribute":{
+      "type":"string",
+      "enum":["HAS_ATTACHMENTS"]
+    },
+    "ArchiveBooleanExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"ArchiveBooleanToEvaluate",
+          "documentation":"<p>The email attribute value to evaluate.</p>"
+        },
+        "Operator":{
+          "shape":"ArchiveBooleanOperator",
+          "documentation":"<p>The boolean operator to use for evaluation.</p>"
+        }
+      },
+      "documentation":"<p>A boolean expression to evaluate email attribute values.</p>"
+    },
+    "ArchiveBooleanOperator":{
+      "type":"string",
+      "enum":[
+        "IS_TRUE",
+        "IS_FALSE"
+      ]
+    },
+    "ArchiveBooleanToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"ArchiveBooleanEmailAttribute",
+          "documentation":"<p>The name of the email attribute to evaluate.</p>"
+        }
+      },
+      "documentation":"<p>The attribute to evaluate in a boolean expression.</p>",
+      "union":true
+    },
+    "ArchiveFilterCondition":{
+      "type":"structure",
+      "members":{
+        "StringExpression":{
+          "shape":"ArchiveStringExpression",
+          "documentation":"<p>A string expression to evaluate against email attributes.</p>"
+        },
+        "BooleanExpression":{
+          "shape":"ArchiveBooleanExpression",
+          "documentation":"<p>A boolean expression to evaluate against email attributes.</p>"
+        }
+      },
+      "documentation":"<p>A filter condition used to include or exclude emails when exporting from or searching an archive.</p>",
+      "union":true
+    },
+    "ArchiveFilterConditions":{
+      "type":"list",
+      "member":{"shape":"ArchiveFilterCondition"},
+      "max":10,
+      "min":0
+    },
+    "ArchiveFilters":{
+      "type":"structure",
+      "members":{
+        "Include":{
+          "shape":"ArchiveFilterConditions",
+          "documentation":"<p>The filter conditions for emails to include.</p>"
+        },
+        "Unless":{
+          "shape":"ArchiveFilterConditions",
+          "documentation":"<p>The filter conditions for emails to exclude.</p>"
+        }
+      },
+      "documentation":"<p>A set of filter conditions to include and/or exclude emails.</p>"
+    },
+    "ArchiveId":{
+      "type":"string",
+      "max":66,
+      "min":3,
+      "pattern":"a-[\\w]{1,64}"
+    },
+    "ArchiveIdString":{
+      "type":"string",
+      "max":66,
+      "min":1
+    },
+    "ArchiveNameString":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]"
+    },
+    "ArchiveRetention":{
+      "type":"structure",
+      "members":{
+        "RetentionPeriod":{
+          "shape":"RetentionPeriod",
+          "documentation":"<p>The enum value sets the period for retaining emails in an archive.</p>"
+        }
+      },
+      "documentation":"<p>The retention policy for an email archive that specifies how long emails are kept before being automatically deleted. </p>",
+      "union":true
+    },
+    "ArchiveState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "PENDING_DELETION"
+      ]
+    },
+    "ArchiveStringEmailAttribute":{
+      "type":"string",
+      "enum":[
+        "TO",
+        "FROM",
+        "CC",
+        "SUBJECT",
+        "ENVELOPE_TO",
+        "ENVELOPE_FROM"
+      ]
+    },
+    "ArchiveStringExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"ArchiveStringToEvaluate",
+          "documentation":"<p>The attribute of the email to evaluate.</p>"
+        },
+        "Operator":{
+          "shape":"ArchiveStringOperator",
+          "documentation":"<p>The operator to use when evaluating the string values.</p>"
+        },
+        "Values":{
+          "shape":"StringValueList",
+          "documentation":"<p>The list of string values to evaluate the email attribute against.</p>"
+        }
+      },
+      "documentation":"<p>A string expression to evaluate an email attribute value against one or more string values.</p>"
+    },
+    "ArchiveStringOperator":{
+      "type":"string",
+      "enum":["CONTAINS"]
+    },
+    "ArchiveStringToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"ArchiveStringEmailAttribute",
+          "documentation":"<p>The name of the email attribute to evaluate.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the email attribute to evaluate in a string expression.</p>",
+      "union":true
+    },
+    "ArchivedMessageId":{"type":"string"},
+    "ArchivesList":{
+      "type":"list",
+      "member":{"shape":"Archive"}
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request configuration has conflicts. For details, see the accompanying error message.</p>",
+      "exception":true
+    },
+    "CreateAddonInstanceRequest":{
+      "type":"structure",
+      "required":["AddonSubscriptionId"],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The unique ID of a previously created subscription that an Add On instance is created for. You can only have one instance per subscription.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateAddonInstanceResponse":{
+      "type":"structure",
+      "required":["AddonInstanceId"],
+      "members":{
+        "AddonInstanceId":{
+          "shape":"AddonInstanceId",
+          "documentation":"<p>The unique ID of the Add On instance created by this API.</p>"
+        }
+      }
+    },
+    "CreateAddonSubscriptionRequest":{
+      "type":"structure",
+      "required":["AddonName"],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "AddonName":{
+          "shape":"AddonName",
+          "documentation":"<p>The name of the Add On to subscribe to. You can only have one subscription for each Add On name.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateAddonSubscriptionResponse":{
+      "type":"structure",
+      "required":["AddonSubscriptionId"],
+      "members":{
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The unique ID of the Add On subscription created by this API.</p>"
+        }
+      }
+    },
+    "CreateAddressListImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "Name",
+        "ImportDataFormat"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list for importing addresses to.</p>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>A user-friendly name for the import job.</p>"
+        },
+        "ImportDataFormat":{
+          "shape":"ImportDataFormat",
+          "documentation":"<p>The format of the input for an import job.</p>"
+        }
+      }
+    },
+    "CreateAddressListImportJobResponse":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "PreSignedUrl"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the created import job.</p>"
+        },
+        "PreSignedUrl":{
+          "shape":"PreSignedUrl",
+          "documentation":"<p>The pre-signed URL target for uploading the input file.</p>"
+        }
+      }
+    },
+    "CreateAddressListRequest":{
+      "type":"structure",
+      "required":["AddressListName"],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "AddressListName":{
+          "shape":"AddressListName",
+          "documentation":"<p>A user-friendly name for the address list.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateAddressListResponse":{
+      "type":"structure",
+      "required":["AddressListId"],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The identifier of the created address list.</p>"
+        }
+      }
+    },
+    "CreateArchiveRequest":{
+      "type":"structure",
+      "required":["ArchiveName"],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token Amazon SES uses to recognize retries of this request.</p>",
+          "idempotencyToken":true
+        },
+        "ArchiveName":{
+          "shape":"ArchiveNameString",
+          "documentation":"<p>A unique name for the new archive.</p>"
+        },
+        "Retention":{
+          "shape":"ArchiveRetention",
+          "documentation":"<p>The period for retaining emails in the archive before automatic deletion.</p>"
+        },
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the KMS key for encrypting emails in the archive.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      },
+      "documentation":"<p>The request to create a new email archive.</p>"
+    },
+    "CreateArchiveResponse":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The unique identifier for the newly created archive.</p>"
+        }
+      },
+      "documentation":"<p>The response from creating a new email archive.</p>"
+    },
+    "CreateIngressPointRequest":{
+      "type":"structure",
+      "required":[
+        "IngressPointName",
+        "Type",
+        "RuleSetId",
+        "TrafficPolicyId"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "IngressPointName":{
+          "shape":"IngressPointName",
+          "documentation":"<p>A user friendly name for an ingress endpoint resource.</p>"
+        },
+        "Type":{
+          "shape":"IngressPointType",
+          "documentation":"<p>The type of the ingress endpoint to create.</p>"
+        },
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of an existing rule set that you attach to an ingress endpoint resource.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of an existing traffic policy that you attach to an ingress endpoint resource.</p>"
+        },
+        "IngressPointConfiguration":{
+          "shape":"IngressPointConfiguration",
+          "documentation":"<p>If you choose an Authenticated ingress endpoint, you must configure either an SMTP password or a secret ARN.</p>"
+        },
+        "NetworkConfiguration":{
+          "shape":"NetworkConfiguration",
+          "documentation":"<p>Specifies the network configuration for the ingress point. This allows you to create an IPv4-only, Dual-Stack, or PrivateLink type of ingress point. If not specified, the default network type is IPv4-only. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateIngressPointResponse":{
+      "type":"structure",
+      "required":["IngressPointId"],
+      "members":{
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The unique identifier for a previously created ingress endpoint.</p>"
+        }
+      }
+    },
+    "CreateRelayRequest":{
+      "type":"structure",
+      "required":[
+        "RelayName",
+        "ServerName",
+        "ServerPort",
+        "Authentication"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "RelayName":{
+          "shape":"RelayName",
+          "documentation":"<p>The unique name of the relay resource.</p>"
+        },
+        "ServerName":{
+          "shape":"RelayServerName",
+          "documentation":"<p>The destination relay server address.</p>"
+        },
+        "ServerPort":{
+          "shape":"RelayServerPort",
+          "documentation":"<p>The destination relay server port.</p>"
+        },
+        "Authentication":{
+          "shape":"RelayAuthentication",
+          "documentation":"<p>Authentication for the relay destination server—specify the secretARN where the SMTP credentials are stored.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateRelayResponse":{
+      "type":"structure",
+      "required":["RelayId"],
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>A unique identifier of the created relay resource.</p>"
+        }
+      }
+    },
+    "CreateRuleSetRequest":{
+      "type":"structure",
+      "required":[
+        "RuleSetName",
+        "Rules"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "RuleSetName":{
+          "shape":"RuleSetName",
+          "documentation":"<p>A user-friendly name for the rule set.</p>"
+        },
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>Conditional rules that are evaluated for determining actions on email.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateRuleSetResponse":{
+      "type":"structure",
+      "required":["RuleSetId"],
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of the created rule set.</p>"
+        }
+      }
+    },
+    "CreateTrafficPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "TrafficPolicyName",
+        "PolicyStatements",
+        "DefaultAction"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique token that Amazon SES uses to recognize subsequent retries of the same request.</p>",
+          "idempotencyToken":true
+        },
+        "TrafficPolicyName":{
+          "shape":"TrafficPolicyName",
+          "documentation":"<p>A user-friendly name for the traffic policy resource.</p>"
+        },
+        "PolicyStatements":{
+          "shape":"PolicyStatementList",
+          "documentation":"<p>Conditional statements for filtering email traffic.</p>"
+        },
+        "DefaultAction":{
+          "shape":"AcceptAction",
+          "documentation":"<p>Default action instructs the traﬃc policy to either Allow or Deny (block) messages that fall outside of (or not addressed by) the conditions of your policy statements</p>"
+        },
+        "MaxMessageSizeBytes":{
+          "shape":"MaxMessageSizeBytes",
+          "documentation":"<p>The maximum message size in bytes of email which is allowed in by this traffic policy—anything larger will be blocked.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateTrafficPolicyResponse":{
+      "type":"structure",
+      "required":["TrafficPolicyId"],
+      "members":{
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy resource.</p>"
+        }
+      }
+    },
+    "DeleteAddonInstanceRequest":{
+      "type":"structure",
+      "required":["AddonInstanceId"],
+      "members":{
+        "AddonInstanceId":{
+          "shape":"AddonInstanceId",
+          "documentation":"<p>The Add On instance ID to delete.</p>"
+        }
+      }
+    },
+    "DeleteAddonInstanceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteAddonSubscriptionRequest":{
+      "type":"structure",
+      "required":["AddonSubscriptionId"],
+      "members":{
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The Add On subscription ID to delete.</p>"
+        }
+      }
+    },
+    "DeleteAddonSubscriptionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteAddressListRequest":{
+      "type":"structure",
+      "required":["AddressListId"],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The identifier of an existing address list resource to delete.</p>"
+        }
+      }
+    },
+    "DeleteAddressListResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteArchiveRequest":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The identifier of the archive to delete.</p>"
+        }
+      },
+      "documentation":"<p>The request to initiate deletion of an email archive.</p>"
+    },
+    "DeleteArchiveResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The response indicating if the archive deletion was successfully initiated.</p> <p>On success, returns an HTTP 200 status code. On failure, returns an error message.</p>"
+    },
+    "DeleteIngressPointRequest":{
+      "type":"structure",
+      "required":["IngressPointId"],
+      "members":{
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The identifier of the ingress endpoint resource that you want to delete.</p>"
+        }
+      }
+    },
+    "DeleteIngressPointResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteRelayRequest":{
+      "type":"structure",
+      "required":["RelayId"],
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>The unique relay identifier.</p>"
+        }
+      }
+    },
+    "DeleteRelayResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteRuleSetRequest":{
+      "type":"structure",
+      "required":["RuleSetId"],
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of an existing rule set resource to delete.</p>"
+        }
+      }
+    },
+    "DeleteRuleSetResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteTrafficPolicyRequest":{
+      "type":"structure",
+      "required":["TrafficPolicyId"],
+      "members":{
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy that you want to delete.</p>"
+        }
+      }
+    },
+    "DeleteTrafficPolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeliverToMailboxAction":{
+      "type":"structure",
+      "required":[
+        "MailboxArn",
+        "RoleArn"
+      ],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the mailbox ARN is no longer valid.</p>"
+        },
+        "MailboxArn":{
+          "shape":"NameOrArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a WorkMail organization to deliver the email to.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role to use to execute this action. The role must have access to the workmail:DeliverToMailbox API.</p>"
+        }
+      },
+      "documentation":"<p>This action to delivers an email to a mailbox.</p>"
+    },
+    "DeliverToQBusinessAction":{
+      "type":"structure",
+      "required":[
+        "ApplicationId",
+        "IndexId",
+        "RoleArn"
+      ],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the specified application has been deleted or the role lacks necessary permissions to call the <code>qbusiness:BatchPutDocument</code> API.</p>"
+        },
+        "ApplicationId":{
+          "shape":"QBusinessApplicationId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application instance where the email content will be delivered.</p>"
+        },
+        "IndexId":{
+          "shape":"QBusinessIndexId",
+          "documentation":"<p>The identifier of the knowledge base index within the Amazon Q Business application where the email content will be stored and indexed.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM Role to use while delivering to Amazon Q Business. This role must have access to the <code>qbusiness:BatchPutDocument</code> API for the given application and index.</p>"
+        }
+      },
+      "documentation":"<p>The action to deliver incoming emails to an Amazon Q Business application for indexing.</p>"
+    },
+    "DeregisterMemberFromAddressListRequest":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "Address"
+      ],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list to remove the address from.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The address to be removed from the address list.</p>"
+        }
+      }
+    },
+    "DeregisterMemberFromAddressListResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "DropAction":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>This action causes processing to stop and the email to be dropped. If the action applies only to certain recipients, only those recipients are dropped, and processing continues for other recipients.</p>"
+    },
+    "EmailAddress":{
+      "type":"string",
+      "max":254,
+      "min":0,
+      "pattern":"[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+",
+      "sensitive":true
+    },
+    "EmailReceivedHeadersList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Envelope":{
+      "type":"structure",
+      "members":{
+        "Helo":{
+          "shape":"String",
+          "documentation":"<p>The HELO used by the host from which the email was received.</p>"
+        },
+        "From":{
+          "shape":"String",
+          "documentation":"<p>The RCPT FROM given by the host from which the email was received.</p>"
+        },
+        "To":{
+          "shape":"StringList",
+          "documentation":"<p>All SMTP TO entries given by the host from which the email was received.</p>"
+        }
+      },
+      "documentation":"<p>The SMTP envelope information of the email.</p>"
+    },
+    "ErrorMessage":{"type":"string"},
+    "ExportDestinationConfiguration":{
+      "type":"structure",
+      "members":{
+        "S3":{
+          "shape":"S3ExportDestinationConfiguration",
+          "documentation":"<p>Configuration for delivering to an Amazon S3 bucket.</p>"
+        }
+      },
+      "documentation":"<p>The destination configuration for delivering exported email data.</p>",
+      "union":true
+    },
+    "ExportId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ExportMaxResults":{
+      "type":"integer",
+      "box":true
+    },
+    "ExportState":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "PREPROCESSING",
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "ExportStatus":{
+      "type":"structure",
+      "members":{
+        "SubmissionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the export job was submitted.</p>"
+        },
+        "CompletionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the export job completed (if finished).</p>"
+        },
+        "State":{
+          "shape":"ExportState",
+          "documentation":"<p>The current state of the export job.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>An error message if the export job failed.</p>"
+        }
+      },
+      "documentation":"<p>The current status of an archive export job.</p>"
+    },
+    "ExportSummary":{
+      "type":"structure",
+      "members":{
+        "ExportId":{
+          "shape":"ExportId",
+          "documentation":"<p>The unique identifier of the export job.</p>"
+        },
+        "Status":{
+          "shape":"ExportStatus",
+          "documentation":"<p>The current status of the export job.</p>"
+        }
+      },
+      "documentation":"<p>Summary statuses of an archive export job.</p>"
+    },
+    "ExportSummaryList":{
+      "type":"list",
+      "member":{"shape":"ExportSummary"}
+    },
+    "GetAddonInstanceRequest":{
+      "type":"structure",
+      "required":["AddonInstanceId"],
+      "members":{
+        "AddonInstanceId":{
+          "shape":"AddonInstanceId",
+          "documentation":"<p>The Add On instance ID to retrieve information for.</p>"
+        }
+      }
+    },
+    "GetAddonInstanceResponse":{
+      "type":"structure",
+      "members":{
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The subscription ID associated to the instance.</p>"
+        },
+        "AddonName":{
+          "shape":"AddonName",
+          "documentation":"<p>The name of the Add On provider associated to the subscription of the instance.</p>"
+        },
+        "AddonInstanceArn":{
+          "shape":"AddonInstanceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Add On instance.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the Add On instance was created.</p>"
+        }
+      }
+    },
+    "GetAddonSubscriptionRequest":{
+      "type":"structure",
+      "required":["AddonSubscriptionId"],
+      "members":{
+        "AddonSubscriptionId":{
+          "shape":"AddonSubscriptionId",
+          "documentation":"<p>The Add On subscription ID to retrieve information for.</p>"
+        }
+      }
+    },
+    "GetAddonSubscriptionResponse":{
+      "type":"structure",
+      "members":{
+        "AddonName":{
+          "shape":"AddonName",
+          "documentation":"<p>The name of the Add On for the subscription.</p>"
+        },
+        "AddonSubscriptionArn":{
+          "shape":"AddonSubscriptionArn",
+          "documentation":"<p>Amazon Resource Name (ARN) for the subscription.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the Add On subscription was created.</p>"
+        }
+      }
+    },
+    "GetAddressListImportJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the import job that needs to be retrieved.</p>"
+        }
+      }
+    },
+    "GetAddressListImportJobResponse":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "Name",
+        "Status",
+        "PreSignedUrl",
+        "ImportDataFormat",
+        "AddressListId",
+        "CreatedTimestamp"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the import job.</p>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>A user-friendly name for the import job.</p>"
+        },
+        "Status":{
+          "shape":"ImportJobStatus",
+          "documentation":"<p>The status of the import job.</p>"
+        },
+        "PreSignedUrl":{
+          "shape":"PreSignedUrl",
+          "documentation":"<p>The pre-signed URL target for uploading the input file.</p>"
+        },
+        "ImportedItemsCount":{
+          "shape":"JobItemsCount",
+          "documentation":"<p>The number of input addresses successfully imported into the address list.</p>"
+        },
+        "FailedItemsCount":{
+          "shape":"JobItemsCount",
+          "documentation":"<p>The number of input addresses that failed to be imported into the address list.</p>"
+        },
+        "ImportDataFormat":{
+          "shape":"ImportDataFormat",
+          "documentation":"<p>The format of the input for an import job.</p>"
+        },
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list the import job was created for.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was created.</p>"
+        },
+        "StartTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was started.</p>"
+        },
+        "CompletedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was completed.</p>"
+        },
+        "Error":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The reason for failure of an import job.</p>"
+        }
+      }
+    },
+    "GetAddressListRequest":{
+      "type":"structure",
+      "required":["AddressListId"],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The identifier of an existing address list resource to be retrieved.</p>"
+        }
+      }
+    },
+    "GetAddressListResponse":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "AddressListArn",
+        "AddressListName",
+        "CreatedTimestamp",
+        "LastUpdatedTimestamp"
+      ],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The identifier of the address list resource.</p>"
+        },
+        "AddressListArn":{
+          "shape":"AddressListArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the address list resource.</p>"
+        },
+        "AddressListName":{
+          "shape":"AddressListName",
+          "documentation":"<p>A user-friendly name for the address list resource.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date of when then address list was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date of when the address list was last updated.</p>"
+        }
+      }
+    },
+    "GetArchiveExportRequest":{
+      "type":"structure",
+      "required":["ExportId"],
+      "members":{
+        "ExportId":{
+          "shape":"ExportId",
+          "documentation":"<p>The identifier of the export job to get details for.</p>"
+        }
+      },
+      "documentation":"<p>The request to retrieve details of a specific archive export job.</p>"
+    },
+    "GetArchiveExportResponse":{
+      "type":"structure",
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive the email export was performed from.</p>"
+        },
+        "Filters":{
+          "shape":"ArchiveFilters",
+          "documentation":"<p>The criteria used to filter emails included in the export.</p>"
+        },
+        "FromTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start of the timestamp range the exported emails cover.</p>"
+        },
+        "ToTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end of the date range the exported emails cover.</p>"
+        },
+        "MaxResults":{
+          "shape":"ExportMaxResults",
+          "documentation":"<p>The maximum number of email items included in the export.</p>"
+        },
+        "ExportDestinationConfiguration":{
+          "shape":"ExportDestinationConfiguration",
+          "documentation":"<p>Where the exported emails are being delivered.</p>"
+        },
+        "Status":{
+          "shape":"ExportStatus",
+          "documentation":"<p>The current status of the export job.</p>"
+        }
+      },
+      "documentation":"<p>The response containing details of the specified archive export job.</p>"
+    },
+    "GetArchiveMessageContentRequest":{
+      "type":"structure",
+      "required":["ArchivedMessageId"],
+      "members":{
+        "ArchivedMessageId":{
+          "shape":"ArchivedMessageId",
+          "documentation":"<p>The unique identifier of the archived email message.</p>"
+        }
+      },
+      "documentation":"<p>The request to get the textual content of a specific email message stored in an archive.</p>"
+    },
+    "GetArchiveMessageContentResponse":{
+      "type":"structure",
+      "members":{
+        "Body":{
+          "shape":"MessageBody",
+          "documentation":"<p>The textual body content of the email message.</p>"
+        }
+      },
+      "documentation":"<p>The response containing the textual content of the requested archived email message.</p>"
+    },
+    "GetArchiveMessageRequest":{
+      "type":"structure",
+      "required":["ArchivedMessageId"],
+      "members":{
+        "ArchivedMessageId":{
+          "shape":"ArchivedMessageId",
+          "documentation":"<p>The unique identifier of the archived email message.</p>"
+        }
+      },
+      "documentation":"<p>The request to get details of a specific email message stored in an archive.</p>"
+    },
+    "GetArchiveMessageResponse":{
+      "type":"structure",
+      "members":{
+        "MessageDownloadLink":{
+          "shape":"S3PresignedURL",
+          "documentation":"<p>A pre-signed URL to temporarily download the full message content.</p>"
+        },
+        "Metadata":{
+          "shape":"Metadata",
+          "documentation":"<p>The metadata about the email.</p>"
+        },
+        "Envelope":{
+          "shape":"Envelope",
+          "documentation":"<p>The SMTP envelope information of the email.</p>"
+        }
+      },
+      "documentation":"<p>The response containing details about the requested archived email message.</p>"
+    },
+    "GetArchiveRequest":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The identifier of the archive to retrieve.</p>"
+        }
+      },
+      "documentation":"<p>The request to retrieve details of an email archive.</p>"
+    },
+    "GetArchiveResponse":{
+      "type":"structure",
+      "required":[
+        "ArchiveId",
+        "ArchiveName",
+        "ArchiveArn",
+        "ArchiveState",
+        "Retention"
+      ],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The unique identifier of the archive.</p>"
+        },
+        "ArchiveName":{
+          "shape":"ArchiveNameString",
+          "documentation":"<p>The unique name assigned to the archive.</p>"
+        },
+        "ArchiveArn":{
+          "shape":"ArchiveArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the archive.</p>"
+        },
+        "ArchiveState":{
+          "shape":"ArchiveState",
+          "documentation":"<p>The current state of the archive:</p> <ul> <li> <p> <code>ACTIVE</code> – The archive is ready and available for use. </p> </li> <li> <p> <code>PENDING_DELETION</code> – The archive has been marked for deletion and will be permanently deleted in 30 days. No further modifications can be made in this state. </p> </li> </ul>"
+        },
+        "Retention":{
+          "shape":"ArchiveRetention",
+          "documentation":"<p>The retention period for emails in this archive.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the archive was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the archive was modified.</p>"
+        },
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the KMS key used to encrypt the archive.</p>"
+        }
+      },
+      "documentation":"<p>The response containing details of the requested archive.</p>"
+    },
+    "GetArchiveSearchRequest":{
+      "type":"structure",
+      "required":["SearchId"],
+      "members":{
+        "SearchId":{
+          "shape":"SearchId",
+          "documentation":"<p>The identifier of the search job to get details for.</p>"
+        }
+      },
+      "documentation":"<p>The request to retrieve details of a specific archive search job.</p>"
+    },
+    "GetArchiveSearchResponse":{
+      "type":"structure",
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive the email search was performed in.</p>"
+        },
+        "Filters":{
+          "shape":"ArchiveFilters",
+          "documentation":"<p>The criteria used to filter emails included in the search.</p>"
+        },
+        "FromTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start timestamp of the range the searched emails cover.</p>"
+        },
+        "ToTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end timestamp of the range the searched emails cover.</p>"
+        },
+        "MaxResults":{
+          "shape":"SearchMaxResults",
+          "documentation":"<p>The maximum number of search results to return.</p>"
+        },
+        "Status":{
+          "shape":"SearchStatus",
+          "documentation":"<p>The current status of the search job.</p>"
+        }
+      },
+      "documentation":"<p>The response containing details of the specified archive search job.</p>"
+    },
+    "GetArchiveSearchResultsRequest":{
+      "type":"structure",
+      "required":["SearchId"],
+      "members":{
+        "SearchId":{
+          "shape":"SearchId",
+          "documentation":"<p>The identifier of the completed search job.</p>"
+        }
+      },
+      "documentation":"<p>The request to retrieve results from a completed archive search job.</p>"
+    },
+    "GetArchiveSearchResultsResponse":{
+      "type":"structure",
+      "members":{
+        "Rows":{
+          "shape":"RowsList",
+          "documentation":"<p>The list of email result objects matching the search criteria.</p>"
+        }
+      },
+      "documentation":"<p>The response containing search results from a completed archive search.</p>"
+    },
+    "GetIngressPointRequest":{
+      "type":"structure",
+      "required":["IngressPointId"],
+      "members":{
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The identifier of an ingress endpoint.</p>"
+        }
+      }
+    },
+    "GetIngressPointResponse":{
+      "type":"structure",
+      "required":[
+        "IngressPointId",
+        "IngressPointName"
+      ],
+      "members":{
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The identifier of an ingress endpoint resource.</p>"
+        },
+        "IngressPointName":{
+          "shape":"IngressPointName",
+          "documentation":"<p>A user friendly name for the ingress endpoint.</p>"
+        },
+        "IngressPointArn":{
+          "shape":"IngressPointArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingress endpoint resource.</p>"
+        },
+        "Status":{
+          "shape":"IngressPointStatus",
+          "documentation":"<p>The status of the ingress endpoint resource.</p>"
+        },
+        "Type":{
+          "shape":"IngressPointType",
+          "documentation":"<p>The type of ingress endpoint.</p>"
+        },
+        "ARecord":{
+          "shape":"IngressPointARecord",
+          "documentation":"<p> The DNS A Record that identifies your ingress endpoint. Configure your DNS Mail Exchange (MX) record with this value to route emails to Mail Manager. </p>"
+        },
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of a rule set resource associated with the ingress endpoint.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy resource associated with the ingress endpoint.</p>"
+        },
+        "IngressPointAuthConfiguration":{
+          "shape":"IngressPointAuthConfiguration",
+          "documentation":"<p>The authentication configuration of the ingress endpoint resource.</p>"
+        },
+        "NetworkConfiguration":{
+          "shape":"NetworkConfiguration",
+          "documentation":"<p>The network configuration for the ingress point.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ingress endpoint was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ingress endpoint was last updated.</p>"
+        }
+      }
+    },
+    "GetMemberOfAddressListRequest":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "Address"
+      ],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list to retrieve the address from.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The address to be retrieved from the address list.</p>"
+        }
+      }
+    },
+    "GetMemberOfAddressListResponse":{
+      "type":"structure",
+      "required":[
+        "Address",
+        "CreatedTimestamp"
+      ],
+      "members":{
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The address retrieved from the address list.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the address was created.</p>"
+        }
+      }
+    },
+    "GetRelayRequest":{
+      "type":"structure",
+      "required":["RelayId"],
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>A unique relay identifier.</p>"
+        }
+      }
+    },
+    "GetRelayResponse":{
+      "type":"structure",
+      "required":["RelayId"],
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>The unique relay identifier.</p>"
+        },
+        "RelayArn":{
+          "shape":"RelayArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the relay.</p>"
+        },
+        "RelayName":{
+          "shape":"RelayName",
+          "documentation":"<p>The unique name of the relay.</p>"
+        },
+        "ServerName":{
+          "shape":"RelayServerName",
+          "documentation":"<p>The destination relay server address.</p>"
+        },
+        "ServerPort":{
+          "shape":"RelayServerPort",
+          "documentation":"<p>The destination relay server port.</p>"
+        },
+        "Authentication":{
+          "shape":"RelayAuthentication",
+          "documentation":"<p>The authentication attribute—contains the secret ARN where the customer relay server credentials are stored. </p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the relay was created.</p>"
+        },
+        "LastModifiedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when relay was last updated.</p>"
+        }
+      }
+    },
+    "GetRuleSetRequest":{
+      "type":"structure",
+      "required":["RuleSetId"],
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of an existing rule set to be retrieved.</p>"
+        }
+      }
+    },
+    "GetRuleSetResponse":{
+      "type":"structure",
+      "required":[
+        "RuleSetId",
+        "RuleSetArn",
+        "RuleSetName",
+        "CreatedDate",
+        "LastModificationDate",
+        "Rules"
+      ],
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of the rule set resource.</p>"
+        },
+        "RuleSetArn":{
+          "shape":"RuleSetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rule set resource.</p>"
+        },
+        "RuleSetName":{
+          "shape":"RuleSetName",
+          "documentation":"<p>A user-friendly name for the rule set resource.</p>"
+        },
+        "CreatedDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date of when then rule set was created.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date of when the rule set was last modified.</p>"
+        },
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>The rules contained in the rule set.</p>"
+        }
+      }
+    },
+    "GetTrafficPolicyRequest":{
+      "type":"structure",
+      "required":["TrafficPolicyId"],
+      "members":{
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy resource.</p>"
+        }
+      }
+    },
+    "GetTrafficPolicyResponse":{
+      "type":"structure",
+      "required":[
+        "TrafficPolicyName",
+        "TrafficPolicyId"
+      ],
+      "members":{
+        "TrafficPolicyName":{
+          "shape":"TrafficPolicyName",
+          "documentation":"<p>A user-friendly name for the traffic policy resource.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy resource.</p>"
+        },
+        "TrafficPolicyArn":{
+          "shape":"TrafficPolicyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the traffic policy resource.</p>"
+        },
+        "PolicyStatements":{
+          "shape":"PolicyStatementList",
+          "documentation":"<p>The list of conditions which are in the traffic policy resource.</p>"
+        },
+        "MaxMessageSizeBytes":{
+          "shape":"MaxMessageSizeBytes",
+          "documentation":"<p>The maximum message size in bytes of email which is allowed in by this traffic policy—anything larger will be blocked.</p>"
+        },
+        "DefaultAction":{
+          "shape":"AcceptAction",
+          "documentation":"<p>The default action of the traffic policy.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the traffic policy was created.</p>"
+        },
+        "LastUpdatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the traffic policy was last updated.</p>"
+        }
+      }
+    },
+    "HeaderName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[xX]\\-[a-zA-Z0-9\\-]+"
+    },
+    "HeaderValue":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"[a-zA-Z0-9:_/+=,@.#-]+"
+    },
+    "IdOrArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[a-zA-Z0-9:_/+=,@.#-]+"
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ImportDataFormat":{
+      "type":"structure",
+      "required":["ImportDataType"],
+      "members":{
+        "ImportDataType":{
+          "shape":"ImportDataType",
+          "documentation":"<p>The type of file that would be passed as an input for the address list import job.</p>"
+        }
+      },
+      "documentation":"<p>The import data format contains the specifications of the input file that would be passed to the address list import job.</p>"
+    },
+    "ImportDataType":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "JSON"
+      ]
+    },
+    "ImportJob":{
+      "type":"structure",
+      "required":[
+        "JobId",
+        "Name",
+        "Status",
+        "PreSignedUrl",
+        "ImportDataFormat",
+        "AddressListId",
+        "CreatedTimestamp"
+      ],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the import job.</p>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>A user-friendly name for the import job.</p>"
+        },
+        "Status":{
+          "shape":"ImportJobStatus",
+          "documentation":"<p>The status of the import job.</p>"
+        },
+        "PreSignedUrl":{
+          "shape":"PreSignedUrl",
+          "documentation":"<p>The pre-signed URL target for uploading the input file.</p>"
+        },
+        "ImportedItemsCount":{
+          "shape":"JobItemsCount",
+          "documentation":"<p>The number of addresses in the input that were successfully imported into the address list.</p>"
+        },
+        "FailedItemsCount":{
+          "shape":"JobItemsCount",
+          "documentation":"<p>The number of addresses in the input that failed to get imported into address list.</p>"
+        },
+        "ImportDataFormat":{
+          "shape":"ImportDataFormat",
+          "documentation":"<p>The format of the input for the import job.</p>"
+        },
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list the import job was created for.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was created.</p>"
+        },
+        "StartTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was started.</p>"
+        },
+        "CompletedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the import job was completed.</p>"
+        },
+        "Error":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The reason for failure of an import job.</p>"
+        }
+      },
+      "documentation":"<p>Details about an import job.</p>"
+    },
+    "ImportJobStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "STOPPED"
+      ]
+    },
+    "ImportJobs":{
+      "type":"list",
+      "member":{"shape":"ImportJob"}
+    },
+    "IngressAddressListArnList":{
+      "type":"list",
+      "member":{"shape":"AddressListArn"},
+      "max":1,
+      "min":1
+    },
+    "IngressAddressListEmailAttribute":{
+      "type":"string",
+      "enum":["RECIPIENT"]
+    },
+    "IngressAnalysis":{
+      "type":"structure",
+      "required":[
+        "Analyzer",
+        "ResultField"
+      ],
+      "members":{
+        "Analyzer":{
+          "shape":"AnalyzerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Add On.</p>"
+        },
+        "ResultField":{
+          "shape":"ResultField",
+          "documentation":"<p>The returned value from an Add On.</p>"
+        }
+      },
+      "documentation":"<p>The Add On ARN and its returned value that is evaluated in a policy statement's conditional expression to either deny or block the incoming email.</p>"
+    },
+    "IngressBooleanExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"IngressBooleanToEvaluate",
+          "documentation":"<p>The operand on which to perform a boolean condition operation.</p>"
+        },
+        "Operator":{
+          "shape":"IngressBooleanOperator",
+          "documentation":"<p>The matching operator for a boolean condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The structure for a boolean condition matching on the incoming mail.</p>"
+    },
+    "IngressBooleanOperator":{
+      "type":"string",
+      "enum":[
+        "IS_TRUE",
+        "IS_FALSE"
+      ]
+    },
+    "IngressBooleanToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Analysis":{
+          "shape":"IngressAnalysis",
+          "documentation":"<p>The structure type for a boolean condition stating the Add On ARN and its returned value.</p>"
+        },
+        "IsInAddressList":{
+          "shape":"IngressIsInAddressList",
+          "documentation":"<p>The structure type for a boolean condition that provides the address lists to evaluate incoming traffic on.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types of operands for a boolean condition.</p>",
+      "union":true
+    },
+    "IngressIpOperator":{
+      "type":"string",
+      "enum":[
+        "CIDR_MATCHES",
+        "NOT_CIDR_MATCHES"
+      ]
+    },
+    "IngressIpToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"IngressIpv4Attribute",
+          "documentation":"<p>An enum type representing the allowed attribute types for an IP condition.</p>"
+        }
+      },
+      "documentation":"<p>The structure for an IP based condition matching on the incoming mail.</p>",
+      "union":true
+    },
+    "IngressIpv4Attribute":{
+      "type":"string",
+      "enum":["SENDER_IP"]
+    },
+    "IngressIpv4Expression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"IngressIpToEvaluate",
+          "documentation":"<p>The left hand side argument of an IP condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"IngressIpOperator",
+          "documentation":"<p>The matching operator for an IP condition expression.</p>"
+        },
+        "Values":{
+          "shape":"Ipv4Cidrs",
+          "documentation":"<p>The right hand side argument of an IP condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types for the left hand side of an IP condition.</p>"
+    },
+    "IngressIpv6Attribute":{
+      "type":"string",
+      "enum":["SENDER_IPV6"]
+    },
+    "IngressIpv6Expression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"IngressIpv6ToEvaluate",
+          "documentation":"<p>The left hand side argument of an IPv6 condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"IngressIpOperator",
+          "documentation":"<p>The matching operator for an IPv6 condition expression.</p>"
+        },
+        "Values":{
+          "shape":"Ipv6Cidrs",
+          "documentation":"<p>The right hand side argument of an IPv6 condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types for the left hand side of an IPv6 condition.</p>"
+    },
+    "IngressIpv6ToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"IngressIpv6Attribute",
+          "documentation":"<p>An enum type representing the allowed attribute types for an IPv6 condition.</p>"
+        }
+      },
+      "documentation":"<p>The structure for an IPv6 based condition matching on the incoming mail.</p>",
+      "union":true
+    },
+    "IngressIsInAddressList":{
+      "type":"structure",
+      "required":[
+        "Attribute",
+        "AddressLists"
+      ],
+      "members":{
+        "Attribute":{
+          "shape":"IngressAddressListEmailAttribute",
+          "documentation":"<p>The email attribute that needs to be evaluated against the address list.</p>"
+        },
+        "AddressLists":{
+          "shape":"IngressAddressListArnList",
+          "documentation":"<p>The address lists that will be used for evaluation.</p>"
+        }
+      },
+      "documentation":"<p>The address lists and the address list attribute value that is evaluated in a policy statement's conditional expression to either deny or block the incoming email.</p>"
+    },
+    "IngressPoint":{
+      "type":"structure",
+      "required":[
+        "IngressPointName",
+        "IngressPointId",
+        "Status",
+        "Type"
+      ],
+      "members":{
+        "IngressPointName":{
+          "shape":"IngressPointName",
+          "documentation":"<p>A user friendly name for the ingress endpoint resource.</p>"
+        },
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The identifier of the ingress endpoint resource.</p>"
+        },
+        "Status":{
+          "shape":"IngressPointStatus",
+          "documentation":"<p>The status of the ingress endpoint resource.</p>"
+        },
+        "Type":{
+          "shape":"IngressPointType",
+          "documentation":"<p>The type of ingress endpoint resource.</p>"
+        },
+        "ARecord":{
+          "shape":"IngressPointARecord",
+          "documentation":"<p> The DNS A Record that identifies your ingress endpoint. Configure your DNS Mail Exchange (MX) record with this value to route emails to Mail Manager. </p>"
+        }
+      },
+      "documentation":"<p>The structure of an ingress endpoint resource.</p>"
+    },
+    "IngressPointARecord":{"type":"string"},
+    "IngressPointArn":{"type":"string"},
+    "IngressPointAuthConfiguration":{
+      "type":"structure",
+      "members":{
+        "IngressPointPasswordConfiguration":{
+          "shape":"IngressPointPasswordConfiguration",
+          "documentation":"<p>The ingress endpoint password configuration for the ingress endpoint resource.</p>"
+        },
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The ingress endpoint SecretsManager::Secret ARN configuration for the ingress endpoint resource.</p>"
+        }
+      },
+      "documentation":"<p>The authentication configuration for the ingress endpoint resource.</p>"
+    },
+    "IngressPointConfiguration":{
+      "type":"structure",
+      "members":{
+        "SmtpPassword":{
+          "shape":"SmtpPassword",
+          "documentation":"<p>The password of the ingress endpoint resource.</p>"
+        },
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The SecretsManager::Secret ARN of the ingress endpoint resource.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of the ingress endpoint resource.</p>",
+      "union":true
+    },
+    "IngressPointId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "IngressPointName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[A-Za-z0-9_\\-]+"
+    },
+    "IngressPointPasswordConfiguration":{
+      "type":"structure",
+      "members":{
+        "SmtpPasswordVersion":{
+          "shape":"String",
+          "documentation":"<p>The current password expiry timestamp of the ingress endpoint resource.</p>"
+        },
+        "PreviousSmtpPasswordVersion":{
+          "shape":"String",
+          "documentation":"<p>The previous password version of the ingress endpoint resource.</p>"
+        },
+        "PreviousSmtpPasswordExpiryTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The previous password expiry timestamp of the ingress endpoint resource.</p>"
+        }
+      },
+      "documentation":"<p>The password configuration of the ingress endpoint resource.</p>"
+    },
+    "IngressPointStatus":{
+      "type":"string",
+      "enum":[
+        "PROVISIONING",
+        "DEPROVISIONING",
+        "UPDATING",
+        "ACTIVE",
+        "CLOSED",
+        "FAILED"
+      ]
+    },
+    "IngressPointStatusToUpdate":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CLOSED"
+      ]
+    },
+    "IngressPointType":{
+      "type":"string",
+      "enum":[
+        "OPEN",
+        "AUTH"
+      ]
+    },
+    "IngressPointsList":{
+      "type":"list",
+      "member":{"shape":"IngressPoint"}
+    },
+    "IngressStringEmailAttribute":{
+      "type":"string",
+      "enum":["RECIPIENT"]
+    },
+    "IngressStringExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"IngressStringToEvaluate",
+          "documentation":"<p>The left hand side argument of a string condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"IngressStringOperator",
+          "documentation":"<p>The matching operator for a string condition expression.</p>"
+        },
+        "Values":{
+          "shape":"StringList",
+          "documentation":"<p>The right hand side argument of a string condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The structure for a string based condition matching on the incoming mail.</p>"
+    },
+    "IngressStringOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS",
+        "STARTS_WITH",
+        "ENDS_WITH",
+        "CONTAINS"
+      ]
+    },
+    "IngressStringToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"IngressStringEmailAttribute",
+          "documentation":"<p>The enum type representing the allowed attribute types for a string condition.</p>"
+        },
+        "Analysis":{
+          "shape":"IngressAnalysis",
+          "documentation":"<p>The structure type for a string condition stating the Add On ARN and its returned value.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types for the left hand side of a string condition.</p>",
+      "union":true
+    },
+    "IngressTlsAttribute":{
+      "type":"string",
+      "enum":["TLS_PROTOCOL"]
+    },
+    "IngressTlsProtocolAttribute":{
+      "type":"string",
+      "enum":[
+        "TLS1_2",
+        "TLS1_3"
+      ]
+    },
+    "IngressTlsProtocolExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Value"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"IngressTlsProtocolToEvaluate",
+          "documentation":"<p>The left hand side argument of a TLS condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"IngressTlsProtocolOperator",
+          "documentation":"<p>The matching operator for a TLS condition expression.</p>"
+        },
+        "Value":{
+          "shape":"IngressTlsProtocolAttribute",
+          "documentation":"<p>The right hand side argument of a TLS condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The structure for a TLS related condition matching on the incoming mail.</p>"
+    },
+    "IngressTlsProtocolOperator":{
+      "type":"string",
+      "enum":[
+        "MINIMUM_TLS_VERSION",
+        "IS"
+      ]
+    },
+    "IngressTlsProtocolToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"IngressTlsAttribute",
+          "documentation":"<p>The enum type representing the allowed attribute types for the TLS condition.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types for the left hand side of a TLS condition.</p>",
+      "union":true
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "IpType":{
+      "type":"string",
+      "enum":[
+        "IPV4",
+        "DUAL_STACK"
+      ]
+    },
+    "Ipv4Cidr":{
+      "type":"string",
+      "pattern":"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([0-9]|[12][0-9]|3[0-2])"
+    },
+    "Ipv4Cidrs":{
+      "type":"list",
+      "member":{"shape":"Ipv4Cidr"}
+    },
+    "Ipv6Cidr":{
+      "type":"string",
+      "max":49,
+      "min":0,
+      "pattern":"(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))\\/(12[0-8]|1[0-1][0-9]|[1-9][0-9]|[0-9])"
+    },
+    "Ipv6Cidrs":{
+      "type":"list",
+      "member":{"shape":"Ipv6Cidr"}
+    },
+    "JobId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "JobItemsCount":{
+      "type":"integer",
+      "box":true
+    },
+    "JobName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "pattern":"arn:aws(|-cn|-us-gov):kms:[a-z0-9-]{1,20}:[0-9]{12}:(key|alias)/.+"
+    },
+    "KmsKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"[a-zA-Z0-9-:/]+"
+    },
+    "ListAddonInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of ingress endpoint resources that are returned per call. You can use NextToken to obtain further ingress endpoints. </p>"
+        }
+      }
+    },
+    "ListAddonInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "AddonInstances":{
+          "shape":"AddonInstances",
+          "documentation":"<p>The list of ingress endpoints.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListAddonSubscriptionsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of ingress endpoint resources that are returned per call. You can use NextToken to obtain further ingress endpoints. </p>"
+        }
+      }
+    },
+    "ListAddonSubscriptionsResponse":{
+      "type":"structure",
+      "members":{
+        "AddonSubscriptions":{
+          "shape":"AddonSubscriptions",
+          "documentation":"<p>The list of ingress endpoints.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListAddressListImportJobsRequest":{
+      "type":"structure",
+      "required":["AddressListId"],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list for listing import jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of import jobs that are returned per call. You can use NextToken to retrieve the next page of jobs.</p>"
+        }
+      }
+    },
+    "ListAddressListImportJobsResponse":{
+      "type":"structure",
+      "required":["ImportJobs"],
+      "members":{
+        "ImportJobs":{
+          "shape":"ImportJobs",
+          "documentation":"<p>The list of import jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListAddressListsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of address list resources that are returned per call. You can use NextToken to retrieve the next page of address lists.</p>"
+        }
+      }
+    },
+    "ListAddressListsResponse":{
+      "type":"structure",
+      "required":["AddressLists"],
+      "members":{
+        "AddressLists":{
+          "shape":"AddressLists",
+          "documentation":"<p>The list of address lists.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListArchiveExportsRequest":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. </p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of archive export jobs that are returned per call. You can use NextToken to obtain further pages of archives. </p>"
+        }
+      },
+      "documentation":"<p>The request to list archive export jobs in your account.</p>"
+    },
+    "ListArchiveExportsResponse":{
+      "type":"structure",
+      "members":{
+        "Exports":{
+          "shape":"ExportSummaryList",
+          "documentation":"<p>The list of export job identifiers and statuses.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If present, use to retrieve the next page of results.</p>"
+        }
+      },
+      "documentation":"<p>The response containing a list of archive export jobs and their statuses.</p>"
+    },
+    "ListArchiveSearchesRequest":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. </p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of archive search jobs that are returned per call. You can use NextToken to obtain further pages of archives. </p>"
+        }
+      },
+      "documentation":"<p>The request to list archive search jobs in your account.</p>"
+    },
+    "ListArchiveSearchesResponse":{
+      "type":"structure",
+      "members":{
+        "Searches":{
+          "shape":"SearchSummaryList",
+          "documentation":"<p>The list of search job identifiers and statuses.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If present, use to retrieve the next page of results.</p>"
+        }
+      },
+      "documentation":"<p>The response containing a list of archive search jobs and their statuses.</p>"
+    },
+    "ListArchivesRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. </p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of archives that are returned per call. You can use NextToken to obtain further pages of archives. </p>"
+        }
+      },
+      "documentation":"<p>The request to list email archives in your account.</p>"
+    },
+    "ListArchivesResponse":{
+      "type":"structure",
+      "required":["Archives"],
+      "members":{
+        "Archives":{
+          "shape":"ArchivesList",
+          "documentation":"<p>The list of archive details.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If present, use to retrieve the next page of results.</p>"
+        }
+      },
+      "documentation":"<p>The response containing a list of your email archives.</p>"
+    },
+    "ListIngressPointsRequest":{
+      "type":"structure",
+      "members":{
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of ingress endpoint resources that are returned per call. You can use NextToken to obtain further ingress endpoints.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        }
+      }
+    },
+    "ListIngressPointsResponse":{
+      "type":"structure",
+      "members":{
+        "IngressPoints":{
+          "shape":"IngressPointsList",
+          "documentation":"<p>The list of ingress endpoints.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListMembersOfAddressListRequest":{
+      "type":"structure",
+      "required":["AddressListId"],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list to list the addresses from.</p>"
+        },
+        "Filter":{
+          "shape":"AddressFilter",
+          "documentation":"<p>Filter to be used to limit the results.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"AddressPageSize",
+          "documentation":"<p>The maximum number of address list members that are returned per call. You can use NextToken to retrieve the next page of members.</p>"
+        }
+      }
+    },
+    "ListMembersOfAddressListResponse":{
+      "type":"structure",
+      "required":["Addresses"],
+      "members":{
+        "Addresses":{
+          "shape":"SavedAddresses",
+          "documentation":"<p>The list of addresses.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListRelaysRequest":{
+      "type":"structure",
+      "members":{
+        "PageSize":{
+          "shape":"Integer",
+          "documentation":"<p>The number of relays to be returned in one request.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        }
+      }
+    },
+    "ListRelaysResponse":{
+      "type":"structure",
+      "required":["Relays"],
+      "members":{
+        "Relays":{
+          "shape":"Relays",
+          "documentation":"<p>The list of returned relays.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListRuleSetsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of rule set resources that are returned per call. You can use NextToken to obtain further rule sets.</p>"
+        }
+      }
+    },
+    "ListRuleSetsResponse":{
+      "type":"structure",
+      "required":["RuleSets"],
+      "members":{
+        "RuleSets":{
+          "shape":"RuleSets",
+          "documentation":"<p>The list of rule sets.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"TaggableResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to retrieve tags from.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["Tags"],
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "ListTrafficPoliciesRequest":{
+      "type":"structure",
+      "members":{
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of traffic policy resources that are returned per call. You can use NextToken to obtain further traffic policies.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If you received a pagination token from a previous call to this API, you can provide it here to continue paginating through the next page of results.</p>"
+        }
+      }
+    },
+    "ListTrafficPoliciesResponse":{
+      "type":"structure",
+      "members":{
+        "TrafficPolicies":{
+          "shape":"TrafficPolicyList",
+          "documentation":"<p>The list of traffic policies.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If NextToken is returned, there are more results available. The value of NextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "MailFrom":{
+      "type":"string",
+      "enum":[
+        "REPLACE",
+        "PRESERVE"
+      ]
+    },
+    "MaxMessageSizeBytes":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "MessageBody":{
+      "type":"structure",
+      "members":{
+        "Text":{
+          "shape":"String",
+          "documentation":"<p>The plain text body content of the message.</p>"
+        },
+        "Html":{
+          "shape":"String",
+          "documentation":"<p>The HTML body content of the message.</p>"
+        },
+        "MessageMalformed":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating if the email was malformed.</p>"
+        }
+      },
+      "documentation":"<p>The textual body content of an email message.</p>"
+    },
+    "Metadata":{
+      "type":"structure",
+      "members":{
+        "Timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the email was received.</p>"
+        },
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The ID of the ingress endpoint through which the email was received.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The ID of the traffic policy that was in effect when the email was received.</p>"
+        },
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The ID of the rule set that processed the email.</p>"
+        },
+        "SenderHostname":{
+          "shape":"String",
+          "documentation":"<p>The name of the host from which the email was received.</p>"
+        },
+        "SenderIpAddress":{
+          "shape":"SenderIpAddress",
+          "documentation":"<p>The IP address of the host from which the email was received.</p>"
+        },
+        "TlsCipherSuite":{
+          "shape":"String",
+          "documentation":"<p>The TLS cipher suite used to communicate with the host from which the email was received.</p>"
+        },
+        "TlsProtocol":{
+          "shape":"String",
+          "documentation":"<p>The TLS protocol used to communicate with the host from which the email was received.</p>"
+        },
+        "SendingMethod":{
+          "shape":"String",
+          "documentation":"<p>The name of the API call used when sent through a configuration set with archiving enabled.</p>"
+        },
+        "SourceIdentity":{
+          "shape":"String",
+          "documentation":"<p>The identity name used to authorize the sending action when sent through a configuration set with archiving enabled.</p>"
+        },
+        "SendingPool":{
+          "shape":"String",
+          "documentation":"<p>The name of the dedicated IP pool used when sent through a configuration set with archiving enabled.</p>"
+        },
+        "ConfigurationSet":{
+          "shape":"String",
+          "documentation":"<p>The name of the configuration set used when sent through a configuration set with archiving enabled.</p>"
+        },
+        "SourceArn":{
+          "shape":"String",
+          "documentation":"<p>Specifies the archived email source, identified by either a Rule Set's ARN with an Archive action, or a Configuration Set's Archive ARN.</p>"
+        }
+      },
+      "documentation":"<p>The metadata about the email.</p>"
+    },
+    "MimeHeaderAttribute":{
+      "type":"string",
+      "pattern":"X-[a-zA-Z0-9-]{1,256}"
+    },
+    "NameOrArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[a-zA-Z0-9:_/+=,@.#-]+"
+    },
+    "NetworkConfiguration":{
+      "type":"structure",
+      "members":{
+        "PublicNetworkConfiguration":{
+          "shape":"PublicNetworkConfiguration",
+          "documentation":"<p>Specifies the network configuration for the public ingress point.</p>"
+        },
+        "PrivateNetworkConfiguration":{
+          "shape":"PrivateNetworkConfiguration",
+          "documentation":"<p>Specifies the network configuration for the private ingress point.</p>"
+        }
+      },
+      "documentation":"<p>The network type (IPv4-only, Dual-Stack, PrivateLink) of the ingress endpoint resource.</p>",
+      "union":true
+    },
+    "NoAuthentication":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>Explicitly indicate that the relay destination server does not require SMTP credential authentication.</p>"
+    },
+    "PageSize":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PolicyCondition":{
+      "type":"structure",
+      "members":{
+        "StringExpression":{
+          "shape":"IngressStringExpression",
+          "documentation":"<p>This represents a string based condition matching on the incoming mail. It performs the string operation configured in 'Operator' and evaluates the 'Protocol' object against the 'Value'.</p>"
+        },
+        "IpExpression":{
+          "shape":"IngressIpv4Expression",
+          "documentation":"<p>This represents an IP based condition matching on the incoming mail. It performs the operation configured in 'Operator' and evaluates the 'Protocol' object against the 'Value'.</p>"
+        },
+        "Ipv6Expression":{
+          "shape":"IngressIpv6Expression",
+          "documentation":"<p>This represents an IPv6 based condition matching on the incoming mail. It performs the operation configured in 'Operator' and evaluates the 'Protocol' object against the 'Value'.</p>"
+        },
+        "TlsExpression":{
+          "shape":"IngressTlsProtocolExpression",
+          "documentation":"<p>This represents a TLS based condition matching on the incoming mail. It performs the operation configured in 'Operator' and evaluates the 'Protocol' object against the 'Value'.</p>"
+        },
+        "BooleanExpression":{
+          "shape":"IngressBooleanExpression",
+          "documentation":"<p>This represents a boolean type condition matching on the incoming mail. It performs the boolean operation configured in 'Operator' and evaluates the 'Protocol' object against the 'Value'.</p>"
+        }
+      },
+      "documentation":"<p>The email traffic filtering conditions which are contained in a traffic policy resource.</p>",
+      "union":true
+    },
+    "PolicyConditions":{
+      "type":"list",
+      "member":{"shape":"PolicyCondition"},
+      "min":1
+    },
+    "PolicyStatement":{
+      "type":"structure",
+      "required":[
+        "Conditions",
+        "Action"
+      ],
+      "members":{
+        "Conditions":{
+          "shape":"PolicyConditions",
+          "documentation":"<p>The list of conditions to apply to incoming messages for filtering email traffic.</p>"
+        },
+        "Action":{
+          "shape":"AcceptAction",
+          "documentation":"<p>The action that informs a traffic policy resource to either allow or block the email if it matches a condition in the policy statement.</p>"
+        }
+      },
+      "documentation":"<p>The structure containing traffic policy conditions and actions.</p>"
+    },
+    "PolicyStatementList":{
+      "type":"list",
+      "member":{"shape":"PolicyStatement"}
+    },
+    "PreSignedUrl":{
+      "type":"string",
+      "sensitive":true
+    },
+    "PrivateNetworkConfiguration":{
+      "type":"structure",
+      "required":["VpcEndpointId"],
+      "members":{
+        "VpcEndpointId":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The identifier of the VPC endpoint to associate with this private ingress point.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the network configuration for the private ingress point.</p>"
+    },
+    "PublicNetworkConfiguration":{
+      "type":"structure",
+      "required":["IpType"],
+      "members":{
+        "IpType":{
+          "shape":"IpType",
+          "documentation":"<p>The IP address type for the public ingress point. Valid values are IPV4 and DUAL_STACK.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the network configuration for the public ingress point.</p>"
+    },
+    "QBusinessApplicationId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-z0-9-]+"
+    },
+    "QBusinessIndexId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-z0-9-]+"
+    },
+    "Recipients":{
+      "type":"list",
+      "member":{"shape":"EmailAddress"},
+      "max":100,
+      "min":1
+    },
+    "RegisterMemberToAddressListRequest":{
+      "type":"structure",
+      "required":[
+        "AddressListId",
+        "Address"
+      ],
+      "members":{
+        "AddressListId":{
+          "shape":"AddressListId",
+          "documentation":"<p>The unique identifier of the address list where the address should be added.</p>"
+        },
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The address to be added to the address list.</p>"
+        }
+      }
+    },
+    "RegisterMemberToAddressListResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Relay":{
+      "type":"structure",
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>The unique relay identifier.</p>"
+        },
+        "RelayName":{
+          "shape":"RelayName",
+          "documentation":"<p>The unique relay name.</p>"
+        },
+        "LastModifiedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the relay was last modified.</p>"
+        }
+      },
+      "documentation":"<p>The relay resource that can be used as a rule to relay receiving emails to the destination relay server.</p>"
+    },
+    "RelayAction":{
+      "type":"structure",
+      "required":["Relay"],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the specified relay has been deleted.</p>"
+        },
+        "Relay":{
+          "shape":"IdOrArn",
+          "documentation":"<p>The identifier of the relay resource to be used when relaying an email.</p>"
+        },
+        "MailFrom":{
+          "shape":"MailFrom",
+          "documentation":"<p>This action specifies whether to preserve or replace original mail from address while relaying received emails to a destination server.</p>"
+        }
+      },
+      "documentation":"<p>The action relays the email via SMTP to another specific SMTP server.</p>"
+    },
+    "RelayArn":{"type":"string"},
+    "RelayAuthentication":{
+      "type":"structure",
+      "members":{
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The ARN of the secret created in secrets manager where the relay server's SMTP credentials are stored.</p>"
+        },
+        "NoAuthentication":{
+          "shape":"NoAuthentication",
+          "documentation":"<p>Keep an empty structure if the relay destination server does not require SMTP credential authentication.</p>"
+        }
+      },
+      "documentation":"<p>Authentication for the relay destination server—specify the secretARN where the SMTP credentials are stored, or specify an empty NoAuthentication structure if the relay destination server does not require SMTP credential authentication.</p>",
+      "union":true
+    },
+    "RelayId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "RelayName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_]+"
+    },
+    "RelayServerName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-\\.]+"
+    },
+    "RelayServerPort":{
+      "type":"integer",
+      "box":true,
+      "max":65535,
+      "min":1
+    },
+    "Relays":{
+      "type":"list",
+      "member":{"shape":"Relay"}
+    },
+    "ReplaceRecipientAction":{
+      "type":"structure",
+      "members":{
+        "ReplaceWith":{
+          "shape":"Recipients",
+          "documentation":"<p>This action specifies the replacement recipient email addresses to insert.</p>"
+        }
+      },
+      "documentation":"<p>This action replaces the email envelope recipients with the given list of recipients. If the condition of this action applies only to a subset of recipients, only those recipients are replaced with the recipients specified in the action. The message contents and headers are unaffected by this action, only the envelope recipients are updated.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when a requested resource is not found.</p>",
+      "exception":true
+    },
+    "ResultField":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"(addon\\.)?[\\sa-zA-Z0-9_]+"
+    },
+    "RetentionPeriod":{
+      "type":"string",
+      "enum":[
+        "THREE_MONTHS",
+        "SIX_MONTHS",
+        "NINE_MONTHS",
+        "ONE_YEAR",
+        "EIGHTEEN_MONTHS",
+        "TWO_YEARS",
+        "THIRTY_MONTHS",
+        "THREE_YEARS",
+        "FOUR_YEARS",
+        "FIVE_YEARS",
+        "SIX_YEARS",
+        "SEVEN_YEARS",
+        "EIGHT_YEARS",
+        "NINE_YEARS",
+        "TEN_YEARS",
+        "PERMANENT"
+      ]
+    },
+    "Row":{
+      "type":"structure",
+      "members":{
+        "ArchivedMessageId":{
+          "shape":"ArchivedMessageId",
+          "documentation":"<p>The unique identifier of the archived message.</p>"
+        },
+        "ReceivedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the email was received.</p>"
+        },
+        "Date":{
+          "shape":"String",
+          "documentation":"<p>The date the email was sent.</p>"
+        },
+        "To":{
+          "shape":"String",
+          "documentation":"<p>The email addresses in the To header.</p>"
+        },
+        "From":{
+          "shape":"String",
+          "documentation":"<p>The email address of the sender.</p>"
+        },
+        "Cc":{
+          "shape":"String",
+          "documentation":"<p>The email addresses in the CC header.</p>"
+        },
+        "Subject":{
+          "shape":"String",
+          "documentation":"<p>The subject header value of the email.</p>"
+        },
+        "MessageId":{
+          "shape":"String",
+          "documentation":"<p>The unique message ID of the email.</p>"
+        },
+        "HasAttachments":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating if the email has attachments.</p>"
+        },
+        "ReceivedHeaders":{
+          "shape":"EmailReceivedHeadersList",
+          "documentation":"<p>The received headers from the email delivery path.</p>"
+        },
+        "InReplyTo":{
+          "shape":"String",
+          "documentation":"<p>The email message ID this is a reply to.</p>"
+        },
+        "XMailer":{
+          "shape":"String",
+          "documentation":"<p>The user agent that sent the email.</p>"
+        },
+        "XOriginalMailer":{
+          "shape":"String",
+          "documentation":"<p>The original user agent that sent the email.</p>"
+        },
+        "XPriority":{
+          "shape":"String",
+          "documentation":"<p>The priority level of the email.</p>"
+        },
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The ID of the ingress endpoint through which the email was received.</p>"
+        },
+        "SenderHostname":{
+          "shape":"String",
+          "documentation":"<p>The name of the host from which the email was received.</p>"
+        },
+        "SenderIpAddress":{
+          "shape":"SenderIpAddress",
+          "documentation":"<ul> <li> <p>Mail archived with Mail Manager: The IP address of the client that connects to the ingress endpoint.</p> </li> <li> <p>Mail sent through a configuration set with the archiving option enabled: The IP address of the client that makes the SendEmail API call.</p> </li> </ul>"
+        },
+        "Envelope":{
+          "shape":"Envelope",
+          "documentation":"<p>The SMTP envelope information of the email.</p>"
+        },
+        "SourceArn":{
+          "shape":"String",
+          "documentation":"<p>Specifies the archived email source, identified by either a Rule Set's ARN with an Archive action, or a Configuration Set's Archive ARN.</p>"
+        }
+      },
+      "documentation":"<p>A result row containing metadata for an archived email message.</p>"
+    },
+    "RowsList":{
+      "type":"list",
+      "member":{"shape":"Row"}
+    },
+    "Rule":{
+      "type":"structure",
+      "required":["Actions"],
+      "members":{
+        "Name":{
+          "shape":"RuleName",
+          "documentation":"<p>The user-friendly name of the rule.</p>"
+        },
+        "Conditions":{
+          "shape":"RuleConditions",
+          "documentation":"<p>The conditions of this rule. All conditions must match the email for the actions to be executed. An empty list of conditions means that all emails match, but are still subject to any \"unless conditions\"</p>"
+        },
+        "Unless":{
+          "shape":"RuleConditions",
+          "documentation":"<p>The \"unless conditions\" of this rule. None of the conditions can match the email for the actions to be executed. If any of these conditions do match the email, then the actions are not executed.</p>"
+        },
+        "Actions":{
+          "shape":"RuleActions",
+          "documentation":"<p>The list of actions to execute when the conditions match the incoming email, and none of the \"unless conditions\" match.</p>"
+        }
+      },
+      "documentation":"<p>A rule contains conditions, \"unless conditions\" and actions. For each envelope recipient of an email, if all conditions match and none of the \"unless conditions\" match, then all of the actions are executed sequentially. If no conditions are provided, the rule always applies and the actions are implicitly executed. If only \"unless conditions\" are provided, the rule applies if the email does not match the evaluation of the \"unless conditions\".</p>"
+    },
+    "RuleAction":{
+      "type":"structure",
+      "members":{
+        "Drop":{
+          "shape":"DropAction",
+          "documentation":"<p>This action terminates the evaluation of rules in the rule set.</p>"
+        },
+        "Relay":{
+          "shape":"RelayAction",
+          "documentation":"<p>This action relays the email to another SMTP server.</p>"
+        },
+        "Archive":{
+          "shape":"ArchiveAction",
+          "documentation":"<p>This action archives the email. This can be used to deliver an email to an archive.</p>"
+        },
+        "WriteToS3":{
+          "shape":"S3Action",
+          "documentation":"<p>This action writes the MIME content of the email to an S3 bucket.</p>"
+        },
+        "Send":{
+          "shape":"SendAction",
+          "documentation":"<p>This action sends the email to the internet.</p>"
+        },
+        "AddHeader":{
+          "shape":"AddHeaderAction",
+          "documentation":"<p>This action adds a header. This can be used to add arbitrary email headers.</p>"
+        },
+        "ReplaceRecipient":{
+          "shape":"ReplaceRecipientAction",
+          "documentation":"<p>The action replaces certain or all recipients with a different set of recipients.</p>"
+        },
+        "DeliverToMailbox":{
+          "shape":"DeliverToMailboxAction",
+          "documentation":"<p>This action delivers an email to a WorkMail mailbox.</p>"
+        },
+        "DeliverToQBusiness":{
+          "shape":"DeliverToQBusinessAction",
+          "documentation":"<p>This action delivers an email to an Amazon Q Business application for ingestion into its knowledge base.</p>"
+        },
+        "PublishToSns":{
+          "shape":"SnsAction",
+          "documentation":"<p>This action publishes the email content to an Amazon SNS topic.</p>"
+        }
+      },
+      "documentation":"<p>The action for a rule to take. Only one of the contained actions can be set.</p>",
+      "union":true
+    },
+    "RuleActions":{
+      "type":"list",
+      "member":{"shape":"RuleAction"},
+      "max":10,
+      "min":1
+    },
+    "RuleAddressListArnList":{
+      "type":"list",
+      "member":{"shape":"AddressListArn"},
+      "max":1,
+      "min":1
+    },
+    "RuleAddressListEmailAttribute":{
+      "type":"string",
+      "enum":[
+        "RECIPIENT",
+        "MAIL_FROM",
+        "SENDER",
+        "FROM",
+        "TO",
+        "CC"
+      ]
+    },
+    "RuleBooleanEmailAttribute":{
+      "type":"string",
+      "enum":[
+        "READ_RECEIPT_REQUESTED",
+        "TLS",
+        "TLS_WRAPPED"
+      ]
+    },
+    "RuleBooleanExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"RuleBooleanToEvaluate",
+          "documentation":"<p>The operand on which to perform a boolean condition operation.</p>"
+        },
+        "Operator":{
+          "shape":"RuleBooleanOperator",
+          "documentation":"<p>The matching operator for a boolean condition expression.</p>"
+        }
+      },
+      "documentation":"<p>A boolean expression to be used in a rule condition.</p>"
+    },
+    "RuleBooleanOperator":{
+      "type":"string",
+      "enum":[
+        "IS_TRUE",
+        "IS_FALSE"
+      ]
+    },
+    "RuleBooleanToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"RuleBooleanEmailAttribute",
+          "documentation":"<p>The boolean type representing the allowed attribute types for an email.</p>"
+        },
+        "Analysis":{
+          "shape":"Analysis",
+          "documentation":"<p>The Add On ARN and its returned value to evaluate in a boolean condition expression.</p>"
+        },
+        "IsInAddressList":{
+          "shape":"RuleIsInAddressList",
+          "documentation":"<p>The structure representing the address lists and address list attribute that will be used in evaluation of boolean expression.</p>"
+        }
+      },
+      "documentation":"<p>The union type representing the allowed types of operands for a boolean condition.</p>",
+      "union":true
+    },
+    "RuleCondition":{
+      "type":"structure",
+      "members":{
+        "BooleanExpression":{
+          "shape":"RuleBooleanExpression",
+          "documentation":"<p>The condition applies to a boolean expression passed in this field.</p>"
+        },
+        "StringExpression":{
+          "shape":"RuleStringExpression",
+          "documentation":"<p>The condition applies to a string expression passed in this field.</p>"
+        },
+        "NumberExpression":{
+          "shape":"RuleNumberExpression",
+          "documentation":"<p>The condition applies to a number expression passed in this field.</p>"
+        },
+        "IpExpression":{
+          "shape":"RuleIpExpression",
+          "documentation":"<p>The condition applies to an IP address expression passed in this field.</p>"
+        },
+        "VerdictExpression":{
+          "shape":"RuleVerdictExpression",
+          "documentation":"<p>The condition applies to a verdict expression passed in this field.</p>"
+        },
+        "DmarcExpression":{
+          "shape":"RuleDmarcExpression",
+          "documentation":"<p>The condition applies to a DMARC policy expression passed in this field.</p>"
+        }
+      },
+      "documentation":"<p>The conditional expression used to evaluate an email for determining if a rule action should be taken.</p>",
+      "union":true
+    },
+    "RuleConditions":{
+      "type":"list",
+      "member":{"shape":"RuleCondition"},
+      "max":10,
+      "min":0
+    },
+    "RuleDmarcExpression":{
+      "type":"structure",
+      "required":[
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Operator":{
+          "shape":"RuleDmarcOperator",
+          "documentation":"<p>The operator to apply to the DMARC policy of the incoming email.</p>"
+        },
+        "Values":{
+          "shape":"RuleDmarcValueList",
+          "documentation":"<p>The values to use for the given DMARC policy operator. For the operator EQUALS, if multiple values are given, they are evaluated as an OR. That is, if any of the given values match, the condition is deemed to match. For the operator NOT_EQUALS, if multiple values are given, they are evaluated as an AND. That is, only if the email's DMARC policy is not equal to any of the given values, then the condition is deemed to match.</p>"
+        }
+      },
+      "documentation":"<p>A DMARC policy expression. The condition matches if the given DMARC policy matches that of the incoming email.</p>"
+    },
+    "RuleDmarcOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS"
+      ]
+    },
+    "RuleDmarcPolicy":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "QUARANTINE",
+        "REJECT"
+      ]
+    },
+    "RuleDmarcValueList":{
+      "type":"list",
+      "member":{"shape":"RuleDmarcPolicy"},
+      "max":10,
+      "min":1
+    },
+    "RuleIpEmailAttribute":{
+      "type":"string",
+      "enum":["SOURCE_IP"]
+    },
+    "RuleIpExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"RuleIpToEvaluate",
+          "documentation":"<p>The IP address to evaluate in this condition.</p>"
+        },
+        "Operator":{
+          "shape":"RuleIpOperator",
+          "documentation":"<p>The operator to evaluate the IP address.</p>"
+        },
+        "Values":{
+          "shape":"RuleIpValueList",
+          "documentation":"<p>The IP CIDR blocks in format \"x.y.z.w/n\" (eg 10.0.0.0/8) to match with the email's IP address. For the operator CIDR_MATCHES, if multiple values are given, they are evaluated as an OR. That is, if the IP address is contained within any of the given CIDR ranges, the condition is deemed to match. For NOT_CIDR_MATCHES, if multiple CIDR ranges are given, the condition is deemed to match if the IP address is not contained in any of the given CIDR ranges.</p>"
+        }
+      },
+      "documentation":"<p>An IP address expression matching certain IP addresses within a given range of IP addresses.</p>"
+    },
+    "RuleIpOperator":{
+      "type":"string",
+      "enum":[
+        "CIDR_MATCHES",
+        "NOT_CIDR_MATCHES"
+      ]
+    },
+    "RuleIpStringValue":{
+      "type":"string",
+      "max":43,
+      "min":1,
+      "pattern":"(([0-9]|.|:|/)*)"
+    },
+    "RuleIpToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"RuleIpEmailAttribute",
+          "documentation":"<p>The attribute of the email to evaluate.</p>"
+        }
+      },
+      "documentation":"<p>The IP address to evaluate for this condition.</p>",
+      "union":true
+    },
+    "RuleIpValueList":{
+      "type":"list",
+      "member":{"shape":"RuleIpStringValue"},
+      "max":10,
+      "min":1
+    },
+    "RuleIsInAddressList":{
+      "type":"structure",
+      "required":[
+        "Attribute",
+        "AddressLists"
+      ],
+      "members":{
+        "Attribute":{
+          "shape":"RuleAddressListEmailAttribute",
+          "documentation":"<p>The email attribute that needs to be evaluated against the address list.</p>"
+        },
+        "AddressLists":{
+          "shape":"RuleAddressListArnList",
+          "documentation":"<p>The address lists that will be used for evaluation.</p>"
+        }
+      },
+      "documentation":"<p>The structure type for a boolean condition that provides the address lists and address list attribute to evaluate.</p>"
+    },
+    "RuleName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "RuleNumberEmailAttribute":{
+      "type":"string",
+      "enum":["MESSAGE_SIZE"]
+    },
+    "RuleNumberExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Value"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"RuleNumberToEvaluate",
+          "documentation":"<p>The number to evaluate in a numeric condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"RuleNumberOperator",
+          "documentation":"<p>The operator for a numeric condition expression.</p>"
+        },
+        "Value":{
+          "shape":"Double",
+          "documentation":"<p>The value to evaluate in a numeric condition expression.</p>"
+        }
+      },
+      "documentation":"<p>A number expression to match numeric conditions with integers from the incoming email.</p>"
+    },
+    "RuleNumberOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS",
+        "LESS_THAN",
+        "GREATER_THAN",
+        "LESS_THAN_OR_EQUAL",
+        "GREATER_THAN_OR_EQUAL"
+      ]
+    },
+    "RuleNumberToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"RuleNumberEmailAttribute",
+          "documentation":"<p>An email attribute that is used as the number to evaluate.</p>"
+        }
+      },
+      "documentation":"<p>The number to evaluate in a numeric condition expression.</p>",
+      "union":true
+    },
+    "RuleSet":{
+      "type":"structure",
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of the rule set.</p>"
+        },
+        "RuleSetName":{
+          "shape":"RuleSetName",
+          "documentation":"<p>A user-friendly name for the rule set.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last modification date of the rule set.</p>"
+        }
+      },
+      "documentation":"<p>A rule set contains a list of rules that are evaluated in order. Each rule is evaluated sequentially for each email.</p>"
+    },
+    "RuleSetArn":{"type":"string"},
+    "RuleSetId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "RuleSetName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "RuleSets":{
+      "type":"list",
+      "member":{"shape":"RuleSet"}
+    },
+    "RuleStringEmailAttribute":{
+      "type":"string",
+      "enum":[
+        "MAIL_FROM",
+        "HELO",
+        "RECIPIENT",
+        "SENDER",
+        "FROM",
+        "SUBJECT",
+        "TO",
+        "CC"
+      ]
+    },
+    "RuleStringExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"RuleStringToEvaluate",
+          "documentation":"<p>The string to evaluate in a string condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"RuleStringOperator",
+          "documentation":"<p>The matching operator for a string condition expression.</p>"
+        },
+        "Values":{
+          "shape":"RuleStringList",
+          "documentation":"<p>The string(s) to be evaluated in a string condition expression. For all operators, except for NOT_EQUALS, if multiple values are given, the values are processed as an OR. That is, if any of the values match the email's string using the given operator, the condition is deemed to match. However, for NOT_EQUALS, the condition is only deemed to match if none of the given strings match the email's string.</p>"
+        }
+      },
+      "documentation":"<p>A string expression is evaluated against strings or substrings of the email.</p>"
+    },
+    "RuleStringList":{
+      "type":"list",
+      "member":{"shape":"RuleStringValue"},
+      "max":10,
+      "min":1
+    },
+    "RuleStringOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS",
+        "STARTS_WITH",
+        "ENDS_WITH",
+        "CONTAINS"
+      ]
+    },
+    "RuleStringToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"RuleStringEmailAttribute",
+          "documentation":"<p>The email attribute to evaluate in a string condition expression.</p>"
+        },
+        "MimeHeaderAttribute":{
+          "shape":"MimeHeaderAttribute",
+          "documentation":"<p>The email MIME X-Header attribute to evaluate in a string condition expression.</p>"
+        },
+        "Analysis":{
+          "shape":"Analysis",
+          "documentation":"<p>The Add On ARN and its returned value to evaluate in a string condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The string to evaluate in a string condition expression.</p>",
+      "union":true
+    },
+    "RuleStringValue":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "RuleVerdict":{
+      "type":"string",
+      "enum":[
+        "PASS",
+        "FAIL",
+        "GRAY",
+        "PROCESSING_FAILED"
+      ]
+    },
+    "RuleVerdictAttribute":{
+      "type":"string",
+      "enum":[
+        "SPF",
+        "DKIM"
+      ]
+    },
+    "RuleVerdictExpression":{
+      "type":"structure",
+      "required":[
+        "Evaluate",
+        "Operator",
+        "Values"
+      ],
+      "members":{
+        "Evaluate":{
+          "shape":"RuleVerdictToEvaluate",
+          "documentation":"<p>The verdict to evaluate in a verdict condition expression.</p>"
+        },
+        "Operator":{
+          "shape":"RuleVerdictOperator",
+          "documentation":"<p>The matching operator for a verdict condition expression.</p>"
+        },
+        "Values":{
+          "shape":"RuleVerdictValueList",
+          "documentation":"<p>The values to match with the email's verdict using the given operator. For the EQUALS operator, if multiple values are given, the condition is deemed to match if any of the given verdicts match that of the email. For the NOT_EQUALS operator, if multiple values are given, the condition is deemed to match of none of the given verdicts match the verdict of the email.</p>"
+        }
+      },
+      "documentation":"<p>A verdict expression is evaluated against verdicts of the email.</p>"
+    },
+    "RuleVerdictOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS"
+      ]
+    },
+    "RuleVerdictToEvaluate":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"RuleVerdictAttribute",
+          "documentation":"<p>The email verdict attribute to evaluate in a string verdict expression.</p>"
+        },
+        "Analysis":{
+          "shape":"Analysis",
+          "documentation":"<p>The Add On ARN and its returned value to evaluate in a verdict condition expression.</p>"
+        }
+      },
+      "documentation":"<p>The verdict to evaluate in a verdict condition expression.</p>",
+      "union":true
+    },
+    "RuleVerdictValueList":{
+      "type":"list",
+      "member":{"shape":"RuleVerdict"},
+      "max":10,
+      "min":1
+    },
+    "Rules":{
+      "type":"list",
+      "member":{"shape":"Rule"},
+      "max":40,
+      "min":0
+    },
+    "S3Action":{
+      "type":"structure",
+      "required":[
+        "RoleArn",
+        "S3Bucket"
+      ],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the specified the bucket has been deleted.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM Role to use while writing to S3. This role must have access to the s3:PutObject, kms:Encrypt, and kms:GenerateDataKey APIs for the given bucket.</p>"
+        },
+        "S3Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>The bucket name of the S3 bucket to write to.</p>"
+        },
+        "S3Prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p>The S3 prefix to use for the write to the s3 bucket.</p>"
+        },
+        "S3SseKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The KMS Key ID to use to encrypt the message in S3.</p>"
+        }
+      },
+      "documentation":"<p>Writes the MIME content of the email to an S3 bucket.</p>"
+    },
+    "S3Bucket":{
+      "type":"string",
+      "max":62,
+      "min":1,
+      "pattern":"[a-zA-Z0-9.-]+"
+    },
+    "S3ExportDestinationConfiguration":{
+      "type":"structure",
+      "members":{
+        "S3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The S3 location to deliver the exported email data.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for exporting email data to an Amazon S3 bucket.</p>"
+    },
+    "S3Location":{
+      "type":"string",
+      "pattern":"s3://[a-zA-Z0-9.-]{3,63}(/[a-zA-Z0-9!_.*'()/-]*)*"
+    },
+    "S3Prefix":{
+      "type":"string",
+      "max":62,
+      "min":1,
+      "pattern":"[a-zA-Z0-9!_.*'()/-]+"
+    },
+    "S3PresignedURL":{"type":"string"},
+    "SavedAddress":{
+      "type":"structure",
+      "required":[
+        "Address",
+        "CreatedTimestamp"
+      ],
+      "members":{
+        "Address":{
+          "shape":"Address",
+          "documentation":"<p>The email or domain that constitutes the address.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the address was added to the address list.</p>"
+        }
+      },
+      "documentation":"<p>An address that is a member of an address list.</p>"
+    },
+    "SavedAddresses":{
+      "type":"list",
+      "member":{"shape":"SavedAddress"}
+    },
+    "SearchId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "SearchMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":0
+    },
+    "SearchState":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "SearchStatus":{
+      "type":"structure",
+      "members":{
+        "SubmissionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the search was submitted.</p>"
+        },
+        "CompletionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the search completed (if finished).</p>"
+        },
+        "State":{
+          "shape":"SearchState",
+          "documentation":"<p>The current state of the search job.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>An error message if the search failed.</p>"
+        }
+      },
+      "documentation":"<p>The current status of an archive search job.</p>"
+    },
+    "SearchSummary":{
+      "type":"structure",
+      "members":{
+        "SearchId":{
+          "shape":"SearchId",
+          "documentation":"<p>The unique identifier of the search job.</p>"
+        },
+        "Status":{
+          "shape":"SearchStatus",
+          "documentation":"<p>The current status of the search job.</p>"
+        }
+      },
+      "documentation":"<p>Summary details of an archive search job.</p>"
+    },
+    "SearchSummaryList":{
+      "type":"list",
+      "member":{"shape":"SearchSummary"}
+    },
+    "SecretArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z0-9-]+:\\d{12}:secret:[a-zA-Z0-9/_+=,.@-]+"
+    },
+    "SendAction":{
+      "type":"structure",
+      "required":["RoleArn"],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, the caller does not have the permissions to call the sendRawEmail API.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role to use for this action. This role must have access to the ses:SendRawEmail API.</p>"
+        }
+      },
+      "documentation":"<p>Sends the email to the internet using the ses:SendRawEmail API.</p>"
+    },
+    "SenderIpAddress":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when an operation exceeds a predefined service quota or limit.</p>",
+      "exception":true
+    },
+    "SmtpPassword":{
+      "type":"string",
+      "max":64,
+      "min":8,
+      "pattern":"[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{}|.,?]+",
+      "sensitive":true
+    },
+    "SnsAction":{
+      "type":"structure",
+      "required":[
+        "TopicArn",
+        "RoleArn"
+      ],
+      "members":{
+        "ActionFailurePolicy":{
+          "shape":"ActionFailurePolicy",
+          "documentation":"<p>A policy that states what to do in the case of failure. The action will fail if there are configuration errors. For example, specified SNS topic has been deleted or the role lacks necessary permissions to call the <code>sns:Publish</code> API.</p>"
+        },
+        "TopicArn":{
+          "shape":"SnsTopicArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon SNS Topic to which notification for the email received will be published.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM Role to use while writing to Amazon SNS. This role must have access to the <code>sns:Publish</code> API for the given topic.</p>"
+        },
+        "Encoding":{
+          "shape":"SnsNotificationEncoding",
+          "documentation":"<p>The encoding to use for the email within the Amazon SNS notification. The default value is <code>UTF-8</code>. Use <code>BASE64</code> if you need to preserve all special characters, especially when the original message uses a different encoding format.</p>"
+        },
+        "PayloadType":{
+          "shape":"SnsNotificationPayloadType",
+          "documentation":"<p>The expected payload type within the Amazon SNS notification. <code>CONTENT</code> attempts to publish the full email content with 20KB of headers content. <code>HEADERS</code> extracts up to 100KB of header content to include in the notification, email content will not be included to the notification. The default value is <code>CONTENT</code>.</p>"
+        }
+      },
+      "documentation":"<p>The action to publish the email content to an Amazon SNS topic. When executed, this action will send the email as a notification to the specified SNS topic.</p>"
+    },
+    "SnsNotificationEncoding":{
+      "type":"string",
+      "enum":[
+        "UTF-8",
+        "BASE64"
+      ]
+    },
+    "SnsNotificationPayloadType":{
+      "type":"string",
+      "enum":[
+        "HEADERS",
+        "CONTENT"
+      ]
+    },
+    "SnsTopicArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:(aws|aws-cn|aws-us-gov):sns:[a-z]{2}-[a-z]+-\\d{1}:\\d{12}:[\\w\\-]{1,256}"
+    },
+    "StartAddressListImportJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the import job that needs to be started.</p>"
+        }
+      }
+    },
+    "StartAddressListImportJobResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "StartArchiveExportRequest":{
+      "type":"structure",
+      "required":[
+        "ArchiveId",
+        "FromTimestamp",
+        "ToTimestamp",
+        "ExportDestinationConfiguration"
+      ],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive to export emails from.</p>"
+        },
+        "Filters":{
+          "shape":"ArchiveFilters",
+          "documentation":"<p>Criteria to filter which emails are included in the export.</p>"
+        },
+        "FromTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start of the timestamp range to include emails from.</p>"
+        },
+        "ToTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end of the timestamp range to include emails from.</p>"
+        },
+        "MaxResults":{
+          "shape":"ExportMaxResults",
+          "documentation":"<p>The maximum number of email items to include in the export.</p>"
+        },
+        "ExportDestinationConfiguration":{
+          "shape":"ExportDestinationConfiguration",
+          "documentation":"<p>Details on where to deliver the exported email data.</p>"
+        },
+        "IncludeMetadata":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to include message metadata as JSON files in the export.</p>"
+        }
+      },
+      "documentation":"<p>The request to initiate an export of emails from an archive.</p>"
+    },
+    "StartArchiveExportResponse":{
+      "type":"structure",
+      "members":{
+        "ExportId":{
+          "shape":"ExportId",
+          "documentation":"<p>The unique identifier for the initiated export job.</p>"
+        }
+      },
+      "documentation":"<p>The response from initiating an archive export.</p>"
+    },
+    "StartArchiveSearchRequest":{
+      "type":"structure",
+      "required":[
+        "ArchiveId",
+        "FromTimestamp",
+        "ToTimestamp",
+        "MaxResults"
+      ],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveId",
+          "documentation":"<p>The identifier of the archive to search emails in.</p>"
+        },
+        "Filters":{
+          "shape":"ArchiveFilters",
+          "documentation":"<p>Criteria to filter which emails are included in the search results.</p>"
+        },
+        "FromTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start timestamp of the range to search emails from.</p>"
+        },
+        "ToTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end timestamp of the range to search emails from.</p>"
+        },
+        "MaxResults":{
+          "shape":"SearchMaxResults",
+          "documentation":"<p>The maximum number of search results to return.</p>"
+        }
+      },
+      "documentation":"<p>The request to initiate a search across emails in an archive.</p>"
+    },
+    "StartArchiveSearchResponse":{
+      "type":"structure",
+      "members":{
+        "SearchId":{
+          "shape":"SearchId",
+          "documentation":"<p>The unique identifier for the initiated search job.</p>"
+        }
+      },
+      "documentation":"<p>The response from initiating an archive search.</p>"
+    },
+    "StopAddressListImportJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the import job that needs to be stopped.</p>"
+        }
+      }
+    },
+    "StopAddressListImportJobResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "StopArchiveExportRequest":{
+      "type":"structure",
+      "required":["ExportId"],
+      "members":{
+        "ExportId":{
+          "shape":"ExportId",
+          "documentation":"<p>The identifier of the export job to stop.</p>"
+        }
+      },
+      "documentation":"<p>The request to stop an in-progress archive export job.</p>"
+    },
+    "StopArchiveExportResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The response indicating if the request to stop the export job succeeded.</p> <p>On success, returns an HTTP 200 status code. On failure, returns an error message.</p>"
+    },
+    "StopArchiveSearchRequest":{
+      "type":"structure",
+      "required":["SearchId"],
+      "members":{
+        "SearchId":{
+          "shape":"SearchId",
+          "documentation":"<p>The identifier of the search job to stop.</p>"
+        }
+      },
+      "documentation":"<p>The request to stop an in-progress archive search job.</p>"
+    },
+    "StopArchiveSearchResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The response indicating if the request to stop the search job succeeded.</p> <p>On success, returns an HTTP 200 status code. On failure, returns an error message.</p>"
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "StringValue":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "StringValueList":{
+      "type":"list",
+      "member":{"shape":"StringValue"},
+      "max":10,
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the key-value tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the key-value tag.</p>"
+        }
+      },
+      "documentation":"<p>A key-value pair (the value is optional), that you can define and assign to Amazon Web Services resources.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9/_\\+=\\.:@\\-]+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TaggableResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource that you want to tag. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p> The tags used to organize, track, or control access for the resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[a-zA-Z0-9/_\\+=\\.:@\\-]*"
+    },
+    "TaggableResourceArn":{
+      "type":"string",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws(|-cn|-us-gov):ses:[a-z0-9-]{1,20}:[0-9]{12}:(mailmanager-|addon-).+"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Occurs when a service's request rate limit is exceeded, resulting in throttling of further requests.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TrafficPolicy":{
+      "type":"structure",
+      "required":[
+        "TrafficPolicyName",
+        "TrafficPolicyId",
+        "DefaultAction"
+      ],
+      "members":{
+        "TrafficPolicyName":{
+          "shape":"TrafficPolicyName",
+          "documentation":"<p>A user-friendly name of the traffic policy resource.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy resource.</p>"
+        },
+        "DefaultAction":{
+          "shape":"AcceptAction",
+          "documentation":"<p>Default action instructs the traﬃc policy to either Allow or Deny (block) messages that fall outside of (or not addressed by) the conditions of your policy statements</p>"
+        }
+      },
+      "documentation":"<p>The structure of a traffic policy resource which is a container for policy statements.</p>"
+    },
+    "TrafficPolicyArn":{"type":"string"},
+    "TrafficPolicyId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "TrafficPolicyList":{
+      "type":"list",
+      "member":{"shape":"TrafficPolicy"}
+    },
+    "TrafficPolicyName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[A-Za-z0-9_\\-]+"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TaggableResourceArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the resource that you want to untag. </p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p> The keys of the key-value pairs for the tag or tags you want to remove from the specified resource. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateArchiveRequest":{
+      "type":"structure",
+      "required":["ArchiveId"],
+      "members":{
+        "ArchiveId":{
+          "shape":"ArchiveIdString",
+          "documentation":"<p>The identifier of the archive to update.</p>"
+        },
+        "ArchiveName":{
+          "shape":"ArchiveNameString",
+          "documentation":"<p>A new, unique name for the archive.</p>"
+        },
+        "Retention":{
+          "shape":"ArchiveRetention",
+          "documentation":"<p>A new retention period for emails in the archive.</p>"
+        }
+      },
+      "documentation":"<p>The request to update properties of an existing email archive.</p>"
+    },
+    "UpdateArchiveResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The response indicating if the archive update succeeded or failed.</p> <p>On success, returns an HTTP 200 status code. On failure, returns an error message.</p>"
+    },
+    "UpdateIngressPointRequest":{
+      "type":"structure",
+      "required":["IngressPointId"],
+      "members":{
+        "IngressPointId":{
+          "shape":"IngressPointId",
+          "documentation":"<p>The identifier for the ingress endpoint you want to update.</p>"
+        },
+        "IngressPointName":{
+          "shape":"IngressPointName",
+          "documentation":"<p>A user friendly name for the ingress endpoint resource.</p>"
+        },
+        "StatusToUpdate":{
+          "shape":"IngressPointStatusToUpdate",
+          "documentation":"<p>The update status of an ingress endpoint.</p>"
+        },
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of an existing rule set that you attach to an ingress endpoint resource.</p>"
+        },
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of an existing traffic policy that you attach to an ingress endpoint resource.</p>"
+        },
+        "IngressPointConfiguration":{
+          "shape":"IngressPointConfiguration",
+          "documentation":"<p>If you choose an Authenticated ingress endpoint, you must configure either an SMTP password or a secret ARN.</p>"
+        }
+      }
+    },
+    "UpdateIngressPointResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateRelayRequest":{
+      "type":"structure",
+      "required":["RelayId"],
+      "members":{
+        "RelayId":{
+          "shape":"RelayId",
+          "documentation":"<p>The unique relay identifier.</p>"
+        },
+        "RelayName":{
+          "shape":"RelayName",
+          "documentation":"<p>The name of the relay resource.</p>"
+        },
+        "ServerName":{
+          "shape":"RelayServerName",
+          "documentation":"<p>The destination relay server address.</p>"
+        },
+        "ServerPort":{
+          "shape":"RelayServerPort",
+          "documentation":"<p>The destination relay server port.</p>"
+        },
+        "Authentication":{
+          "shape":"RelayAuthentication",
+          "documentation":"<p>Authentication for the relay destination server—specify the secretARN where the SMTP credentials are stored.</p>"
+        }
+      }
+    },
+    "UpdateRelayResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateRuleSetRequest":{
+      "type":"structure",
+      "required":["RuleSetId"],
+      "members":{
+        "RuleSetId":{
+          "shape":"RuleSetId",
+          "documentation":"<p>The identifier of a rule set you want to update.</p>"
+        },
+        "RuleSetName":{
+          "shape":"RuleSetName",
+          "documentation":"<p>A user-friendly name for the rule set resource.</p>"
+        },
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>A new set of rules to replace the current rules of the rule set—these rules will override all the rules of the rule set.</p>"
+        }
+      }
+    },
+    "UpdateRuleSetResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateTrafficPolicyRequest":{
+      "type":"structure",
+      "required":["TrafficPolicyId"],
+      "members":{
+        "TrafficPolicyId":{
+          "shape":"TrafficPolicyId",
+          "documentation":"<p>The identifier of the traffic policy that you want to update.</p>"
+        },
+        "TrafficPolicyName":{
+          "shape":"TrafficPolicyName",
+          "documentation":"<p>A user-friendly name for the traffic policy resource.</p>"
+        },
+        "PolicyStatements":{
+          "shape":"PolicyStatementList",
+          "documentation":"<p>The list of conditions to be updated for filtering email traffic.</p>"
+        },
+        "DefaultAction":{
+          "shape":"AcceptAction",
+          "documentation":"<p>Default action instructs the traﬃc policy to either Allow or Deny (block) messages that fall outside of (or not addressed by) the conditions of your policy statements</p>"
+        },
+        "MaxMessageSizeBytes":{
+          "shape":"MaxMessageSizeBytes",
+          "documentation":"<p>The maximum message size in bytes of email which is allowed in by this traffic policy—anything larger will be blocked.</p>"
+        }
+      }
+    },
+    "UpdateTrafficPolicyResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request validation has failed. For details, see the accompanying error message.</p>",
+      "exception":true
+    },
+    "VpcEndpointId":{
+      "type":"string",
+      "pattern":"vpce-[a-zA-Z0-9]{17}"
+    }
+  },
+  "documentation":"<p><fullname>Amazon SES Mail Manager API</fullname> <p>The Amazon SES Mail Manager API contains operations and data types that comprise the Mail Manager feature of <a href=\"http://aws.amazon.com/ses\">Amazon Simple Email Service (SES)</a>.</p> <p>Mail Manager is a set of Amazon SES email gateway features designed to help you strengthen your organization's email infrastructure, simplify email workflow management, and streamline email compliance control. To learn more, see the <a href=\"https://docs.aws.amazon.com/ses/latest/dg/eb.html\">Mail Manager chapter</a> in the <i>Amazon SES Developer Guide</i>.</p></p>"
+}

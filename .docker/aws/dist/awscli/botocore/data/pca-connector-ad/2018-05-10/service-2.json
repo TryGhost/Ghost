@@ -1,0 +1,2854 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "endpointPrefix":"pca-connector-ad",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"PcaConnectorAd",
+    "serviceId":"Pca Connector Ad",
+    "signatureVersion":"v4",
+    "signingName":"pca-connector-ad",
+    "uid":"pca-connector-ad-2018-05-10",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateConnector":{
+      "name":"CreateConnector",
+      "http":{
+        "method":"POST",
+        "requestUri":"/connectors",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateConnectorRequest"},
+      "output":{"shape":"CreateConnectorResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a connector between Amazon Web Services Private CA and an Active Directory. You must specify the private CA, directory ID, and security groups.</p>"
+    },
+    "CreateDirectoryRegistration":{
+      "name":"CreateDirectoryRegistration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/directoryRegistrations",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateDirectoryRegistrationRequest"},
+      "output":{"shape":"CreateDirectoryRegistrationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a directory registration that authorizes communication between Amazon Web Services Private CA and an Active Directory</p>"
+    },
+    "CreateServicePrincipalName":{
+      "name":"CreateServicePrincipalName",
+      "http":{
+        "method":"POST",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}/servicePrincipalNames/{ConnectorArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"CreateServicePrincipalNameRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a service principal name (SPN) for the service account in Active Directory. Kerberos authentication uses SPNs to associate a service instance with a service sign-in account.</p>",
+      "idempotent":true
+    },
+    "CreateTemplate":{
+      "name":"CreateTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/templates",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateTemplateRequest"},
+      "output":{"shape":"CreateTemplateResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates an Active Directory compatible certificate template. The connectors issues certificates using these templates based on the requester’s Active Directory group membership.</p>"
+    },
+    "CreateTemplateGroupAccessControlEntry":{
+      "name":"CreateTemplateGroupAccessControlEntry",
+      "http":{
+        "method":"POST",
+        "requestUri":"/templates/{TemplateArn}/accessControlEntries",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateTemplateGroupAccessControlEntryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Create a group access control entry. Allow or deny Active Directory groups from enrolling and/or autoenrolling with the template based on the group security identifiers (SIDs).</p>",
+      "idempotent":true
+    },
+    "DeleteConnector":{
+      "name":"DeleteConnector",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/connectors/{ConnectorArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteConnectorRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a connector for Active Directory. You must provide the Amazon Resource Name (ARN) of the connector that you want to delete. You can find the ARN by calling the <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_ListConnectors\">https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_ListConnectors</a> action. Deleting a connector does not deregister your directory with Amazon Web Services Private CA. You can deregister your directory by calling the <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_DeleteDirectoryRegistration\">https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_DeleteDirectoryRegistration</a> action.</p>",
+      "idempotent":true
+    },
+    "DeleteDirectoryRegistration":{
+      "name":"DeleteDirectoryRegistration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteDirectoryRegistrationRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a directory registration. Deleting a directory registration deauthorizes Amazon Web Services Private CA with the directory. </p>",
+      "idempotent":true
+    },
+    "DeleteServicePrincipalName":{
+      "name":"DeleteServicePrincipalName",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}/servicePrincipalNames/{ConnectorArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteServicePrincipalNameRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes the service principal name (SPN) used by a connector to authenticate with your Active Directory.</p>",
+      "idempotent":true
+    },
+    "DeleteTemplate":{
+      "name":"DeleteTemplate",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/templates/{TemplateArn}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteTemplateRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a template. Certificates issued using the template are still valid until they are revoked or expired.</p>",
+      "idempotent":true
+    },
+    "DeleteTemplateGroupAccessControlEntry":{
+      "name":"DeleteTemplateGroupAccessControlEntry",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/templates/{TemplateArn}/accessControlEntries/{GroupSecurityIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteTemplateGroupAccessControlEntryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a group access control entry.</p>",
+      "idempotent":true
+    },
+    "GetConnector":{
+      "name":"GetConnector",
+      "http":{
+        "method":"GET",
+        "requestUri":"/connectors/{ConnectorArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetConnectorRequest"},
+      "output":{"shape":"GetConnectorResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists information about your connector. You specify the connector on input by its ARN (Amazon Resource Name). </p>"
+    },
+    "GetDirectoryRegistration":{
+      "name":"GetDirectoryRegistration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDirectoryRegistrationRequest"},
+      "output":{"shape":"GetDirectoryRegistrationResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>A structure that contains information about your directory registration.</p>"
+    },
+    "GetServicePrincipalName":{
+      "name":"GetServicePrincipalName",
+      "http":{
+        "method":"GET",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}/servicePrincipalNames/{ConnectorArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetServicePrincipalNameRequest"},
+      "output":{"shape":"GetServicePrincipalNameResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the service principal name that the connector uses to authenticate with Active Directory.</p>"
+    },
+    "GetTemplate":{
+      "name":"GetTemplate",
+      "http":{
+        "method":"GET",
+        "requestUri":"/templates/{TemplateArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTemplateRequest"},
+      "output":{"shape":"GetTemplateResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a certificate template that the connector uses to issue certificates from a private CA.</p>"
+    },
+    "GetTemplateGroupAccessControlEntry":{
+      "name":"GetTemplateGroupAccessControlEntry",
+      "http":{
+        "method":"GET",
+        "requestUri":"/templates/{TemplateArn}/accessControlEntries/{GroupSecurityIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTemplateGroupAccessControlEntryRequest"},
+      "output":{"shape":"GetTemplateGroupAccessControlEntryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the group access control entries for a template.</p>"
+    },
+    "ListConnectors":{
+      "name":"ListConnectors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/connectors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListConnectorsRequest"},
+      "output":{"shape":"ListConnectorsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the connectors that you created by using the <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector\">https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector</a> action.</p>"
+    },
+    "ListDirectoryRegistrations":{
+      "name":"ListDirectoryRegistrations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/directoryRegistrations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDirectoryRegistrationsRequest"},
+      "output":{"shape":"ListDirectoryRegistrationsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the directory registrations that you created by using the <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration\">https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration</a> action.</p>"
+    },
+    "ListServicePrincipalNames":{
+      "name":"ListServicePrincipalNames",
+      "http":{
+        "method":"GET",
+        "requestUri":"/directoryRegistrations/{DirectoryRegistrationArn}/servicePrincipalNames",
+        "responseCode":200
+      },
+      "input":{"shape":"ListServicePrincipalNamesRequest"},
+      "output":{"shape":"ListServicePrincipalNamesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the service principal names that the connector uses to authenticate with Active Directory.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the tags, if any, that are associated with your resource. </p>"
+    },
+    "ListTemplateGroupAccessControlEntries":{
+      "name":"ListTemplateGroupAccessControlEntries",
+      "http":{
+        "method":"GET",
+        "requestUri":"/templates/{TemplateArn}/accessControlEntries",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTemplateGroupAccessControlEntriesRequest"},
+      "output":{"shape":"ListTemplateGroupAccessControlEntriesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists group access control entries you created. </p>"
+    },
+    "ListTemplates":{
+      "name":"ListTemplates",
+      "http":{
+        "method":"GET",
+        "requestUri":"/templates",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTemplatesRequest"},
+      "output":{"shape":"ListTemplatesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the templates, if any, that are associated with a connector.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds one or more tags to your resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes one or more tags from your resource.</p>",
+      "idempotent":true
+    },
+    "UpdateTemplate":{
+      "name":"UpdateTemplate",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/templates/{TemplateArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTemplateRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Update template configuration to define the information included in certificates.</p>"
+    },
+    "UpdateTemplateGroupAccessControlEntry":{
+      "name":"UpdateTemplateGroupAccessControlEntry",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/templates/{TemplateArn}/accessControlEntries/{GroupSecurityIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTemplateGroupAccessControlEntryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Update a group access control entry you created using <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplateGroupAccessControlEntry.html\">CreateTemplateGroupAccessControlEntry</a>. </p>"
+    }
+  },
+  "shapes":{
+    "AccessControlEntry":{
+      "type":"structure",
+      "members":{
+        "AccessRights":{
+          "shape":"AccessRights",
+          "documentation":"<p>Permissions to allow or deny an Active Directory group to enroll or autoenroll certificates issued against a template.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the Access Control Entry was created.</p>"
+        },
+        "GroupDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>Name of the Active Directory group. This name does not need to match the group name in Active Directory.</p>"
+        },
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the Access Control Entry was updated.</p>"
+        }
+      },
+      "documentation":"<p> An access control entry allows or denies Active Directory groups based on their security identifiers (SIDs) from enrolling and/or autoenrolling with the template.</p>"
+    },
+    "AccessControlEntryList":{
+      "type":"list",
+      "member":{"shape":"AccessControlEntrySummary"}
+    },
+    "AccessControlEntrySummary":{
+      "type":"structure",
+      "members":{
+        "AccessRights":{
+          "shape":"AccessRights",
+          "documentation":"<p>Allow or deny an Active Directory group from enrolling and autoenrolling certificates issued against a template.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the Access Control Entry was created.</p>"
+        },
+        "GroupDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>Name of the Active Directory group. This name does not need to match the group name in Active Directory.</p>"
+        },
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>. </p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the Access Control Entry was updated.</p>"
+        }
+      },
+      "documentation":"<p>Summary of group access control entries that allow or deny Active Directory groups based on their security identifiers (SIDs) from enrolling and/or autofenrolling with the template.</p>"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You can receive this error if you attempt to create a resource share when you don't have the required permissions. This can be caused by insufficient permissions in policies attached to your Amazon Web Services Identity and Access Management (IAM) principal. It can also happen because of restrictions in place from an Amazon Web Services Organizations service control policy (SCP) that affects your Amazon Web Services account. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessRight":{
+      "type":"string",
+      "enum":[
+        "ALLOW",
+        "DENY"
+      ]
+    },
+    "AccessRights":{
+      "type":"structure",
+      "members":{
+        "AutoEnroll":{
+          "shape":"AccessRight",
+          "documentation":"<p>Allow or deny an Active Directory group from autoenrolling certificates issued against a template. The Active Directory group must be allowed to enroll to allow autoenrollment</p>"
+        },
+        "Enroll":{
+          "shape":"AccessRight",
+          "documentation":"<p>Allow or deny an Active Directory group from enrolling certificates issued against a template.</p>"
+        }
+      },
+      "documentation":"<p> Allow or deny permissions for an Active Directory group to enroll or autoenroll certificates for a template.</p>"
+    },
+    "ApplicationPolicies":{
+      "type":"structure",
+      "required":["Policies"],
+      "members":{
+        "Critical":{
+          "shape":"Boolean",
+          "documentation":"<p>Marks the application policy extension as critical.</p>"
+        },
+        "Policies":{
+          "shape":"ApplicationPolicyList",
+          "documentation":"<p>Application policies describe what the certificate can be used for.</p>"
+        }
+      },
+      "documentation":"<p>Application policies describe what the certificate can be used for.</p>"
+    },
+    "ApplicationPolicy":{
+      "type":"structure",
+      "members":{
+        "PolicyObjectIdentifier":{
+          "shape":"CustomObjectIdentifier",
+          "documentation":"<p>The object identifier (OID) of an application policy.</p>"
+        },
+        "PolicyType":{
+          "shape":"ApplicationPolicyType",
+          "documentation":"<p>The type of application policy</p>"
+        }
+      },
+      "documentation":"<p>Application policies describe what the certificate can be used for.</p>",
+      "union":true
+    },
+    "ApplicationPolicyList":{
+      "type":"list",
+      "member":{"shape":"ApplicationPolicy"},
+      "max":100,
+      "min":1
+    },
+    "ApplicationPolicyType":{
+      "type":"string",
+      "enum":[
+        "ALL_APPLICATION_POLICIES",
+        "ANY_PURPOSE",
+        "ATTESTATION_IDENTITY_KEY_CERTIFICATE",
+        "CERTIFICATE_REQUEST_AGENT",
+        "CLIENT_AUTHENTICATION",
+        "CODE_SIGNING",
+        "CTL_USAGE",
+        "DIGITAL_RIGHTS",
+        "DIRECTORY_SERVICE_EMAIL_REPLICATION",
+        "DISALLOWED_LIST",
+        "DNS_SERVER_TRUST",
+        "DOCUMENT_ENCRYPTION",
+        "DOCUMENT_SIGNING",
+        "DYNAMIC_CODE_GENERATOR",
+        "EARLY_LAUNCH_ANTIMALWARE_DRIVER",
+        "EMBEDDED_WINDOWS_SYSTEM_COMPONENT_VERIFICATION",
+        "ENCLAVE",
+        "ENCRYPTING_FILE_SYSTEM",
+        "ENDORSEMENT_KEY_CERTIFICATE",
+        "FILE_RECOVERY",
+        "HAL_EXTENSION",
+        "IP_SECURITY_END_SYSTEM",
+        "IP_SECURITY_IKE_INTERMEDIATE",
+        "IP_SECURITY_TUNNEL_TERMINATION",
+        "IP_SECURITY_USER",
+        "ISOLATED_USER_MODE",
+        "KDC_AUTHENTICATION",
+        "KERNEL_MODE_CODE_SIGNING",
+        "KEY_PACK_LICENSES",
+        "KEY_RECOVERY",
+        "KEY_RECOVERY_AGENT",
+        "LICENSE_SERVER_VERIFICATION",
+        "LIFETIME_SIGNING",
+        "MICROSOFT_PUBLISHER",
+        "MICROSOFT_TIME_STAMPING",
+        "MICROSOFT_TRUST_LIST_SIGNING",
+        "OCSP_SIGNING",
+        "OEM_WINDOWS_SYSTEM_COMPONENT_VERIFICATION",
+        "PLATFORM_CERTIFICATE",
+        "PREVIEW_BUILD_SIGNING",
+        "PRIVATE_KEY_ARCHIVAL",
+        "PROTECTED_PROCESS_LIGHT_VERIFICATION",
+        "PROTECTED_PROCESS_VERIFICATION",
+        "QUALIFIED_SUBORDINATION",
+        "REVOKED_LIST_SIGNER",
+        "ROOT_PROGRAM_AUTO_UPDATE_CA_REVOCATION",
+        "ROOT_PROGRAM_AUTO_UPDATE_END_REVOCATION",
+        "ROOT_PROGRAM_NO_OSCP_FAILOVER_TO_CRL",
+        "ROOT_LIST_SIGNER",
+        "SECURE_EMAIL",
+        "SERVER_AUTHENTICATION",
+        "SMART_CARD_LOGIN",
+        "SPC_ENCRYPTED_DIGEST_RETRY_COUNT",
+        "SPC_RELAXED_PE_MARKER_CHECK",
+        "TIME_STAMPING",
+        "WINDOWS_HARDWARE_DRIVER_ATTESTED_VERIFICATION",
+        "WINDOWS_HARDWARE_DRIVER_EXTENDED_VERIFICATION",
+        "WINDOWS_HARDWARE_DRIVER_VERIFICATION",
+        "WINDOWS_HELLO_RECOVERY_KEY_ENCRYPTION",
+        "WINDOWS_KITS_COMPONENT",
+        "WINDOWS_RT_VERIFICATION",
+        "WINDOWS_SOFTWARE_EXTENSION_VERIFICATION",
+        "WINDOWS_STORE",
+        "WINDOWS_SYSTEM_COMPONENT_VERIFICATION",
+        "WINDOWS_TCB_COMPONENT",
+        "WINDOWS_THIRD_PARTY_APPLICATION_COMPONENT",
+        "WINDOWS_UPDATE"
+      ]
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CertificateAuthorityArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"^arn:[\\w-]+:acm-pca:[\\w-]+:[0-9]+:certificate-authority\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+    },
+    "CertificateValidity":{
+      "type":"structure",
+      "required":[
+        "RenewalPeriod",
+        "ValidityPeriod"
+      ],
+      "members":{
+        "RenewalPeriod":{
+          "shape":"ValidityPeriod",
+          "documentation":"<p>Renewal period is the period of time before certificate expiration when a new certificate will be requested.</p>"
+        },
+        "ValidityPeriod":{
+          "shape":"ValidityPeriod",
+          "documentation":"<p>Information describing the end of the validity period of the certificate. This parameter sets the “Not After” date for the certificate. Certificate validity is the period of time during which a certificate is valid. Validity can be expressed as an explicit date and time when the certificate expires, or as a span of time after issuance, stated in days, months, or years. For more information, see Validity in RFC 5280. This value is unaffected when ValidityNotBefore is also specified. For example, if Validity is set to 20 days in the future, the certificate will expire 20 days from issuance time regardless of the ValidityNotBefore value.</p>"
+        }
+      },
+      "documentation":"<p>Information describing the end of the validity period of the certificate. This parameter sets the “Not After” date for the certificate. Certificate validity is the period of time during which a certificate is valid. Validity can be expressed as an explicit date and time when the certificate expires, or as a span of time after issuance, stated in days, months, or years. For more information, see Validity in RFC 5280. This value is unaffected when ValidityNotBefore is also specified. For example, if Validity is set to 20 days in the future, the certificate will expire 20 days from issuance time regardless of the ValidityNotBefore value.</p>"
+    },
+    "ClientCompatibilityV2":{
+      "type":"string",
+      "enum":[
+        "WINDOWS_SERVER_2003",
+        "WINDOWS_SERVER_2008",
+        "WINDOWS_SERVER_2008_R2",
+        "WINDOWS_SERVER_2012",
+        "WINDOWS_SERVER_2012_R2",
+        "WINDOWS_SERVER_2016"
+      ]
+    },
+    "ClientCompatibilityV3":{
+      "type":"string",
+      "enum":[
+        "WINDOWS_SERVER_2008",
+        "WINDOWS_SERVER_2008_R2",
+        "WINDOWS_SERVER_2012",
+        "WINDOWS_SERVER_2012_R2",
+        "WINDOWS_SERVER_2016"
+      ]
+    },
+    "ClientCompatibilityV4":{
+      "type":"string",
+      "enum":[
+        "WINDOWS_SERVER_2012",
+        "WINDOWS_SERVER_2012_R2",
+        "WINDOWS_SERVER_2016"
+      ]
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[!-~]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the Amazon Web Services resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be one of <code>Connector</code>, <code>Template</code>, <code>TemplateGroupAccessControlEntry</code>, <code>ServicePrincipalName</code>, or <code>DirectoryRegistration</code>.</p>"
+        }
+      },
+      "documentation":"<p>This request cannot be completed for one of the following reasons because the requested resource was being concurrently modified by another request.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Connector":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>. </p>"
+        },
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the certificate authority being used. </p>"
+        },
+        "CertificateEnrollmentPolicyServerEndpoint":{
+          "shape":"String",
+          "documentation":"<p>Certificate enrollment endpoint for Active Directory domain-joined objects reach out to when requesting certificates.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was created.</p>"
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The identifier of the Active Directory.</p>"
+        },
+        "Status":{
+          "shape":"ConnectorStatus",
+          "documentation":"<p>Status of the connector. Status can be creating, active, deleting, or failed.</p>"
+        },
+        "StatusReason":{
+          "shape":"ConnectorStatusReason",
+          "documentation":"<p>Additional information about the connector status if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was updated.</p>"
+        },
+        "VpcInformation":{
+          "shape":"VpcInformation",
+          "documentation":"<p>Information of the VPC and security group(s) used with the connector.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Web Services Private CA Connector for Active Directory is a service that links your Active Directory with Amazon Web Services Private CA. The connector brokers the exchange of certificates from Amazon Web Services Private CA to domain-joined users and machines managed with Active Directory.</p>"
+    },
+    "ConnectorArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"^arn:[\\w-]+:pca-connector-ad:[\\w-]+:[0-9]+:connector\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+    },
+    "ConnectorList":{
+      "type":"list",
+      "member":{"shape":"ConnectorSummary"}
+    },
+    "ConnectorStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ConnectorStatusReason":{
+      "type":"string",
+      "enum":[
+        "CA_CERTIFICATE_REGISTRATION_FAILED",
+        "DIRECTORY_ACCESS_DENIED",
+        "INTERNAL_FAILURE",
+        "INSUFFICIENT_FREE_ADDRESSES",
+        "INVALID_SUBNET_IP_PROTOCOL",
+        "PRIVATECA_ACCESS_DENIED",
+        "PRIVATECA_RESOURCE_NOT_FOUND",
+        "SECURITY_GROUP_NOT_IN_VPC",
+        "VPC_ACCESS_DENIED",
+        "VPC_ENDPOINT_LIMIT_EXCEEDED",
+        "VPC_RESOURCE_NOT_FOUND"
+      ]
+    },
+    "ConnectorSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>"
+        },
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the certificate authority being used.</p>"
+        },
+        "CertificateEnrollmentPolicyServerEndpoint":{
+          "shape":"String",
+          "documentation":"<p>Certificate enrollment endpoint for Active Directory domain-joined objects to request certificates.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was created.</p>"
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The identifier of the Active Directory.</p>"
+        },
+        "Status":{
+          "shape":"ConnectorStatus",
+          "documentation":"<p>Status of the connector. Status can be creating, active, deleting, or failed.</p>"
+        },
+        "StatusReason":{
+          "shape":"ConnectorStatusReason",
+          "documentation":"<p>Additional information about the connector status if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the connector was updated.</p>"
+        },
+        "VpcInformation":{
+          "shape":"VpcInformation",
+          "documentation":"<p>Information of the VPC and security group(s) used with the connector.</p>"
+        }
+      },
+      "documentation":"<p>Summary description of the Amazon Web Services Private CA AD connectors belonging to an Amazon Web Services account.</p>"
+    },
+    "CreateConnectorRequest":{
+      "type":"structure",
+      "required":[
+        "CertificateAuthorityArn",
+        "DirectoryId",
+        "VpcInformation"
+      ],
+      "members":{
+        "CertificateAuthorityArn":{
+          "shape":"CertificateAuthorityArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the certificate authority being used.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The identifier of the Active Directory.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Metadata assigned to a connector consisting of a key-value pair.</p>"
+        },
+        "VpcInformation":{
+          "shape":"VpcInformation",
+          "documentation":"<p>Information about your VPC and security groups used with the connector.</p>"
+        }
+      }
+    },
+    "CreateConnectorResponse":{
+      "type":"structure",
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>If successful, the Amazon Resource Name (ARN) of the connector for Active Directory.</p>"
+        }
+      }
+    },
+    "CreateDirectoryRegistrationRequest":{
+      "type":"structure",
+      "required":["DirectoryId"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p> The identifier of the Active Directory.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Metadata assigned to a directory registration consisting of a key-value pair.</p>"
+        }
+      }
+    },
+    "CreateDirectoryRegistrationResponse":{
+      "type":"structure",
+      "members":{
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>"
+        }
+      }
+    },
+    "CreateServicePrincipalNameRequest":{
+      "type":"structure",
+      "required":[
+        "ConnectorArn",
+        "DirectoryRegistrationArn"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        },
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        }
+      }
+    },
+    "CreateTemplateGroupAccessControlEntryRequest":{
+      "type":"structure",
+      "required":[
+        "AccessRights",
+        "GroupDisplayName",
+        "GroupSecurityIdentifier",
+        "TemplateArn"
+      ],
+      "members":{
+        "AccessRights":{
+          "shape":"AccessRights",
+          "documentation":"<p> Allow or deny permissions for an Active Directory group to enroll or autoenroll certificates for a template.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "GroupDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>Name of the Active Directory group. This name does not need to match the group name in Active Directory.</p>"
+        },
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "CreateTemplateRequest":{
+      "type":"structure",
+      "required":[
+        "ConnectorArn",
+        "Definition",
+        "Name"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>"
+        },
+        "Definition":{
+          "shape":"TemplateDefinition",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "Name":{
+          "shape":"TemplateName",
+          "documentation":"<p>Name of the template. The template name must be unique.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Metadata assigned to a template consisting of a key-value pair.</p>"
+        }
+      }
+    },
+    "CreateTemplateResponse":{
+      "type":"structure",
+      "members":{
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>If successful, the Amazon Resource Name (ARN) of the template.</p>"
+        }
+      }
+    },
+    "CryptoProvidersList":{
+      "type":"list",
+      "member":{"shape":"CryptoProvidersListMemberString"},
+      "max":100,
+      "min":1
+    },
+    "CryptoProvidersListMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "CustomObjectIdentifier":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^([0-2])\\.([0-9]|([0-3][0-9]))(\\.([0-9]+)){0,126}$"
+    },
+    "DeleteConnectorRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        }
+      }
+    },
+    "DeleteDirectoryRegistrationRequest":{
+      "type":"structure",
+      "required":["DirectoryRegistrationArn"],
+      "members":{
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        }
+      }
+    },
+    "DeleteServicePrincipalNameRequest":{
+      "type":"structure",
+      "required":[
+        "ConnectorArn",
+        "DirectoryRegistrationArn"
+      ],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        },
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        }
+      }
+    },
+    "DeleteTemplateGroupAccessControlEntryRequest":{
+      "type":"structure",
+      "required":[
+        "GroupSecurityIdentifier",
+        "TemplateArn"
+      ],
+      "members":{
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>",
+          "location":"uri",
+          "locationName":"GroupSecurityIdentifier"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "DeleteTemplateRequest":{
+      "type":"structure",
+      "required":["TemplateArn"],
+      "members":{
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "DirectoryId":{
+      "type":"string",
+      "pattern":"^d-[0-9a-f]{10}$"
+    },
+    "DirectoryRegistration":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called CreateDirectoryRegistration. </p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the directory registration was created.</p>"
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The identifier of the Active Directory.</p>"
+        },
+        "Status":{
+          "shape":"DirectoryRegistrationStatus",
+          "documentation":"<p>Status of the directory registration.</p>"
+        },
+        "StatusReason":{
+          "shape":"DirectoryRegistrationStatusReason",
+          "documentation":"<p>Additional information about the directory registration status if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the directory registration was updated.</p>"
+        }
+      },
+      "documentation":"<p>The directory registration represents the authorization of the connector service with a directory.</p>"
+    },
+    "DirectoryRegistrationArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"^arn:[\\w-]+:pca-connector-ad:[\\w-]+:[0-9]+:directory-registration\\/d-[0-9a-f]{10}$"
+    },
+    "DirectoryRegistrationList":{
+      "type":"list",
+      "member":{"shape":"DirectoryRegistrationSummary"}
+    },
+    "DirectoryRegistrationStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "DirectoryRegistrationStatusReason":{
+      "type":"string",
+      "enum":[
+        "DIRECTORY_ACCESS_DENIED",
+        "DIRECTORY_RESOURCE_NOT_FOUND",
+        "DIRECTORY_NOT_ACTIVE",
+        "DIRECTORY_NOT_REACHABLE",
+        "DIRECTORY_TYPE_NOT_SUPPORTED",
+        "INTERNAL_FAILURE"
+      ]
+    },
+    "DirectoryRegistrationSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the directory registration was created.</p>"
+        },
+        "DirectoryId":{
+          "shape":"DirectoryId",
+          "documentation":"<p>The identifier of the Active Directory.</p>"
+        },
+        "Status":{
+          "shape":"DirectoryRegistrationStatus",
+          "documentation":"<p>Status of the directory registration.</p>"
+        },
+        "StatusReason":{
+          "shape":"DirectoryRegistrationStatusReason",
+          "documentation":"<p>Additional information about the directory registration status if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the directory registration was updated.</p>"
+        }
+      },
+      "documentation":"<p>The directory registration represents the authorization of the connector service with the Active Directory.</p>"
+    },
+    "DisplayName":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^[\\x20-\\x7E]+$"
+    },
+    "EnrollmentFlagsV2":{
+      "type":"structure",
+      "members":{
+        "EnableKeyReuseOnNtTokenKeysetStorageFull":{
+          "shape":"Boolean",
+          "documentation":"<p>Allow renewal using the same key.</p>"
+        },
+        "IncludeSymmetricAlgorithms":{
+          "shape":"Boolean",
+          "documentation":"<p>Include symmetric algorithms allowed by the subject.</p>"
+        },
+        "NoSecurityExtension":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag instructs the CA to not include the security extension szOID_NTDS_CA_SECURITY_EXT (OID:1.3.6.1.4.1.311.25.2), as specified in [MS-WCCE] sections 2.2.2.7.7.4 and 3.2.2.6.2.1.4.5.9, in the issued certificate. This addresses a Windows Kerberos elevation-of-privilege vulnerability.</p>"
+        },
+        "RemoveInvalidCertificateFromPersonalStore":{
+          "shape":"Boolean",
+          "documentation":"<p>Delete expired or revoked certificates instead of archiving them.</p>"
+        },
+        "UserInteractionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Require user interaction when the subject is enrolled and the private key associated with the certificate is used.</p>"
+        }
+      },
+      "documentation":"<p>Template configurations for v2 template schema.</p>"
+    },
+    "EnrollmentFlagsV3":{
+      "type":"structure",
+      "members":{
+        "EnableKeyReuseOnNtTokenKeysetStorageFull":{
+          "shape":"Boolean",
+          "documentation":"<p>Allow renewal using the same key.</p>"
+        },
+        "IncludeSymmetricAlgorithms":{
+          "shape":"Boolean",
+          "documentation":"<p>Include symmetric algorithms allowed by the subject.</p>"
+        },
+        "NoSecurityExtension":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag instructs the CA to not include the security extension szOID_NTDS_CA_SECURITY_EXT (OID:1.3.6.1.4.1.311.25.2), as specified in [MS-WCCE] sections 2.2.2.7.7.4 and 3.2.2.6.2.1.4.5.9, in the issued certificate. This addresses a Windows Kerberos elevation-of-privilege vulnerability.</p>"
+        },
+        "RemoveInvalidCertificateFromPersonalStore":{
+          "shape":"Boolean",
+          "documentation":"<p>Delete expired or revoked certificates instead of archiving them.</p>"
+        },
+        "UserInteractionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Require user interaction when the subject is enrolled and the private key associated with the certificate is used.</p>"
+        }
+      },
+      "documentation":"<p>Template configurations for v3 template schema.</p>"
+    },
+    "EnrollmentFlagsV4":{
+      "type":"structure",
+      "members":{
+        "EnableKeyReuseOnNtTokenKeysetStorageFull":{
+          "shape":"Boolean",
+          "documentation":"<p>Allow renewal using the same key.</p>"
+        },
+        "IncludeSymmetricAlgorithms":{
+          "shape":"Boolean",
+          "documentation":"<p>Include symmetric algorithms allowed by the subject.</p>"
+        },
+        "NoSecurityExtension":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag instructs the CA to not include the security extension szOID_NTDS_CA_SECURITY_EXT (OID:1.3.6.1.4.1.311.25.2), as specified in [MS-WCCE] sections 2.2.2.7.7.4 and 3.2.2.6.2.1.4.5.9, in the issued certificate. This addresses a Windows Kerberos elevation-of-privilege vulnerability.</p>"
+        },
+        "RemoveInvalidCertificateFromPersonalStore":{
+          "shape":"Boolean",
+          "documentation":"<p>Delete expired or revoked certificates instead of archiving them.</p>"
+        },
+        "UserInteractionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Require user interaction when the subject is enrolled and the private key associated with the certificate is used.</p>"
+        }
+      },
+      "documentation":"<p>Template configurations for v4 template schema.</p>"
+    },
+    "ExtensionsV2":{
+      "type":"structure",
+      "required":["KeyUsage"],
+      "members":{
+        "ApplicationPolicies":{
+          "shape":"ApplicationPolicies",
+          "documentation":"<p>Application policies specify what the certificate is used for and its purpose. </p>"
+        },
+        "KeyUsage":{
+          "shape":"KeyUsage",
+          "documentation":"<p>The key usage extension defines the purpose (e.g., encipherment, signature, certificate signing) of the key contained in the certificate.</p>"
+        }
+      },
+      "documentation":"<p>Certificate extensions for v2 template schema</p>"
+    },
+    "ExtensionsV3":{
+      "type":"structure",
+      "required":["KeyUsage"],
+      "members":{
+        "ApplicationPolicies":{
+          "shape":"ApplicationPolicies",
+          "documentation":"<p>Application policies specify what the certificate is used for and its purpose.</p>"
+        },
+        "KeyUsage":{
+          "shape":"KeyUsage",
+          "documentation":"<p>The key usage extension defines the purpose (e.g., encipherment, signature, certificate signing) of the key contained in the certificate.</p>"
+        }
+      },
+      "documentation":"<p>Certificate extensions for v3 template schema</p>"
+    },
+    "ExtensionsV4":{
+      "type":"structure",
+      "required":["KeyUsage"],
+      "members":{
+        "ApplicationPolicies":{
+          "shape":"ApplicationPolicies",
+          "documentation":"<p>Application policies specify what the certificate is used for and its purpose.</p>"
+        },
+        "KeyUsage":{
+          "shape":"KeyUsage",
+          "documentation":"<p>The key usage extension defines the purpose (e.g., encipherment, signature) of the key contained in the certificate.</p>"
+        }
+      },
+      "documentation":"<p>Certificate extensions for v4 template schema</p>"
+    },
+    "GeneralFlagsV2":{
+      "type":"structure",
+      "members":{
+        "AutoEnrollment":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows certificate issuance using autoenrollment. Set to TRUE to allow autoenrollment.</p>"
+        },
+        "MachineType":{
+          "shape":"Boolean",
+          "documentation":"<p>Defines if the template is for machines or users. Set to TRUE if the template is for machines. Set to FALSE if the template is for users.</p>"
+        }
+      },
+      "documentation":"<p>General flags for v2 template schema that defines if the template is for a machine or a user and if the template can be issued using autoenrollment.</p>"
+    },
+    "GeneralFlagsV3":{
+      "type":"structure",
+      "members":{
+        "AutoEnrollment":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows certificate issuance using autoenrollment. Set to TRUE to allow autoenrollment.</p>"
+        },
+        "MachineType":{
+          "shape":"Boolean",
+          "documentation":"<p>Defines if the template is for machines or users. Set to TRUE if the template is for machines. Set to FALSE if the template is for users</p>"
+        }
+      },
+      "documentation":"<p>General flags for v3 template schema that defines if the template is for a machine or a user and if the template can be issued using autoenrollment.</p>"
+    },
+    "GeneralFlagsV4":{
+      "type":"structure",
+      "members":{
+        "AutoEnrollment":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows certificate issuance using autoenrollment. Set to TRUE to allow autoenrollment.</p>"
+        },
+        "MachineType":{
+          "shape":"Boolean",
+          "documentation":"<p>Defines if the template is for machines or users. Set to TRUE if the template is for machines. Set to FALSE if the template is for users</p>"
+        }
+      },
+      "documentation":"<p>General flags for v4 template schema that defines if the template is for a machine or a user and if the template can be issued using autoenrollment.</p>"
+    },
+    "GetConnectorRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        }
+      }
+    },
+    "GetConnectorResponse":{
+      "type":"structure",
+      "members":{
+        "Connector":{
+          "shape":"Connector",
+          "documentation":"<p>A structure that contains information about your connector.</p>"
+        }
+      }
+    },
+    "GetDirectoryRegistrationRequest":{
+      "type":"structure",
+      "required":["DirectoryRegistrationArn"],
+      "members":{
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        }
+      }
+    },
+    "GetDirectoryRegistrationResponse":{
+      "type":"structure",
+      "members":{
+        "DirectoryRegistration":{
+          "shape":"DirectoryRegistration",
+          "documentation":"<p>The directory registration represents the authorization of the connector service with a directory.</p>"
+        }
+      }
+    },
+    "GetServicePrincipalNameRequest":{
+      "type":"structure",
+      "required":[
+        "ConnectorArn",
+        "DirectoryRegistrationArn"
+      ],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"uri",
+          "locationName":"ConnectorArn"
+        },
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        }
+      }
+    },
+    "GetServicePrincipalNameResponse":{
+      "type":"structure",
+      "members":{
+        "ServicePrincipalName":{
+          "shape":"ServicePrincipalName",
+          "documentation":"<p>The service principal name that the connector uses to authenticate with Active Directory.</p>"
+        }
+      }
+    },
+    "GetTemplateGroupAccessControlEntryRequest":{
+      "type":"structure",
+      "required":[
+        "GroupSecurityIdentifier",
+        "TemplateArn"
+      ],
+      "members":{
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>",
+          "location":"uri",
+          "locationName":"GroupSecurityIdentifier"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "GetTemplateGroupAccessControlEntryResponse":{
+      "type":"structure",
+      "members":{
+        "AccessControlEntry":{
+          "shape":"AccessControlEntry",
+          "documentation":"<p>An access control entry allows or denies an Active Directory group from enrolling and/or autoenrolling with a template.</p>"
+        }
+      }
+    },
+    "GetTemplateRequest":{
+      "type":"structure",
+      "required":["TemplateArn"],
+      "members":{
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "GetTemplateResponse":{
+      "type":"structure",
+      "members":{
+        "Template":{
+          "shape":"Template",
+          "documentation":"<p>A certificate template that the connector uses to issue certificates from a private CA.</p>"
+        }
+      }
+    },
+    "GroupSecurityIdentifier":{
+      "type":"string",
+      "max":256,
+      "min":7,
+      "pattern":"^S-[0-9]-([0-9]+-){1,14}[0-9]+$"
+    },
+    "HashAlgorithm":{
+      "type":"string",
+      "enum":[
+        "SHA256",
+        "SHA384",
+        "SHA512"
+      ]
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure with an internal server. </p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "IpAddressType":{
+      "type":"string",
+      "enum":[
+        "IPV4",
+        "DUALSTACK"
+      ]
+    },
+    "KeySpec":{
+      "type":"string",
+      "enum":[
+        "KEY_EXCHANGE",
+        "SIGNATURE"
+      ]
+    },
+    "KeyUsage":{
+      "type":"structure",
+      "required":["UsageFlags"],
+      "members":{
+        "Critical":{
+          "shape":"Boolean",
+          "documentation":"<p>Sets the key usage extension to critical.</p>"
+        },
+        "UsageFlags":{
+          "shape":"KeyUsageFlags",
+          "documentation":"<p>The key usage flags represent the purpose (e.g., encipherment, signature) of the key contained in the certificate.</p>"
+        }
+      },
+      "documentation":"<p>The key usage extension defines the purpose (e.g., encipherment, signature) of the key contained in the certificate.</p>"
+    },
+    "KeyUsageFlags":{
+      "type":"structure",
+      "members":{
+        "DataEncipherment":{
+          "shape":"Boolean",
+          "documentation":"<p>DataEncipherment is asserted when the subject public key is used for directly enciphering raw user data without the use of an intermediate symmetric cipher.</p>"
+        },
+        "DigitalSignature":{
+          "shape":"Boolean",
+          "documentation":"<p>The digitalSignature is asserted when the subject public key is used for verifying digital signatures.</p>"
+        },
+        "KeyAgreement":{
+          "shape":"Boolean",
+          "documentation":"<p>KeyAgreement is asserted when the subject public key is used for key agreement.</p>"
+        },
+        "KeyEncipherment":{
+          "shape":"Boolean",
+          "documentation":"<p>KeyEncipherment is asserted when the subject public key is used for enciphering private or secret keys, i.e., for key transport.</p>"
+        },
+        "NonRepudiation":{
+          "shape":"Boolean",
+          "documentation":"<p>NonRepudiation is asserted when the subject public key is used to verify digital signatures.</p>"
+        }
+      },
+      "documentation":"<p>The key usage flags represent the purpose (e.g., encipherment, signature) of the key contained in the certificate.</p>"
+    },
+    "KeyUsageProperty":{
+      "type":"structure",
+      "members":{
+        "PropertyFlags":{
+          "shape":"KeyUsagePropertyFlags",
+          "documentation":"<p>You can specify key usage for encryption, key agreement, and signature. You can use property flags or property type but not both. </p>"
+        },
+        "PropertyType":{
+          "shape":"KeyUsagePropertyType",
+          "documentation":"<p>You can specify all key usages using property type ALL. You can use property type or property flags but not both. </p>"
+        }
+      },
+      "documentation":"<p>The key usage property defines the purpose of the private key contained in the certificate. You can specify specific purposes using property flags or all by using property type ALL.</p>",
+      "union":true
+    },
+    "KeyUsagePropertyFlags":{
+      "type":"structure",
+      "members":{
+        "Decrypt":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows key for encryption and decryption.</p>"
+        },
+        "KeyAgreement":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows key exchange without encryption.</p>"
+        },
+        "Sign":{
+          "shape":"Boolean",
+          "documentation":"<p>Allow key use for digital signature.</p>"
+        }
+      },
+      "documentation":"<p>Specifies key usage.</p>"
+    },
+    "KeyUsagePropertyType":{
+      "type":"string",
+      "enum":["ALL"]
+    },
+    "ListConnectorsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Use this parameter when paginating results to specify the maximum number of items to return in the response on each page. If additional items exist beyond the number you specify, the <code>NextToken</code> element is sent in the response. Use this <code>NextToken</code> value in a subsequent request to retrieve additional items.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListConnectorsResponse":{
+      "type":"structure",
+      "members":{
+        "Connectors":{
+          "shape":"ConnectorList",
+          "documentation":"<p>Summary information about each connector you have created.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the NextToken parameter from the response you just received.</p>"
+        }
+      }
+    },
+    "ListDirectoryRegistrationsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Use this parameter when paginating results to specify the maximum number of items to return in the response on each page. If additional items exist beyond the number you specify, the <code>NextToken</code> element is sent in the response. Use this <code>NextToken</code> value in a subsequent request to retrieve additional items.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListDirectoryRegistrationsResponse":{
+      "type":"structure",
+      "members":{
+        "DirectoryRegistrations":{
+          "shape":"DirectoryRegistrationList",
+          "documentation":"<p>Summary information about each directory registration you have created.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>"
+        }
+      }
+    },
+    "ListServicePrincipalNamesRequest":{
+      "type":"structure",
+      "required":["DirectoryRegistrationArn"],
+      "members":{
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>",
+          "location":"uri",
+          "locationName":"DirectoryRegistrationArn"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Use this parameter when paginating results to specify the maximum number of items to return in the response on each page. If additional items exist beyond the number you specify, the <code>NextToken</code> element is sent in the response. Use this <code>NextToken</code> value in a subsequent request to retrieve additional items.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListServicePrincipalNamesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>"
+        },
+        "ServicePrincipalNames":{
+          "shape":"ServicePrincipalNameList",
+          "documentation":"<p>The service principal name, if any, that the connector uses to authenticate with Active Directory.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you created the resource. </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags, if any, that are associated with your resource.</p>"
+        }
+      }
+    },
+    "ListTemplateGroupAccessControlEntriesRequest":{
+      "type":"structure",
+      "required":["TemplateArn"],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Use this parameter when paginating results to specify the maximum number of items to return in the response on each page. If additional items exist beyond the number you specify, the <code>NextToken</code> element is sent in the response. Use this <code>NextToken</code> value in a subsequent request to retrieve additional items.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "ListTemplateGroupAccessControlEntriesResponse":{
+      "type":"structure",
+      "members":{
+        "AccessControlEntries":{
+          "shape":"AccessControlEntryList",
+          "documentation":"<p>An access control entry grants or denies permission to an Active Directory group to enroll certificates for a template.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>"
+        }
+      }
+    },
+    "ListTemplatesRequest":{
+      "type":"structure",
+      "required":["ConnectorArn"],
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>",
+          "location":"querystring",
+          "locationName":"ConnectorArn"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Use this parameter when paginating results to specify the maximum number of items to return in the response on each page. If additional items exist beyond the number you specify, the <code>NextToken</code> element is sent in the response. Use this <code>NextToken</code> value in a subsequent request to retrieve additional items.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListTemplatesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Use this parameter when paginating results in a subsequent request after you receive a response with truncated results. Set it to the value of the <code>NextToken</code> parameter from the response you just received.</p>"
+        },
+        "Templates":{
+          "shape":"TemplateList",
+          "documentation":"<p>Custom configuration templates used when issuing a certificate. </p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}==|[A-Za-z0-9_-]{3}=)?$"
+    },
+    "PrivateKeyAlgorithm":{
+      "type":"string",
+      "enum":[
+        "RSA",
+        "ECDH_P256",
+        "ECDH_P384",
+        "ECDH_P521"
+      ]
+    },
+    "PrivateKeyAttributesV2":{
+      "type":"structure",
+      "required":[
+        "KeySpec",
+        "MinimalKeyLength"
+      ],
+      "members":{
+        "CryptoProviders":{
+          "shape":"CryptoProvidersList",
+          "documentation":"<p>Defines the cryptographic providers used to generate the private key.</p>"
+        },
+        "KeySpec":{
+          "shape":"KeySpec",
+          "documentation":"<p>Defines the purpose of the private key. Set it to \"KEY_EXCHANGE\" or \"SIGNATURE\" value.</p>"
+        },
+        "MinimalKeyLength":{
+          "shape":"PrivateKeyAttributesV2MinimalKeyLengthInteger",
+          "documentation":"<p>Set the minimum key length of the private key.</p>"
+        }
+      },
+      "documentation":"<p>Defines the attributes of the private key.</p>"
+    },
+    "PrivateKeyAttributesV2MinimalKeyLengthInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "PrivateKeyAttributesV3":{
+      "type":"structure",
+      "required":[
+        "Algorithm",
+        "KeySpec",
+        "KeyUsageProperty",
+        "MinimalKeyLength"
+      ],
+      "members":{
+        "Algorithm":{
+          "shape":"PrivateKeyAlgorithm",
+          "documentation":"<p>Defines the algorithm used to generate the private key.</p>"
+        },
+        "CryptoProviders":{
+          "shape":"CryptoProvidersList",
+          "documentation":"<p>Defines the cryptographic providers used to generate the private key.</p>"
+        },
+        "KeySpec":{
+          "shape":"KeySpec",
+          "documentation":"<p>Defines the purpose of the private key. Set it to \"KEY_EXCHANGE\" or \"SIGNATURE\" value.</p>"
+        },
+        "KeyUsageProperty":{
+          "shape":"KeyUsageProperty",
+          "documentation":"<p>The key usage property defines the purpose of the private key contained in the certificate. You can specify specific purposes using property flags or all by using property type ALL.</p>"
+        },
+        "MinimalKeyLength":{
+          "shape":"PrivateKeyAttributesV3MinimalKeyLengthInteger",
+          "documentation":"<p>Set the minimum key length of the private key.</p>"
+        }
+      },
+      "documentation":"<p>Defines the attributes of the private key.</p>"
+    },
+    "PrivateKeyAttributesV3MinimalKeyLengthInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "PrivateKeyAttributesV4":{
+      "type":"structure",
+      "required":[
+        "KeySpec",
+        "MinimalKeyLength"
+      ],
+      "members":{
+        "Algorithm":{
+          "shape":"PrivateKeyAlgorithm",
+          "documentation":"<p>Defines the algorithm used to generate the private key.</p>"
+        },
+        "CryptoProviders":{
+          "shape":"CryptoProvidersList",
+          "documentation":"<p>Defines the cryptographic providers used to generate the private key.</p>"
+        },
+        "KeySpec":{
+          "shape":"KeySpec",
+          "documentation":"<p>Defines the purpose of the private key. Set it to \"KEY_EXCHANGE\" or \"SIGNATURE\" value.</p>"
+        },
+        "KeyUsageProperty":{
+          "shape":"KeyUsageProperty",
+          "documentation":"<p>The key usage property defines the purpose of the private key contained in the certificate. You can specify specific purposes using property flags or all by using property type ALL.</p>"
+        },
+        "MinimalKeyLength":{
+          "shape":"PrivateKeyAttributesV4MinimalKeyLengthInteger",
+          "documentation":"<p>Set the minimum key length of the private key.</p>"
+        }
+      },
+      "documentation":"<p>Defines the attributes of the private key.</p>"
+    },
+    "PrivateKeyAttributesV4MinimalKeyLengthInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "PrivateKeyFlagsV2":{
+      "type":"structure",
+      "required":["ClientVersion"],
+      "members":{
+        "ClientVersion":{
+          "shape":"ClientCompatibilityV2",
+          "documentation":"<p>Defines the minimum client compatibility.</p>"
+        },
+        "ExportableKey":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows the private key to be exported.</p>"
+        },
+        "StrongKeyProtectionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Require user input when using the private key for enrollment.</p>"
+        }
+      },
+      "documentation":"<p>Private key flags for v2 templates specify the client compatibility, if the private key can be exported, and if user input is required when using a private key.</p>"
+    },
+    "PrivateKeyFlagsV3":{
+      "type":"structure",
+      "required":["ClientVersion"],
+      "members":{
+        "ClientVersion":{
+          "shape":"ClientCompatibilityV3",
+          "documentation":"<p>Defines the minimum client compatibility.</p>"
+        },
+        "ExportableKey":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows the private key to be exported.</p>"
+        },
+        "RequireAlternateSignatureAlgorithm":{
+          "shape":"Boolean",
+          "documentation":"<p>Reguires the PKCS #1 v2.1 signature format for certificates. You should verify that your CA, objects, and applications can accept this signature format.</p>"
+        },
+        "StrongKeyProtectionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Requirer user input when using the private key for enrollment.</p>"
+        }
+      },
+      "documentation":"<p>Private key flags for v3 templates specify the client compatibility, if the private key can be exported, if user input is required when using a private key, and if an alternate signature algorithm should be used.</p>"
+    },
+    "PrivateKeyFlagsV4":{
+      "type":"structure",
+      "required":["ClientVersion"],
+      "members":{
+        "ClientVersion":{
+          "shape":"ClientCompatibilityV4",
+          "documentation":"<p>Defines the minimum client compatibility.</p>"
+        },
+        "ExportableKey":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows the private key to be exported.</p>"
+        },
+        "RequireAlternateSignatureAlgorithm":{
+          "shape":"Boolean",
+          "documentation":"<p>Requires the PKCS #1 v2.1 signature format for certificates. You should verify that your CA, objects, and applications can accept this signature format.</p>"
+        },
+        "RequireSameKeyRenewal":{
+          "shape":"Boolean",
+          "documentation":"<p>Renew certificate using the same private key.</p>"
+        },
+        "StrongKeyProtectionRequired":{
+          "shape":"Boolean",
+          "documentation":"<p>Require user input when using the private key for enrollment.</p>"
+        },
+        "UseLegacyProvider":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies the cryptographic service provider category used to generate private keys. Set to TRUE to use Legacy Cryptographic Service Providers and FALSE to use Key Storage Providers.</p>"
+        }
+      },
+      "documentation":"<p>Private key flags for v4 templates specify the client compatibility, if the private key can be exported, if user input is required when using a private key, if an alternate signature algorithm should be used, and if certificates are renewed using the same private key.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the Amazon Web Services resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be one of <code>Connector</code>, <code>Template</code>, <code>TemplateGroupAccessControlEntry</code>, <code>ServicePrincipalName</code>, or <code>DirectoryRegistration</code>.</p>"
+        }
+      },
+      "documentation":"<p>The operation tried to access a nonexistent resource. The resource might not be specified correctly, or its status might not be ACTIVE.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "max":20,
+      "min":11,
+      "pattern":"^(?:sg-[0-9a-f]{8}|sg-[0-9a-f]{17})$"
+    },
+    "SecurityGroupIdList":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":4,
+      "min":1
+    },
+    "ServicePrincipalName":{
+      "type":"structure",
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector.html</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the service principal name was created.</p>"
+        },
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>"
+        },
+        "Status":{
+          "shape":"ServicePrincipalNameStatus",
+          "documentation":"<p>The status of a service principal name.</p>"
+        },
+        "StatusReason":{
+          "shape":"ServicePrincipalNameStatusReason",
+          "documentation":"<p>Additional information for the status of a service principal name if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the service principal name was updated.</p>"
+        }
+      },
+      "documentation":"<p>The service principal name that the connector uses to authenticate with Active Directory.</p>"
+    },
+    "ServicePrincipalNameList":{
+      "type":"list",
+      "member":{"shape":"ServicePrincipalNameSummary"}
+    },
+    "ServicePrincipalNameStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ServicePrincipalNameStatusReason":{
+      "type":"string",
+      "enum":[
+        "DIRECTORY_ACCESS_DENIED",
+        "DIRECTORY_NOT_REACHABLE",
+        "DIRECTORY_RESOURCE_NOT_FOUND",
+        "SPN_EXISTS_ON_DIFFERENT_AD_OBJECT",
+        "SPN_LIMIT_EXCEEDED",
+        "INTERNAL_FAILURE"
+      ]
+    },
+    "ServicePrincipalNameSummary":{
+      "type":"structure",
+      "members":{
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the service principal name was created.</p>"
+        },
+        "DirectoryRegistrationArn":{
+          "shape":"DirectoryRegistrationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateDirectoryRegistration.html\">CreateDirectoryRegistration</a>.</p>"
+        },
+        "Status":{
+          "shape":"ServicePrincipalNameStatus",
+          "documentation":"<p>The status of a service principal name.</p>"
+        },
+        "StatusReason":{
+          "shape":"ServicePrincipalNameStatusReason",
+          "documentation":"<p>Additional information for the status of a service principal name if the status is failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time when the service principal name was updated.</p>"
+        }
+      },
+      "documentation":"<p>The service principal name that the connector uses to authenticate with Active Directory.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "QuotaCode",
+        "ResourceId",
+        "ResourceType",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code associated with the service quota.</p>"
+        },
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the Amazon Web Services resource.</p>"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type, which can be one of <code>Connector</code>, <code>Template</code>, <code>TemplateGroupAccessControlEntry</code>, <code>ServicePrincipalName</code>, or <code>DirectoryRegistration</code>.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Identifies the originating service.</p>"
+        }
+      },
+      "documentation":"<p>Request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "SubjectNameFlagsV2":{
+      "type":"structure",
+      "members":{
+        "RequireCommonName":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the common name in the subject name.</p>"
+        },
+        "RequireDirectoryPath":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the directory path in the subject name.</p>"
+        },
+        "RequireDnsAsCn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS as common name in the subject name.</p>"
+        },
+        "RequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject name.</p>"
+        },
+        "SanRequireDirectoryGuid":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the globally unique identifier (GUID) in the subject alternate name.</p>"
+        },
+        "SanRequireDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS in the subject alternate name.</p>"
+        },
+        "SanRequireDomainDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the domain DNS in the subject alternate name.</p>"
+        },
+        "SanRequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject alternate name.</p>"
+        },
+        "SanRequireSpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the service principal name (SPN) in the subject alternate name.</p>"
+        },
+        "SanRequireUpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the user principal name (UPN) in the subject alternate name.</p>"
+        }
+      },
+      "documentation":"<p>Information to include in the subject name and alternate subject name of the certificate. The subject name can be common name, directory path, DNS as common name, or left blank. You can optionally include email to the subject name for user templates. If you leave the subject name blank then you must set a subject alternate name. The subject alternate name (SAN) can include globally unique identifier (GUID), DNS, domain DNS, email, service principal name (SPN), and user principal name (UPN). You can leave the SAN blank. If you leave the SAN blank, then you must set a subject name.</p>"
+    },
+    "SubjectNameFlagsV3":{
+      "type":"structure",
+      "members":{
+        "RequireCommonName":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the common name in the subject name. </p>"
+        },
+        "RequireDirectoryPath":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the directory path in the subject name.</p>"
+        },
+        "RequireDnsAsCn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS as common name in the subject name.</p>"
+        },
+        "RequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject name.</p>"
+        },
+        "SanRequireDirectoryGuid":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the globally unique identifier (GUID) in the subject alternate name.</p>"
+        },
+        "SanRequireDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS in the subject alternate name.</p>"
+        },
+        "SanRequireDomainDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the domain DNS in the subject alternate name.</p>"
+        },
+        "SanRequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject alternate name.</p>"
+        },
+        "SanRequireSpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the service principal name (SPN) in the subject alternate name.</p>"
+        },
+        "SanRequireUpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the user principal name (UPN) in the subject alternate name.</p>"
+        }
+      },
+      "documentation":"<p>Information to include in the subject name and alternate subject name of the certificate. The subject name can be common name, directory path, DNS as common name, or left blank. You can optionally include email to the subject name for user templates. If you leave the subject name blank then you must set a subject alternate name. The subject alternate name (SAN) can include globally unique identifier (GUID), DNS, domain DNS, email, service principal name (SPN), and user principal name (UPN). You can leave the SAN blank. If you leave the SAN blank, then you must set a subject name.</p>"
+    },
+    "SubjectNameFlagsV4":{
+      "type":"structure",
+      "members":{
+        "RequireCommonName":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the common name in the subject name.</p>"
+        },
+        "RequireDirectoryPath":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the directory path in the subject name.</p>"
+        },
+        "RequireDnsAsCn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS as common name in the subject name.</p>"
+        },
+        "RequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject name.</p>"
+        },
+        "SanRequireDirectoryGuid":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the globally unique identifier (GUID) in the subject alternate name.</p>"
+        },
+        "SanRequireDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the DNS in the subject alternate name.</p>"
+        },
+        "SanRequireDomainDns":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the domain DNS in the subject alternate name.</p>"
+        },
+        "SanRequireEmail":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the subject's email in the subject alternate name.</p>"
+        },
+        "SanRequireSpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the service principal name (SPN) in the subject alternate name.</p>"
+        },
+        "SanRequireUpn":{
+          "shape":"Boolean",
+          "documentation":"<p>Include the user principal name (UPN) in the subject alternate name.</p>"
+        }
+      },
+      "documentation":"<p>Information to include in the subject name and alternate subject name of the certificate. The subject name can be common name, directory path, DNS as common name, or left blank. You can optionally include email to the subject name for user templates. If you leave the subject name blank then you must set a subject alternate name. The subject alternate name (SAN) can include globally unique identifier (GUID), DNS, domain DNS, email, service principal name (SPN), and user principal name (UPN). You can leave the SAN blank. If you leave the SAN blank, then you must set a subject name.</p>"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you created the resource. </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Metadata assigned to a directory registration consisting of a key-value pair.</p>"
+        }
+      }
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "Template":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the template was created.</p>"
+        },
+        "Definition":{
+          "shape":"TemplateDefinition",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "Name":{
+          "shape":"TemplateName",
+          "documentation":"<p>Name of the templates. Template names must be unique.</p>"
+        },
+        "ObjectIdentifier":{
+          "shape":"CustomObjectIdentifier",
+          "documentation":"<p>Object identifier of a template.</p>"
+        },
+        "PolicySchema":{
+          "shape":"Integer",
+          "documentation":"<p>The template schema version. Template schema versions can be v2, v3, or v4. The template configuration options change based on the template schema version.</p>"
+        },
+        "Revision":{
+          "shape":"TemplateRevision",
+          "documentation":"<p>The version of the template. Template updates will increment the minor revision. Re-enrolling all certificate holders will increment the major revision.</p>"
+        },
+        "Status":{
+          "shape":"TemplateStatus",
+          "documentation":"<p>Status of the template. Status can be creating, active, deleting, or failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the template was updated.</p>"
+        }
+      },
+      "documentation":"<p>An Active Directory compatible certificate template. Connectors issue certificates against these templates based on the requestor's Active Directory group membership. </p>"
+    },
+    "TemplateArn":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"^arn:[\\w-]+:pca-connector-ad:[\\w-]+:[0-9]+:connector\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}\\/template\\/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+    },
+    "TemplateDefinition":{
+      "type":"structure",
+      "members":{
+        "TemplateV2":{
+          "shape":"TemplateV2",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "TemplateV3":{
+          "shape":"TemplateV3",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "TemplateV4":{
+          "shape":"TemplateV4",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        }
+      },
+      "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>",
+      "union":true
+    },
+    "TemplateList":{
+      "type":"list",
+      "member":{"shape":"TemplateSummary"}
+    },
+    "TemplateName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^(?!^\\s+$)((?![\\x5c'\\x2b,;<=>#\\x22])([\\x20-\\x7E]))+$"
+    },
+    "TemplateNameList":{
+      "type":"list",
+      "member":{"shape":"TemplateName"},
+      "max":100,
+      "min":1
+    },
+    "TemplateRevision":{
+      "type":"structure",
+      "required":[
+        "MajorRevision",
+        "MinorRevision"
+      ],
+      "members":{
+        "MajorRevision":{
+          "shape":"Integer",
+          "documentation":"<p>The revision version of the template. Re-enrolling all certificate holders will increment the major revision.</p>"
+        },
+        "MinorRevision":{
+          "shape":"Integer",
+          "documentation":"<p>The revision version of the template. Re-enrolling all certificate holders will increment the major revision.</p>"
+        }
+      },
+      "documentation":"<p>The revision version of the template. Template updates will increment the minor revision. Re-enrolling all certificate holders will increment the major revision.</p>"
+    },
+    "TemplateStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "DELETING"
+      ]
+    },
+    "TemplateSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>"
+        },
+        "ConnectorArn":{
+          "shape":"ConnectorArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateConnector.html\">CreateConnector</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the template was created.</p>"
+        },
+        "Definition":{
+          "shape":"TemplateDefinition",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "Name":{
+          "shape":"TemplateName",
+          "documentation":"<p>Name of the template. The template name must be unique.</p>"
+        },
+        "ObjectIdentifier":{
+          "shape":"CustomObjectIdentifier",
+          "documentation":"<p>Object identifier of a template.</p>"
+        },
+        "PolicySchema":{
+          "shape":"Integer",
+          "documentation":"<p>The template schema version. Template schema versions can be v2, v3, or v4. The template configuration options change based on the template schema version.</p>"
+        },
+        "Revision":{
+          "shape":"TemplateRevision",
+          "documentation":"<p>The revision version of the template. Template updates will increment the minor revision. Re-enrolling all certificate holders will increment the major revision.</p>"
+        },
+        "Status":{
+          "shape":"TemplateStatus",
+          "documentation":"<p>Status of the template. Status can be creating, active, deleting, or failed.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the template was updated.</p>"
+        }
+      },
+      "documentation":"<p>An Active Directory compatible certificate template. Connectors issue certificates against these templates based on the requestor's Active Directory group membership.</p>"
+    },
+    "TemplateV2":{
+      "type":"structure",
+      "required":[
+        "CertificateValidity",
+        "EnrollmentFlags",
+        "Extensions",
+        "GeneralFlags",
+        "PrivateKeyAttributes",
+        "PrivateKeyFlags",
+        "SubjectNameFlags"
+      ],
+      "members":{
+        "CertificateValidity":{
+          "shape":"CertificateValidity",
+          "documentation":"<p>Certificate validity describes the validity and renewal periods of a certificate.</p>"
+        },
+        "EnrollmentFlags":{
+          "shape":"EnrollmentFlagsV2",
+          "documentation":"<p>Enrollment flags describe the enrollment settings for certificates such as using the existing private key and deleting expired or revoked certificates.</p>"
+        },
+        "Extensions":{
+          "shape":"ExtensionsV2",
+          "documentation":"<p>Extensions describe the key usage extensions and application policies for a template.</p>"
+        },
+        "GeneralFlags":{
+          "shape":"GeneralFlagsV2",
+          "documentation":"<p>General flags describe whether the template is used for computers or users and if the template can be used with autoenrollment.</p>"
+        },
+        "PrivateKeyAttributes":{
+          "shape":"PrivateKeyAttributesV2",
+          "documentation":"<p>Private key attributes allow you to specify the minimal key length, key spec, and cryptographic providers for the private key of a certificate for v2 templates. V2 templates allow you to use Legacy Cryptographic Service Providers.</p>"
+        },
+        "PrivateKeyFlags":{
+          "shape":"PrivateKeyFlagsV2",
+          "documentation":"<p>Private key flags for v2 templates specify the client compatibility, if the private key can be exported, and if user input is required when using a private key. </p>"
+        },
+        "SubjectNameFlags":{
+          "shape":"SubjectNameFlagsV2",
+          "documentation":"<p>Subject name flags describe the subject name and subject alternate name that is included in a certificate.</p>"
+        },
+        "SupersededTemplates":{
+          "shape":"TemplateNameList",
+          "documentation":"<p>List of templates in Active Directory that are superseded by this template.</p>"
+        }
+      },
+      "documentation":"<p>v2 template schema that uses Legacy Cryptographic Providers.</p>"
+    },
+    "TemplateV3":{
+      "type":"structure",
+      "required":[
+        "CertificateValidity",
+        "EnrollmentFlags",
+        "Extensions",
+        "GeneralFlags",
+        "HashAlgorithm",
+        "PrivateKeyAttributes",
+        "PrivateKeyFlags",
+        "SubjectNameFlags"
+      ],
+      "members":{
+        "CertificateValidity":{
+          "shape":"CertificateValidity",
+          "documentation":"<p>Certificate validity describes the validity and renewal periods of a certificate.</p>"
+        },
+        "EnrollmentFlags":{
+          "shape":"EnrollmentFlagsV3",
+          "documentation":"<p>Enrollment flags describe the enrollment settings for certificates such as using the existing private key and deleting expired or revoked certificates.</p>"
+        },
+        "Extensions":{
+          "shape":"ExtensionsV3",
+          "documentation":"<p>Extensions describe the key usage extensions and application policies for a template.</p>"
+        },
+        "GeneralFlags":{
+          "shape":"GeneralFlagsV3",
+          "documentation":"<p>General flags describe whether the template is used for computers or users and if the template can be used with autoenrollment.</p>"
+        },
+        "HashAlgorithm":{
+          "shape":"HashAlgorithm",
+          "documentation":"<p>Specifies the hash algorithm used to hash the private key.</p>"
+        },
+        "PrivateKeyAttributes":{
+          "shape":"PrivateKeyAttributesV3",
+          "documentation":"<p>Private key attributes allow you to specify the algorithm, minimal key length, key spec, key usage, and cryptographic providers for the private key of a certificate for v3 templates. V3 templates allow you to use Key Storage Providers.</p>"
+        },
+        "PrivateKeyFlags":{
+          "shape":"PrivateKeyFlagsV3",
+          "documentation":"<p>Private key flags for v3 templates specify the client compatibility, if the private key can be exported, if user input is required when using a private key, and if an alternate signature algorithm should be used.</p>"
+        },
+        "SubjectNameFlags":{
+          "shape":"SubjectNameFlagsV3",
+          "documentation":"<p>Subject name flags describe the subject name and subject alternate name that is included in a certificate.</p>"
+        },
+        "SupersededTemplates":{
+          "shape":"TemplateNameList",
+          "documentation":"<p>List of templates in Active Directory that are superseded by this template.</p>"
+        }
+      },
+      "documentation":"<p>v3 template schema that uses Key Storage Providers.</p>"
+    },
+    "TemplateV4":{
+      "type":"structure",
+      "required":[
+        "CertificateValidity",
+        "EnrollmentFlags",
+        "Extensions",
+        "GeneralFlags",
+        "PrivateKeyAttributes",
+        "PrivateKeyFlags",
+        "SubjectNameFlags"
+      ],
+      "members":{
+        "CertificateValidity":{
+          "shape":"CertificateValidity",
+          "documentation":"<p>Certificate validity describes the validity and renewal periods of a certificate.</p>"
+        },
+        "EnrollmentFlags":{
+          "shape":"EnrollmentFlagsV4",
+          "documentation":"<p>Enrollment flags describe the enrollment settings for certificates using the existing private key and deleting expired or revoked certificates.</p>"
+        },
+        "Extensions":{
+          "shape":"ExtensionsV4",
+          "documentation":"<p>Extensions describe the key usage extensions and application policies for a template.</p>"
+        },
+        "GeneralFlags":{
+          "shape":"GeneralFlagsV4",
+          "documentation":"<p>General flags describe whether the template is used for computers or users and if the template can be used with autoenrollment.</p>"
+        },
+        "HashAlgorithm":{
+          "shape":"HashAlgorithm",
+          "documentation":"<p>Specifies the hash algorithm used to hash the private key. Hash algorithm can only be specified when using Key Storage Providers.</p>"
+        },
+        "PrivateKeyAttributes":{
+          "shape":"PrivateKeyAttributesV4",
+          "documentation":"<p>Private key attributes allow you to specify the minimal key length, key spec, key usage, and cryptographic providers for the private key of a certificate for v4 templates. V4 templates allow you to use either Key Storage Providers or Legacy Cryptographic Service Providers. You specify the cryptography provider category in private key flags.</p>"
+        },
+        "PrivateKeyFlags":{
+          "shape":"PrivateKeyFlagsV4",
+          "documentation":"<p>Private key flags for v4 templates specify the client compatibility, if the private key can be exported, if user input is required when using a private key, if an alternate signature algorithm should be used, and if certificates are renewed using the same private key.</p>"
+        },
+        "SubjectNameFlags":{
+          "shape":"SubjectNameFlagsV4",
+          "documentation":"<p>Subject name flags describe the subject name and subject alternate name that is included in a certificate.</p>"
+        },
+        "SupersededTemplates":{
+          "shape":"TemplateNameList",
+          "documentation":"<p>List of templates in Active Directory that are superseded by this template.</p>"
+        }
+      },
+      "documentation":"<p>v4 template schema that can use either Legacy Cryptographic Providers or Key Storage Providers.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code associated with the quota.</p>"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"<p>Identifies the originating service.</p>"
+        }
+      },
+      "documentation":"<p>The limit on the number of requests per second was exceeded. </p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you created the resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Specifies a list of tag keys that you want to remove from the specified resources.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UpdateTemplateGroupAccessControlEntryRequest":{
+      "type":"structure",
+      "required":[
+        "GroupSecurityIdentifier",
+        "TemplateArn"
+      ],
+      "members":{
+        "AccessRights":{
+          "shape":"AccessRights",
+          "documentation":"<p>Allow or deny permissions for an Active Directory group to enroll or autoenroll certificates for a template.</p>"
+        },
+        "GroupDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>Name of the Active Directory group. This name does not need to match the group name in Active Directory.</p>"
+        },
+        "GroupSecurityIdentifier":{
+          "shape":"GroupSecurityIdentifier",
+          "documentation":"<p>Security identifier (SID) of the group object from Active Directory. The SID starts with \"S-\".</p>",
+          "location":"uri",
+          "locationName":"GroupSecurityIdentifier"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "UpdateTemplateRequest":{
+      "type":"structure",
+      "required":["TemplateArn"],
+      "members":{
+        "Definition":{
+          "shape":"TemplateDefinition",
+          "documentation":"<p>Template configuration to define the information included in certificates. Define certificate validity and renewal periods, certificate request handling and enrollment options, key usage extensions, application policies, and cryptography settings.</p>"
+        },
+        "ReenrollAllCertificateHolders":{
+          "shape":"Boolean",
+          "documentation":"<p>This setting allows the major version of a template to be increased automatically. All members of Active Directory groups that are allowed to enroll with a template will receive a new certificate issued using that template.</p>"
+        },
+        "TemplateArn":{
+          "shape":"TemplateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that was returned when you called <a href=\"https://docs.aws.amazon.com/pca-connector-ad/latest/APIReference/API_CreateTemplate.html\">CreateTemplate</a>.</p>",
+          "location":"uri",
+          "locationName":"TemplateArn"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the validation error. This won't be return for every validation exception.</p>"
+        }
+      },
+      "documentation":"<p>An input validation error occurred. For example, invalid characters in a template name, or if a pagination token is invalid. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "FIELD_VALIDATION_FAILED",
+        "INVALID_CA_SUBJECT",
+        "INVALID_PERMISSION",
+        "INVALID_STATE",
+        "MISMATCHED_CONNECTOR",
+        "MISMATCHED_VPC",
+        "NO_CLIENT_TOKEN",
+        "UNKNOWN_OPERATION",
+        "OTHER"
+      ]
+    },
+    "ValidityPeriod":{
+      "type":"structure",
+      "required":[
+        "Period",
+        "PeriodType"
+      ],
+      "members":{
+        "Period":{
+          "shape":"ValidityPeriodPeriodLong",
+          "documentation":"<p>The numeric value for the validity period.</p>"
+        },
+        "PeriodType":{
+          "shape":"ValidityPeriodType",
+          "documentation":"<p>The unit of time. You can select hours, days, weeks, months, and years.</p>"
+        }
+      },
+      "documentation":"<p>Information describing the end of the validity period of the certificate. This parameter sets the “Not After” date for the certificate. Certificate validity is the period of time during which a certificate is valid. Validity can be expressed as an explicit date and time when the certificate expires, or as a span of time after issuance, stated in hours, days, months, or years. For more information, see Validity in RFC 5280. This value is unaffected when ValidityNotBefore is also specified. For example, if Validity is set to 20 days in the future, the certificate will expire 20 days from issuance time regardless of the ValidityNotBefore value. </p>"
+    },
+    "ValidityPeriodPeriodLong":{
+      "type":"long",
+      "box":true,
+      "max":8766000,
+      "min":1
+    },
+    "ValidityPeriodType":{
+      "type":"string",
+      "enum":[
+        "HOURS",
+        "DAYS",
+        "WEEKS",
+        "MONTHS",
+        "YEARS"
+      ]
+    },
+    "VpcInformation":{
+      "type":"structure",
+      "required":["SecurityGroupIds"],
+      "members":{
+        "IpAddressType":{
+          "shape":"IpAddressType",
+          "documentation":"<p>The VPC IP address type.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>The security groups used with the connector. You can use a maximum of 4 security groups with a connector.</p>"
+        }
+      },
+      "documentation":"<p>Information about your VPC and security groups used with the connector.</p>"
+    }
+  },
+  "documentation":"<p>Amazon Web Services Private CA Connector for Active Directory creates a connector between Amazon Web Services Private CA and Active Directory (AD) that enables you to provision security certificates for AD signed by a private CA that you own. For more information, see <a href=\"https://docs.aws.amazon.com/privateca/latest/userguide/ad-connector.html\">Amazon Web Services Private CA Connector for Active Directory</a>.</p>"
+}

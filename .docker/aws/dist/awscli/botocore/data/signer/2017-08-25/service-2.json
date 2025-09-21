@@ -1,0 +1,1879 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-08-25",
+    "endpointPrefix":"signer",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"signer",
+    "serviceFullName":"AWS Signer",
+    "serviceId":"signer",
+    "signatureVersion":"v4",
+    "signingName":"signer",
+    "uid":"signer-2017-08-25",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AddProfilePermission":{
+      "name":"AddProfilePermission",
+      "http":{
+        "method":"POST",
+        "requestUri":"/signing-profiles/{profileName}/permissions"
+      },
+      "input":{"shape":"AddProfilePermissionRequest"},
+      "output":{"shape":"AddProfilePermissionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Adds cross-account permissions to a signing profile.</p>"
+    },
+    "CancelSigningProfile":{
+      "name":"CancelSigningProfile",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/signing-profiles/{profileName}"
+      },
+      "input":{"shape":"CancelSigningProfileRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Changes the state of an <code>ACTIVE</code> signing profile to <code>CANCELED</code>. A canceled profile is still viewable with the <code>ListSigningProfiles</code> operation, but it cannot perform new signing jobs, and is deleted two years after cancelation.</p>"
+    },
+    "DescribeSigningJob":{
+      "name":"DescribeSigningJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-jobs/{jobId}"
+      },
+      "input":{"shape":"DescribeSigningJobRequest"},
+      "output":{"shape":"DescribeSigningJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Returns information about a specific code signing job. You specify the job by using the <code>jobId</code> value that is returned by the <a>StartSigningJob</a> operation. </p>"
+    },
+    "GetRevocationStatus":{
+      "name":"GetRevocationStatus",
+      "http":{
+        "method":"GET",
+        "requestUri":"/revocations"
+      },
+      "input":{"shape":"GetRevocationStatusRequest"},
+      "output":{"shape":"GetRevocationStatusResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Retrieves the revocation status of one or more of the signing profile, signing job, and signing certificate.</p>",
+      "endpoint":{"hostPrefix":"verification."}
+    },
+    "GetSigningPlatform":{
+      "name":"GetSigningPlatform",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-platforms/{platformId}"
+      },
+      "input":{"shape":"GetSigningPlatformRequest"},
+      "output":{"shape":"GetSigningPlatformResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Returns information on a specific signing platform.</p>"
+    },
+    "GetSigningProfile":{
+      "name":"GetSigningProfile",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-profiles/{profileName}"
+      },
+      "input":{"shape":"GetSigningProfileRequest"},
+      "output":{"shape":"GetSigningProfileResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Returns information on a specific signing profile.</p>"
+    },
+    "ListProfilePermissions":{
+      "name":"ListProfilePermissions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-profiles/{profileName}/permissions"
+      },
+      "input":{"shape":"ListProfilePermissionsRequest"},
+      "output":{"shape":"ListProfilePermissionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Lists the cross-account permissions associated with a signing profile.</p>"
+    },
+    "ListSigningJobs":{
+      "name":"ListSigningJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-jobs"
+      },
+      "input":{"shape":"ListSigningJobsRequest"},
+      "output":{"shape":"ListSigningJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Lists all your signing jobs. You can use the <code>maxResults</code> parameter to limit the number of signing jobs that are returned in the response. If additional jobs remain to be listed, AWS Signer returns a <code>nextToken</code> value. Use this value in subsequent calls to <code>ListSigningJobs</code> to fetch the remaining values. You can continue calling <code>ListSigningJobs</code> with your <code>maxResults</code> parameter and with new values that Signer returns in the <code>nextToken</code> parameter until all of your signing jobs have been returned. </p>"
+    },
+    "ListSigningPlatforms":{
+      "name":"ListSigningPlatforms",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-platforms"
+      },
+      "input":{"shape":"ListSigningPlatformsRequest"},
+      "output":{"shape":"ListSigningPlatformsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Lists all signing platforms available in AWS Signer that match the request parameters. If additional jobs remain to be listed, Signer returns a <code>nextToken</code> value. Use this value in subsequent calls to <code>ListSigningJobs</code> to fetch the remaining values. You can continue calling <code>ListSigningJobs</code> with your <code>maxResults</code> parameter and with new values that Signer returns in the <code>nextToken</code> parameter until all of your signing jobs have been returned.</p>"
+    },
+    "ListSigningProfiles":{
+      "name":"ListSigningProfiles",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signing-profiles"
+      },
+      "input":{"shape":"ListSigningProfilesRequest"},
+      "output":{"shape":"ListSigningProfilesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Lists all available signing profiles in your AWS account. Returns only profiles with an <code>ACTIVE</code> status unless the <code>includeCanceled</code> request field is set to <code>true</code>. If additional jobs remain to be listed, AWS Signer returns a <code>nextToken</code> value. Use this value in subsequent calls to <code>ListSigningJobs</code> to fetch the remaining values. You can continue calling <code>ListSigningJobs</code> with your <code>maxResults</code> parameter and with new values that Signer returns in the <code>nextToken</code> parameter until all of your signing jobs have been returned.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServiceErrorException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Returns a list of the tags associated with a signing profile resource.</p>"
+    },
+    "PutSigningProfile":{
+      "name":"PutSigningProfile",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/signing-profiles/{profileName}"
+      },
+      "input":{"shape":"PutSigningProfileRequest"},
+      "output":{"shape":"PutSigningProfileResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Creates a signing profile. A signing profile is a code-signing template that can be used to carry out a pre-defined signing job. </p>"
+    },
+    "RemoveProfilePermission":{
+      "name":"RemoveProfilePermission",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/signing-profiles/{profileName}/permissions/{statementId}"
+      },
+      "input":{"shape":"RemoveProfilePermissionRequest"},
+      "output":{"shape":"RemoveProfilePermissionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Removes cross-account permissions from a signing profile.</p>"
+    },
+    "RevokeSignature":{
+      "name":"RevokeSignature",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/signing-jobs/{jobId}/revoke"
+      },
+      "input":{"shape":"RevokeSignatureRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Changes the state of a signing job to REVOKED. This indicates that the signature is no longer valid.</p>"
+    },
+    "RevokeSigningProfile":{
+      "name":"RevokeSigningProfile",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/signing-profiles/{profileName}/revoke"
+      },
+      "input":{"shape":"RevokeSigningProfileRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Changes the state of a signing profile to REVOKED. This indicates that signatures generated using the signing profile after an effective start date are no longer valid.</p>"
+    },
+    "SignPayload":{
+      "name":"SignPayload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/signing-jobs/with-payload"
+      },
+      "input":{"shape":"SignPayloadRequest"},
+      "output":{"shape":"SignPayloadResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Signs a binary payload and returns a signature envelope.</p>"
+    },
+    "StartSigningJob":{
+      "name":"StartSigningJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/signing-jobs"
+      },
+      "input":{"shape":"StartSigningJobRequest"},
+      "output":{"shape":"StartSigningJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"InternalServiceErrorException"}
+      ],
+      "documentation":"<p>Initiates a signing job to be performed on the code provided. Signing jobs are viewable by the <code>ListSigningJobs</code> operation for two years after they are performed. Note the following requirements: </p> <ul> <li> <p> You must create an Amazon S3 source bucket. For more information, see <a href=\"http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html\">Creating a Bucket</a> in the <i>Amazon S3 Getting Started Guide</i>. </p> </li> <li> <p>Your S3 source bucket must be version enabled.</p> </li> <li> <p>You must create an S3 destination bucket. AWS Signer uses your S3 destination bucket to write your signed code.</p> </li> <li> <p>You specify the name of the source and destination buckets when calling the <code>StartSigningJob</code> operation.</p> </li> <li> <p>You must ensure the S3 buckets are from the same Region as the signing profile. Cross-Region signing isn't supported.</p> </li> <li> <p>You must also specify a request token that identifies your request to Signer.</p> </li> </ul> <p>You can call the <a>DescribeSigningJob</a> and the <a>ListSigningJobs</a> actions after you call <code>StartSigningJob</code>.</p> <p>For a Java example that shows how to use this action, see <a href=\"https://docs.aws.amazon.com/signer/latest/developerguide/api-startsigningjob.html\">StartSigningJob</a>.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServiceErrorException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Adds one or more tags to a signing profile. Tags are labels that you can use to identify and organize your AWS resources. Each tag consists of a key and an optional value. To specify the signing profile, use its Amazon Resource Name (ARN). To specify the tag, use a key-value pair.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServiceErrorException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ],
+      "documentation":"<p>Removes one or more tags from a signing profile. To remove the tags, specify a list of tag keys.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^[0-9]{12}$"
+    },
+    "AddProfilePermissionRequest":{
+      "type":"structure",
+      "required":[
+        "action",
+        "principal",
+        "statementId",
+        "profileName"
+      ],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The human-readable name of the signing profile.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of the signing profile.</p>"
+        },
+        "action":{
+          "shape":"String",
+          "documentation":"<p>For cross-account signing. Grant a designated account permission to perform one or more of the following actions. Each action is associated with a specific API's operations. For more information about cross-account signing, see <a href=\"https://docs.aws.amazon.com/signer/latest/developerguide/signing-profile-cross-account.html\">Using cross-account signing with signing profiles</a> in the <i>AWS Signer Developer Guide</i>.</p> <p>You can designate the following actions to an account.</p> <ul> <li> <p> <code>signer:StartSigningJob</code>. This action isn't supported for container image workflows. For details, see <a>StartSigningJob</a>.</p> </li> <li> <p> <code>signer:SignPayload</code>. This action isn't supported for AWS Lambda workflows. For details, see <a>SignPayload</a> </p> </li> <li> <p> <code>signer:GetSigningProfile</code>. For details, see <a>GetSigningProfile</a>.</p> </li> <li> <p> <code>signer:RevokeSignature</code>. For details, see <a>RevokeSignature</a>.</p> </li> </ul>"
+        },
+        "principal":{
+          "shape":"String",
+          "documentation":"<p>The AWS principal receiving cross-account permissions. This may be an IAM role or another AWS account ID.</p>"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for the current profile revision.</p>"
+        },
+        "statementId":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for the cross-account permission statement.</p>"
+        }
+      }
+    },
+    "AddProfilePermissionResponse":{
+      "type":"structure",
+      "members":{
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for the current profile revision.</p>"
+        }
+      }
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The request contains invalid parameters for the ARN or tags. This exception also occurs when you call a tagging API on a cancelled signing profile.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "Blob":{"type":"blob"},
+    "BucketName":{"type":"string"},
+    "CancelSigningProfileRequest":{
+      "type":"structure",
+      "required":["profileName"],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile to be canceled.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        }
+      }
+    },
+    "Category":{
+      "type":"string",
+      "enum":["AWSIoT"]
+    },
+    "CertificateArn":{"type":"string"},
+    "CertificateHashes":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ClientRequestToken":{"type":"string"},
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The resource encountered a conflicting state.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "DescribeSigningJobRequest":{
+      "type":"structure",
+      "required":["jobId"],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the signing job on input.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        }
+      }
+    },
+    "DescribeSigningJobResponse":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the signing job on output.</p>"
+        },
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>The object that contains the name of your S3 bucket or your raw code.</p>"
+        },
+        "signingMaterial":{
+          "shape":"SigningMaterial",
+          "documentation":"<p>The Amazon Resource Name (ARN) of your code signing certificate.</p>"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The microcontroller platform to which your signed code image will be distributed.</p>"
+        },
+        "platformDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>A human-readable name for the signing platform associated with the signing job.</p>"
+        },
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the profile that initiated the signing operation.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of the signing profile used to initiate the signing job.</p>"
+        },
+        "overrides":{
+          "shape":"SigningPlatformOverrides",
+          "documentation":"<p>A list of any overrides that were applied to the signing operation.</p>"
+        },
+        "signingParameters":{
+          "shape":"SigningParameters",
+          "documentation":"<p>Map of user-assigned key-value pairs used during signing. These values contain any information that you specified for use in your signing job. </p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time that the signing job was created.</p>"
+        },
+        "completedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time that the signing job was completed.</p>"
+        },
+        "signatureExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Thr expiration timestamp for the signature generated by the signing job.</p>"
+        },
+        "requestedBy":{
+          "shape":"RequestedBy",
+          "documentation":"<p>The IAM principal that requested the signing job.</p>"
+        },
+        "status":{
+          "shape":"SigningStatus",
+          "documentation":"<p>Status of the signing job.</p>"
+        },
+        "statusReason":{
+          "shape":"StatusReason",
+          "documentation":"<p>String value that contains the status reason.</p>"
+        },
+        "revocationRecord":{
+          "shape":"SigningJobRevocationRecord",
+          "documentation":"<p>A revocation record if the signature generated by the signing job has been revoked. Contains a timestamp and the ID of the IAM entity that revoked the signature.</p>"
+        },
+        "signedObject":{
+          "shape":"SignedObject",
+          "documentation":"<p>Name of the S3 bucket where the signed code image is saved by AWS Signer.</p>"
+        },
+        "jobOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the job owner.</p>"
+        },
+        "jobInvoker":{
+          "shape":"AccountId",
+          "documentation":"<p>The IAM entity that initiated the signing job.</p>"
+        }
+      }
+    },
+    "Destination":{
+      "type":"structure",
+      "members":{
+        "s3":{
+          "shape":"S3Destination",
+          "documentation":"<p>The <code>S3Destination</code> object.</p>"
+        }
+      },
+      "documentation":"<p>Points to an <code>S3Destination</code> object that contains information about your S3 bucket.</p>"
+    },
+    "DisplayName":{"type":"string"},
+    "EncryptionAlgorithm":{
+      "type":"string",
+      "enum":[
+        "RSA",
+        "ECDSA"
+      ]
+    },
+    "EncryptionAlgorithmOptions":{
+      "type":"structure",
+      "required":[
+        "allowedValues",
+        "defaultValue"
+      ],
+      "members":{
+        "allowedValues":{
+          "shape":"EncryptionAlgorithms",
+          "documentation":"<p>The set of accepted encryption algorithms that are allowed in a code-signing job.</p>"
+        },
+        "defaultValue":{
+          "shape":"EncryptionAlgorithm",
+          "documentation":"<p>The default encryption algorithm that is used by a code-signing job.</p>"
+        }
+      },
+      "documentation":"<p>The encryption algorithm options that are available to a code-signing job.</p>"
+    },
+    "EncryptionAlgorithms":{
+      "type":"list",
+      "member":{"shape":"EncryptionAlgorithm"}
+    },
+    "ErrorCode":{"type":"string"},
+    "ErrorMessage":{"type":"string"},
+    "GetRevocationStatusRequest":{
+      "type":"structure",
+      "required":[
+        "signatureTimestamp",
+        "platformId",
+        "profileVersionArn",
+        "jobArn",
+        "certificateHashes"
+      ],
+      "members":{
+        "signatureTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the signature that validates the profile or job.</p>",
+          "location":"querystring",
+          "locationName":"signatureTimestamp"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of a signing platform. </p>",
+          "location":"querystring",
+          "locationName":"platformId"
+        },
+        "profileVersionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The version of a signing profile.</p>",
+          "location":"querystring",
+          "locationName":"profileVersionArn"
+        },
+        "jobArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of a signing job.</p>",
+          "location":"querystring",
+          "locationName":"jobArn"
+        },
+        "certificateHashes":{
+          "shape":"CertificateHashes",
+          "documentation":"<p>A list of composite signed hashes that identify certificates.</p> <p>A certificate identifier consists of a subject certificate TBS hash (signed by the parent CA) combined with a parent CA TBS hash (signed by the parent CA’s CA). Root certificates are defined as their own CA.</p> <p>The following example shows how to calculate a hash for this parameter using OpenSSL commands: </p> <p> <code>openssl asn1parse -in childCert.pem -strparse 4 -out childCert.tbs</code> </p> <p> <code>openssl sha384 &lt; childCert.tbs -binary &gt; childCertTbsHash</code> </p> <p> <code>openssl asn1parse -in parentCert.pem -strparse 4 -out parentCert.tbs</code> </p> <p> <code>openssl sha384 &lt; parentCert.tbs -binary &gt; parentCertTbsHash xxd -p childCertTbsHash &gt; certificateHash.hex xxd -p parentCertTbsHash &gt;&gt; certificateHash.hex</code> </p> <p> <code>cat certificateHash.hex | tr -d '\\n'</code> </p>",
+          "location":"querystring",
+          "locationName":"certificateHashes"
+        }
+      }
+    },
+    "GetRevocationStatusResponse":{
+      "type":"structure",
+      "members":{
+        "revokedEntities":{
+          "shape":"RevokedEntities",
+          "documentation":"<p>A list of revoked entities (including zero or more of the signing profile ARN, signing job ARN, and certificate hashes) supplied as input to the API.</p>"
+        }
+      }
+    },
+    "GetSigningPlatformRequest":{
+      "type":"structure",
+      "required":["platformId"],
+      "members":{
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of the target signing platform.</p>",
+          "location":"uri",
+          "locationName":"platformId"
+        }
+      }
+    },
+    "GetSigningPlatformResponse":{
+      "type":"structure",
+      "members":{
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of the target signing platform.</p>"
+        },
+        "displayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>The display name of the target signing platform.</p>"
+        },
+        "partner":{
+          "shape":"String",
+          "documentation":"<p>A list of partner entities that use the target signing platform.</p>"
+        },
+        "target":{
+          "shape":"String",
+          "documentation":"<p>The validation template that is used by the target signing platform.</p>"
+        },
+        "category":{
+          "shape":"Category",
+          "documentation":"<p>The category type of the target signing platform.</p>"
+        },
+        "signingConfiguration":{
+          "shape":"SigningConfiguration",
+          "documentation":"<p>A list of configurations applied to the target platform at signing.</p>"
+        },
+        "signingImageFormat":{
+          "shape":"SigningImageFormat",
+          "documentation":"<p>The format of the target platform's signing image.</p>"
+        },
+        "maxSizeInMB":{
+          "shape":"MaxSizeInMB",
+          "documentation":"<p>The maximum size (in MB) of the payload that can be signed by the target platform.</p>"
+        },
+        "revocationSupported":{
+          "shape":"bool",
+          "documentation":"<p>A flag indicating whether signatures generated for the signing platform can be revoked.</p>"
+        }
+      }
+    },
+    "GetSigningProfileRequest":{
+      "type":"structure",
+      "required":["profileName"],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the target signing profile.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "profileOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the profile owner.</p>",
+          "location":"querystring",
+          "locationName":"profileOwner"
+        }
+      }
+    },
+    "GetSigningProfileResponse":{
+      "type":"structure",
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the target signing profile.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The current version of the signing profile.</p>"
+        },
+        "profileVersionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The signing profile ARN, including the profile version.</p>"
+        },
+        "revocationRecord":{"shape":"SigningProfileRevocationRecord"},
+        "signingMaterial":{
+          "shape":"SigningMaterial",
+          "documentation":"<p>The ARN of the certificate that the target profile uses for signing operations.</p>"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of the platform that is used by the target signing profile.</p>"
+        },
+        "platformDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>A human-readable name for the signing platform associated with the signing profile.</p>"
+        },
+        "signatureValidityPeriod":{"shape":"SignatureValidityPeriod"},
+        "overrides":{
+          "shape":"SigningPlatformOverrides",
+          "documentation":"<p>A list of overrides applied by the target signing profile for signing operations.</p>"
+        },
+        "signingParameters":{
+          "shape":"SigningParameters",
+          "documentation":"<p>A map of key-value pairs for signing operations that is attached to the target signing profile.</p>"
+        },
+        "status":{
+          "shape":"SigningProfileStatus",
+          "documentation":"<p>The status of the target signing profile.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>Reason for the status of the target signing profile.</p>"
+        },
+        "arn":{
+          "shape":"string",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the signing profile.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags associated with the signing profile.</p>"
+        }
+      }
+    },
+    "HashAlgorithm":{
+      "type":"string",
+      "enum":[
+        "SHA1",
+        "SHA256"
+      ]
+    },
+    "HashAlgorithmOptions":{
+      "type":"structure",
+      "required":[
+        "allowedValues",
+        "defaultValue"
+      ],
+      "members":{
+        "allowedValues":{
+          "shape":"HashAlgorithms",
+          "documentation":"<p>The set of accepted hash algorithms allowed in a code-signing job.</p>"
+        },
+        "defaultValue":{
+          "shape":"HashAlgorithm",
+          "documentation":"<p>The default hash algorithm that is used in a code-signing job.</p>"
+        }
+      },
+      "documentation":"<p>The hash algorithms that are available to a code-signing job.</p>"
+    },
+    "HashAlgorithms":{
+      "type":"list",
+      "member":{"shape":"HashAlgorithm"}
+    },
+    "ImageFormat":{
+      "type":"string",
+      "enum":[
+        "JSON",
+        "JSONEmbedded",
+        "JSONDetached"
+      ]
+    },
+    "ImageFormats":{
+      "type":"list",
+      "member":{"shape":"ImageFormat"}
+    },
+    "Integer":{"type":"integer"},
+    "InternalServiceErrorException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>An internal error occurred.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true
+    },
+    "JobId":{"type":"string"},
+    "Key":{"type":"string"},
+    "ListProfilePermissionsRequest":{
+      "type":"structure",
+      "required":["profileName"],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>Name of the signing profile containing the cross-account permissions.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>String for specifying the next set of paginated results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListProfilePermissionsResponse":{
+      "type":"structure",
+      "members":{
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the current revision of profile permissions.</p>"
+        },
+        "policySizeBytes":{
+          "shape":"PolicySizeBytes",
+          "documentation":"<p>Total size of the policy associated with the Signing Profile in bytes.</p>"
+        },
+        "permissions":{
+          "shape":"Permissions",
+          "documentation":"<p>List of permissions associated with the Signing Profile.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>String for specifying the next set of paginated results.</p>"
+        }
+      }
+    },
+    "ListSigningJobsRequest":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"SigningStatus",
+          "documentation":"<p>A status value with which to filter your results.</p>",
+          "location":"querystring",
+          "locationName":"status"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of microcontroller platform that you specified for the distribution of your code image.</p>",
+          "location":"querystring",
+          "locationName":"platformId"
+        },
+        "requestedBy":{
+          "shape":"RequestedBy",
+          "documentation":"<p>The IAM principal that requested the signing job.</p>",
+          "location":"querystring",
+          "locationName":"requestedBy"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of items to return in the response. Use this parameter when paginating results. If additional items exist beyond the number you specify, the <code>nextToken</code> element is set in the response. Use the <code>nextToken</code> value in a subsequent request to retrieve additional items. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>String for specifying the next set of paginated results to return. After you receive a response with truncated results, use this parameter in a subsequent request. Set it to the value of <code>nextToken</code> from the response that you just received.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "isRevoked":{
+          "shape":"bool",
+          "documentation":"<p>Filters results to return only signing jobs with revoked signatures.</p>",
+          "location":"querystring",
+          "locationName":"isRevoked"
+        },
+        "signatureExpiresBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filters results to return only signing jobs with signatures expiring before a specified timestamp.</p>",
+          "location":"querystring",
+          "locationName":"signatureExpiresBefore"
+        },
+        "signatureExpiresAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>Filters results to return only signing jobs with signatures expiring after a specified timestamp.</p>",
+          "location":"querystring",
+          "locationName":"signatureExpiresAfter"
+        },
+        "jobInvoker":{
+          "shape":"AccountId",
+          "documentation":"<p>Filters results to return only signing jobs initiated by a specified IAM entity.</p>",
+          "location":"querystring",
+          "locationName":"jobInvoker"
+        }
+      }
+    },
+    "ListSigningJobsResponse":{
+      "type":"structure",
+      "members":{
+        "jobs":{
+          "shape":"SigningJobs",
+          "documentation":"<p>A list of your signing jobs.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>String for specifying the next set of paginated results.</p>"
+        }
+      }
+    },
+    "ListSigningPlatformsRequest":{
+      "type":"structure",
+      "members":{
+        "category":{
+          "shape":"String",
+          "documentation":"<p>The category type of a signing platform.</p>",
+          "location":"querystring",
+          "locationName":"category"
+        },
+        "partner":{
+          "shape":"String",
+          "documentation":"<p>Any partner entities connected to a signing platform.</p>",
+          "location":"querystring",
+          "locationName":"partner"
+        },
+        "target":{
+          "shape":"String",
+          "documentation":"<p>The validation template that is used by the target signing platform.</p>",
+          "location":"querystring",
+          "locationName":"target"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be returned by this operation.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Value for specifying the next set of paginated results to return. After you receive a response with truncated results, use this parameter in a subsequent request. Set it to the value of <code>nextToken</code> from the response that you just received.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListSigningPlatformsResponse":{
+      "type":"structure",
+      "members":{
+        "platforms":{
+          "shape":"SigningPlatforms",
+          "documentation":"<p>A list of all platforms that match the request parameters.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Value for specifying the next set of paginated results to return.</p>"
+        }
+      }
+    },
+    "ListSigningProfilesRequest":{
+      "type":"structure",
+      "members":{
+        "includeCanceled":{
+          "shape":"bool",
+          "documentation":"<p>Designates whether to include profiles with the status of <code>CANCELED</code>.</p>",
+          "location":"querystring",
+          "locationName":"includeCanceled"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of profiles to be returned.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Value for specifying the next set of paginated results to return. After you receive a response with truncated results, use this parameter in a subsequent request. Set it to the value of <code>nextToken</code> from the response that you just received.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>Filters results to return only signing jobs initiated for a specified signing platform.</p>",
+          "location":"querystring",
+          "locationName":"platformId"
+        },
+        "statuses":{
+          "shape":"Statuses",
+          "documentation":"<p>Filters results to return only signing jobs with statuses in the specified list.</p>",
+          "location":"querystring",
+          "locationName":"statuses"
+        }
+      }
+    },
+    "ListSigningProfilesResponse":{
+      "type":"structure",
+      "members":{
+        "profiles":{
+          "shape":"SigningProfiles",
+          "documentation":"<p>A list of profiles that are available in the AWS account. This includes profiles with the status of <code>CANCELED</code> if the <code>includeCanceled</code> parameter is set to <code>true</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Value for specifying the next set of paginated results to return.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the signing profile.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags associated with the signing profile.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "MaxSizeInMB":{"type":"integer"},
+    "Metadata":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "NextToken":{"type":"string"},
+    "NotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The signing profile was not found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "Payload":{
+      "type":"blob",
+      "max":4096,
+      "min":1
+    },
+    "Permission":{
+      "type":"structure",
+      "members":{
+        "action":{
+          "shape":"String",
+          "documentation":"<p>An AWS Signer action permitted as part of cross-account permissions.</p>"
+        },
+        "principal":{
+          "shape":"String",
+          "documentation":"<p>The AWS principal that has been granted a cross-account permission.</p>"
+        },
+        "statementId":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for a cross-account permission statement.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The signing profile version that a permission applies to.</p>"
+        }
+      },
+      "documentation":"<p>A cross-account permission for a signing profile.</p>"
+    },
+    "Permissions":{
+      "type":"list",
+      "member":{"shape":"Permission"}
+    },
+    "PlatformId":{"type":"string"},
+    "PolicySizeBytes":{"type":"integer"},
+    "Prefix":{"type":"string"},
+    "ProfileName":{
+      "type":"string",
+      "max":64,
+      "min":2,
+      "pattern":"^[a-zA-Z0-9_]{2,}"
+    },
+    "ProfileVersion":{
+      "type":"string",
+      "max":10,
+      "min":10,
+      "pattern":"^[a-zA-Z0-9]{10}$"
+    },
+    "PutSigningProfileRequest":{
+      "type":"structure",
+      "required":[
+        "profileName",
+        "platformId"
+      ],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile to be created.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "signingMaterial":{
+          "shape":"SigningMaterial",
+          "documentation":"<p>The AWS Certificate Manager certificate that will be used to sign code with the new signing profile.</p>"
+        },
+        "signatureValidityPeriod":{
+          "shape":"SignatureValidityPeriod",
+          "documentation":"<p>The default validity period override for any signature generated using this signing profile. If unspecified, the default is 135 months.</p>"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of the signing platform to be created.</p>"
+        },
+        "overrides":{
+          "shape":"SigningPlatformOverrides",
+          "documentation":"<p>A subfield of <code>platform</code>. This specifies any different configuration options that you want to apply to the chosen platform (such as a different <code>hash-algorithm</code> or <code>signing-algorithm</code>).</p>"
+        },
+        "signingParameters":{
+          "shape":"SigningParameters",
+          "documentation":"<p>Map of key-value pairs for signing. These can include any information that you want to use during signing.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags to be associated with the signing profile that is being created.</p>"
+        }
+      }
+    },
+    "PutSigningProfileResponse":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"string",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the signing profile created.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of the signing profile being created.</p>"
+        },
+        "profileVersionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The signing profile ARN, including the profile version.</p>"
+        }
+      }
+    },
+    "RemoveProfilePermissionRequest":{
+      "type":"structure",
+      "required":[
+        "revisionId",
+        "profileName",
+        "statementId"
+      ],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>A human-readable name for the signing profile with permissions to be removed.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>An identifier for the current revision of the signing profile permissions.</p>",
+          "location":"querystring",
+          "locationName":"revisionId"
+        },
+        "statementId":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for the cross-account permissions statement.</p>",
+          "location":"uri",
+          "locationName":"statementId"
+        }
+      }
+    },
+    "RemoveProfilePermissionResponse":{
+      "type":"structure",
+      "members":{
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>An identifier for the current revision of the profile permissions.</p>"
+        }
+      }
+    },
+    "RequestedBy":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>A specified resource could not be found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "RevocationReasonString":{
+      "type":"string",
+      "max":500,
+      "min":1
+    },
+    "RevokeSignatureRequest":{
+      "type":"structure",
+      "required":[
+        "reason",
+        "jobId"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>ID of the signing job to be revoked.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        },
+        "jobOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>AWS account ID of the job owner.</p>"
+        },
+        "reason":{
+          "shape":"RevocationReasonString",
+          "documentation":"<p>The reason for revoking the signing job.</p>"
+        }
+      }
+    },
+    "RevokeSigningProfileRequest":{
+      "type":"structure",
+      "required":[
+        "profileVersion",
+        "reason",
+        "effectiveTime",
+        "profileName"
+      ],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile to be revoked.</p>",
+          "location":"uri",
+          "locationName":"profileName"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of the signing profile to be revoked.</p>"
+        },
+        "reason":{
+          "shape":"RevocationReasonString",
+          "documentation":"<p>The reason for revoking a signing profile.</p>"
+        },
+        "effectiveTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp for when revocation of a Signing Profile should become effective. Signatures generated using the signing profile after this timestamp are not trusted.</p>"
+        }
+      }
+    },
+    "RevokedEntities":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "S3Destination":{
+      "type":"structure",
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Name of the S3 bucket.</p>"
+        },
+        "prefix":{
+          "shape":"Prefix",
+          "documentation":"<p>An S3 prefix that you can use to limit responses to those that begin with the specified prefix.</p>"
+        }
+      },
+      "documentation":"<p>The name and prefix of the Amazon S3 bucket where AWS Signer saves your signed objects.</p>"
+    },
+    "S3SignedObject":{
+      "type":"structure",
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Name of the S3 bucket.</p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p>Key name that uniquely identifies a signed code image in your bucket.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 bucket name and key where Signer saved your signed code image.</p>"
+    },
+    "S3Source":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "key",
+        "version"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>Name of the S3 bucket.</p>"
+        },
+        "key":{
+          "shape":"Key",
+          "documentation":"<p>Key name of the bucket object that contains your unsigned code.</p>"
+        },
+        "version":{
+          "shape":"Version",
+          "documentation":"<p>Version of your source image in your version enabled S3 bucket.</p>"
+        }
+      },
+      "documentation":"<p>Information about the Amazon S3 bucket where you saved your unsigned code.</p>"
+    },
+    "ServiceLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The client is making a request that exceeds service limits.</p>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "SignPayloadRequest":{
+      "type":"structure",
+      "required":[
+        "profileName",
+        "payload",
+        "payloadFormat"
+      ],
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile.</p>"
+        },
+        "profileOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the profile owner.</p>"
+        },
+        "payload":{
+          "shape":"Payload",
+          "documentation":"<p>Specifies the object digest (hash) to sign.</p>"
+        },
+        "payloadFormat":{
+          "shape":"String",
+          "documentation":"<p>Payload content type. The single valid type is <code>application/vnd.cncf.notary.payload.v1+json</code>.</p>"
+        }
+      }
+    },
+    "SignPayloadResponse":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>Unique identifier of the signing job.</p>"
+        },
+        "jobOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the job owner.</p>"
+        },
+        "metadata":{
+          "shape":"Metadata",
+          "documentation":"<p>Information including the signing profile ARN and the signing job ID.</p>"
+        },
+        "signature":{
+          "shape":"Blob",
+          "documentation":"<p>A cryptographic signature.</p>"
+        }
+      }
+    },
+    "SignatureValidityPeriod":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"Integer",
+          "documentation":"<p>The numerical value of the time unit for signature validity.</p>"
+        },
+        "type":{
+          "shape":"ValidityType",
+          "documentation":"<p>The time unit for signature validity.</p>"
+        }
+      },
+      "documentation":"<p>The validity period for a signing job.</p>"
+    },
+    "SignedObject":{
+      "type":"structure",
+      "members":{
+        "s3":{
+          "shape":"S3SignedObject",
+          "documentation":"<p>The <code>S3SignedObject</code>.</p>"
+        }
+      },
+      "documentation":"<p>Points to an <code>S3SignedObject</code> object that contains information about your signed code image.</p>"
+    },
+    "SigningConfiguration":{
+      "type":"structure",
+      "required":[
+        "encryptionAlgorithmOptions",
+        "hashAlgorithmOptions"
+      ],
+      "members":{
+        "encryptionAlgorithmOptions":{
+          "shape":"EncryptionAlgorithmOptions",
+          "documentation":"<p>The encryption algorithm options that are available for a code-signing job.</p>"
+        },
+        "hashAlgorithmOptions":{
+          "shape":"HashAlgorithmOptions",
+          "documentation":"<p>The hash algorithm options that are available for a code-signing job.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of a signing operation.</p>"
+    },
+    "SigningConfigurationOverrides":{
+      "type":"structure",
+      "members":{
+        "encryptionAlgorithm":{
+          "shape":"EncryptionAlgorithm",
+          "documentation":"<p>A specified override of the default encryption algorithm that is used in a code-signing job.</p>"
+        },
+        "hashAlgorithm":{
+          "shape":"HashAlgorithm",
+          "documentation":"<p>A specified override of the default hash algorithm that is used in a code-signing job.</p>"
+        }
+      },
+      "documentation":"<p>A signing configuration that overrides the default encryption or hash algorithm of a signing job.</p>"
+    },
+    "SigningImageFormat":{
+      "type":"structure",
+      "required":[
+        "supportedFormats",
+        "defaultFormat"
+      ],
+      "members":{
+        "supportedFormats":{
+          "shape":"ImageFormats",
+          "documentation":"<p>The supported formats of a signing image.</p>"
+        },
+        "defaultFormat":{
+          "shape":"ImageFormat",
+          "documentation":"<p>The default format of a signing image.</p>"
+        }
+      },
+      "documentation":"<p>The image format of a AWS Signer platform or profile.</p>"
+    },
+    "SigningJob":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the signing job.</p>"
+        },
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>A <code>Source</code> that contains information about a signing job's code image source.</p>"
+        },
+        "signedObject":{
+          "shape":"SignedObject",
+          "documentation":"<p>A <code>SignedObject</code> structure that contains information about a signing job's signed code image.</p>"
+        },
+        "signingMaterial":{
+          "shape":"SigningMaterial",
+          "documentation":"<p>A <code>SigningMaterial</code> object that contains the Amazon Resource Name (ARN) of the certificate used for the signing job.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the signing job was created.</p>"
+        },
+        "status":{
+          "shape":"SigningStatus",
+          "documentation":"<p>The status of the signing job.</p>"
+        },
+        "isRevoked":{
+          "shape":"bool",
+          "documentation":"<p>Indicates whether the signing job is revoked.</p>"
+        },
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile that created a signing job.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of the signing profile that created a signing job.</p>"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The unique identifier for a signing platform.</p>"
+        },
+        "platformDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>The name of a signing platform.</p>"
+        },
+        "signatureExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the signature of a signing job expires.</p>"
+        },
+        "jobOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the job owner.</p>"
+        },
+        "jobInvoker":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the job invoker.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a signing job.</p>"
+    },
+    "SigningJobRevocationRecord":{
+      "type":"structure",
+      "members":{
+        "reason":{
+          "shape":"String",
+          "documentation":"<p>A caller-supplied reason for revocation.</p>"
+        },
+        "revokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time of revocation.</p>"
+        },
+        "revokedBy":{
+          "shape":"String",
+          "documentation":"<p>The identity of the revoker.</p>"
+        }
+      },
+      "documentation":"<p>Revocation information for a signing job.</p>"
+    },
+    "SigningJobs":{
+      "type":"list",
+      "member":{"shape":"SigningJob"}
+    },
+    "SigningMaterial":{
+      "type":"structure",
+      "required":["certificateArn"],
+      "members":{
+        "certificateArn":{
+          "shape":"CertificateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the certificates that is used to sign your code.</p>"
+        }
+      },
+      "documentation":"<p>The ACM certificate that is used to sign your code.</p>"
+    },
+    "SigningParameterKey":{"type":"string"},
+    "SigningParameterValue":{"type":"string"},
+    "SigningParameters":{
+      "type":"map",
+      "key":{"shape":"SigningParameterKey"},
+      "value":{"shape":"SigningParameterValue"}
+    },
+    "SigningPlatform":{
+      "type":"structure",
+      "members":{
+        "platformId":{
+          "shape":"String",
+          "documentation":"<p>The ID of a signing platform.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of a signing platform.</p>"
+        },
+        "partner":{
+          "shape":"String",
+          "documentation":"<p>Any partner entities linked to a signing platform.</p>"
+        },
+        "target":{
+          "shape":"String",
+          "documentation":"<p>The types of targets that can be signed by a signing platform.</p>"
+        },
+        "category":{
+          "shape":"Category",
+          "documentation":"<p>The category of a signing platform.</p>"
+        },
+        "signingConfiguration":{
+          "shape":"SigningConfiguration",
+          "documentation":"<p>The configuration of a signing platform. This includes the designated hash algorithm and encryption algorithm of a signing platform.</p>"
+        },
+        "signingImageFormat":{"shape":"SigningImageFormat"},
+        "maxSizeInMB":{
+          "shape":"MaxSizeInMB",
+          "documentation":"<p>The maximum size (in MB) of code that can be signed by a signing platform.</p>"
+        },
+        "revocationSupported":{
+          "shape":"bool",
+          "documentation":"<p>Indicates whether revocation is supported for the platform.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the signing configurations and parameters that are used to perform a code-signing job.</p>"
+    },
+    "SigningPlatformOverrides":{
+      "type":"structure",
+      "members":{
+        "signingConfiguration":{
+          "shape":"SigningConfigurationOverrides",
+          "documentation":"<p>A signing configuration that overrides the default encryption or hash algorithm of a signing job.</p>"
+        },
+        "signingImageFormat":{
+          "shape":"ImageFormat",
+          "documentation":"<p>A signed image is a JSON object. When overriding the default signing platform configuration, a customer can select either of two signing formats, <code>JSONEmbedded</code> or <code>JSONDetached</code>. (A third format value, <code>JSON</code>, is reserved for future use.) With <code>JSONEmbedded</code>, the signing image has the payload embedded in it. With <code>JSONDetached</code>, the payload is not be embedded in the signing image.</p>"
+        }
+      },
+      "documentation":"<p>Any overrides that are applied to the signing configuration of a signing platform.</p>"
+    },
+    "SigningPlatforms":{
+      "type":"list",
+      "member":{"shape":"SigningPlatform"}
+    },
+    "SigningProfile":{
+      "type":"structure",
+      "members":{
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile.</p>"
+        },
+        "profileVersion":{
+          "shape":"ProfileVersion",
+          "documentation":"<p>The version of a signing profile.</p>"
+        },
+        "profileVersionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of a signing profile, including the profile version.</p>"
+        },
+        "signingMaterial":{
+          "shape":"SigningMaterial",
+          "documentation":"<p>The ACM certificate that is available for use by a signing profile.</p>"
+        },
+        "signatureValidityPeriod":{
+          "shape":"SignatureValidityPeriod",
+          "documentation":"<p>The validity period for a signing job created using this signing profile.</p>"
+        },
+        "platformId":{
+          "shape":"PlatformId",
+          "documentation":"<p>The ID of a platform that is available for use by a signing profile.</p>"
+        },
+        "platformDisplayName":{
+          "shape":"DisplayName",
+          "documentation":"<p>The name of the signing platform.</p>"
+        },
+        "signingParameters":{
+          "shape":"SigningParameters",
+          "documentation":"<p>The parameters that are available for use by a Signer user.</p>"
+        },
+        "status":{
+          "shape":"SigningProfileStatus",
+          "documentation":"<p>The status of a signing profile.</p>"
+        },
+        "arn":{
+          "shape":"string",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the signing profile.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags associated with the signing profile.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the ACM certificates and signing configuration parameters that can be used by a given code signing user.</p>"
+    },
+    "SigningProfileRevocationRecord":{
+      "type":"structure",
+      "members":{
+        "revocationEffectiveFrom":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when revocation becomes effective.</p>"
+        },
+        "revokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the signing profile was revoked.</p>"
+        },
+        "revokedBy":{
+          "shape":"String",
+          "documentation":"<p>The identity of the revoker.</p>"
+        }
+      },
+      "documentation":"<p>Revocation information for a signing profile.</p>"
+    },
+    "SigningProfileStatus":{
+      "type":"string",
+      "enum":[
+        "Active",
+        "Canceled",
+        "Revoked"
+      ]
+    },
+    "SigningProfiles":{
+      "type":"list",
+      "member":{"shape":"SigningProfile"}
+    },
+    "SigningStatus":{
+      "type":"string",
+      "enum":[
+        "InProgress",
+        "Failed",
+        "Succeeded"
+      ]
+    },
+    "Source":{
+      "type":"structure",
+      "members":{
+        "s3":{
+          "shape":"S3Source",
+          "documentation":"<p>The <code>S3Source</code> object.</p>"
+        }
+      },
+      "documentation":"<p>An <code>S3Source</code> object that contains information about the S3 bucket where you saved your unsigned code.</p>"
+    },
+    "StartSigningJobRequest":{
+      "type":"structure",
+      "required":[
+        "source",
+        "destination",
+        "profileName",
+        "clientRequestToken"
+      ],
+      "members":{
+        "source":{
+          "shape":"Source",
+          "documentation":"<p>The S3 bucket that contains the object to sign or a BLOB that contains your raw code.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The S3 bucket in which to save your signed object. The destination contains the name of your bucket and an optional prefix.</p>"
+        },
+        "profileName":{
+          "shape":"ProfileName",
+          "documentation":"<p>The name of the signing profile.</p>"
+        },
+        "clientRequestToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>String that identifies the signing request. All calls after the first that use this token return the same response as the first call.</p>",
+          "idempotencyToken":true
+        },
+        "profileOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the signing profile owner.</p>"
+        }
+      }
+    },
+    "StartSigningJobResponse":{
+      "type":"structure",
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of your signing job.</p>"
+        },
+        "jobOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The AWS account ID of the signing job owner.</p>"
+        }
+      }
+    },
+    "StatusReason":{"type":"string"},
+    "Statuses":{
+      "type":"list",
+      "member":{"shape":"SigningProfileStatus"}
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the signing profile.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>One or more tags to be associated with the signing profile.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p> <p>Instead of this error, <code>TooManyRequestsException</code> should be used.</p>",
+      "deprecated":true,
+      "deprecatedMessage":"Instead of this error, TooManyRequestsException should be used.",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TooManyRequestsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>The allowed number of job-signing requests has been exceeded.</p> <p>This error supersedes the error <code>ThrottlingException</code>.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the signing profile.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of tag keys to be removed from the signing profile.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "code":{"shape":"ErrorCode"}
+      },
+      "documentation":"<p>You signing certificate could not be validated.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ValidityType":{
+      "type":"string",
+      "enum":[
+        "DAYS",
+        "MONTHS",
+        "YEARS"
+      ]
+    },
+    "Version":{"type":"string"},
+    "bool":{"type":"boolean"},
+    "string":{"type":"string"}
+  },
+  "documentation":"<p>AWS Signer is a fully managed code-signing service to help you ensure the trust and integrity of your code. </p> <p>Signer supports the following applications:</p> <p>With code signing for AWS Lambda, you can sign <a href=\"http://docs.aws.amazon.com/lambda/latest/dg/\">AWS Lambda</a> deployment packages. Integrated support is provided for <a href=\"http://docs.aws.amazon.com/AmazonS3/latest/gsg/\">Amazon S3</a>, <a href=\"http://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/\">Amazon CloudWatch</a>, and <a href=\"http://docs.aws.amazon.com/awscloudtrail/latest/userguide/\">AWS CloudTrail</a>. In order to sign code, you create a signing profile and then use Signer to sign Lambda zip files in S3. </p> <p>With code signing for IoT, you can sign code for any IoT device that is supported by AWS. IoT code signing is available for <a href=\"http://docs.aws.amazon.com/freertos/latest/userguide/\">Amazon FreeRTOS</a> and <a href=\"http://docs.aws.amazon.com/iot/latest/developerguide/\">AWS IoT Device Management</a>, and is integrated with <a href=\"http://docs.aws.amazon.com/acm/latest/userguide/\">AWS Certificate Manager (ACM)</a>. In order to sign code, you import a third-party code-signing certificate using ACM, and use that to sign updates in Amazon FreeRTOS and AWS IoT Device Management. </p> <p>With Signer and the Notation CLI from the <a href=\"https://notaryproject.dev/\">Notary&#x2028; Project</a>, you can sign container images stored in a container registry such as Amazon Elastic Container Registry (ECR). The signatures are stored in the registry alongside the images, where they are available for verifying image authenticity and integrity.</p> <p>For more information about Signer, see the <a href=\"https://docs.aws.amazon.com/signer/latest/developerguide/Welcome.html\">AWS Signer Developer Guide</a>.</p>"
+}

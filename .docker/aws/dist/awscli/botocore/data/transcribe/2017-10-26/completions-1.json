@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "resources": {
+    "TranscriptionJob": {
+      "operation": "ListTranscriptionJobs",
+      "resourceIdentifier": {
+        "TranscriptionJobName": "TranscriptionJobSummaries[].TranscriptionJobName"
+      }
+    },
+    "Vocabulary": {
+      "operation": "ListVocabularies",
+      "resourceIdentifier": {
+        "VocabularyName": "Vocabularies[].VocabularyName",
+        "LanguageCode": "Vocabularies[].LanguageCode"
+      }
+    }
+  },
+  "operations": {
+    "DeleteVocabulary": {
+      "VocabularyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vocabulary",
+            "resourceIdentifier": "VocabularyName"
+          }
+        ]
+      }
+    },
+    "GetTranscriptionJob": {
+      "TranscriptionJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TranscriptionJob",
+            "resourceIdentifier": "TranscriptionJobName"
+          }
+        ]
+      }
+    },
+    "GetVocabulary": {
+      "VocabularyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vocabulary",
+            "resourceIdentifier": "VocabularyName"
+          }
+        ]
+      }
+    },
+    "StartTranscriptionJob": {
+      "TranscriptionJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TranscriptionJob",
+            "resourceIdentifier": "TranscriptionJobName"
+          }
+        ]
+      },
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vocabulary",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "UpdateVocabulary": {
+      "VocabularyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vocabulary",
+            "resourceIdentifier": "VocabularyName"
+          }
+        ]
+      },
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vocabulary",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    }
+  }
+}

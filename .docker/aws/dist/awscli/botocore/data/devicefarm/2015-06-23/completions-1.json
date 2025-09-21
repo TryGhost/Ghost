@@ -1,0 +1,755 @@
+{
+  "version": "1.0",
+  "resources": {
+    "DeviceInstance": {
+      "operation": "ListDeviceInstances",
+      "resourceIdentifier": {
+        "labels": "deviceInstances[].labels"
+      }
+    },
+    "InstanceProfile": {
+      "operation": "ListInstanceProfiles",
+      "resourceIdentifier": {
+        "packageCleanup": "instanceProfiles[].packageCleanup",
+        "excludeAppPackagesFromCleanup": "instanceProfiles[].excludeAppPackagesFromCleanup",
+        "rebootAfterUse": "instanceProfiles[].rebootAfterUse"
+      }
+    },
+    "OfferingTransaction": {
+      "operation": "ListOfferingTransactions",
+      "resourceIdentifier": {
+        "offeringPromotionId": "offeringTransactions[].offeringPromotionId"
+      }
+    },
+    "Offering": {
+      "operation": "ListOfferings",
+      "resourceIdentifier": {
+        "description": "offerings[].description",
+        "type": "offerings[].type"
+      }
+    },
+    "Project": {
+      "operation": "ListProjects",
+      "resourceIdentifier": {
+        "name": "projects[].name",
+        "defaultJobTimeoutMinutes": "projects[].defaultJobTimeoutMinutes"
+      }
+    },
+    "VPCEConfiguration": {
+      "operation": "ListVPCEConfigurations",
+      "resourceIdentifier": {
+        "arn": "vpceConfigurations[].arn",
+        "vpceConfigurationName": "vpceConfigurations[].vpceConfigurationName",
+        "vpceServiceName": "vpceConfigurations[].vpceServiceName",
+        "serviceDnsName": "vpceConfigurations[].serviceDnsName",
+        "vpceConfigurationDescription": "vpceConfigurations[].vpceConfigurationDescription"
+      }
+    }
+  },
+  "operations": {
+    "DeleteDevicePool": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteInstanceProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteNetworkProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteProject": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteRemoteAccessSession": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteRun": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteUpload": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "DeleteVPCEConfiguration": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetDevice": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetDeviceInstance": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetDevicePool": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetInstanceProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetJob": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetNetworkProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetProject": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetRemoteAccessSession": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetRun": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetSuite": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetTest": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetUpload": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "GetVPCEConfiguration": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListArtifacts": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "type"
+          }
+        ]
+      }
+    },
+    "ListDevicePools": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "type"
+          }
+        ]
+      }
+    },
+    "ListDevices": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListJobs": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListNetworkProfiles": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "type"
+          }
+        ]
+      }
+    },
+    "ListProjects": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListRemoteAccessSessions": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListRuns": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListSamples": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListSuites": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListTests": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListUniqueProblems": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "ListUploads": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "type"
+          }
+        ]
+      }
+    },
+    "PurchaseOffering": {
+      "offeringPromotionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OfferingTransaction",
+            "resourceIdentifier": "offeringPromotionId"
+          }
+        ]
+      }
+    },
+    "ScheduleRun": {
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "StopJob": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "StopRemoteAccessSession": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "StopRun": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      }
+    },
+    "UpdateDeviceInstance": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "labels": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DeviceInstance",
+            "resourceIdentifier": "labels"
+          }
+        ]
+      }
+    },
+    "UpdateDevicePool": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      },
+      "description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "description"
+          }
+        ]
+      }
+    },
+    "UpdateInstanceProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      },
+      "description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "description"
+          }
+        ]
+      },
+      "packageCleanup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "packageCleanup"
+          }
+        ]
+      },
+      "excludeAppPackagesFromCleanup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "excludeAppPackagesFromCleanup"
+          }
+        ]
+      },
+      "rebootAfterUse": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "rebootAfterUse"
+          }
+        ]
+      }
+    },
+    "UpdateNetworkProfile": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      },
+      "description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "description"
+          }
+        ]
+      },
+      "type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Offering",
+            "resourceIdentifier": "type"
+          }
+        ]
+      }
+    },
+    "UpdateProject": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      },
+      "defaultJobTimeoutMinutes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "defaultJobTimeoutMinutes"
+          }
+        ]
+      }
+    },
+    "UpdateUpload": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Project",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "UpdateVPCEConfiguration": {
+      "arn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "arn"
+          }
+        ]
+      },
+      "vpceConfigurationName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "vpceConfigurationName"
+          }
+        ]
+      },
+      "vpceServiceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "vpceServiceName"
+          }
+        ]
+      },
+      "serviceDnsName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "serviceDnsName"
+          }
+        ]
+      },
+      "vpceConfigurationDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VPCEConfiguration",
+            "resourceIdentifier": "vpceConfigurationDescription"
+          }
+        ]
+      }
+    }
+  }
+}

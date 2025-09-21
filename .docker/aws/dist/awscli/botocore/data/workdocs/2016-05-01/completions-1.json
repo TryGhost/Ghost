@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "resources": {
+    "User": {
+      "operation": "DescribeUsers",
+      "resourceIdentifier": {
+        "Id": "Users[].Id",
+        "GivenName": "Users[].GivenName",
+        "Surname": "Users[].Surname",
+        "OrganizationId": "Users[].OrganizationId",
+        "Type": "Users[].Type",
+        "TimeZoneId": "Users[].TimeZoneId",
+        "Locale": "Users[].Locale"
+      }
+    }
+  },
+  "operations": {
+    "DeleteNotificationSubscription": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeActivities": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeFolderContents": {
+      "Type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Type"
+          }
+        ]
+      }
+    },
+    "DescribeGroups": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeNotificationSubscriptions": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeUsers": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "InitiateDocumentVersionUpload": {
+      "Id": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Id"
+          }
+        ]
+      }
+    },
+    "UpdateUser": {
+      "GivenName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "GivenName"
+          }
+        ]
+      },
+      "Surname": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Surname"
+          }
+        ]
+      },
+      "Type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Type"
+          }
+        ]
+      },
+      "TimeZoneId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "TimeZoneId"
+          }
+        ]
+      },
+      "Locale": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Locale"
+          }
+        ]
+      }
+    }
+  }
+}

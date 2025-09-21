@@ -1,0 +1,84 @@
+{
+    "config-vars": {
+        "category": [
+            "General"
+        ], 
+        "description": [
+            "Configuration Variables for the AWS CLI"
+        ], 
+        "related command": [
+            "configure", 
+            "configure get", 
+            "configure set"
+        ], 
+        "related topic": [
+            "s3-config"
+        ], 
+        "title": [
+            "AWS CLI Configuration Variables"
+        ]
+    }, 
+    "return-codes": {
+        "category": [
+            "General"
+        ], 
+        "description": [
+            "Describes the various return codes of the AWS CLI"
+        ], 
+        "related command": [
+            "s3", 
+            "s3 cp", 
+            "s3 sync", 
+            "s3 mv", 
+            "s3 rm"
+        ], 
+        "title": [
+            "AWS CLI Return Codes"
+        ]
+    }, 
+    "s3-config": {
+        "category": [
+            "S3"
+        ], 
+        "description": [
+            "Advanced configuration for AWS S3 Commands"
+        ], 
+        "related command": [
+            "s3 cp", 
+            "s3 sync", 
+            "s3 mv", 
+            "s3 rm"
+        ], 
+        "title": [
+            "AWS CLI S3 Configuration"
+        ]
+    }, 
+    "s3-faq": {
+        "category": [
+            "S3"
+        ], 
+        "description": [
+            "Frequented Asked Questions for Amazon S3 in the AWS CLI"
+        ], 
+        "related command": [
+            "s3 cp", 
+            "s3 sync", 
+            "s3 mv", 
+            "s3 rm"
+        ], 
+        "title": [
+            "AWS CLI S3 FAQ"
+        ]
+    },
+    "ddb-expressions": {
+        "category": ["ddb"],
+        "description": [
+            "Details on the expression syntax for the ddb commands"
+        ],
+        "related command": [
+            "ddb select",
+            "ddb put"
+        ],
+        "title": ["AWS DDB Expressions"]
+    }
+}

@@ -1,0 +1,113 @@
+{
+  "merge": {
+    "resources": {
+      "Project": {
+        "operation": "ListProjects",
+        "resourceIdentifier": {
+          "name": "projects[]"
+        }
+      }
+    },
+    "operations": {
+      "BatchDeleteBuilds": {
+        "ids": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Build",
+              "resourceIdentifier": "id"
+            }
+          ]
+        }
+      },
+      "BatchGetBuilds": {
+        "ids": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Build",
+              "resourceIdentifier": "id"
+            }
+          ]
+        }
+      },
+      "StartBuild": {
+        "projectName": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "BatchGetProjects": {
+        "names": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "DeleteProject": {
+        "name": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "UpdateProject": {
+        "name": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "InvalidateProjectCache": {
+        "projectName": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "ListBuildsForProject": {
+        "projectName": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      },
+      "ListBuildBatchesForProject": {
+        "projectName": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Project",
+              "resourceIdentifier": "name"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

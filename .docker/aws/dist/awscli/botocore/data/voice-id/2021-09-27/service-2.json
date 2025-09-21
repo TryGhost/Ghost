@@ -1,0 +1,2567 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-09-27",
+    "endpointPrefix":"voiceid",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "serviceFullName":"Amazon Voice ID",
+    "serviceId":"Voice ID",
+    "signatureVersion":"v4",
+    "signingName":"voiceid",
+    "targetPrefix":"VoiceID",
+    "uid":"voice-id-2021-09-27"
+  },
+  "operations":{
+    "AssociateFraudster":{
+      "name":"AssociateFraudster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AssociateFraudsterRequest"},
+      "output":{"shape":"AssociateFraudsterResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Associates the fraudsters with the watchlist specified in the same domain. </p>"
+    },
+    "CreateDomain":{
+      "name":"CreateDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateDomainRequest"},
+      "output":{"shape":"CreateDomainResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a domain that contains all Amazon Connect Voice ID data, such as speakers, fraudsters, customer audio, and voiceprints. Every domain is created with a default watchlist that fraudsters can be a part of.</p>",
+      "idempotent":true
+    },
+    "CreateWatchlist":{
+      "name":"CreateWatchlist",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateWatchlistRequest"},
+      "output":{"shape":"CreateWatchlistResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a watchlist that fraudsters can be a part of.</p>",
+      "idempotent":true
+    },
+    "DeleteDomain":{
+      "name":"DeleteDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteDomainRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified domain from Voice ID.</p>",
+      "idempotent":true
+    },
+    "DeleteFraudster":{
+      "name":"DeleteFraudster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteFraudsterRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified fraudster from Voice ID. This action disassociates the fraudster from any watchlists it is a part of.</p>"
+    },
+    "DeleteSpeaker":{
+      "name":"DeleteSpeaker",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSpeakerRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified speaker from Voice ID.</p>"
+    },
+    "DeleteWatchlist":{
+      "name":"DeleteWatchlist",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteWatchlistRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified watchlist from Voice ID. This API throws an exception when there are fraudsters in the watchlist that you are trying to delete. You must delete the fraudsters, and then delete the watchlist. Every domain has a default watchlist which cannot be deleted. </p>"
+    },
+    "DescribeDomain":{
+      "name":"DescribeDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeDomainRequest"},
+      "output":{"shape":"DescribeDomainResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified domain.</p>"
+    },
+    "DescribeFraudster":{
+      "name":"DescribeFraudster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeFraudsterRequest"},
+      "output":{"shape":"DescribeFraudsterResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified fraudster.</p>"
+    },
+    "DescribeFraudsterRegistrationJob":{
+      "name":"DescribeFraudsterRegistrationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeFraudsterRegistrationJobRequest"},
+      "output":{"shape":"DescribeFraudsterRegistrationJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified fraudster registration job.</p>"
+    },
+    "DescribeSpeaker":{
+      "name":"DescribeSpeaker",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSpeakerRequest"},
+      "output":{"shape":"DescribeSpeakerResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified speaker.</p>"
+    },
+    "DescribeSpeakerEnrollmentJob":{
+      "name":"DescribeSpeakerEnrollmentJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSpeakerEnrollmentJobRequest"},
+      "output":{"shape":"DescribeSpeakerEnrollmentJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified speaker enrollment job.</p>"
+    },
+    "DescribeWatchlist":{
+      "name":"DescribeWatchlist",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeWatchlistRequest"},
+      "output":{"shape":"DescribeWatchlistResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Describes the specified watchlist.</p>"
+    },
+    "DisassociateFraudster":{
+      "name":"DisassociateFraudster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DisassociateFraudsterRequest"},
+      "output":{"shape":"DisassociateFraudsterResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Disassociates the fraudsters from the watchlist specified. Voice ID always expects a fraudster to be a part of at least one watchlist. If you try to disassociate a fraudster from its only watchlist, a <code>ValidationException</code> is thrown. </p>"
+    },
+    "EvaluateSession":{
+      "name":"EvaluateSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"EvaluateSessionRequest"},
+      "output":{"shape":"EvaluateSessionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Evaluates a specified session based on audio data accumulated during a streaming Amazon Connect Voice ID call.</p>"
+    },
+    "ListDomains":{
+      "name":"ListDomains",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListDomainsRequest"},
+      "output":{"shape":"ListDomainsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the domains in the Amazon Web Services account. </p>"
+    },
+    "ListFraudsterRegistrationJobs":{
+      "name":"ListFraudsterRegistrationJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFraudsterRegistrationJobsRequest"},
+      "output":{"shape":"ListFraudsterRegistrationJobsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the fraudster registration jobs in the domain with the given <code>JobStatus</code>. If <code>JobStatus</code> is not provided, this lists all fraudster registration jobs in the given domain. </p>"
+    },
+    "ListFraudsters":{
+      "name":"ListFraudsters",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListFraudstersRequest"},
+      "output":{"shape":"ListFraudstersResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all fraudsters in a specified watchlist or domain.</p>"
+    },
+    "ListSpeakerEnrollmentJobs":{
+      "name":"ListSpeakerEnrollmentJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSpeakerEnrollmentJobsRequest"},
+      "output":{"shape":"ListSpeakerEnrollmentJobsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the speaker enrollment jobs in the domain with the specified <code>JobStatus</code>. If <code>JobStatus</code> is not provided, this lists all jobs with all possible speaker enrollment job statuses.</p>"
+    },
+    "ListSpeakers":{
+      "name":"ListSpeakers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSpeakersRequest"},
+      "output":{"shape":"ListSpeakersResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all speakers in a specified domain.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all tags associated with a specified Voice ID resource.</p>"
+    },
+    "ListWatchlists":{
+      "name":"ListWatchlists",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWatchlistsRequest"},
+      "output":{"shape":"ListWatchlistsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all watchlists in a specified domain.</p>"
+    },
+    "OptOutSpeaker":{
+      "name":"OptOutSpeaker",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"OptOutSpeakerRequest"},
+      "output":{"shape":"OptOutSpeakerResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Opts out a speaker from Voice ID. A speaker can be opted out regardless of whether or not they already exist in Voice ID. If they don't yet exist, a new speaker is created in an opted out state. If they already exist, their existing status is overridden and they are opted out. Enrollment and evaluation authentication requests are rejected for opted out speakers, and opted out speakers have no voice embeddings stored in Voice ID.</p>"
+    },
+    "StartFraudsterRegistrationJob":{
+      "name":"StartFraudsterRegistrationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartFraudsterRegistrationJobRequest"},
+      "output":{"shape":"StartFraudsterRegistrationJobResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts a new batch fraudster registration job using provided details.</p>",
+      "idempotent":true
+    },
+    "StartSpeakerEnrollmentJob":{
+      "name":"StartSpeakerEnrollmentJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartSpeakerEnrollmentJobRequest"},
+      "output":{"shape":"StartSpeakerEnrollmentJobResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts a new batch speaker enrollment job using specified details.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Tags a Voice ID resource with the provided list of tags.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Removes specified tags from a specified Amazon Connect Voice ID resource.</p>"
+    },
+    "UpdateDomain":{
+      "name":"UpdateDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateDomainRequest"},
+      "output":{"shape":"UpdateDomainResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the specified domain. This API has clobber behavior, and clears and replaces all attributes. If an optional field, such as 'Description' is not provided, it is removed from the domain.</p>"
+    },
+    "UpdateWatchlist":{
+      "name":"UpdateWatchlist",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateWatchlistRequest"},
+      "output":{"shape":"UpdateWatchlistResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the specified watchlist. Every domain has a default watchlist which cannot be updated. </p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient permissions to perform this action. Check the error message and try again.</p>",
+      "exception":true
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^arn:aws(-[^:]+)?:voiceid.+:[0-9]{12}:domain/[a-zA-Z0-9]{22}$"
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"^arn:aws(-[^:]+)?:voiceid.+:[0-9]{12}:domain/[a-zA-Z0-9]{22}$"
+    },
+    "AssociateFraudsterRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "FraudsterId",
+        "WatchlistId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster.</p>"
+        },
+        "FraudsterId":{
+          "shape":"FraudsterId",
+          "documentation":"<p>The identifier of the fraudster to be associated with the watchlist.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist you want to associate with the fraudster.</p>"
+        }
+      }
+    },
+    "AssociateFraudsterResponse":{
+      "type":"structure",
+      "members":{
+        "Fraudster":{"shape":"Fraudster"}
+      }
+    },
+    "AuthenticationConfiguration":{
+      "type":"structure",
+      "required":["AcceptanceThreshold"],
+      "members":{
+        "AcceptanceThreshold":{
+          "shape":"Score",
+          "documentation":"<p>The minimum threshold needed to successfully authenticate a speaker.</p>"
+        }
+      },
+      "documentation":"<p>The configuration used to authenticate a speaker during a session.</p>"
+    },
+    "AuthenticationDecision":{
+      "type":"string",
+      "enum":[
+        "ACCEPT",
+        "REJECT",
+        "NOT_ENOUGH_SPEECH",
+        "SPEAKER_NOT_ENROLLED",
+        "SPEAKER_OPTED_OUT",
+        "SPEAKER_ID_NOT_PROVIDED",
+        "SPEAKER_EXPIRED"
+      ]
+    },
+    "AuthenticationResult":{
+      "type":"structure",
+      "members":{
+        "AudioAggregationEndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when audio aggregation ended for this authentication result.</p>"
+        },
+        "AudioAggregationStartedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when audio aggregation started for this authentication result.</p>"
+        },
+        "AuthenticationResultId":{
+          "shape":"UniqueIdLarge",
+          "documentation":"<p>The unique identifier for this authentication result. Because there can be multiple authentications for a given session, this field helps to identify if the returned result is from a previous streaming activity or a new result. Note that in absence of any new streaming activity, <code>AcceptanceThreshold</code> changes, or <code>SpeakerId</code> changes, Voice ID always returns cached Authentication Result for this API.</p>"
+        },
+        "Configuration":{
+          "shape":"AuthenticationConfiguration",
+          "documentation":"<p>The <code>AuthenticationConfiguration</code> used to generate this authentication result.</p>"
+        },
+        "CustomerSpeakerId":{
+          "shape":"CustomerSpeakerId",
+          "documentation":"<p>The client-provided identifier for the speaker whose authentication result is produced. Only present if a <code>SpeakerId</code> is provided for the session.</p>"
+        },
+        "Decision":{
+          "shape":"AuthenticationDecision",
+          "documentation":"<p>The authentication decision produced by Voice ID, processed against the current session state and streamed audio of the speaker.</p>"
+        },
+        "GeneratedSpeakerId":{
+          "shape":"GeneratedSpeakerId",
+          "documentation":"<p>The service-generated identifier for the speaker whose authentication result is produced.</p>"
+        },
+        "Score":{
+          "shape":"Score",
+          "documentation":"<p>The authentication score for the speaker whose authentication result is produced. This value is only present if the authentication decision is either <code>ACCEPT</code> or <code>REJECT</code>.</p>"
+        }
+      },
+      "documentation":"<p>The authentication result produced by Voice ID, processed against the current session state and streamed audio of the speaker.</p>"
+    },
+    "Boolean":{"type":"boolean"},
+    "ClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-_]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "ConflictType":{
+          "shape":"ConflictType",
+          "documentation":"<p>The type of conflict which caused a ConflictException. Possible types and the corresponding error messages are as follows:</p> <ul> <li> <p> <code>DOMAIN_NOT_ACTIVE</code>: The domain is not active.</p> </li> <li> <p> <code>CANNOT_CHANGE_SPEAKER_AFTER_ENROLLMENT</code>: You cannot change the speaker ID after an enrollment has been requested.</p> </li> <li> <p> <code>ENROLLMENT_ALREADY_EXISTS</code>: There is already an enrollment for this session.</p> </li> <li> <p> <code>SPEAKER_NOT_SET</code>: You must set the speaker ID before requesting an enrollment.</p> </li> <li> <p> <code>SPEAKER_OPTED_OUT</code>: You cannot request an enrollment for an opted out speaker.</p> </li> <li> <p> <code>CONCURRENT_CHANGES</code>: The request could not be processed as the resource was modified by another request during execution.</p> </li> </ul>"
+        },
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request failed due to a conflict. Check the <code>ConflictType</code> and error message for more details.</p>",
+      "exception":true
+    },
+    "ConflictType":{
+      "type":"string",
+      "enum":[
+        "ANOTHER_ACTIVE_STREAM",
+        "DOMAIN_NOT_ACTIVE",
+        "CANNOT_CHANGE_SPEAKER_AFTER_ENROLLMENT",
+        "ENROLLMENT_ALREADY_EXISTS",
+        "SPEAKER_NOT_SET",
+        "SPEAKER_OPTED_OUT",
+        "CONCURRENT_CHANGES",
+        "DOMAIN_LOCKED_FROM_ENCRYPTION_UPDATES",
+        "CANNOT_DELETE_NON_EMPTY_WATCHLIST",
+        "FRAUDSTER_MUST_BELONG_TO_AT_LEAST_ONE_WATCHLIST"
+      ]
+    },
+    "CreateDomainRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ServerSideEncryptionConfiguration"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A brief description of this domain.</p>"
+        },
+        "Name":{
+          "shape":"DomainName",
+          "documentation":"<p>The name of the domain.</p>"
+        },
+        "ServerSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration, containing the KMS key identifier, to be used by Voice ID for the server-side encryption of your data. Refer to <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/encryption-at-rest.html#encryption-at-rest-voiceid\"> Amazon Connect Voice ID encryption at rest</a> for more details on how the KMS key is used. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags you want added to the domain.</p>"
+        }
+      }
+    },
+    "CreateDomainResponse":{
+      "type":"structure",
+      "members":{
+        "Domain":{
+          "shape":"Domain",
+          "documentation":"<p>Information about the newly created domain.</p>"
+        }
+      }
+    },
+    "CreateWatchlistRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "Name"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"WatchlistDescription",
+          "documentation":"<p>A brief description of this watchlist.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "Name":{
+          "shape":"WatchlistName",
+          "documentation":"<p>The name of the watchlist.</p>"
+        }
+      }
+    },
+    "CreateWatchlistResponse":{
+      "type":"structure",
+      "members":{
+        "Watchlist":{
+          "shape":"Watchlist",
+          "documentation":"<p>Information about the newly created watchlist.</p>"
+        }
+      }
+    },
+    "CustomerSpeakerId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "sensitive":true
+    },
+    "DeleteDomainRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain you want to delete.</p>"
+        }
+      }
+    },
+    "DeleteFraudsterRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "FraudsterId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster.</p>"
+        },
+        "FraudsterId":{
+          "shape":"FraudsterId",
+          "documentation":"<p>The identifier of the fraudster you want to delete.</p>"
+        }
+      }
+    },
+    "DeleteSpeakerRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "SpeakerId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker.</p>"
+        },
+        "SpeakerId":{
+          "shape":"SpeakerId",
+          "documentation":"<p>The identifier of the speaker you want to delete.</p>"
+        }
+      }
+    },
+    "DeleteWatchlistRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "WatchlistId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist to be deleted.</p>"
+        }
+      }
+    },
+    "DescribeDomainRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that you are describing.</p>"
+        }
+      }
+    },
+    "DescribeDomainResponse":{
+      "type":"structure",
+      "members":{
+        "Domain":{
+          "shape":"Domain",
+          "documentation":"<p>Information about the specified domain.</p>"
+        }
+      }
+    },
+    "DescribeFraudsterRegistrationJobRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "JobId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster registration job.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the fraudster registration job you are describing.</p>"
+        }
+      }
+    },
+    "DescribeFraudsterRegistrationJobResponse":{
+      "type":"structure",
+      "members":{
+        "Job":{
+          "shape":"FraudsterRegistrationJob",
+          "documentation":"<p>Contains details about the specified fraudster registration job.</p>"
+        }
+      }
+    },
+    "DescribeFraudsterRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "FraudsterId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster.</p>"
+        },
+        "FraudsterId":{
+          "shape":"FraudsterId",
+          "documentation":"<p>The identifier of the fraudster you are describing.</p>"
+        }
+      }
+    },
+    "DescribeFraudsterResponse":{
+      "type":"structure",
+      "members":{
+        "Fraudster":{
+          "shape":"Fraudster",
+          "documentation":"<p>Information about the specified fraudster.</p>"
+        }
+      }
+    },
+    "DescribeSpeakerEnrollmentJobRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "JobId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker enrollment job.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The identifier of the speaker enrollment job you are describing.</p>"
+        }
+      }
+    },
+    "DescribeSpeakerEnrollmentJobResponse":{
+      "type":"structure",
+      "members":{
+        "Job":{
+          "shape":"SpeakerEnrollmentJob",
+          "documentation":"<p>Contains details about the specified speaker enrollment job.</p>"
+        }
+      }
+    },
+    "DescribeSpeakerRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "SpeakerId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker.</p>"
+        },
+        "SpeakerId":{
+          "shape":"SpeakerId",
+          "documentation":"<p>The identifier of the speaker you are describing.</p>"
+        }
+      }
+    },
+    "DescribeSpeakerResponse":{
+      "type":"structure",
+      "members":{
+        "Speaker":{
+          "shape":"Speaker",
+          "documentation":"<p>Information about the specified speaker.</p>"
+        }
+      }
+    },
+    "DescribeWatchlistRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "WatchlistId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist that you are describing.</p>"
+        }
+      }
+    },
+    "DescribeWatchlistResponse":{
+      "type":"structure",
+      "members":{
+        "Watchlist":{
+          "shape":"Watchlist",
+          "documentation":"<p>Information about the specified watchlist.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$",
+      "sensitive":true
+    },
+    "DisassociateFraudsterRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "FraudsterId",
+        "WatchlistId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster.</p>"
+        },
+        "FraudsterId":{
+          "shape":"FraudsterId",
+          "documentation":"<p>The identifier of the fraudster to be disassociated from the watchlist.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist that you want to disassociate from the fraudster.</p>"
+        }
+      }
+    },
+    "DisassociateFraudsterResponse":{
+      "type":"structure",
+      "members":{
+        "Fraudster":{"shape":"Fraudster"}
+      }
+    },
+    "Domain":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the domain.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the domain was created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the domain.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain.</p>"
+        },
+        "DomainStatus":{
+          "shape":"DomainStatus",
+          "documentation":"<p>The current status of the domain.</p>"
+        },
+        "Name":{
+          "shape":"DomainName",
+          "documentation":"<p>The name for the domain.</p>"
+        },
+        "ServerSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The server-side encryption configuration containing the KMS key identifier you want Voice ID to use to encrypt your data.</p>"
+        },
+        "ServerSideEncryptionUpdateDetails":{
+          "shape":"ServerSideEncryptionUpdateDetails",
+          "documentation":"<p>Details about the most recent server-side encryption configuration update. When the server-side encryption configuration is changed, dependency on the old KMS key is removed through an asynchronous process. When this update is complete, the domain's data can only be accessed using the new KMS key.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the domain was last update.</p>"
+        },
+        "WatchlistDetails":{
+          "shape":"WatchlistDetails",
+          "documentation":"<p>The watchlist details of a domain. Contains the default watchlist ID of the domain.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a domain.</p>"
+    },
+    "DomainId":{
+      "type":"string",
+      "max":22,
+      "min":22,
+      "pattern":"^[a-zA-Z0-9]{22}$"
+    },
+    "DomainName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "sensitive":true
+    },
+    "DomainStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "PENDING",
+        "SUSPENDED"
+      ]
+    },
+    "DomainSummaries":{
+      "type":"list",
+      "member":{"shape":"DomainSummary"}
+    },
+    "DomainSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the domain.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the domain was created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the domain.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain.</p>"
+        },
+        "DomainStatus":{
+          "shape":"DomainStatus",
+          "documentation":"<p>The current status of the domain.</p>"
+        },
+        "Name":{
+          "shape":"DomainName",
+          "documentation":"<p>The client-provided name for the domain.</p>"
+        },
+        "ServerSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The server-side encryption configuration containing the KMS key identifier you want Voice ID to use to encrypt your data.</p>"
+        },
+        "ServerSideEncryptionUpdateDetails":{
+          "shape":"ServerSideEncryptionUpdateDetails",
+          "documentation":"<p>Details about the most recent server-side encryption configuration update. When the server-side encryption configuration is changed, dependency on the old KMS key is removed through an asynchronous process. When this update is complete, the domain's data can only be accessed using the new KMS key.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the domain was last updated.</p>"
+        },
+        "WatchlistDetails":{
+          "shape":"WatchlistDetails",
+          "documentation":"<p>Provides information about <code>watchlistDetails</code> and <code>DefaultWatchlistID</code>. </p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a domain.</p>"
+    },
+    "DuplicateRegistrationAction":{
+      "type":"string",
+      "enum":[
+        "SKIP",
+        "REGISTER_AS_NEW"
+      ]
+    },
+    "EnrollmentConfig":{
+      "type":"structure",
+      "members":{
+        "ExistingEnrollmentAction":{
+          "shape":"ExistingEnrollmentAction",
+          "documentation":"<p> The action to take when the specified speaker is already enrolled in the specified domain. The default value is <code>SKIP</code>, which skips the enrollment for the existing speaker. Setting the value to <code>OVERWRITE</code> replaces the existing voice prints and enrollment audio stored for that speaker with new data generated from the latest audio.</p>"
+        },
+        "FraudDetectionConfig":{
+          "shape":"EnrollmentJobFraudDetectionConfig",
+          "documentation":"<p>The fraud detection configuration to use for the speaker enrollment job.</p>"
+        }
+      },
+      "documentation":"<p>Contains configurations defining enrollment behavior for the batch job.</p>"
+    },
+    "EnrollmentJobFraudDetectionConfig":{
+      "type":"structure",
+      "members":{
+        "FraudDetectionAction":{
+          "shape":"FraudDetectionAction",
+          "documentation":"<p>The action to take when the given speaker is flagged by the fraud detection system. The default value is <code>FAIL</code>, which fails the speaker enrollment. Changing this value to <code>IGNORE</code> results in the speaker being enrolled even if they are flagged by the fraud detection system.</p>"
+        },
+        "RiskThreshold":{
+          "shape":"Score",
+          "documentation":"<p>Threshold value for determining whether the speaker is a high risk to be fraudulent. If the detected risk score calculated by Voice ID is greater than or equal to the threshold, the speaker is considered a fraudster.</p>"
+        },
+        "WatchlistIds":{
+          "shape":"EnrollmentJobFraudDetectionConfigWatchlistIds",
+          "documentation":"<p>The identifier of watchlists against which fraud detection is performed. </p>"
+        }
+      },
+      "documentation":"<p>The fraud detection configuration to be used during the batch speaker enrollment job.</p>"
+    },
+    "EnrollmentJobFraudDetectionConfigWatchlistIds":{
+      "type":"list",
+      "member":{"shape":"WatchlistId"},
+      "max":1,
+      "min":1
+    },
+    "EvaluateSessionRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "SessionNameOrId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain where the session started.</p>"
+        },
+        "SessionNameOrId":{
+          "shape":"SessionNameOrId",
+          "documentation":"<p>The session identifier, or name of the session, that you want to evaluate. In Voice ID integration, this is the Contact-Id.</p>"
+        }
+      }
+    },
+    "EvaluateSessionResponse":{
+      "type":"structure",
+      "members":{
+        "AuthenticationResult":{
+          "shape":"AuthenticationResult",
+          "documentation":"<p>Details resulting from the authentication process, such as authentication decision and authentication score.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the session.</p>"
+        },
+        "FraudDetectionResult":{
+          "shape":"FraudDetectionResult",
+          "documentation":"<p>Details resulting from the fraud detection process, such as fraud detection decision and risk score.</p>"
+        },
+        "SessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The service-generated identifier of the session.</p>"
+        },
+        "SessionName":{
+          "shape":"SessionName",
+          "documentation":"<p>The client-provided name of the session.</p>"
+        },
+        "StreamingStatus":{
+          "shape":"StreamingStatus",
+          "documentation":"<p>The current status of audio streaming for this session. This field is useful to infer next steps when the Authentication or Fraud Detection results are empty or the decision is <code>NOT_ENOUGH_SPEECH</code>. In this situation, if the <code>StreamingStatus</code> is <code>ONGOING/PENDING_CONFIGURATION</code>, it can mean that the client should call the API again later, after Voice ID has enough audio to produce a result. If the decision remains <code>NOT_ENOUGH_SPEECH</code> even after <code>StreamingStatus</code> is <code>ENDED</code>, it means that the previously streamed session did not have enough speech to perform evaluation, and a new streaming session is needed to try again.</p>"
+        }
+      }
+    },
+    "ExistingEnrollmentAction":{
+      "type":"string",
+      "enum":[
+        "SKIP",
+        "OVERWRITE"
+      ]
+    },
+    "FailureDetails":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>A description of the error that caused the batch job failure.</p>"
+        },
+        "StatusCode":{
+          "shape":"Integer",
+          "documentation":"<p>An HTTP status code representing the nature of the error.</p>"
+        }
+      },
+      "documentation":"<p>Contains error details for a failed batch job.</p>"
+    },
+    "FraudDetectionAction":{
+      "type":"string",
+      "enum":[
+        "IGNORE",
+        "FAIL"
+      ]
+    },
+    "FraudDetectionConfiguration":{
+      "type":"structure",
+      "members":{
+        "RiskThreshold":{
+          "shape":"Score",
+          "documentation":"<p>Threshold value for determining whether the speaker is a fraudster. If the detected risk score calculated by Voice ID is higher than the threshold, the speaker is considered a fraudster.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist against which fraud detection is performed. </p>"
+        }
+      },
+      "documentation":"<p>The configuration used for performing fraud detection over a speaker during a session.</p>"
+    },
+    "FraudDetectionDecision":{
+      "type":"string",
+      "enum":[
+        "HIGH_RISK",
+        "LOW_RISK",
+        "NOT_ENOUGH_SPEECH"
+      ]
+    },
+    "FraudDetectionReason":{
+      "type":"string",
+      "enum":[
+        "KNOWN_FRAUDSTER",
+        "VOICE_SPOOFING"
+      ]
+    },
+    "FraudDetectionReasons":{
+      "type":"list",
+      "member":{"shape":"FraudDetectionReason"},
+      "max":3,
+      "min":0
+    },
+    "FraudDetectionResult":{
+      "type":"structure",
+      "members":{
+        "AudioAggregationEndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when audio aggregation ended for this fraud detection result.</p>"
+        },
+        "AudioAggregationStartedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when audio aggregation started for this fraud detection result.</p>"
+        },
+        "Configuration":{
+          "shape":"FraudDetectionConfiguration",
+          "documentation":"<p>The <code>FraudDetectionConfiguration</code> used to generate this fraud detection result.</p>"
+        },
+        "Decision":{
+          "shape":"FraudDetectionDecision",
+          "documentation":"<p>The fraud detection decision produced by Voice ID, processed against the current session state and streamed audio of the speaker.</p>"
+        },
+        "FraudDetectionResultId":{
+          "shape":"UniqueIdLarge",
+          "documentation":"<p>The unique identifier for this fraud detection result. Given there can be multiple fraud detections for a given session, this field helps in identifying if the returned result is from previous streaming activity or a new result. Note that in the absence of any new streaming activity or risk threshold changes, Voice ID always returns cached Fraud Detection result for this API.</p>"
+        },
+        "Reasons":{
+          "shape":"FraudDetectionReasons",
+          "documentation":"<p>The reason speaker was flagged by the fraud detection system. This is only be populated if fraud detection Decision is <code>HIGH_RISK</code>, and the following possible values: <code>KNOWN_FRAUDSTER</code> and <code>VOICE_SPOOFING</code>.</p>"
+        },
+        "RiskDetails":{
+          "shape":"FraudRiskDetails",
+          "documentation":"<p>Details about each risk analyzed for this speaker. Currently, this contains KnownFraudsterRisk and VoiceSpoofingRisk details.</p>"
+        }
+      },
+      "documentation":"<p>The fraud detection result produced by Voice ID, processed against the current session state and streamed audio of the speaker.</p>"
+    },
+    "FraudRiskDetails":{
+      "type":"structure",
+      "required":[
+        "KnownFraudsterRisk",
+        "VoiceSpoofingRisk"
+      ],
+      "members":{
+        "KnownFraudsterRisk":{
+          "shape":"KnownFraudsterRisk",
+          "documentation":"<p>The details resulting from 'Known Fraudster Risk' analysis of the speaker.</p>"
+        },
+        "VoiceSpoofingRisk":{
+          "shape":"VoiceSpoofingRisk",
+          "documentation":"<p>The details resulting from 'Voice Spoofing Risk' analysis of the speaker.</p>"
+        }
+      },
+      "documentation":"<p>Details regarding various fraud risk analyses performed against the current session state and streamed audio of the speaker.</p>"
+    },
+    "Fraudster":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when Voice ID identified the fraudster.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster.</p>"
+        },
+        "GeneratedFraudsterId":{
+          "shape":"GeneratedFraudsterId",
+          "documentation":"<p>The service-generated identifier for the fraudster.</p>"
+        },
+        "WatchlistIds":{
+          "shape":"ResponseWatchlistIds",
+          "documentation":"<p>The identifier of the watchlists the fraudster is a part of.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a fraudster.</p>"
+    },
+    "FraudsterId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"^id#[a-zA-Z0-9]{22}$",
+      "sensitive":true
+    },
+    "FraudsterRegistrationJob":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the fraudster registration job was created.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The IAM role Amazon Resource Name (ARN) that grants Voice ID permissions to access customer's buckets to read the input manifest file and write the job output file.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster registration job.</p>"
+        },
+        "EndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the fraudster registration job ended.</p>"
+        },
+        "FailureDetails":{
+          "shape":"FailureDetails",
+          "documentation":"<p>Contains details that are populated when an entire batch job fails. In cases of individual registration job failures, the batch job as a whole doesn't fail; it is completed with a <code>JobStatus</code> of <code>COMPLETED_WITH_ERRORS</code>. You can use the job output file to identify the individual registration requests that failed.</p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input data config containing an S3 URI for the input manifest file that contains the list of fraudster registration job requests.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The service-generated identifier for the fraudster registration job.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The client-provided name for the fraudster registration job.</p>"
+        },
+        "JobProgress":{
+          "shape":"JobProgress",
+          "documentation":"<p>Shows the completed percentage of registration requests listed in the input file.</p>"
+        },
+        "JobStatus":{
+          "shape":"FraudsterRegistrationJobStatus",
+          "documentation":"<p>The current status of the fraudster registration job.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data config containing the S3 location where you want Voice ID to write your job output file; you must also include a KMS key ID in order to encrypt the file.</p>"
+        },
+        "RegistrationConfig":{
+          "shape":"RegistrationConfig",
+          "documentation":"<p>The registration config containing details such as the action to take when a duplicate fraudster is detected, and the similarity threshold to use for detecting a duplicate fraudster.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a fraudster registration job.</p>"
+    },
+    "FraudsterRegistrationJobStatus":{
+      "type":"string",
+      "enum":[
+        "SUBMITTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "COMPLETED_WITH_ERRORS",
+        "FAILED"
+      ]
+    },
+    "FraudsterRegistrationJobSummaries":{
+      "type":"list",
+      "member":{"shape":"FraudsterRegistrationJobSummary"}
+    },
+    "FraudsterRegistrationJobSummary":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the fraudster registration job was created. </p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster registration job.</p>"
+        },
+        "EndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the fraudster registration job ended.</p>"
+        },
+        "FailureDetails":{
+          "shape":"FailureDetails",
+          "documentation":"<p>Contains details that are populated when an entire batch job fails. In cases of individual registration job failures, the batch job as a whole doesn't fail; it is completed with a <code>JobStatus</code> of <code>COMPLETED_WITH_ERRORS</code>. You can use the job output file to identify the individual registration requests that failed.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The service-generated identifier for the fraudster registration job.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The client-provided name for the fraudster registration job.</p>"
+        },
+        "JobProgress":{
+          "shape":"JobProgress",
+          "documentation":"<p>Shows the completed percentage of registration requests listed in the input file.</p>"
+        },
+        "JobStatus":{
+          "shape":"FraudsterRegistrationJobStatus",
+          "documentation":"<p>The current status of the fraudster registration job.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a fraudster registration job.</p>"
+    },
+    "FraudsterSummaries":{
+      "type":"list",
+      "member":{"shape":"FraudsterSummary"}
+    },
+    "FraudsterSummary":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the fraudster summary was created.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster summary.</p>"
+        },
+        "GeneratedFraudsterId":{
+          "shape":"GeneratedFraudsterId",
+          "documentation":"<p>The service-generated identifier for the fraudster.</p>"
+        },
+        "WatchlistIds":{
+          "shape":"ResponseWatchlistIds",
+          "documentation":"<p>The identifier of the watchlists the fraudster is a part of.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a fraudster. </p>"
+    },
+    "GeneratedFraudsterId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"^id#[a-zA-Z0-9]{22}$"
+    },
+    "GeneratedSpeakerId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"^id#[a-zA-Z0-9]{22}$"
+    },
+    "IamRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws(-[^:]+)?:iam::[0-9]{12}:role/.+$"
+    },
+    "InputDataConfig":{
+      "type":"structure",
+      "required":["S3Uri"],
+      "members":{
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The S3 location for the input manifest file that contains the list of individual enrollment or registration job requests.</p>"
+        }
+      },
+      "documentation":"<p>The configuration containing input file information for a batch job.</p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request failed due to an unknown error on the server side.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "JobId":{
+      "type":"string",
+      "max":22,
+      "min":22,
+      "pattern":"^[a-zA-Z0-9]{22}$"
+    },
+    "JobName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "sensitive":true
+    },
+    "JobProgress":{
+      "type":"structure",
+      "members":{
+        "PercentComplete":{
+          "shape":"Score",
+          "documentation":"<p>Shows the completed percentage of enrollment or registration requests listed in the input file.</p>"
+        }
+      },
+      "documentation":"<p>Indicates the completion progress for a batch job.</p>"
+    },
+    "KmsKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "KnownFraudsterRisk":{
+      "type":"structure",
+      "required":["RiskScore"],
+      "members":{
+        "GeneratedFraudsterId":{
+          "shape":"GeneratedFraudsterId",
+          "documentation":"<p>The identifier of the fraudster that is the closest match to the speaker. If there are no fraudsters registered in a given domain, or if there are no fraudsters with a non-zero RiskScore, this value is <code>null</code>.</p>"
+        },
+        "RiskScore":{
+          "shape":"Score",
+          "documentation":"<p>The score indicating the likelihood the speaker is a known fraudster.</p>"
+        }
+      },
+      "documentation":"<p>Contains details produced as a result of performing known fraudster risk analysis on a speaker.</p>"
+    },
+    "ListDomainsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResultsForListDomainFe",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListDomainsResponse":{
+      "type":"structure",
+      "members":{
+        "DomainSummaries":{
+          "shape":"DomainSummaries",
+          "documentation":"<p>A list containing details about each domain in the Amazon Web Services account.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListFraudsterRegistrationJobsRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster registration Jobs.</p>"
+        },
+        "JobStatus":{
+          "shape":"FraudsterRegistrationJobStatus",
+          "documentation":"<p>Provides the status of your fraudster registration job.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsForList",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListFraudsterRegistrationJobsResponse":{
+      "type":"structure",
+      "members":{
+        "JobSummaries":{
+          "shape":"FraudsterRegistrationJobSummaries",
+          "documentation":"<p>A list containing details about each specified fraudster registration job.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListFraudstersRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsForList",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist. If provided, all fraudsters in the watchlist are listed. If not provided, all fraudsters in the domain are listed.</p>"
+        }
+      }
+    },
+    "ListFraudstersResponse":{
+      "type":"structure",
+      "members":{
+        "FraudsterSummaries":{
+          "shape":"FraudsterSummaries",
+          "documentation":"<p>A list that contains details about each fraudster in the Amazon Web Services account. </p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        }
+      }
+    },
+    "ListSpeakerEnrollmentJobsRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker enrollment jobs.</p>"
+        },
+        "JobStatus":{
+          "shape":"SpeakerEnrollmentJobStatus",
+          "documentation":"<p>Provides the status of your speaker enrollment Job.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsForList",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListSpeakerEnrollmentJobsResponse":{
+      "type":"structure",
+      "members":{
+        "JobSummaries":{
+          "shape":"SpeakerEnrollmentJobSummaries",
+          "documentation":"<p>A list containing details about each specified speaker enrollment job.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        }
+      }
+    },
+    "ListSpeakersRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsForList",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours.</p>"
+        }
+      }
+    },
+    "ListSpeakersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        },
+        "SpeakerSummaries":{
+          "shape":"SpeakerSummaries",
+          "documentation":"<p>A list containing details about each speaker in the Amazon Web Services account. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Voice ID resource for which you want to list the tags.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags associated with the specified resource.</p>"
+        }
+      }
+    },
+    "ListWatchlistsRequest":{
+      "type":"structure",
+      "required":["DomainId"],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsForList",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>NextToken</code> to obtain more pages of results. The default is 100; the maximum allowed page size is also 100. </p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        }
+      }
+    },
+    "ListWatchlistsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>NextToken</code> is returned, there are more results available. The value of <code>NextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. </p>"
+        },
+        "WatchlistSummaries":{
+          "shape":"WatchlistSummaries",
+          "documentation":"<p>A list that contains details about each watchlist in the Amazon Web Services account. </p>"
+        }
+      }
+    },
+    "MaxResultsForList":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxResultsForListDomainFe":{
+      "type":"integer",
+      "box":true,
+      "max":10,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "min":0,
+      "pattern":"^\\p{ASCII}{0,8192}$"
+    },
+    "OptOutSpeakerRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "SpeakerId"
+      ],
+      "members":{
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker.</p>"
+        },
+        "SpeakerId":{
+          "shape":"SpeakerId",
+          "documentation":"<p>The identifier of the speaker you want opted-out.</p>"
+        }
+      }
+    },
+    "OptOutSpeakerResponse":{
+      "type":"structure",
+      "members":{
+        "Speaker":{
+          "shape":"Speaker",
+          "documentation":"<p>Details about the opted-out speaker.</p>"
+        }
+      }
+    },
+    "OutputDataConfig":{
+      "type":"structure",
+      "required":["S3Uri"],
+      "members":{
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The identifier of the KMS key you want Voice ID to use to encrypt the output file of a speaker enrollment job/fraudster registration job. </p>"
+        },
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The S3 path of the folder where Voice ID writes the job output file. It has a <code>*.out</code> extension. For example, if the input file name is <code>input-file.json</code> and the output folder path is <code>s3://output-bucket/output-folder</code>, the full output file path is <code>s3://output-bucket/output-folder/job-Id/input-file.json.out</code>.</p>"
+        }
+      },
+      "documentation":"<p>The configuration containing output file information for a batch job.</p>"
+    },
+    "RegistrationConfig":{
+      "type":"structure",
+      "members":{
+        "DuplicateRegistrationAction":{
+          "shape":"DuplicateRegistrationAction",
+          "documentation":"<p>The action to take when a fraudster is identified as a duplicate. The default action is <code>SKIP</code>, which skips registering the duplicate fraudster. Setting the value to <code>REGISTER_AS_NEW</code> always registers a new fraudster into the specified domain.</p>"
+        },
+        "FraudsterSimilarityThreshold":{
+          "shape":"Score",
+          "documentation":"<p>The minimum similarity score between the new and old fraudsters in order to consider the new fraudster a duplicate.</p>"
+        },
+        "WatchlistIds":{
+          "shape":"RegistrationConfigWatchlistIds",
+          "documentation":"<p>The identifiers of watchlists that a fraudster is registered to. If a watchlist isn't provided, the fraudsters are registered to the default watchlist. </p>"
+        }
+      },
+      "documentation":"<p>The registration configuration to be used during the batch fraudster registration job.</p>"
+    },
+    "RegistrationConfigWatchlistIds":{
+      "type":"list",
+      "member":{"shape":"WatchlistId"},
+      "max":1,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of resource which cannot not be found. Possible types are <code>BATCH_JOB</code>, <code>COMPLIANCE_CONSENT</code>, <code>DOMAIN</code>, <code>FRAUDSTER</code>, <code>SESSION</code> and <code>SPEAKER</code>.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource cannot be found. Check the <code>ResourceType</code> and error message for more details.</p>",
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "BATCH_JOB",
+        "COMPLIANCE_CONSENT",
+        "DOMAIN",
+        "FRAUDSTER",
+        "SESSION",
+        "SPEAKER",
+        "WATCHLIST"
+      ]
+    },
+    "ResponseWatchlistIds":{
+      "type":"list",
+      "member":{"shape":"WatchlistId"}
+    },
+    "S3Uri":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"^s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?$"
+    },
+    "Score":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":0
+    },
+    "ServerSideEncryptionConfiguration":{
+      "type":"structure",
+      "required":["KmsKeyId"],
+      "members":{
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The identifier of the KMS key to use to encrypt data stored by Voice ID. Voice ID doesn't support asymmetric customer managed keys. </p>"
+        }
+      },
+      "documentation":"<p>The configuration containing information about the customer managed key used for encrypting customer data.</p>"
+    },
+    "ServerSideEncryptionUpdateDetails":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Message explaining the current UpdateStatus. When the UpdateStatus is FAILED, this message explains the cause of the failure.</p>"
+        },
+        "OldKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The previous KMS key ID the domain was encrypted with, before ServerSideEncryptionConfiguration was updated to a new KMS key ID.</p>"
+        },
+        "UpdateStatus":{
+          "shape":"ServerSideEncryptionUpdateStatus",
+          "documentation":"<p>Status of the server-side encryption update. During an update, if there is an issue with the domain's current or old KMS key ID, such as an inaccessible or disabled key, then the status is FAILED. In order to resolve this, the key needs to be made accessible, and then an UpdateDomain call with the existing server-side encryption configuration will re-attempt this update process.</p>"
+        }
+      },
+      "documentation":"<p>Details about the most recent server-side encryption configuration update. When the server-side encryption configuration is changed, dependency on the old KMS key is removed through an asynchronous process. When this update is complete, the domain’s data can only be accessed using the new KMS key.</p>"
+    },
+    "ServerSideEncryptionUpdateStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request exceeded the service quota. Refer to <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-service-limits.html#voiceid-quotas\">Voice ID Service Quotas</a> and try your request again.</p>",
+      "exception":true
+    },
+    "SessionId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"^id#[a-zA-Z0-9]{22}$"
+    },
+    "SessionName":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_-]*$"
+    },
+    "SessionNameOrId":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"^(id#[a-zA-Z0-9]{22}|[a-zA-Z0-9][a-zA-Z0-9_-]*)$"
+    },
+    "Speaker":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the speaker was created. </p>"
+        },
+        "CustomerSpeakerId":{
+          "shape":"CustomerSpeakerId",
+          "documentation":"<p>The client-provided identifier for the speaker.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker.</p>"
+        },
+        "GeneratedSpeakerId":{
+          "shape":"GeneratedSpeakerId",
+          "documentation":"<p>The service-generated identifier for the speaker.</p>"
+        },
+        "LastAccessedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the speaker was last accessed for enrollment, re-enrollment or a successful authentication. This timestamp is accurate to one hour.</p>"
+        },
+        "Status":{
+          "shape":"SpeakerStatus",
+          "documentation":"<p>The current status of the speaker.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of the speaker's last update.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a speaker.</p>"
+    },
+    "SpeakerEnrollmentJob":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the speaker enrollment job was created.</p>"
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The IAM role Amazon Resource Name (ARN) that grants Voice ID permissions to access customer's buckets to read the input manifest file and write the job output file.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker enrollment job.</p>"
+        },
+        "EndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the speaker enrollment job ended. </p>"
+        },
+        "EnrollmentConfig":{
+          "shape":"EnrollmentConfig",
+          "documentation":"<p>The configuration that defines the action to take when the speaker is already enrolled in Voice ID, and the <code>FraudDetectionConfig</code> to use.</p>"
+        },
+        "FailureDetails":{
+          "shape":"FailureDetails",
+          "documentation":"<p>Contains details that are populated when an entire batch job fails. In cases of individual registration job failures, the batch job as a whole doesn't fail; it is completed with a <code>JobStatus</code> of <code>COMPLETED_WITH_ERRORS</code>. You can use the job output file to identify the individual registration requests that failed.</p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input data config containing an S3 URI for the input manifest file that contains the list of speaker enrollment job requests.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The service-generated identifier for the speaker enrollment job.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The client-provided name for the speaker enrollment job.</p>"
+        },
+        "JobProgress":{
+          "shape":"JobProgress",
+          "documentation":"<p>Provides details on job progress. This field shows the completed percentage of registration requests listed in the input file.</p>"
+        },
+        "JobStatus":{
+          "shape":"SpeakerEnrollmentJobStatus",
+          "documentation":"<p>The current status of the speaker enrollment job.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data config containing the S3 location where Voice ID writes the job output file; you must also include a KMS key ID to encrypt the file.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a speaker enrollment job.</p>"
+    },
+    "SpeakerEnrollmentJobStatus":{
+      "type":"string",
+      "enum":[
+        "SUBMITTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "COMPLETED_WITH_ERRORS",
+        "FAILED"
+      ]
+    },
+    "SpeakerEnrollmentJobSummaries":{
+      "type":"list",
+      "member":{"shape":"SpeakerEnrollmentJobSummary"}
+    },
+    "SpeakerEnrollmentJobSummary":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when of the speaker enrollment job was created.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker enrollment job.</p>"
+        },
+        "EndedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp of when the speaker enrollment job ended.</p>"
+        },
+        "FailureDetails":{
+          "shape":"FailureDetails",
+          "documentation":"<p>Contains details that are populated when an entire batch job fails. In cases of individual registration job failures, the batch job as a whole doesn't fail; it is completed with a <code>JobStatus</code> of <code>COMPLETED_WITH_ERRORS</code>. You can use the job output file to identify the individual registration requests that failed.</p>"
+        },
+        "JobId":{
+          "shape":"JobId",
+          "documentation":"<p>The service-generated identifier for the speaker enrollment job.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The client-provided name for the speaker enrollment job.</p>"
+        },
+        "JobProgress":{
+          "shape":"JobProgress",
+          "documentation":"<p>Provides details regarding job progress. This field shows the completed percentage of enrollment requests listed in the input file.</p>"
+        },
+        "JobStatus":{
+          "shape":"SpeakerEnrollmentJobStatus",
+          "documentation":"<p>The current status of the speaker enrollment job.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a speaker enrollment job.</p>"
+    },
+    "SpeakerId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^(id#[a-zA-Z0-9]{22}|[a-zA-Z0-9][a-zA-Z0-9_-]*)$",
+      "sensitive":true
+    },
+    "SpeakerStatus":{
+      "type":"string",
+      "enum":[
+        "ENROLLED",
+        "EXPIRED",
+        "OPTED_OUT",
+        "PENDING"
+      ]
+    },
+    "SpeakerSummaries":{
+      "type":"list",
+      "member":{"shape":"SpeakerSummary"}
+    },
+    "SpeakerSummary":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp showing the speaker's creation time. </p>"
+        },
+        "CustomerSpeakerId":{
+          "shape":"CustomerSpeakerId",
+          "documentation":"<p>The client-provided identifier for the speaker.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker.</p>"
+        },
+        "GeneratedSpeakerId":{
+          "shape":"GeneratedSpeakerId",
+          "documentation":"<p>The service-generated identifier for the speaker. </p>"
+        },
+        "LastAccessedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the speaker was last accessed for enrollment, re-enrollment or a successful authentication. This timestamp is accurate to one hour.</p>"
+        },
+        "Status":{
+          "shape":"SpeakerStatus",
+          "documentation":"<p>The current status of the speaker.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A timestamp showing the speaker's last update.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a speaker.</p>"
+    },
+    "StartFraudsterRegistrationJobRequest":{
+      "type":"structure",
+      "required":[
+        "DataAccessRoleArn",
+        "DomainId",
+        "InputDataConfig",
+        "OutputDataConfig"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The IAM role Amazon Resource Name (ARN) that grants Voice ID permissions to access customer's buckets to read the input manifest file and write the Job output file. Refer to the <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/voiceid-fraudster-watchlist.html\">Create and edit a fraudster watchlist</a> documentation for the permissions needed in this role.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the fraudster registration job and in which the fraudsters are registered.</p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input data config containing an S3 URI for the input manifest file that contains the list of fraudster registration requests.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the new fraudster registration job.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data config containing the S3 location where Voice ID writes the job output file; you must also include a KMS key ID to encrypt the file.</p>"
+        },
+        "RegistrationConfig":{
+          "shape":"RegistrationConfig",
+          "documentation":"<p>The registration config containing details such as the action to take when a duplicate fraudster is detected, and the similarity threshold to use for detecting a duplicate fraudster. </p>"
+        }
+      }
+    },
+    "StartFraudsterRegistrationJobResponse":{
+      "type":"structure",
+      "members":{
+        "Job":{
+          "shape":"FraudsterRegistrationJob",
+          "documentation":"<p>Details about the started fraudster registration job.</p>"
+        }
+      }
+    },
+    "StartSpeakerEnrollmentJobRequest":{
+      "type":"structure",
+      "required":[
+        "DataAccessRoleArn",
+        "DomainId",
+        "InputDataConfig",
+        "OutputDataConfig"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientTokenString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "DataAccessRoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The IAM role Amazon Resource Name (ARN) that grants Voice ID permissions to access customer's buckets to read the input manifest file and write the job output file. Refer to <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/voiceid-batch-enrollment.html\">Batch enrollment using audio data from prior calls</a> for the permissions needed in this role.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the speaker enrollment job and in which the speakers are enrolled. </p>"
+        },
+        "EnrollmentConfig":{
+          "shape":"EnrollmentConfig",
+          "documentation":"<p>The enrollment config that contains details such as the action to take when a speaker is already enrolled in Voice ID or when a speaker is identified as a fraudster.</p>"
+        },
+        "InputDataConfig":{
+          "shape":"InputDataConfig",
+          "documentation":"<p>The input data config containing the S3 location for the input manifest file that contains the list of speaker enrollment requests.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>A name for your speaker enrollment job.</p>"
+        },
+        "OutputDataConfig":{
+          "shape":"OutputDataConfig",
+          "documentation":"<p>The output data config containing the S3 location where Voice ID writes the job output file; you must also include a KMS key ID to encrypt the file.</p>"
+        }
+      }
+    },
+    "StartSpeakerEnrollmentJobResponse":{
+      "type":"structure",
+      "members":{
+        "Job":{
+          "shape":"SpeakerEnrollmentJob",
+          "documentation":"<p>Details about the started speaker enrollment job.</p>"
+        }
+      }
+    },
+    "StreamingStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING_CONFIGURATION",
+        "ONGOING",
+        "ENDED"
+      ]
+    },
+    "String":{
+      "type":"string",
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The first part of a key:value pair that forms a tag associated with a given resource. For example, in the tag 'Department':'Sales', the key is 'Department'. </p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The second part of a key:value pair that forms a tag associated with a given resource. For example, in the tag 'Department':'Sales', the value is 'Sales'. </p>"
+        }
+      },
+      "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+      "sensitive":true
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Voice ID resource you want to tag.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags to assign to the specified resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$",
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. Please slow down your request rate. Refer to <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-service-limits.html##voiceid-api-quotas\"> Amazon Connect Voice ID Service API throttling quotas </a> and try your request again.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UniqueIdLarge":{
+      "type":"string",
+      "max":22,
+      "min":22,
+      "pattern":"^[a-zA-Z0-9]{22}$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Voice ID resource you want to remove tags from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of tag keys you want to remove from the specified resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateDomainRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "Name",
+        "ServerSideEncryptionConfiguration"
+      ],
+      "members":{
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A brief description about this domain.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain to be updated.</p>"
+        },
+        "Name":{
+          "shape":"DomainName",
+          "documentation":"<p>The name of the domain.</p>"
+        },
+        "ServerSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration, containing the KMS key identifier, to be used by Voice ID for the server-side encryption of your data. Changing the domain's associated KMS key immediately triggers an asynchronous process to remove dependency on the old KMS key, such that the domain's data can only be accessed using the new KMS key. The domain's <code>ServerSideEncryptionUpdateDetails</code> contains the details for this process.</p>"
+        }
+      }
+    },
+    "UpdateDomainResponse":{
+      "type":"structure",
+      "members":{
+        "Domain":{
+          "shape":"Domain",
+          "documentation":"<p>Details about the updated domain</p>"
+        }
+      }
+    },
+    "UpdateWatchlistRequest":{
+      "type":"structure",
+      "required":[
+        "DomainId",
+        "WatchlistId"
+      ],
+      "members":{
+        "Description":{
+          "shape":"WatchlistDescription",
+          "documentation":"<p>A brief description about this watchlist.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "Name":{
+          "shape":"WatchlistName",
+          "documentation":"<p>The name of the watchlist.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist to be updated.</p>"
+        }
+      }
+    },
+    "UpdateWatchlistResponse":{
+      "type":"structure",
+      "members":{
+        "Watchlist":{
+          "shape":"Watchlist",
+          "documentation":"<p>Details about the updated watchlist.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request failed one or more validations; check the error message for more details.</p>",
+      "exception":true
+    },
+    "VoiceSpoofingRisk":{
+      "type":"structure",
+      "required":["RiskScore"],
+      "members":{
+        "RiskScore":{
+          "shape":"Score",
+          "documentation":"<p>The score indicating the likelihood of speaker’s voice being spoofed.</p>"
+        }
+      },
+      "documentation":"<p>The details resulting from 'Voice Spoofing Risk' analysis of the speaker.</p>"
+    },
+    "Watchlist":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the watchlist was created.</p>"
+        },
+        "DefaultWatchlist":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the specified watchlist is the default watchlist of a domain.</p>"
+        },
+        "Description":{
+          "shape":"WatchlistDescription",
+          "documentation":"<p>The description of the watchlist.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "Name":{
+          "shape":"WatchlistName",
+          "documentation":"<p>The name for the watchlist.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the watchlist was updated.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist.</p>"
+        }
+      },
+      "documentation":"<p>Contains all the information about a watchlist.</p>"
+    },
+    "WatchlistDescription":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-%@]*)$",
+      "sensitive":true
+    },
+    "WatchlistDetails":{
+      "type":"structure",
+      "required":["DefaultWatchlistId"],
+      "members":{
+        "DefaultWatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the default watchlist.</p>"
+        }
+      },
+      "documentation":"<p>Details of the watchlists in a domain.</p>"
+    },
+    "WatchlistId":{
+      "type":"string",
+      "max":22,
+      "min":22,
+      "pattern":"^[a-zA-Z0-9]{22}$"
+    },
+    "WatchlistName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "sensitive":true
+    },
+    "WatchlistSummaries":{
+      "type":"list",
+      "member":{"shape":"WatchlistSummary"}
+    },
+    "WatchlistSummary":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the watchlist was created.</p>"
+        },
+        "DefaultWatchlist":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the specified watchlist is the default watchlist of a domain.</p>"
+        },
+        "Description":{
+          "shape":"WatchlistDescription",
+          "documentation":"<p>The description of the watchlist.</p>"
+        },
+        "DomainId":{
+          "shape":"DomainId",
+          "documentation":"<p>The identifier of the domain that contains the watchlist.</p>"
+        },
+        "Name":{
+          "shape":"WatchlistName",
+          "documentation":"<p>The name for the watchlist.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the watchlist was last updated.</p>"
+        },
+        "WatchlistId":{
+          "shape":"WatchlistId",
+          "documentation":"<p>The identifier of the watchlist.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of information about a watchlist.</p>"
+    }
+  },
+  "documentation":"<p>Amazon Connect Voice ID provides real-time caller authentication and fraud risk detection, which make voice interactions in contact centers more secure and efficient.</p>"
+}

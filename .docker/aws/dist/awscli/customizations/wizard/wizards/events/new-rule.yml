@@ -1,0 +1,556 @@
+version: "0.2"
+title: Create an EventBridge Rule and Target
+description: This wizard will create a new EventBridge rule with target
+plan:
+  intro:
+    shortname: Intro
+    description: Provide rule name and description
+    values:
+      rule_name:
+        type: prompt
+        description: Rule name
+      rule_description:
+        type: prompt
+        description: Rule description
+  decide_pattern:
+    shortname: Pattern
+    values:
+      pattern_type:
+        type: prompt
+        description: Select pattern type for invoking target
+        choices:
+          - display: Event Pattern
+            actual_value: event_pattern
+          - display: Schedule
+            actual_value: schedule
+
+      # Event pattern related prompts
+      event_pattern_input_type:
+        type: prompt
+        condition:
+          variable: pattern_type
+          equals: event_pattern
+        description: Select method to choose the event pattern
+        choices:
+          - display: Use pre-defined pattern by service
+            actual_value: predefined
+          - display: Use custom pattern
+            actual_value: custom
+
+      service_for_event_pattern:
+        condition:
+          - variable: pattern_type
+            equals: event_pattern
+          - variable: event_pattern_input_type
+            equals: predefined
+        type: prompt
+        description: Select a service to match events for
+        choices:
+          - display: AWS CodeBuild
+            actual_value: codebuild
+          - display: AWS CodeCommit
+            actual_value: codecommit
+          - display: Amazon DynamoDB
+            actual_value: dynamodb
+          - display: Amazon EC2
+            actual_value: ec2
+          - display: AWS Lambda
+            actual_value: lambda
+          - display: Amazon S3
+            actual_value: s3
+        details:
+          value: event_pattern_value
+          description: "Event pattern"
+
+      custom_event_pattern_filename:
+        condition:
+          - variable: pattern_type
+            equals: event_pattern
+          - variable: event_pattern_input_type
+            equals: custom
+        type: prompt
+        description: Enter the filename with the custom event pattern
+        completer: file_completer
+
+      custom_event_pattern:
+        type: load-data
+        load_type: json
+        value:
+          __wizard__:File:
+            path: "{custom_event_pattern_filename}"
+
+      custom_event_pattern_as_normalized_json:
+        type: dump-data
+        dump_type: json
+        value: "{custom_event_pattern}"
+
+      event_pattern_value:
+        type: template
+        value: |
+          {% if {event_pattern_input_type} == predefined %}{{"source": ["aws.{service_for_event_pattern}"]}}{% endif %}
+          {% if {event_pattern_input_type} == custom %}{custom_event_pattern_as_normalized_json}{% endif %}
+
+      # Schedule related prompts
+      schedule_type:
+        condition:
+          variable: pattern_type
+          equals: schedule
+        type: prompt
+        description: Select schedule type
+        choices:
+          - display: Fixed rate
+            actual_value: fixed
+          - display: Cron expression
+            actual_value: cron
+      cron_expression:
+        condition:
+          - variable: pattern_type
+            equals: schedule
+          - variable: schedule_type
+            equals: cron
+        type: prompt
+        description: Enter the cron expression
+      fixed_rate_value:
+        condition:
+          - variable: pattern_type
+            equals: schedule
+          - variable: schedule_type
+            equals: fixed
+        type: prompt
+        description: Once every
+      fixed_rate_unit:
+        condition:
+          - variable: pattern_type
+            equals: schedule
+          - variable: schedule_type
+            equals: fixed
+        type: prompt
+        description: Select unit of time
+        choices:
+          - display: Minutes
+            actual_value: minute
+          - display: Hours
+            actual_value: hour
+          - display: Days
+            actual_value: day
+      fixed_rate:
+        type: template
+        value: rate({fixed_rate_value} {fixed_rate_unit}{% if {fixed_rate_value} != 1 %}s{% endif %})
+      schedule_expression:
+        type: template
+        value: |
+          {% if {schedule_type} == cron %}cron({cron_expression}){% endif %}
+          {% if {schedule_type} == fixed %}{fixed_rate}{% endif %}
+  decide_target:
+    shortname: Target
+    description: Select a target for the rule
+    values:
+      target_type:
+        type: prompt
+        description: Select the target type
+        choices:
+          - display: CloudWatch Logs group
+            actual_value: logs_group
+          - display: CodeBuild project
+            actual_value: codebuild_project
+          - display: Lambda function
+            actual_value: lambda_function
+          - display: SNS topic
+            actual_value: sns_topic
+
+      # CloudWatch Logs target specific variables
+      logs_target:
+        condition:
+          variable: target_type
+          equals: logs_group
+        type: prompt
+        description: Select the CloudWatch Logs group
+        choices: existing_groups
+      existing_groups:
+        type: apicall
+        operation: logs.DescribeLogGroups
+        params: { }
+        query: "sort_by(logGroups[].{display: logGroupName, actual_value: arn}, &display)"
+        cache: true
+        paginate: true
+      logs_resource_policy:
+        condition:
+          variable: target_type
+          equals: logs_group
+        type: template
+        value: '{{"Version":"2012-10-17", "Statement":[{{"Sid":"TrustEventsToStoreLogEvent","Effect":"Allow","Principal":{{"Service":["delivery.logs.amazonaws.com","events.amazonaws.com"]}},"Action":["logs:CreateLogStream","logs:PutLogEvents"],"Resource":"{logs_target}:*"}}]}}'
+
+      # CodeBuild target specific variables
+      codebuild_target:
+        condition:
+          variable: target_type
+          equals: codebuild_project
+        type: prompt
+        description: Select the CodeBuild project
+        choices: existing_projects
+      existing_projects:
+        type: apicall
+        operation: codebuild.ListProjects
+        params:
+          sortBy: NAME
+          sortOrder: DESCENDING
+        query: "projects[].{display: @, actual_value: @}"
+        cache: true
+        paginate: true
+      codebuild_project_arn:
+        type: apicall
+        operation: codebuild.BatchGetProjects
+        params:
+          names:
+            - "{codebuild_target}"
+        query: "projects[0].arn"
+        cache: true
+
+      # Lambda function specific vars
+      lambda_function_target:
+        condition:
+          variable: target_type
+          equals: lambda_function
+        type: prompt
+        description: Select the Lambda function
+        choices: existing_lambda_functions
+      existing_lambda_functions:
+        type: apicall
+        operation: lambda.ListFunctions
+        params: {}
+        query: "sort(Functions[].FunctionName)"
+        cache: true
+        paginate: true
+      lambda_function_arn:
+        type: apicall
+        operation: lambda.GetFunction
+        params:
+          FunctionName: "{lambda_function_target}"
+        query: "Configuration.FunctionArn"
+        cache: true
+
+      # SNS function specific vars
+      sns_topic_target:
+        condition:
+          variable: target_type
+          equals: sns_topic
+        type: prompt
+        description: Select the SNS topic
+        choices: existing_sns_topics
+      existing_sns_topics:
+        type: apicall
+        operation: sns.ListTopics
+        params: {}
+        query: "sort(Topics[].TopicArn)"
+        cache: true
+        paginate: true
+
+      # Generalized vars
+      target_needs_role:
+        type: template
+        value: |
+          {% if {target_type} == codebuild_project %}yes{% endif %}
+          {% if {target_type} == lambda_function %}no{% endif %}
+          {% if {target_type} == sns_topic %}no{% endif %}
+          {% if {target_type} == logs_group %}no{% endif %}
+      target_role_arn:
+        condition:
+          variable: target_needs_role
+          equals: yes
+        type: prompt
+        description: Select the role to invoke target
+        choices: existing_roles
+      existing_roles:
+        type: apicall
+        operation: iam.ListRoles
+        params: {}
+        query: "sort_by(Roles[].{display: RoleName, actual_value: Arn}, &display)"
+        cache: true
+        paginate: true
+      target_arn:
+        type: template
+        value: |
+          {% if {target_type} == codebuild_project %}{codebuild_project_arn}{% endif %}
+          {% if {target_type} == lambda_function %}{lambda_function_arn}{% endif %}
+          {% if {target_type} == sns_topic %}{sns_topic_target}{% endif %}
+          {% if {target_type} == logs_group %}{logs_target}{% endif %}
+
+  preview:
+    shortname: Preview
+    description: Preview of wizard
+    values:
+      preview_type:
+        type: prompt
+        description: Select an preview format
+        choices:
+          - display: None
+            actual_value: preview_none
+          - display: AWS CLI command
+            actual_value: preview_cli_command
+          - display: AWS CloudFormation template
+            actual_value: preview_cfn_template
+        details:
+          value: preview_value
+          visible: True
+          description: "Preview"
+      preview_value:
+        type: template
+        value: |
+          {%if {preview_type} == preview_cli_command %}
+          {preview_cli_command_value}
+          {% endif %}
+          {%if {preview_type} == preview_cfn_template %}
+          {preview_cfn_template_value}
+          {% endif %}
+      preview_cli_command_value:
+        type: template
+        value: |
+          {% if {target_type} == lambda_function %}rule_arn=$({% endif %}aws events put-rule \
+            --name '{rule_name}' \
+            --description '{rule_description}' \
+            {%if {pattern_type} == schedule %}
+            --schedule-expression '{schedule_expression}' \
+            {% endif %}
+            {%if {pattern_type} == event_pattern %}
+            --event-pattern '{event_pattern_value}' \
+            {% endif %}
+            --query RuleArn --output text{% if {target_type} == lambda_function %})
+            {% endif %}
+
+          {% if {target_type} == lambda_function %}
+          aws lambda add-permission \
+            --function-name '{lambda_function_target}' \
+            --statement-id cli-wizard \
+            --action 'lambda:InvokeFunction' \
+            --principal 'events.amazonaws.com' \
+            --source-arn "$rule_arn"
+          {% endif %}
+
+          {% if {target_type} == sns_topic %}
+          aws sns get-topic-attributes \
+            --topic-arn {sns_topic_target} \
+            --query Attributes.Policy --output text > policy.json
+
+          # Update "Statement" list in policy.json to include:
+          # {{
+          #   "Effect": "Allow",
+          #   "Action": "sns:Publish",
+          #   "Principal": {{
+          #     "Service": "events.amazonaws.com"
+          #   }},
+          #   "Resource": "{sns_topic_target}"
+          # }}
+
+          aws sns set-topic-attributes \
+            --topic-arn {sns_topic_target} \
+            --attribute-name Policy \
+            --attribute-value file://policy.json
+          {% endif %}
+
+          {% if {target_type} == logs_group %}
+          aws logs put-resource-policy \
+            --policy-name 'WriteEventLogs' \
+            --policy-document '{logs_resource_policy}'
+          {% endif %}
+
+          aws events put-targets \
+            --rule '{rule_name}' \
+            --targets 'Id=cli-wizard-0,Arn={target_arn}{% if {target_needs_role} == yes %},RoleArn={target_role_arn}{% endif %}'
+
+      preview_cfn_template_value:
+        type: template
+        value: |
+          Resources:
+            {rule_name}:
+              Type: AWS::Events::Rule
+              Properties:
+                Name: {rule_name}
+                Description: {rule_description}
+                {%if {pattern_type} == schedule %}
+                ScheduleExpression: {schedule_expression}
+                {% endif %}
+                {%if {pattern_type} == event_pattern %}
+                EventPattern: {event_pattern_value}
+                {% endif %}
+                Targets:
+                  - Id: cli-wizard-0
+                    Arn: {target_arn}
+                    {% if {target_needs_role} == yes %}
+                    RoleArn: {target_role_arn}
+                    {% endif %}
+            {% if {target_type} == lambda_function %}
+            LambdaPermission:
+              Type: AWS::Lambda::Permission
+              Properties:
+                Action: lambda:InvokeFunction
+                FunctionName: {lambda_function_target}
+                Principal: events.amazonaws.com
+                SourceArn:
+                  Fn::GetAtt:
+                    - {rule_name}
+                    - Arn
+            {% endif %}
+            {% if {target_type} == sns_topic %}
+            SNSTopicPolcy:
+              Type: AWS::SNS::TopicPolicy
+              Properties:
+                PolicyDocument:
+                  Version: 2012-10-17
+                  Statement:
+                    - Effect: Allow
+                      Action: sns:Publish
+                      Principal:
+                        Service: events.amazonaws.com
+                      Resource: {sns_topic_target}
+                Topics:
+                  - {sns_topic_target}
+            {% endif %}
+            {% if {target_type} == logs_group %}
+            LogsGroupPolicy:
+              Type: AWS::Logs::ResourcePolicy
+              Properties:
+                PolicyName: WriteEventLogs
+                PolicyDocument: '{logs_resource_policy}'
+            {% endif %}
+
+  __DONE__:
+execute:
+  default:
+    - type: define-variable
+      varname: put_rule_params
+      value:
+        Name: "{rule_name}"
+        Description: "{rule_description}"
+    - type: merge-dict
+      output_var: put_rule_params
+      condition:
+        variable: pattern_type
+        equals: schedule
+      overlays:
+        - "{put_rule_params}"
+        - ScheduleExpression: "{schedule_expression}"
+    - type: merge-dict
+      output_var: put_rule_params
+      condition:
+        variable: pattern_type
+        equals: event_pattern
+      overlays:
+        - "{put_rule_params}"
+        - EventPattern: "{event_pattern_value}"
+    - type: apicall
+      operation: events.PutRule
+      params: "{put_rule_params}"
+      query: "RuleArn"
+      output_var: rule_arn
+
+    # CloudWatch Logs specific calls
+    - type: apicall
+      condition:
+        variable: target_type
+        equals: logs_group
+      operation: logs.PutResourcePolicy
+      params:
+        policyName: WriteEventLogs
+        policyDocument: "{logs_resource_policy}"
+
+    # Lambda specific calls
+    - type: apicall
+      condition:
+        variable: target_type
+        equals: lambda_function
+      operation: lambda.AddPermission
+      params:
+        FunctionName: "{lambda_function_target}"
+        StatementId: cli-wizard
+        Action: lambda:InvokeFunction
+        Principal: events.amazonaws.com
+        SourceArn: "{rule_arn}"
+
+    # SNS specific calls
+    - type: apicall
+      condition:
+        variable: target_type
+        equals: sns_topic
+      operation: sns.GetTopicAttributes
+      params:
+        TopicArn: "{sns_topic_target}"
+      query: "Attributes.Policy"
+      output_var: topic_policy
+    - type: load-data
+      condition:
+        variable: target_type
+        equals: sns_topic
+      load_type: json
+      value: "{topic_policy}"
+      output_var: topic_policy
+    - type: merge-dict
+      condition:
+        variable: target_type
+        equals: sns_topic
+      output_var: topic_policy
+      overlays:
+        - "{topic_policy}"
+        - Statement:
+            - Effect: Allow
+              Action: sns:Publish
+              Principal:
+                Service: events.amazonaws.com
+              Resource: "{sns_topic_target}"
+    - type: dump-data
+      condition:
+        variable: target_type
+        equals: sns_topic
+      dump_type: json
+      value: "{topic_policy}"
+      output_var: topic_policy
+    - type: apicall
+      condition:
+        variable: target_type
+        equals: sns_topic
+      operation: sns.SetTopicAttributes
+      params:
+        TopicArn: "{sns_topic_target}"
+        AttributeName: Policy
+        AttributeValue: "{topic_policy}"
+
+    # General api calls for setting up target
+    - type: define-variable
+      varname: target_configuration
+      value:
+        Id: "cli-wizard-0"
+        Arn: "{target_arn}"
+    - type: merge-dict
+      output_var: target_configuration
+      condition:
+        variable: target_needs_role
+        equals: yes
+      overlays:
+        - "{target_configuration}"
+        - RoleArn: "{target_role_arn}"
+    - type: apicall
+      operation: events.PutTargets
+      params:
+        Rule: "{rule_name}"
+        Targets:
+          - "{target_configuration}"
+__OUTPUT__:
+  value: |
+    Wizard successfully created rule with following properties:
+      Rule name: {rule_name}
+      Rule ARN: {rule_arn}
+      {%if {pattern_type} == schedule %}
+      Schedule expression: {schedule_expression}
+      {% endif %}
+      {%if {pattern_type} == event_pattern %}
+      Event pattern: {event_pattern_value}
+      {% endif %}
+      Target resource: {target_arn}
+
+    {% if {preview_type} == preview_cli_command %}
+    Steps to create rule is equivalent to running the following sample AWS CLI commands:
+    {preview_cli_command_value}
+    {% endif %}
+    {% if {preview_type} == preview_cfn_template %}
+    Steps to create rule is equivalent to deploying the following sample AWS CloudFormation template:
+    {preview_cfn_template_value}
+    {% endif %}

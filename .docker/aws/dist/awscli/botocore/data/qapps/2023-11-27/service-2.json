@@ -1,0 +1,3882 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-11-27",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"data.qapps",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"QApps",
+    "serviceId":"QApps",
+    "signatureVersion":"v4",
+    "signingName":"qapps",
+    "uid":"qapps-2023-11-27"
+  },
+  "operations":{
+    "AssociateLibraryItemReview":{
+      "name":"AssociateLibraryItemReview",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.associateItemRating",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociateLibraryItemReviewInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Associates a rating or review for a library item with the user submitting the request. This increments the rating count for the specified library item.</p>"
+    },
+    "AssociateQAppWithUser":{
+      "name":"AssociateQAppWithUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.install",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociateQAppWithUserInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>This operation creates a link between the user's identity calling the operation and a specific Q App. This is useful to mark the Q App as a <i>favorite</i> for the user if the user doesn't own the Amazon Q App so they can still run it and see it in their inventory of Q Apps.</p>"
+    },
+    "BatchCreateCategory":{
+      "name":"BatchCreateCategory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.createCategories",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchCreateCategoryInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates Categories for the Amazon Q Business application environment instance. Web experience users use Categories to tag and filter library items. For more information, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/qapps-custom-labels.html\">Custom labels for Amazon Q Apps</a>.</p>"
+    },
+    "BatchDeleteCategory":{
+      "name":"BatchDeleteCategory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.deleteCategories",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchDeleteCategoryInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes Categories for the Amazon Q Business application environment instance. Web experience users use Categories to tag and filter library items. For more information, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/qapps-custom-labels.html\">Custom labels for Amazon Q Apps</a>.</p>"
+    },
+    "BatchUpdateCategory":{
+      "name":"BatchUpdateCategory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.updateCategories",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchUpdateCategoryInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates Categories for the Amazon Q Business application environment instance. Web experience users use Categories to tag and filter library items. For more information, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/qapps-custom-labels.html\">Custom labels for Amazon Q Apps</a>.</p>"
+    },
+    "CreateLibraryItem":{
+      "name":"CreateLibraryItem",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.createItem",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateLibraryItemInput"},
+      "output":{"shape":"CreateLibraryItemOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new library item for an Amazon Q App, allowing it to be discovered and used by other allowed users. </p>"
+    },
+    "CreatePresignedUrl":{
+      "name":"CreatePresignedUrl",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.createPresignedUrl",
+        "responseCode":200
+      },
+      "input":{"shape":"CreatePresignedUrlInput"},
+      "output":{"shape":"CreatePresignedUrlOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a presigned URL for an S3 POST operation to upload a file. You can use this URL to set a default file for a <code>FileUploadCard</code> in a Q App definition or to provide a file for a single Q App run. The <code>scope</code> parameter determines how the file will be used, either at the app definition level or the app session level.</p> <note> <p>The IAM permissions are derived from the <code>qapps:ImportDocument</code> action. For more information on the IAM policy for Amazon Q Apps, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/deploy-q-apps-iam-permissions.html\">IAM permissions for using Amazon Q Apps</a>.</p> </note>"
+    },
+    "CreateQApp":{
+      "name":"CreateQApp",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.create",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateQAppInput"},
+      "output":{"shape":"CreateQAppOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ContentTooLargeException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a new Amazon Q App based on the provided definition. The Q App definition specifies the cards and flow of the Q App. This operation also calculates the dependencies between the cards by inspecting the references in the prompts. </p>"
+    },
+    "DeleteLibraryItem":{
+      "name":"DeleteLibraryItem",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.deleteItem",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteLibraryItemInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a library item for an Amazon Q App, removing it from the library so it can no longer be discovered or used by other users.</p>",
+      "idempotent":true
+    },
+    "DeleteQApp":{
+      "name":"DeleteQApp",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.delete",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteQAppInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Q App owned by the user. If the Q App was previously published to the library, it is also removed from the library.</p>",
+      "idempotent":true
+    },
+    "DescribeQAppPermissions":{
+      "name":"DescribeQAppPermissions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/apps.describeQAppPermissions",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeQAppPermissionsInput"},
+      "output":{"shape":"DescribeQAppPermissionsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Describes read permissions for a Amazon Q App in Amazon Q Business application environment instance.</p>"
+    },
+    "DisassociateLibraryItemReview":{
+      "name":"DisassociateLibraryItemReview",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.disassociateItemRating",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociateLibraryItemReviewInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes a rating or review previously submitted by the user for a library item.</p>"
+    },
+    "DisassociateQAppFromUser":{
+      "name":"DisassociateQAppFromUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.uninstall",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociateQAppFromUserInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Disassociates a Q App from a user removing the user's access to run the Q App.</p>"
+    },
+    "ExportQAppSessionData":{
+      "name":"ExportQAppSessionData",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtime.exportQAppSessionData",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportQAppSessionDataInput"},
+      "output":{"shape":"ExportQAppSessionDataOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Exports the collected data of a Q App data collection session.</p>"
+    },
+    "GetLibraryItem":{
+      "name":"GetLibraryItem",
+      "http":{
+        "method":"GET",
+        "requestUri":"/catalog.getItem",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLibraryItemInput"},
+      "output":{"shape":"GetLibraryItemOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves details about a library item for an Amazon Q App, including its metadata, categories, ratings, and usage statistics.</p>"
+    },
+    "GetQApp":{
+      "name":"GetQApp",
+      "http":{
+        "method":"GET",
+        "requestUri":"/apps.get",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQAppInput"},
+      "output":{"shape":"GetQAppOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the full details of an Q App, including its definition specifying the cards and flow.</p>"
+    },
+    "GetQAppSession":{
+      "name":"GetQAppSession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/runtime.getQAppSession",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQAppSessionInput"},
+      "output":{"shape":"GetQAppSessionOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the current state and results for an active session of an Amazon Q App.</p>"
+    },
+    "GetQAppSessionMetadata":{
+      "name":"GetQAppSessionMetadata",
+      "http":{
+        "method":"GET",
+        "requestUri":"/runtime.getQAppSessionMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQAppSessionMetadataInput"},
+      "output":{"shape":"GetQAppSessionMetadataOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the current configuration of a Q App session.</p>"
+    },
+    "ImportDocument":{
+      "name":"ImportDocument",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.importDocument",
+        "responseCode":200
+      },
+      "input":{"shape":"ImportDocumentInput"},
+      "output":{"shape":"ImportDocumentOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ContentTooLargeException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Uploads a file that can then be used either as a default in a <code>FileUploadCard</code> from Q App definition or as a file that is used inside a single Q App run. The purpose of the document is determined by a scope parameter that indicates whether it is at the app definition level or at the app session level.</p>"
+    },
+    "ListCategories":{
+      "name":"ListCategories",
+      "http":{
+        "method":"GET",
+        "requestUri":"/catalog.listCategories",
+        "responseCode":200
+      },
+      "input":{"shape":"ListCategoriesInput"},
+      "output":{"shape":"ListCategoriesOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the categories of a Amazon Q Business application environment instance. For more information, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/qapps-custom-labels.html\">Custom labels for Amazon Q Apps</a>.</p>"
+    },
+    "ListLibraryItems":{
+      "name":"ListLibraryItems",
+      "http":{
+        "method":"GET",
+        "requestUri":"/catalog.list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLibraryItemsInput"},
+      "output":{"shape":"ListLibraryItemsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the library items for Amazon Q Apps that are published and available for users in your Amazon Web Services account.</p>"
+    },
+    "ListQAppSessionData":{
+      "name":"ListQAppSessionData",
+      "http":{
+        "method":"GET",
+        "requestUri":"/runtime.listQAppSessionData",
+        "responseCode":200
+      },
+      "input":{"shape":"ListQAppSessionDataInput"},
+      "output":{"shape":"ListQAppSessionDataOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the collected data of a Q App data collection session.</p>"
+    },
+    "ListQApps":{
+      "name":"ListQApps",
+      "http":{
+        "method":"GET",
+        "requestUri":"/apps.list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListQAppsInput"},
+      "output":{"shape":"ListQAppsOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the Amazon Q Apps owned by or associated with the user either because they created it or because they used it from the library in the past. The user identity is extracted from the credentials used to invoke this operation..</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceARN}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the tags associated with an Amazon Q Apps resource.</p>"
+    },
+    "PredictQApp":{
+      "name":"PredictQApp",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.predictQApp",
+        "responseCode":200
+      },
+      "input":{"shape":"PredictQAppInput"},
+      "output":{"shape":"PredictQAppOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Generates an Amazon Q App definition based on either a conversation or a problem statement provided as input.The resulting app definition can be used to call <code>CreateQApp</code>. This API doesn't create Amazon Q Apps directly.</p>"
+    },
+    "StartQAppSession":{
+      "name":"StartQAppSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtime.startQAppSession",
+        "responseCode":200
+      },
+      "input":{"shape":"StartQAppSessionInput"},
+      "output":{"shape":"StartQAppSessionOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Starts a new session for an Amazon Q App, allowing inputs to be provided and the app to be run.</p> <note> <p>Each Q App session will be condensed into a single conversation in the web experience.</p> </note>"
+    },
+    "StopQAppSession":{
+      "name":"StopQAppSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtime.deleteMiniAppRun",
+        "responseCode":200
+      },
+      "input":{"shape":"StopQAppSessionInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stops an active session for an Amazon Q App.This deletes all data related to the session and makes it invalid for future uses. The results of the session will be persisted as part of the conversation.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceARN}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Associates tags with an Amazon Q Apps resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceARN}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Disassociates tags from an Amazon Q Apps resource.</p>",
+      "idempotent":true
+    },
+    "UpdateLibraryItem":{
+      "name":"UpdateLibraryItem",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.updateItem",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLibraryItemInput"},
+      "output":{"shape":"UpdateLibraryItemOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the library item for an Amazon Q App.</p>"
+    },
+    "UpdateLibraryItemMetadata":{
+      "name":"UpdateLibraryItemMetadata",
+      "http":{
+        "method":"POST",
+        "requestUri":"/catalog.updateItemMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLibraryItemMetadataInput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the verification status of a library item for an Amazon Q App.</p>",
+      "idempotent":true
+    },
+    "UpdateQApp":{
+      "name":"UpdateQApp",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.update",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateQAppInput"},
+      "output":{"shape":"UpdateQAppOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ContentTooLargeException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates an existing Amazon Q App, allowing modifications to its title, description, and definition.</p>"
+    },
+    "UpdateQAppPermissions":{
+      "name":"UpdateQAppPermissions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apps.updateQAppPermissions",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateQAppPermissionsInput"},
+      "output":{"shape":"UpdateQAppPermissionsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates read permissions for a Amazon Q App in Amazon Q Business application environment instance.</p>"
+    },
+    "UpdateQAppSession":{
+      "name":"UpdateQAppSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtime.updateQAppSession",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateQAppSessionInput"},
+      "output":{"shape":"UpdateQAppSessionOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the session for a given Q App <code>sessionId</code>. This is only valid when at least one card of the session is in the <code>WAITING</code> state. Data for each <code>WAITING</code> card can be provided as input. If inputs are not provided, the call will be accepted but session will not move forward. Inputs for cards that are not in the <code>WAITING</code> status will be ignored.</p>"
+    },
+    "UpdateQAppSessionMetadata":{
+      "name":"UpdateQAppSessionMetadata",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtime.updateQAppSessionMetadata",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateQAppSessionMetadataInput"},
+      "output":{"shape":"UpdateQAppSessionMetadataOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates the configuration metadata of a session for a given Q App <code>sessionId</code>.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The client is not authorized to perform the requested operation.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ActionIdentifier":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "AppArn":{"type":"string"},
+    "AppDefinition":{
+      "type":"structure",
+      "required":[
+        "appDefinitionVersion",
+        "cards"
+      ],
+      "members":{
+        "appDefinitionVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the app definition schema or specification.</p>"
+        },
+        "cards":{
+          "shape":"CardModelList",
+          "documentation":"<p>The cards that make up the Q App, such as text input, file upload, or query cards.</p>"
+        },
+        "canEdit":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating whether the Q App's definition can be edited by the user.</p>"
+        }
+      },
+      "documentation":"<p>The definition of the Q App, specifying the cards and flow.</p>"
+    },
+    "AppDefinitionInput":{
+      "type":"structure",
+      "required":["cards"],
+      "members":{
+        "cards":{
+          "shape":"CardList",
+          "documentation":"<p>The cards that make up the Q App definition.</p>"
+        },
+        "initialPrompt":{
+          "shape":"InitialPrompt",
+          "documentation":"<p>The initial prompt displayed when the Q App is started.</p>"
+        }
+      },
+      "documentation":"<p>The input for defining an Q App.</p>"
+    },
+    "AppRequiredCapabilities":{
+      "type":"list",
+      "member":{"shape":"AppRequiredCapability"}
+    },
+    "AppRequiredCapability":{
+      "type":"string",
+      "enum":[
+        "FileUpload",
+        "CreatorMode",
+        "RetrievalMode",
+        "PluginMode"
+      ]
+    },
+    "AppStatus":{
+      "type":"string",
+      "enum":[
+        "PUBLISHED",
+        "DRAFT",
+        "DELETED"
+      ]
+    },
+    "AppVersion":{
+      "type":"integer",
+      "box":true,
+      "max":2147483647,
+      "min":0
+    },
+    "AssociateLibraryItemReviewInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier for the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item to associate the review with.</p>"
+        }
+      }
+    },
+    "AssociateQAppWithUserInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Amazon Q App to associate with the user.</p>"
+        }
+      }
+    },
+    "AttributeFilter":{
+      "type":"structure",
+      "members":{
+        "andAllFilters":{
+          "shape":"AttributeFilters",
+          "documentation":"<p>Performs a logical <code>AND</code> operation on all supplied filters.</p>"
+        },
+        "orAllFilters":{
+          "shape":"AttributeFilters",
+          "documentation":"<p> Performs a logical <code>OR</code> operation on all supplied filters. </p>"
+        },
+        "notFilter":{
+          "shape":"AttributeFilter",
+          "documentation":"<p>Performs a logical <code>NOT</code> operation on all supplied filters. </p>"
+        },
+        "equalsTo":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Performs an <i>equals</i> operation on two document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>dateValue</code>, <code>longValue</code>, <code>stringListValue</code> and <code>stringValue</code>.</p>"
+        },
+        "containsAll":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Returns <code>true</code> when a document contains all the specified document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>stringListValue</code>.</p>"
+        },
+        "containsAny":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Returns <code>true</code> when a document contains any of the specified document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>stringListValue</code>.</p>"
+        },
+        "greaterThan":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Performs a <i>greater than</i> operation on two document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>dateValue</code> and <code>longValue</code>.</p>"
+        },
+        "greaterThanOrEquals":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Performs a <i>greater than or equals</i> operation on two document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>dateValue</code> and <code>longValue</code>. </p>"
+        },
+        "lessThan":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Performs a <i>less than</i> operation on two document attributes or metadata fields. Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value types</a>: <code>dateValue</code> and <code>longValue</code>.</p>"
+        },
+        "lessThanOrEquals":{
+          "shape":"DocumentAttribute",
+          "documentation":"<p>Performs a <i>less than or equals</i> operation on two document attributes or metadata fields.Supported for the following <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_DocumentAttributeValue.html\">document attribute value type</a>: <code>dateValue</code> and <code>longValue</code>. </p>"
+        }
+      },
+      "documentation":"<p>The filter criteria used on responses based on document attributes or metadata fields.</p>"
+    },
+    "AttributeFilters":{
+      "type":"list",
+      "member":{"shape":"AttributeFilter"}
+    },
+    "BatchCreateCategoryInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "categories"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "categories":{
+          "shape":"BatchCreateCategoryInputCategoryList",
+          "documentation":"<p>The list of category objects to be created</p>"
+        }
+      }
+    },
+    "BatchCreateCategoryInputCategory":{
+      "type":"structure",
+      "required":["title"],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier to be associated with a category. If you don't include a value, the category is automatically assigned a unique identifier.</p>"
+        },
+        "title":{
+          "shape":"BatchCreateCategoryInputCategoryTitleString",
+          "documentation":"<p>The name of the category.</p>"
+        },
+        "color":{
+          "shape":"BatchCreateCategoryInputCategoryColorString",
+          "documentation":"<p>The color to be associated with a category. The color must be a hexadecimal value of either 3 or 6 digits.</p>"
+        }
+      },
+      "documentation":"<p>The category object to be created.</p>"
+    },
+    "BatchCreateCategoryInputCategoryColorString":{
+      "type":"string",
+      "max":7,
+      "min":4,
+      "pattern":"#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})"
+    },
+    "BatchCreateCategoryInputCategoryList":{
+      "type":"list",
+      "member":{"shape":"BatchCreateCategoryInputCategory"},
+      "max":10,
+      "min":0
+    },
+    "BatchCreateCategoryInputCategoryTitleString":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_]+( [a-zA-Z0-9_]+)*"
+    },
+    "BatchDeleteCategoryInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "categories"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "categories":{
+          "shape":"DeleteCategoryInputList",
+          "documentation":"<p>The list of IDs of the categories to be deleted.</p>"
+        }
+      }
+    },
+    "BatchUpdateCategoryInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "categories"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "categories":{
+          "shape":"CategoryListInput",
+          "documentation":"<p>The list of categories to be updated with their new values.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "Card":{
+      "type":"structure",
+      "members":{
+        "textInput":{
+          "shape":"TextInputCard",
+          "documentation":"<p>A container for the properties of the text input card.</p>"
+        },
+        "qQuery":{
+          "shape":"QQueryCard",
+          "documentation":"<p>A container for the properties of the query card.</p>"
+        },
+        "qPlugin":{
+          "shape":"QPluginCard",
+          "documentation":"<p>A container for the properties of the plugin card.</p>"
+        },
+        "fileUpload":{
+          "shape":"FileUploadCard",
+          "documentation":"<p>A container for the properties of the file upload card.</p>"
+        },
+        "formInput":{
+          "shape":"FormInputCard",
+          "documentation":"<p>A container for the properties of the form input card.</p>"
+        }
+      },
+      "documentation":"<p>A card representing a component or step in an Amazon Q App's flow.</p>",
+      "union":true
+    },
+    "CardInput":{
+      "type":"structure",
+      "members":{
+        "textInput":{
+          "shape":"TextInputCardInput",
+          "documentation":"<p>A container for the properties of the text input card.</p>"
+        },
+        "qQuery":{
+          "shape":"QQueryCardInput",
+          "documentation":"<p>A container for the properties of the query input card.</p>"
+        },
+        "qPlugin":{
+          "shape":"QPluginCardInput",
+          "documentation":"<p>A container for the properties of the plugin input card.</p>"
+        },
+        "fileUpload":{
+          "shape":"FileUploadCardInput",
+          "documentation":"<p>A container for the properties of the file upload input card.</p>"
+        },
+        "formInput":{
+          "shape":"FormInputCardInput",
+          "documentation":"<p>A container for the properties of the form input card.</p>"
+        }
+      },
+      "documentation":"<p>The properties defining an input card in an Amazon Q App.</p>",
+      "union":true
+    },
+    "CardList":{
+      "type":"list",
+      "member":{"shape":"CardInput"},
+      "max":20,
+      "min":0
+    },
+    "CardModelList":{
+      "type":"list",
+      "member":{"shape":"Card"},
+      "max":20,
+      "min":0
+    },
+    "CardOutputSource":{
+      "type":"string",
+      "enum":[
+        "approved-sources",
+        "llm"
+      ]
+    },
+    "CardStatus":{
+      "type":"structure",
+      "required":[
+        "currentState",
+        "currentValue"
+      ],
+      "members":{
+        "currentState":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>The current state of the card.</p>"
+        },
+        "currentValue":{
+          "shape":"String",
+          "documentation":"<p>The current value or result associated with the card.</p>"
+        },
+        "submissions":{
+          "shape":"SubmissionList",
+          "documentation":"<p>A list of previous submissions, if the card is a form card.</p>"
+        }
+      },
+      "documentation":"<p>The current status and value of a card in an active Amazon Q App session.</p>"
+    },
+    "CardStatusMap":{
+      "type":"map",
+      "key":{"shape":"UUID"},
+      "value":{"shape":"CardStatus"}
+    },
+    "CardType":{
+      "type":"string",
+      "enum":[
+        "text-input",
+        "q-query",
+        "file-upload",
+        "q-plugin",
+        "form-input"
+      ]
+    },
+    "CardValue":{
+      "type":"structure",
+      "required":[
+        "cardId",
+        "value"
+      ],
+      "members":{
+        "cardId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the card.</p>"
+        },
+        "value":{
+          "shape":"CardValueValueString",
+          "documentation":"<p>The value or result associated with the card.</p>"
+        },
+        "submissionMutation":{
+          "shape":"SubmissionMutation",
+          "documentation":"<p>The structure that describes how the current form card value is mutated. Only applies for form cards when multiple responses are allowed.</p>"
+        }
+      },
+      "documentation":"<p>The value or result associated with a card in a Amazon Q App session.</p>"
+    },
+    "CardValueList":{
+      "type":"list",
+      "member":{"shape":"CardValue"},
+      "max":20,
+      "min":0
+    },
+    "CardValueValueString":{
+      "type":"string",
+      "max":40000,
+      "min":0
+    },
+    "CategoriesList":{
+      "type":"list",
+      "member":{"shape":"Category"},
+      "max":10,
+      "min":0
+    },
+    "Category":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the category.</p>"
+        },
+        "title":{
+          "shape":"String",
+          "documentation":"<p>The title or name of the category.</p>"
+        },
+        "color":{
+          "shape":"String",
+          "documentation":"<p>The color of the category</p>"
+        },
+        "appCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of published Amazon Q Apps associated with a category</p>"
+        }
+      },
+      "documentation":"<p>A category used to classify and filter library items for Amazon Q Apps.</p>"
+    },
+    "CategoryIdList":{
+      "type":"list",
+      "member":{"shape":"UUID"},
+      "max":3,
+      "min":0
+    },
+    "CategoryInput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the category.</p>"
+        },
+        "title":{
+          "shape":"CategoryInputTitleString",
+          "documentation":"<p>The name of the category.</p>"
+        },
+        "color":{
+          "shape":"CategoryInputColorString",
+          "documentation":"<p>The color of the category, represented as a hexadecimal value of either 3 or 6 digits.</p>"
+        }
+      },
+      "documentation":"<p>A label that web experience users associate with a library item. Web experience users use Categories to tag and filter library items.</p>"
+    },
+    "CategoryInputColorString":{
+      "type":"string",
+      "max":7,
+      "min":4,
+      "pattern":"#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})"
+    },
+    "CategoryInputTitleString":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_]+( [a-zA-Z0-9_]+)*"
+    },
+    "CategoryList":{
+      "type":"list",
+      "member":{"shape":"Category"},
+      "max":3,
+      "min":0
+    },
+    "CategoryListInput":{
+      "type":"list",
+      "member":{"shape":"CategoryInput"},
+      "max":10,
+      "min":0
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the resource</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource</p>"
+        }
+      },
+      "documentation":"<p>The requested operation could not be completed due to a conflict with the current state of the resource.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ContentTooLargeException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the resource</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource</p>"
+        }
+      },
+      "documentation":"<p>The requested operation could not be completed because the content exceeds the maximum allowed size.</p>",
+      "error":{
+        "httpStatusCode":413,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConversationMessage":{
+      "type":"structure",
+      "required":[
+        "body",
+        "type"
+      ],
+      "members":{
+        "body":{
+          "shape":"ConversationMessageBodyString",
+          "documentation":"<p>The text content of the conversation message.</p>"
+        },
+        "type":{
+          "shape":"Sender",
+          "documentation":"<p>The type of the conversation message.</p>"
+        }
+      },
+      "documentation":"<p>A message in a conversation, used as input for generating an Amazon Q App definition.</p>"
+    },
+    "ConversationMessageBodyString":{
+      "type":"string",
+      "max":7000,
+      "min":0
+    },
+    "CreateLibraryItemInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId",
+        "appVersion",
+        "categories"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Amazon Q App to publish to the library.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Amazon Q App to publish to the library.</p>"
+        },
+        "categories":{
+          "shape":"CategoryIdList",
+          "documentation":"<p>The categories to associate with the library item for easier discovery.</p>"
+        }
+      }
+    },
+    "CreateLibraryItemOutput":{
+      "type":"structure",
+      "required":[
+        "libraryItemId",
+        "status",
+        "createdAt",
+        "createdBy",
+        "ratingCount"
+      ],
+      "members":{
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the new library item.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the new library item, such as \"Published\".</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who created the library item.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the library item.</p>"
+        },
+        "ratingCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of ratings the library item has received from users.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the library item has been verified.</p>"
+        }
+      }
+    },
+    "CreatePresignedUrlInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "cardId",
+        "appId",
+        "fileContentsSha256",
+        "fileName",
+        "scope"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "cardId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the card the file is associated with.</p>"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App the file is associated with.</p>"
+        },
+        "fileContentsSha256":{
+          "shape":"CreatePresignedUrlInputFileContentsSha256String",
+          "documentation":"<p>The Base64-encoded SHA-256 digest of the contents of the file to be uploaded.</p>"
+        },
+        "fileName":{
+          "shape":"Filename",
+          "documentation":"<p>The name of the file to be uploaded.</p>"
+        },
+        "scope":{
+          "shape":"DocumentScope",
+          "documentation":"<p>Whether the file is associated with a Q App definition or a specific Q App session.</p>"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session the file is associated with, if applicable.</p>"
+        }
+      }
+    },
+    "CreatePresignedUrlInputFileContentsSha256String":{
+      "type":"string",
+      "pattern":"[A-Za-z0-9+/]{43}=$|^[A-Za-z0-9+/]{42}==$|^[A-Za-z0-9+/]{44}"
+    },
+    "CreatePresignedUrlOutput":{
+      "type":"structure",
+      "required":[
+        "fileId",
+        "presignedUrl",
+        "presignedUrlFields",
+        "presignedUrlExpiration"
+      ],
+      "members":{
+        "fileId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier assigned to the file to be uploaded.</p>"
+        },
+        "presignedUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL for a presigned S3 POST operation used to upload a file.</p>"
+        },
+        "presignedUrlFields":{
+          "shape":"PresignedUrlFields",
+          "documentation":"<p>The form fields to include in the presigned S3 POST operation used to upload a file.</p>"
+        },
+        "presignedUrlExpiration":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time that the presigned URL will expire in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "CreateQAppInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "title",
+        "appDefinition"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the new Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the new Q App.</p>"
+        },
+        "appDefinition":{
+          "shape":"AppDefinitionInput",
+          "documentation":"<p>The definition of the new Q App, specifying the cards and flow.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional tags to associate with the new Q App.</p>"
+        }
+      }
+    },
+    "CreateQAppOutput":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "appArn",
+        "title",
+        "appVersion",
+        "status",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy"
+      ],
+      "members":{
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the new Q App.</p>"
+        },
+        "appArn":{
+          "shape":"AppArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the new Q App.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the new Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the new Q App.</p>"
+        },
+        "initialPrompt":{
+          "shape":"InitialPrompt",
+          "documentation":"<p>The initial prompt displayed when the Q App is started.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the new Q App.</p>"
+        },
+        "status":{
+          "shape":"AppStatus",
+          "documentation":"<p>The status of the new Q App, such as \"Created\".</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who created the Q App.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the Q App.</p>"
+        },
+        "requiredCapabilities":{
+          "shape":"AppRequiredCapabilities",
+          "documentation":"<p>The capabilities required to run the Q App, such as file upload or third-party integrations.</p>"
+        }
+      }
+    },
+    "Default":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "DeleteCategoryInputList":{
+      "type":"list",
+      "member":{"shape":"UUID"},
+      "max":10,
+      "min":0
+    },
+    "DeleteLibraryItemInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item to delete.</p>"
+        }
+      }
+    },
+    "DeleteQAppInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App to delete.</p>"
+        }
+      }
+    },
+    "DependencyList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "DescribeQAppPermissionsInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Amazon Q App for which to retrieve permissions.</p>",
+          "location":"querystring",
+          "locationName":"appId"
+        }
+      }
+    },
+    "DescribeQAppPermissionsOutput":{
+      "type":"structure",
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Q App for which permissions are returned.</p>"
+        },
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the Amazon Q App for which permissions are returned.</p>"
+        },
+        "permissions":{
+          "shape":"PermissionsOutputList",
+          "documentation":"<p>The list of permissions granted for the Amazon Q App.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "DisassociateLibraryItemReviewInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item to remove the review from.</p>"
+        }
+      }
+    },
+    "DisassociateQAppFromUserInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App to disassociate from the user.</p>"
+        }
+      }
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "DocumentAttribute":{
+      "type":"structure",
+      "required":[
+        "name",
+        "value"
+      ],
+      "members":{
+        "name":{
+          "shape":"DocumentAttributeKey",
+          "documentation":"<p>The identifier for the attribute.</p>"
+        },
+        "value":{
+          "shape":"DocumentAttributeValue",
+          "documentation":"<p>The value of the attribute. </p>"
+        }
+      },
+      "documentation":"<p>A document attribute or metadata field.</p>"
+    },
+    "DocumentAttributeKey":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_][a-zA-Z0-9_-]*"
+    },
+    "DocumentAttributeStringListValue":{
+      "type":"list",
+      "member":{"shape":"PlatoString"}
+    },
+    "DocumentAttributeValue":{
+      "type":"structure",
+      "members":{
+        "stringValue":{
+          "shape":"DocumentAttributeValueStringValueString",
+          "documentation":"<p>A string.</p>"
+        },
+        "stringListValue":{
+          "shape":"DocumentAttributeStringListValue",
+          "documentation":"<p>A list of strings.</p>"
+        },
+        "longValue":{
+          "shape":"Long",
+          "documentation":"<p>A long integer value. </p>"
+        },
+        "dateValue":{
+          "shape":"Timestamp",
+          "documentation":"<p>A date expressed as an ISO 8601 string.</p> <p>It's important for the time zone to be included in the <i>ISO 8601 date-time</i> format. For example, 2012-03-25T12:30:10+01:00 is the ISO 8601 date-time format for March 25th 2012 at 12:30PM (plus 10 seconds) in Central European Time. </p>"
+        }
+      },
+      "documentation":"<p>The value of a document attribute. You can only provide one value for a document attribute.</p>",
+      "union":true
+    },
+    "DocumentAttributeValueStringValueString":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "DocumentScope":{
+      "type":"string",
+      "enum":[
+        "APPLICATION",
+        "SESSION"
+      ]
+    },
+    "ExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "WAITING",
+        "COMPLETED",
+        "ERROR"
+      ]
+    },
+    "ExportQAppSessionDataInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App data collection session.</p>"
+        }
+      }
+    },
+    "ExportQAppSessionDataOutput":{
+      "type":"structure",
+      "required":[
+        "csvFileLink",
+        "expiresAt",
+        "sessionArn"
+      ],
+      "members":{
+        "csvFileLink":{
+          "shape":"String",
+          "documentation":"<p>The link where the exported Q App session data can be downloaded from.</p>"
+        },
+        "expiresAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time when the link for the exported Q App session data expires.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App data collection session.</p>"
+        }
+      }
+    },
+    "FileUploadCard":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title",
+        "dependencies",
+        "type"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the file upload card.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the file upload card.</p>"
+        },
+        "dependencies":{
+          "shape":"DependencyList",
+          "documentation":"<p>Any dependencies or requirements for the file upload card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "filename":{
+          "shape":"String",
+          "documentation":"<p>The name of the file being uploaded.</p>"
+        },
+        "fileId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the file associated with the card.</p>"
+        },
+        "allowOverride":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating if the user can override the default file for the upload card.</p>"
+        }
+      },
+      "documentation":"<p>A card in an Amazon Q App that allows the user to upload a file.</p>"
+    },
+    "FileUploadCardInput":{
+      "type":"structure",
+      "required":[
+        "title",
+        "id",
+        "type"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the file upload card.</p>"
+        },
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the file upload card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "filename":{
+          "shape":"Filename",
+          "documentation":"<p>The default filename to use for the file upload card.</p>"
+        },
+        "fileId":{
+          "shape":"UUID",
+          "documentation":"<p>The identifier of a pre-uploaded file associated with the card.</p>"
+        },
+        "allowOverride":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating if the user can override the default file for the upload card.</p>"
+        }
+      },
+      "documentation":"<p>Represents a file upload card. It can optionally receive a <code>filename</code> and <code>fileId</code> to set a default file. If not received, the user must provide the file when the Q App runs.</p>"
+    },
+    "Filename":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "FormInputCard":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title",
+        "dependencies",
+        "type",
+        "metadata"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the form input card.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the form input card.</p>"
+        },
+        "dependencies":{
+          "shape":"DependencyList",
+          "documentation":"<p>Any dependencies or requirements for the form input card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "metadata":{
+          "shape":"FormInputCardMetadata",
+          "documentation":"<p>The metadata that defines the form input card data.</p>"
+        },
+        "computeMode":{
+          "shape":"InputCardComputeMode",
+          "documentation":"<p>The compute mode of the form input card. This property determines whether individual participants of a data collection session can submit multiple response or one response. A compute mode of <code>append</code> shall allow participants to submit the same form multiple times with different values. A compute mode of <code>replace</code>code&gt; shall overwrite the current value for each participant.</p>"
+        }
+      },
+      "documentation":"<p>A card in an Amazon Q App that allows the user to submit a response.</p>"
+    },
+    "FormInputCardInput":{
+      "type":"structure",
+      "required":[
+        "title",
+        "id",
+        "type",
+        "metadata"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the form input card.</p>"
+        },
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the form input card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "metadata":{
+          "shape":"FormInputCardMetadata",
+          "documentation":"<p>The metadata that defines the form input card data.</p>"
+        },
+        "computeMode":{
+          "shape":"InputCardComputeMode",
+          "documentation":"<p>The compute mode of the form input card. This property determines whether individual participants of a data collection session can submit multiple response or one response. A compute mode of <code>append</code> shall allow participants to submit the same form multiple times with different values. A compute mode of <code>replace</code>code&gt; shall overwrite the current value for each participant.</p>"
+        }
+      },
+      "documentation":"<p>Represents a form input card for an Amazon Q App.</p>"
+    },
+    "FormInputCardMetadata":{
+      "type":"structure",
+      "required":["schema"],
+      "members":{
+        "schema":{
+          "shape":"FormInputCardMetadataSchema",
+          "documentation":"<p>The JSON schema that defines the shape of the response data.</p>"
+        }
+      },
+      "documentation":"<p>The metadata of the form input card.</p>"
+    },
+    "FormInputCardMetadataSchema":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "GetLibraryItemInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"libraryItemId"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Amazon Q App associated with the library item.</p>",
+          "location":"querystring",
+          "locationName":"appId"
+        }
+      }
+    },
+    "GetLibraryItemOutput":{
+      "type":"structure",
+      "required":[
+        "libraryItemId",
+        "appId",
+        "appVersion",
+        "categories",
+        "status",
+        "createdAt",
+        "createdBy",
+        "ratingCount"
+      ],
+      "members":{
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item.</p>"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App associated with the library item.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App associated with the library item.</p>"
+        },
+        "categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>The categories associated with the library item for discovery.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the library item, such as \"Published\".</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who created the library item.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the library item.</p>"
+        },
+        "ratingCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of ratings the library item has received from users.</p>"
+        },
+        "isRatedByUser":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the current user has rated the library item.</p>"
+        },
+        "userCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of users who have associated the Q App with their account.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the library item has been verified.</p>"
+        }
+      }
+    },
+    "GetQAppInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"appId"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App.</p>",
+          "location":"querystring",
+          "locationName":"appVersion"
+        }
+      }
+    },
+    "GetQAppOutput":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "appArn",
+        "title",
+        "appVersion",
+        "status",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy",
+        "appDefinition"
+      ],
+      "members":{
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App.</p>"
+        },
+        "appArn":{
+          "shape":"AppArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the Q App.</p>"
+        },
+        "initialPrompt":{
+          "shape":"InitialPrompt",
+          "documentation":"<p>The initial prompt displayed when the Q App is started.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App.</p>"
+        },
+        "status":{
+          "shape":"AppStatus",
+          "documentation":"<p>The status of the Q App.</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who created the Q App.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the Q App.</p>"
+        },
+        "requiredCapabilities":{
+          "shape":"AppRequiredCapabilities",
+          "documentation":"<p>The capabilities required to run the Q App, such as file upload or third-party integrations.</p>"
+        },
+        "appDefinition":{
+          "shape":"AppDefinition",
+          "documentation":"<p>The full definition of the Q App, specifying the cards and flow.</p>"
+        }
+      }
+    },
+    "GetQAppSessionInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "GetQAppSessionMetadataInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "GetQAppSessionMetadataOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn",
+        "sharingConfiguration"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App session.</p>"
+        },
+        "sessionName":{
+          "shape":"SessionName",
+          "documentation":"<p>The name of the Q App session.</p>"
+        },
+        "sharingConfiguration":{
+          "shape":"SessionSharingConfiguration",
+          "documentation":"<p>The sharing configuration of the Q App data collection session.</p>"
+        },
+        "sessionOwner":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the current user is the owner of the Q App session.</p>"
+        }
+      }
+    },
+    "GetQAppSessionOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn",
+        "status",
+        "cardStatus"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the Q App session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App session.</p>"
+        },
+        "sessionName":{
+          "shape":"SessionName",
+          "documentation":"<p>The name of the Q App session.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App used for the session.</p>"
+        },
+        "latestPublishedAppVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The latest published version of the Q App used for the session.</p>"
+        },
+        "status":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>The current status of the Q App session.</p>"
+        },
+        "cardStatus":{
+          "shape":"CardStatusMap",
+          "documentation":"<p>The current status for each card in the Q App session.</p>"
+        },
+        "userIsHost":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the current user is the owner of the Q App data collection session.</p>"
+        }
+      }
+    },
+    "ImportDocumentInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "cardId",
+        "appId",
+        "fileContentsBase64",
+        "fileName",
+        "scope"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "cardId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the card the file is associated with.</p>"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App the file is associated with.</p>"
+        },
+        "fileContentsBase64":{
+          "shape":"String",
+          "documentation":"<p>The base64-encoded contents of the file to upload.</p>"
+        },
+        "fileName":{
+          "shape":"Filename",
+          "documentation":"<p>The name of the file being uploaded.</p>"
+        },
+        "scope":{
+          "shape":"DocumentScope",
+          "documentation":"<p>Whether the file is associated with a Q App definition or a specific Q App session.</p>"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session the file is associated with, if applicable.</p>"
+        }
+      }
+    },
+    "ImportDocumentOutput":{
+      "type":"structure",
+      "members":{
+        "fileId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier assigned to the uploaded file.</p>"
+        }
+      }
+    },
+    "InitialPrompt":{
+      "type":"string",
+      "max":10000,
+      "min":0
+    },
+    "InputCardComputeMode":{
+      "type":"string",
+      "enum":[
+        "append",
+        "replace"
+      ]
+    },
+    "InstanceId":{"type":"string"},
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the operation</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An internal service error occurred while processing the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "LibraryItemList":{
+      "type":"list",
+      "member":{"shape":"LibraryItemMember"}
+    },
+    "LibraryItemMember":{
+      "type":"structure",
+      "required":[
+        "libraryItemId",
+        "appId",
+        "appVersion",
+        "categories",
+        "status",
+        "createdAt",
+        "createdBy",
+        "ratingCount"
+      ],
+      "members":{
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item.</p>"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App associated with the library item.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App associated with the library item.</p>"
+        },
+        "categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>The categories associated with the library item.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the library item.</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who created the library item.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the library item.</p>"
+        },
+        "ratingCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of ratings the library item has received.</p>"
+        },
+        "isRatedByUser":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the current user has rated the library item.</p>"
+        },
+        "userCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of users who have the associated Q App.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the library item has been verified.</p>"
+        }
+      },
+      "documentation":"<p>A library item is a snapshot of an Amazon Q App that can be published so the users in their Amazon Q Apps library can discover it, clone it, and run it.</p>"
+    },
+    "LibraryItemStatus":{
+      "type":"string",
+      "enum":[
+        "PUBLISHED",
+        "DISABLED"
+      ]
+    },
+    "ListCategoriesInput":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        }
+      }
+    },
+    "ListCategoriesOutput":{
+      "type":"structure",
+      "members":{
+        "categories":{
+          "shape":"CategoriesList",
+          "documentation":"<p>The categories of a Amazon Q Business application environment instance.</p>"
+        }
+      }
+    },
+    "ListLibraryItemsInput":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "limit":{
+          "shape":"PageLimit",
+          "documentation":"<p>The maximum number of library items to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"limit"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "categoryId":{
+          "shape":"UUID",
+          "documentation":"<p>Optional category to filter the library items by.</p>",
+          "location":"querystring",
+          "locationName":"categoryId"
+        }
+      }
+    },
+    "ListLibraryItemsOutput":{
+      "type":"structure",
+      "members":{
+        "libraryItems":{
+          "shape":"LibraryItemList",
+          "documentation":"<p>The list of library items meeting the request criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListQAppSessionDataInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App data collection session.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "ListQAppSessionDataOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App data collection session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App data collection session.</p>"
+        },
+        "sessionData":{
+          "shape":"QAppSessionDataList",
+          "documentation":"<p>The collected responses of a Q App session.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p> The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "ListQAppsInput":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "limit":{
+          "shape":"PageLimit",
+          "documentation":"<p>The maximum number of Q Apps to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"limit"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListQAppsOutput":{
+      "type":"structure",
+      "required":["apps"],
+      "members":{
+        "apps":{
+          "shape":"UserAppsList",
+          "documentation":"<p>The list of Amazon Q Apps meeting the request criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceARN"],
+      "members":{
+        "resourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource whose tags should be listed.</p>",
+          "location":"uri",
+          "locationName":"resourceARN"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The list of tags that are assigned to the resource.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MemoryReferenceList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "PageLimit":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":300,
+      "min":0
+    },
+    "PermissionInput":{
+      "type":"structure",
+      "required":[
+        "action",
+        "principal"
+      ],
+      "members":{
+        "action":{
+          "shape":"PermissionInputActionEnum",
+          "documentation":"<p>The action associated with the permission.</p>"
+        },
+        "principal":{
+          "shape":"PermissionInputPrincipalString",
+          "documentation":"<p>The principal user to which the permission applies.</p>"
+        }
+      },
+      "documentation":"<p>The permission to grant or revoke for a Amazon Q App.</p>"
+    },
+    "PermissionInputActionEnum":{
+      "type":"string",
+      "enum":[
+        "read",
+        "write"
+      ],
+      "max":20,
+      "min":1
+    },
+    "PermissionInputPrincipalString":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "PermissionOutput":{
+      "type":"structure",
+      "required":[
+        "action",
+        "principal"
+      ],
+      "members":{
+        "action":{
+          "shape":"PermissionOutputActionEnum",
+          "documentation":"<p>The action associated with the permission.</p>"
+        },
+        "principal":{
+          "shape":"PrincipalOutput",
+          "documentation":"<p>The principal user to which the permission applies.</p>"
+        }
+      },
+      "documentation":"<p>The permission granted to the Amazon Q App.</p>"
+    },
+    "PermissionOutputActionEnum":{
+      "type":"string",
+      "enum":[
+        "read",
+        "write"
+      ],
+      "max":20,
+      "min":1
+    },
+    "PermissionsOutputList":{
+      "type":"list",
+      "member":{"shape":"PermissionOutput"},
+      "documentation":"<p>A list of permissions granted for a Amazon Q App.</p>"
+    },
+    "Placeholder":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "PlatoString":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PluginId":{
+      "type":"string",
+      "max":36,
+      "min":36
+    },
+    "PluginType":{
+      "type":"string",
+      "enum":[
+        "SERVICE_NOW",
+        "SALESFORCE",
+        "JIRA",
+        "ZENDESK",
+        "CUSTOM",
+        "ASANA",
+        "ATLASSIAN_CONFLUENCE",
+        "GOOGLE_CALENDAR",
+        "JIRA_CLOUD",
+        "MICROSOFT_EXCHANGE",
+        "MICROSOFT_TEAMS",
+        "PAGERDUTY_ADVANCE",
+        "SALESFORCE_CRM",
+        "SERVICENOW_NOW_PLATFORM",
+        "SMARTSHEET",
+        "ZENDESK_SUITE"
+      ]
+    },
+    "PredictAppDefinition":{
+      "type":"structure",
+      "required":[
+        "title",
+        "appDefinition"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the generated Q App definition.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the generated Q App definition.</p>"
+        },
+        "appDefinition":{
+          "shape":"AppDefinitionInput",
+          "documentation":"<p>The definition specifying the cards and flow of the generated Q App.</p>"
+        }
+      },
+      "documentation":"<p>The definition of an Amazon Q App generated based on input such as a conversation or problem statement.</p>"
+    },
+    "PredictQAppInput":{
+      "type":"structure",
+      "required":["instanceId"],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "options":{
+          "shape":"PredictQAppInputOptions",
+          "documentation":"<p>The input to generate the Q App definition from, either a conversation or problem statement.</p>"
+        }
+      }
+    },
+    "PredictQAppInputOptions":{
+      "type":"structure",
+      "members":{
+        "conversation":{
+          "shape":"PredictQAppInputOptionsConversationList",
+          "documentation":"<p>A conversation to use as input for generating the Q App definition.</p>"
+        },
+        "problemStatement":{
+          "shape":"PredictQAppInputOptionsProblemStatementString",
+          "documentation":"<p>A problem statement to use as input for generating the Q App definition.</p>"
+        }
+      },
+      "documentation":"<p>The input options for generating an Q App definition.</p>",
+      "union":true
+    },
+    "PredictQAppInputOptionsConversationList":{
+      "type":"list",
+      "member":{"shape":"ConversationMessage"},
+      "max":25,
+      "min":1
+    },
+    "PredictQAppInputOptionsProblemStatementString":{
+      "type":"string",
+      "max":10000,
+      "min":0
+    },
+    "PredictQAppOutput":{
+      "type":"structure",
+      "required":[
+        "app",
+        "problemStatement"
+      ],
+      "members":{
+        "app":{
+          "shape":"PredictAppDefinition",
+          "documentation":"<p>The generated Q App definition.</p>"
+        },
+        "problemStatement":{
+          "shape":"String",
+          "documentation":"<p>The problem statement extracted from the input conversation, if provided.</p>"
+        }
+      }
+    },
+    "PresignedUrlFields":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "PrincipalOutput":{
+      "type":"structure",
+      "members":{
+        "userId":{
+          "shape":"PrincipalOutputUserIdString",
+          "documentation":"<p>The unique identifier of the user.</p>"
+        },
+        "userType":{
+          "shape":"PrincipalOutputUserTypeEnum",
+          "documentation":"<p>The type of the user.</p>"
+        },
+        "email":{
+          "shape":"PrincipalOutputEmailString",
+          "documentation":"<p>The email address associated with the user.</p>"
+        }
+      },
+      "documentation":"<p>The principal for which the permission applies.</p>"
+    },
+    "PrincipalOutputEmailString":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "PrincipalOutputUserIdString":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "PrincipalOutputUserTypeEnum":{
+      "type":"string",
+      "enum":[
+        "owner",
+        "user"
+      ],
+      "max":256,
+      "min":1
+    },
+    "Prompt":{
+      "type":"string",
+      "max":50000,
+      "min":0
+    },
+    "QAppSessionData":{
+      "type":"structure",
+      "required":[
+        "cardId",
+        "user"
+      ],
+      "members":{
+        "cardId":{
+          "shape":"UUID",
+          "documentation":"<p>The card Id associated with the response submitted for a Q App session.</p>"
+        },
+        "value":{
+          "shape":"Document",
+          "documentation":"<p>The response submitted for a Q App session.</p>"
+        },
+        "user":{
+          "shape":"User",
+          "documentation":"<p>The user who submitted the response for a Q App session.</p>"
+        },
+        "submissionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the submission.</p>"
+        },
+        "timestamp":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time when the session data is submitted.</p>"
+        }
+      },
+      "documentation":"<p>The response collected for a Amazon Q App session. This container represents a single response to a Q App session.</p>"
+    },
+    "QAppSessionDataList":{
+      "type":"list",
+      "member":{"shape":"QAppSessionData"}
+    },
+    "QAppsTimestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "QPluginCard":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title",
+        "dependencies",
+        "type",
+        "prompt",
+        "pluginType",
+        "pluginId"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the plugin card.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the plugin card.</p>"
+        },
+        "dependencies":{
+          "shape":"DependencyList",
+          "documentation":"<p>Any dependencies or requirements for the plugin card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "prompt":{
+          "shape":"Prompt",
+          "documentation":"<p>The prompt or instructions displayed for the plugin card.</p>"
+        },
+        "pluginType":{
+          "shape":"PluginType",
+          "documentation":"<p>The type or category of the plugin used by the card.</p>"
+        },
+        "pluginId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the plugin used by the card.</p>"
+        },
+        "actionIdentifier":{
+          "shape":"ActionIdentifier",
+          "documentation":"<p>The action identifier of the action to be performed by the plugin card.</p>"
+        }
+      },
+      "documentation":"<p>A card in an Q App that integrates with a third-party plugin or service.</p>"
+    },
+    "QPluginCardInput":{
+      "type":"structure",
+      "required":[
+        "title",
+        "id",
+        "type",
+        "prompt",
+        "pluginId"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the plugin card.</p>"
+        },
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the plugin card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "prompt":{
+          "shape":"Prompt",
+          "documentation":"<p>The prompt or instructions displayed for the plugin card.</p>"
+        },
+        "pluginId":{
+          "shape":"PluginId",
+          "documentation":"<p>The unique identifier of the plugin used by the card.</p>"
+        },
+        "actionIdentifier":{
+          "shape":"ActionIdentifier",
+          "documentation":"<p>The action identifier of the action to be performed by the plugin card.</p>"
+        }
+      },
+      "documentation":"<p>The input shape for defining a plugin card in an Amazon Q App.</p>"
+    },
+    "QQueryCard":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title",
+        "dependencies",
+        "type",
+        "prompt",
+        "outputSource"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the query card. </p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the query card.</p>"
+        },
+        "dependencies":{
+          "shape":"DependencyList",
+          "documentation":"<p>Any dependencies or requirements for the query card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "prompt":{
+          "shape":"Prompt",
+          "documentation":"<p>The prompt or instructions displayed for the query card.</p>"
+        },
+        "outputSource":{
+          "shape":"CardOutputSource",
+          "documentation":"<p>The source or type of output generated by the query card.</p>"
+        },
+        "attributeFilter":{
+          "shape":"AttributeFilter",
+          "documentation":"<p>The Amazon Q Business filters applied in this query card when resolving data sources</p>"
+        },
+        "memoryReferences":{
+          "shape":"MemoryReferenceList",
+          "documentation":"<p>Any dependencies for the query card, where the dependencies are references to the collected responses.</p>"
+        }
+      },
+      "documentation":"<p>A card in a Amazon Q App that generates a response based on the Amazon Q Business service.</p>"
+    },
+    "QQueryCardInput":{
+      "type":"structure",
+      "required":[
+        "title",
+        "id",
+        "type",
+        "prompt"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the query card.</p>"
+        },
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the query card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "prompt":{
+          "shape":"Prompt",
+          "documentation":"<p>The prompt or instructions displayed for the query card.</p>"
+        },
+        "outputSource":{
+          "shape":"CardOutputSource",
+          "documentation":"<p>The source or type of output to generate for the query card.</p>"
+        },
+        "attributeFilter":{
+          "shape":"AttributeFilter",
+          "documentation":"<p>Turns on filtering of responses based on document attributes or metadata fields.</p>"
+        }
+      },
+      "documentation":"<p>The input shape for defining a query card in an Amazon Q App.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the resource</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource</p>"
+        }
+      },
+      "documentation":"<p>The requested resource could not be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Sender":{
+      "type":"string",
+      "enum":[
+        "USER",
+        "SYSTEM"
+      ]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the resource</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code for the service where the quota was exceeded</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the quota that was exceeded</p>"
+        }
+      },
+      "documentation":"<p>The requested operation could not be completed because it would exceed the service's quota or limit.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SessionName":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "SessionSharingAcceptResponses":{
+      "type":"boolean",
+      "box":true
+    },
+    "SessionSharingConfiguration":{
+      "type":"structure",
+      "required":["enabled"],
+      "members":{
+        "enabled":{
+          "shape":"SessionSharingEnabled",
+          "documentation":"<p>Indicates whether an Q App session is shareable with other users.</p>"
+        },
+        "acceptResponses":{
+          "shape":"SessionSharingAcceptResponses",
+          "documentation":"<p>Indicates whether an Q App session can accept responses from users.</p>"
+        },
+        "revealCards":{
+          "shape":"SessionSharingRevealCards",
+          "documentation":"<p>Indicates whether collected responses for an Q App session are revealed for all users.</p>"
+        }
+      },
+      "documentation":"<p>The sharing configuration of an Amazon Q App data collection session.</p>"
+    },
+    "SessionSharingEnabled":{
+      "type":"boolean",
+      "box":true
+    },
+    "SessionSharingRevealCards":{
+      "type":"boolean",
+      "box":true
+    },
+    "StartQAppSessionInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId",
+        "appVersion"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App to start a session for.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App to use for the session.</p>"
+        },
+        "initialValues":{
+          "shape":"CardValueList",
+          "documentation":"<p>Optional initial input values to provide for the Q App session.</p>"
+        },
+        "sessionId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the a Q App session.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Optional tags to associate with the new Q App session.</p>"
+        }
+      }
+    },
+    "StartQAppSessionOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the new or retrieved Q App session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the new Q App session.</p>"
+        }
+      }
+    },
+    "StopQAppSessionInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session to stop.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "Submission":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"Document",
+          "documentation":"<p>The data submitted by the user.</p>"
+        },
+        "submissionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the submission.</p>"
+        },
+        "timestamp":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time when the card is submitted.</p>"
+        }
+      },
+      "documentation":"<p>A record created when a user submits a form card.</p>"
+    },
+    "SubmissionList":{
+      "type":"list",
+      "member":{"shape":"Submission"}
+    },
+    "SubmissionMutation":{
+      "type":"structure",
+      "required":[
+        "submissionId",
+        "mutationType"
+      ],
+      "members":{
+        "submissionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the submission.</p>"
+        },
+        "mutationType":{
+          "shape":"SubmissionMutationKind",
+          "documentation":"<p>The operation that is performed on a submission.</p>"
+        }
+      },
+      "documentation":"<p>Represents an action performed on a submission.</p>"
+    },
+    "SubmissionMutationKind":{
+      "type":"string",
+      "enum":[
+        "edit",
+        "delete",
+        "add"
+      ]
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tags"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to tag.</p>",
+          "location":"uri",
+          "locationName":"resourceARN"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags to associate with the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "TextInputCard":{
+      "type":"structure",
+      "required":[
+        "id",
+        "title",
+        "dependencies",
+        "type"
+      ],
+      "members":{
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the text input card.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the text input card.</p>"
+        },
+        "dependencies":{
+          "shape":"DependencyList",
+          "documentation":"<p>Any dependencies or requirements for the text input card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "placeholder":{
+          "shape":"Placeholder",
+          "documentation":"<p>The placeholder text to display in the text input field.</p>"
+        },
+        "defaultValue":{
+          "shape":"Default",
+          "documentation":"<p>The default value to pre-populate in the text input field.</p>"
+        }
+      },
+      "documentation":"<p>A card in an Amazon Q App that allows the user to input text.</p>"
+    },
+    "TextInputCardInput":{
+      "type":"structure",
+      "required":[
+        "title",
+        "id",
+        "type"
+      ],
+      "members":{
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title or label of the text input card.</p>"
+        },
+        "id":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the text input card.</p>"
+        },
+        "type":{
+          "shape":"CardType",
+          "documentation":"<p>The type of the card.</p>"
+        },
+        "placeholder":{
+          "shape":"Placeholder",
+          "documentation":"<p>The placeholder text to display in the text input field.</p>"
+        },
+        "defaultValue":{
+          "shape":"Default",
+          "documentation":"<p>The default value to pre-populate in the text input field.</p>"
+        }
+      },
+      "documentation":"<p>The input shape for defining a text input card in an Amazon Q App.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code for the service where the quota was exceeded</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the quota that was exceeded</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the operation</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The requested operation could not be completed because too many requests were sent at once. Wait a bit and try again later.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Title":{
+      "type":"string",
+      "max":100,
+      "min":0,
+      "pattern":"[^{}\\\\\"<>]+"
+    },
+    "UUID":{
+      "type":"string",
+      "pattern":"[\\da-f]{8}-[\\da-f]{4}-[45][\\da-f]{3}-[89ABab][\\da-f]{3}-[\\da-f]{12}"
+    },
+    "UnauthorizedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The client is not authenticated or authorized to perform the requested operation.</p>",
+      "error":{
+        "httpStatusCode":401,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to disassociate the tag from.</p>",
+          "location":"uri",
+          "locationName":"resourceARN"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The keys of the tags to disassociate from the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateLibraryItemInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the library item to update.</p>"
+        },
+        "status":{
+          "shape":"LibraryItemStatus",
+          "documentation":"<p>The new status to set for the library item, such as \"Published\" or \"Hidden\".</p>"
+        },
+        "categories":{
+          "shape":"CategoryIdList",
+          "documentation":"<p>The new categories to associate with the library item.</p>"
+        }
+      }
+    },
+    "UpdateLibraryItemMetadataInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "libraryItemId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the updated library item.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>The verification status of the library item</p>"
+        }
+      }
+    },
+    "UpdateLibraryItemOutput":{
+      "type":"structure",
+      "required":[
+        "libraryItemId",
+        "appId",
+        "appVersion",
+        "categories",
+        "status",
+        "createdAt",
+        "createdBy",
+        "ratingCount"
+      ],
+      "members":{
+        "libraryItemId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the updated library item.</p>"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App associated with the library item.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The version of the Q App associated with the library item.</p>"
+        },
+        "categories":{
+          "shape":"CategoryList",
+          "documentation":"<p>The categories associated with the updated library item.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The new status of the updated library item.</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was originally created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who originally created the library item.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the library item was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the library item.</p>"
+        },
+        "ratingCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of ratings the library item has received.</p>"
+        },
+        "isRatedByUser":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the current user has rated the library item.</p>"
+        },
+        "userCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of users who have the associated Q App.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the library item has been verified.</p>"
+        }
+      }
+    },
+    "UpdateQAppInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App to update.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The new title for the Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The new description for the Q App.</p>"
+        },
+        "appDefinition":{
+          "shape":"AppDefinitionInput",
+          "documentation":"<p>The new definition specifying the cards and flow for the Q App.</p>"
+        }
+      }
+    },
+    "UpdateQAppOutput":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "appArn",
+        "title",
+        "appVersion",
+        "status",
+        "createdAt",
+        "createdBy",
+        "updatedAt",
+        "updatedBy"
+      ],
+      "members":{
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the updated Q App.</p>"
+        },
+        "appArn":{
+          "shape":"AppArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the updated Q App.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The new title of the updated Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The new description of the updated Q App.</p>"
+        },
+        "initialPrompt":{
+          "shape":"InitialPrompt",
+          "documentation":"<p>The initial prompt for the updated Q App.</p>"
+        },
+        "appVersion":{
+          "shape":"AppVersion",
+          "documentation":"<p>The new version of the updated Q App.</p>"
+        },
+        "status":{
+          "shape":"AppStatus",
+          "documentation":"<p>The status of the updated Q App.</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was originally created.</p>"
+        },
+        "createdBy":{
+          "shape":"String",
+          "documentation":"<p>The user who originally created the Q App.</p>"
+        },
+        "updatedAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the Q App was last updated.</p>"
+        },
+        "updatedBy":{
+          "shape":"String",
+          "documentation":"<p>The user who last updated the Q App.</p>"
+        },
+        "requiredCapabilities":{
+          "shape":"AppRequiredCapabilities",
+          "documentation":"<p>The capabilities required for the updated Q App.</p>"
+        }
+      }
+    },
+    "UpdateQAppPermissionsInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "appId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Amazon Q App for which permissions are being updated.</p>"
+        },
+        "grantPermissions":{
+          "shape":"UpdateQAppPermissionsInputGrantPermissionsList",
+          "documentation":"<p>The list of permissions to grant for the Amazon Q App.</p>"
+        },
+        "revokePermissions":{
+          "shape":"UpdateQAppPermissionsInputRevokePermissionsList",
+          "documentation":"<p>The list of permissions to revoke for the Amazon Q App.</p>"
+        }
+      }
+    },
+    "UpdateQAppPermissionsInputGrantPermissionsList":{
+      "type":"list",
+      "member":{"shape":"PermissionInput"},
+      "documentation":"<p>A list of permissions to grant or revoke for a Amazon Q App.</p>",
+      "max":100,
+      "min":0
+    },
+    "UpdateQAppPermissionsInputRevokePermissionsList":{
+      "type":"list",
+      "member":{"shape":"PermissionInput"},
+      "documentation":"<p>A list of permissions to grant or revoke for a Amazon Q App.</p>",
+      "max":100,
+      "min":0
+    },
+    "UpdateQAppPermissionsOutput":{
+      "type":"structure",
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Q App for which permissions were updated.</p>"
+        },
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the Amazon Q App for which permissions were updated.</p>"
+        },
+        "permissions":{
+          "shape":"PermissionsOutputList",
+          "documentation":"<p>The updated list of permissions for the Amazon Q App.</p>"
+        }
+      }
+    },
+    "UpdateQAppSessionInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session to provide input for.</p>"
+        },
+        "values":{
+          "shape":"CardValueList",
+          "documentation":"<p>The input values to provide for the current state of the Q App session.</p>"
+        }
+      }
+    },
+    "UpdateQAppSessionMetadataInput":{
+      "type":"structure",
+      "required":[
+        "instanceId",
+        "sessionId",
+        "sharingConfiguration"
+      ],
+      "members":{
+        "instanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The unique identifier of the Amazon Q Business application environment instance.</p>",
+          "location":"header",
+          "locationName":"instance-id"
+        },
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App session to update configuration for.</p>"
+        },
+        "sessionName":{
+          "shape":"SessionName",
+          "documentation":"<p>The new name for the Q App session.</p>"
+        },
+        "sharingConfiguration":{
+          "shape":"SessionSharingConfiguration",
+          "documentation":"<p>The new sharing configuration for the Q App data collection session.</p>"
+        }
+      }
+    },
+    "UpdateQAppSessionMetadataOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn",
+        "sharingConfiguration"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the updated Q App session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the updated Q App session.</p>"
+        },
+        "sessionName":{
+          "shape":"SessionName",
+          "documentation":"<p>The new name of the updated Q App session.</p>"
+        },
+        "sharingConfiguration":{
+          "shape":"SessionSharingConfiguration",
+          "documentation":"<p>The new sharing configuration of the updated Q App data collection session.</p>"
+        }
+      }
+    },
+    "UpdateQAppSessionOutput":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "sessionArn"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the updated Q App session.</p>"
+        },
+        "sessionArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the updated Q App session.</p>"
+        }
+      }
+    },
+    "User":{
+      "type":"structure",
+      "members":{
+        "userId":{
+          "shape":"UserId",
+          "documentation":"<p>The unique identifier of a user.</p>"
+        }
+      },
+      "documentation":"<p>A user of an Amazon Q App.</p>"
+    },
+    "UserAppItem":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "appArn",
+        "title",
+        "createdAt"
+      ],
+      "members":{
+        "appId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique identifier of the Q App.</p>"
+        },
+        "appArn":{
+          "shape":"AppArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Q App.</p>"
+        },
+        "title":{
+          "shape":"Title",
+          "documentation":"<p>The title of the Q App.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the Q App.</p>"
+        },
+        "createdAt":{
+          "shape":"QAppsTimestamp",
+          "documentation":"<p>The date and time the user's association with the Q App was created.</p>"
+        },
+        "canEdit":{
+          "shape":"Boolean",
+          "documentation":"<p>A flag indicating whether the user can edit the Q App.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the user's association with the Q App.</p>"
+        },
+        "isVerified":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the Q App has been verified.</p>"
+        }
+      },
+      "documentation":"<p>An Amazon Q App associated with a user, either owned by the user or favorited.</p>"
+    },
+    "UserAppsList":{
+      "type":"list",
+      "member":{"shape":"UserAppItem"}
+    },
+    "UserId":{"type":"string"},
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input failed to satisfy the constraints specified by the service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p>The Amazon Q Apps feature capability within Amazon Q Business allows web experience users to create lightweight, purpose-built AI apps to fulfill specific tasks from within their web experience. For example, users can create a Q App that exclusively generates marketing-related content to improve your marketing team's productivity or a Q App for writing customer emails and creating promotional content using a certain style of voice, tone, and branding. For more information on the capabilities, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/deploy-experience-iam-role.html#q-apps-actions\">Amazon Q Apps capabilities</a> in the <i>Amazon Q Business User Guide</i>. </p> <p>For an overview of the Amazon Q App APIs, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/api-reference/API_Operations_QApps.html\">Overview of Amazon Q Apps API operations</a>.</p> <p>For information about the IAM access control permissions you need to use the Amazon Q Apps API, see <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/deploy-experience-iam-role.html\"> IAM role for the Amazon Q Business web experience including Amazon Q Apps</a> in the <i>Amazon Q Business User Guide</i>.</p>"
+}

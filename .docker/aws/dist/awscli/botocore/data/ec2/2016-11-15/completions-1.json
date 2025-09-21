@@ -1,0 +1,4564 @@
+{
+  "version": "1.0",
+  "resources": {
+    "AccountAttribute": {
+      "operation": "DescribeAccountAttributes",
+      "resourceIdentifier": {
+        "AttributeName": "AccountAttributes[].AttributeName"
+      }
+    },
+    "Addresse": {
+      "operation": "DescribeAddresses",
+      "resourceIdentifier": {
+        "AllocationId": "Addresses[].AllocationId",
+        "Domain": "Addresses[].Domain"
+      }
+    },
+    "AvailabilityZone": {
+      "operation": "DescribeAvailabilityZones",
+      "resourceIdentifier": {
+        "ZoneName": "AvailabilityZones[].ZoneName"
+      }
+    },
+    "BundleTask": {
+      "operation": "DescribeBundleTasks",
+      "resourceIdentifier": {
+        "BundleId": "BundleTasks[].BundleId",
+        "Storage": "BundleTasks[].Storage"
+      }
+    },
+    "ConversionTask": {
+      "operation": "DescribeConversionTasks",
+      "resourceIdentifier": {
+        "ConversionTaskId": "ConversionTasks[].ConversionTaskId"
+      }
+    },
+    "EgressOnlyInternetGateway": {
+      "operation": "DescribeEgressOnlyInternetGateways",
+      "resourceIdentifier": {
+        "EgressOnlyInternetGatewayId": "EgressOnlyInternetGateways[].EgressOnlyInternetGatewayId"
+      }
+    },
+    "ElasticGpu": {
+      "operation": "DescribeElasticGpus",
+      "resourceIdentifier": {
+        "ElasticGpuId": "ElasticGpuSet[].ElasticGpuId"
+      }
+    },
+    "ExportTask": {
+      "operation": "DescribeExportTasks",
+      "resourceIdentifier": {
+        "ExportTaskId": "ExportTasks[].ExportTaskId"
+      }
+    },
+    "Fleet": {
+      "operation": "DescribeFleets",
+      "resourceIdentifier": {
+        "FleetId": "Fleets[].FleetId",
+        "ExcessCapacityTerminationPolicy": "Fleets[].ExcessCapacityTerminationPolicy",
+        "TargetCapacitySpecification": "Fleets[].TargetCapacitySpecification"
+      }
+    },
+    "FlowLog": {
+      "operation": "DescribeFlowLogs",
+      "resourceIdentifier": {
+        "FlowLogId": "FlowLogs[].FlowLogId"
+      }
+    },
+    "FpgaImage": {
+      "operation": "DescribeFpgaImages",
+      "resourceIdentifier": {
+        "FpgaImageId": "FpgaImages[].FpgaImageId"
+      }
+    },
+    "HostReservation": {
+      "operation": "DescribeHostReservations",
+      "resourceIdentifier": {
+        "HostIdSet": "HostReservationSet[].HostIdSet",
+        "OfferingId": "HostReservationSet[].OfferingId"
+      }
+    },
+    "Host": {
+      "operation": "DescribeHosts",
+      "resourceIdentifier": {
+        "AutoPlacement": "Hosts[].AutoPlacement",
+        "HostId": "Hosts[].HostId",
+        "HostReservationId": "Hosts[].HostReservationId"
+      }
+    },
+    "IamInstanceProfileAssociation": {
+      "operation": "DescribeIamInstanceProfileAssociations",
+      "resourceIdentifier": {
+        "AssociationId": "IamInstanceProfileAssociations[].AssociationId",
+        "IamInstanceProfile": "IamInstanceProfileAssociations[].IamInstanceProfile"
+      }
+    },
+    "IdFormat": {
+      "operation": "DescribeIdFormat",
+      "resourceIdentifier": {
+        "Resource": "Statuses[].Resource",
+        "UseLongIds": "Statuses[].UseLongIds"
+      }
+    },
+    "Image": {
+      "operation": "DescribeImages",
+      "resourceIdentifier": {
+        "ImageLocation": "Images[].ImageLocation",
+        "KernelId": "Images[].KernelId",
+        "ProductCodes": "Images[].ProductCodes",
+        "RamdiskId": "Images[].RamdiskId",
+        "BlockDeviceMappings": "Images[].BlockDeviceMappings",
+        "EnaSupport": "Images[].EnaSupport",
+        "Name": "Images[].Name",
+        "RootDeviceName": "Images[].RootDeviceName",
+        "SriovNetSupport": "Images[].SriovNetSupport",
+        "VirtualizationType": "Images[].VirtualizationType"
+      }
+    },
+    "ImportImageTask": {
+      "operation": "DescribeImportImageTasks",
+      "resourceIdentifier": {
+        "Architecture": "ImportImageTasks[].Architecture",
+        "Hypervisor": "ImportImageTasks[].Hypervisor",
+        "ImageId": "ImportImageTasks[].ImageId",
+        "LicenseType": "ImportImageTasks[].LicenseType"
+      }
+    },
+    "ImportSnapshotTask": {
+      "operation": "DescribeImportSnapshotTasks",
+      "resourceIdentifier": {
+        "ImportTaskId": "ImportSnapshotTasks[].ImportTaskId"
+      }
+    },
+    "Instance": {
+      "operation": "DescribeInstances",
+      "resourceIdentifier": {
+        "Instances": "Reservations[].Instances"
+      }
+    },
+    "InternetGateway": {
+      "operation": "DescribeInternetGateways",
+      "resourceIdentifier": {
+        "InternetGatewayId": "InternetGateways[].InternetGatewayId"
+      }
+    },
+    "KeyPair": {
+      "operation": "DescribeKeyPairs",
+      "resourceIdentifier": {
+        "KeyName": "KeyPairs[].KeyName"
+      }
+    },
+    "LaunchTemplateVersion": {
+      "operation": "DescribeLaunchTemplateVersions",
+      "resourceIdentifier": {
+        "DefaultVersion": "LaunchTemplateVersions[].DefaultVersion"
+      }
+    },
+    "LaunchTemplate": {
+      "operation": "DescribeLaunchTemplates",
+      "resourceIdentifier": {
+        "LaunchTemplateId": "LaunchTemplates[].LaunchTemplateId",
+        "LaunchTemplateName": "LaunchTemplates[].LaunchTemplateName"
+      }
+    },
+    "MovingAddresse": {
+      "operation": "DescribeMovingAddresses",
+      "resourceIdentifier": {
+        "PublicIp": "MovingAddressStatuses[].PublicIp"
+      }
+    },
+    "NatGateway": {
+      "operation": "DescribeNatGateways",
+      "resourceIdentifier": {
+        "NatGatewayId": "NatGateways[].NatGatewayId"
+      }
+    },
+    "NetworkAcl": {
+      "operation": "DescribeNetworkAcls",
+      "resourceIdentifier": {
+        "NetworkAclId": "NetworkAcls[].NetworkAclId"
+      }
+    },
+    "NetworkInterfacePermission": {
+      "operation": "DescribeNetworkInterfacePermissions",
+      "resourceIdentifier": {
+        "NetworkInterfacePermissionId": "NetworkInterfacePermissions[].NetworkInterfacePermissionId"
+      }
+    },
+    "NetworkInterface": {
+      "operation": "DescribeNetworkInterfaces",
+      "resourceIdentifier": {
+        "Attachment": "NetworkInterfaces[].Attachment",
+        "Ipv6Addresses": "NetworkInterfaces[].Ipv6Addresses",
+        "NetworkInterfaceId": "NetworkInterfaces[].NetworkInterfaceId",
+        "PrivateIpAddress": "NetworkInterfaces[].PrivateIpAddress",
+        "PrivateIpAddresses": "NetworkInterfaces[].PrivateIpAddresses",
+        "SourceDestCheck": "NetworkInterfaces[].SourceDestCheck"
+      }
+    },
+    "PrefixList": {
+      "operation": "DescribePrefixLists",
+      "resourceIdentifier": {
+        "PrefixListId": "PrefixLists[].PrefixListId"
+      }
+    },
+    "Region": {
+      "operation": "DescribeRegions",
+      "resourceIdentifier": {
+        "RegionName": "Regions[].RegionName"
+      }
+    },
+    "ReservedInstancesListing": {
+      "operation": "DescribeReservedInstancesListings",
+      "resourceIdentifier": {
+        "ReservedInstancesId": "ReservedInstancesListings[].ReservedInstancesId",
+        "ReservedInstancesListingId": "ReservedInstancesListings[].ReservedInstancesListingId"
+      }
+    },
+    "ReservedInstancesModification": {
+      "operation": "DescribeReservedInstancesModifications",
+      "resourceIdentifier": {
+        "ClientToken": "ReservedInstancesModifications[].ClientToken",
+        "ReservedInstancesIds": "ReservedInstancesModifications[].ReservedInstancesIds",
+        "ReservedInstancesModificationId": "ReservedInstancesModifications[].ReservedInstancesModificationId"
+      }
+    },
+    "ReservedInstancesOffering": {
+      "operation": "DescribeReservedInstancesOfferings",
+      "resourceIdentifier": {
+        "ReservedInstancesOfferingId": "ReservedInstancesOfferings[].ReservedInstancesOfferingId",
+        "CurrencyCode": "ReservedInstancesOfferings[].CurrencyCode",
+        "OfferingClass": "ReservedInstancesOfferings[].OfferingClass",
+        "OfferingType": "ReservedInstancesOfferings[].OfferingType"
+      }
+    },
+    "RouteTable": {
+      "operation": "DescribeRouteTables",
+      "resourceIdentifier": {
+        "RouteTableId": "RouteTables[].RouteTableId"
+      }
+    },
+    "ScheduledInstance": {
+      "operation": "DescribeScheduledInstances",
+      "resourceIdentifier": {
+        "InstanceCount": "ScheduledInstanceSet[].InstanceCount",
+        "Platform": "ScheduledInstanceSet[].Platform",
+        "Recurrence": "ScheduledInstanceSet[].Recurrence",
+        "ScheduledInstanceId": "ScheduledInstanceSet[].ScheduledInstanceId",
+        "SlotDurationInHours": "ScheduledInstanceSet[].SlotDurationInHours"
+      }
+    },
+    "SecurityGroup": {
+      "operation": "DescribeSecurityGroups",
+      "resourceIdentifier": {
+        "GroupName": "SecurityGroups[].GroupName",
+        "IpPermissions": "SecurityGroups[].IpPermissions",
+        "GroupId": "SecurityGroups[].GroupId"
+      }
+    },
+    "Snapshot": {
+      "operation": "DescribeSnapshots",
+      "resourceIdentifier": {
+        "Description": "Snapshots[].Description",
+        "OwnerId": "Snapshots[].OwnerId"
+      }
+    },
+    "SpotFleetRequest": {
+      "operation": "DescribeSpotFleetRequests",
+      "resourceIdentifier": {
+        "SpotFleetRequestConfig": "SpotFleetRequestConfigs[].SpotFleetRequestConfig",
+        "SpotFleetRequestId": "SpotFleetRequestConfigs[].SpotFleetRequestId"
+      }
+    },
+    "SpotInstanceRequest": {
+      "operation": "DescribeSpotInstanceRequests",
+      "resourceIdentifier": {
+        "AvailabilityZoneGroup": "SpotInstanceRequests[].AvailabilityZoneGroup",
+        "BlockDurationMinutes": "SpotInstanceRequests[].BlockDurationMinutes",
+        "InstanceId": "SpotInstanceRequests[].InstanceId",
+        "LaunchGroup": "SpotInstanceRequests[].LaunchGroup",
+        "LaunchSpecification": "SpotInstanceRequests[].LaunchSpecification",
+        "SpotInstanceRequestId": "SpotInstanceRequests[].SpotInstanceRequestId",
+        "ValidFrom": "SpotInstanceRequests[].ValidFrom",
+        "ValidUntil": "SpotInstanceRequests[].ValidUntil",
+        "InstanceInterruptionBehavior": "SpotInstanceRequests[].InstanceInterruptionBehavior"
+      }
+    },
+    "SpotPriceHistory": {
+      "operation": "DescribeSpotPriceHistory",
+      "resourceIdentifier": {
+        "InstanceType": "SpotPriceHistory[].InstanceType",
+        "ProductDescription": "SpotPriceHistory[].ProductDescription",
+        "SpotPrice": "SpotPriceHistory[].SpotPrice"
+      }
+    },
+    "Subnet": {
+      "operation": "DescribeSubnets",
+      "resourceIdentifier": {
+        "MapPublicIpOnLaunch": "Subnets[].MapPublicIpOnLaunch",
+        "SubnetId": "Subnets[].SubnetId",
+        "AssignIpv6AddressOnCreation": "Subnets[].AssignIpv6AddressOnCreation"
+      }
+    },
+    "Tag": {
+      "operation": "DescribeTags",
+      "resourceIdentifier": {
+        "Value": "Tags[].Value"
+      }
+    },
+    "Volume": {
+      "operation": "DescribeVolumes",
+      "resourceIdentifier": {
+        "Encrypted": "Volumes[].Encrypted",
+        "KmsKeyId": "Volumes[].KmsKeyId",
+        "Size": "Volumes[].Size",
+        "SnapshotId": "Volumes[].SnapshotId",
+        "Iops": "Volumes[].Iops",
+        "VolumeType": "Volumes[].VolumeType"
+      }
+    },
+    "VolumesModification": {
+      "operation": "DescribeVolumesModifications",
+      "resourceIdentifier": {
+        "VolumeId": "VolumesModifications[].VolumeId",
+        "StartTime": "VolumesModifications[].StartTime",
+        "EndTime": "VolumesModifications[].EndTime"
+      }
+    },
+    "VpcEndpointConnectionNotification": {
+      "operation": "DescribeVpcEndpointConnectionNotifications",
+      "resourceIdentifier": {
+        "ConnectionNotificationId": "ConnectionNotificationSet[].ConnectionNotificationId",
+        "ConnectionNotificationArn": "ConnectionNotificationSet[].ConnectionNotificationArn",
+        "ConnectionEvents": "ConnectionNotificationSet[].ConnectionEvents"
+      }
+    },
+    "VpcEndpointServiceConfiguration": {
+      "operation": "DescribeVpcEndpointServiceConfigurations",
+      "resourceIdentifier": {
+        "ServiceId": "ServiceConfigurations[].ServiceId",
+        "AcceptanceRequired": "ServiceConfigurations[].AcceptanceRequired",
+        "NetworkLoadBalancerArns": "ServiceConfigurations[].NetworkLoadBalancerArns"
+      }
+    },
+    "VpcEndpoint": {
+      "operation": "DescribeVpcEndpoints",
+      "resourceIdentifier": {
+        "VpcEndpointId": "VpcEndpoints[].VpcEndpointId",
+        "ServiceName": "VpcEndpoints[].ServiceName",
+        "PolicyDocument": "VpcEndpoints[].PolicyDocument",
+        "RouteTableIds": "VpcEndpoints[].RouteTableIds",
+        "SubnetIds": "VpcEndpoints[].SubnetIds",
+        "Groups": "VpcEndpoints[].Groups",
+        "PrivateDnsEnabled": "VpcEndpoints[].PrivateDnsEnabled",
+        "NetworkInterfaceIds": "VpcEndpoints[].NetworkInterfaceIds"
+      }
+    },
+    "VpcPeeringConnection": {
+      "operation": "DescribeVpcPeeringConnections",
+      "resourceIdentifier": {
+        "Status": "VpcPeeringConnections[].Status",
+        "VpcPeeringConnectionId": "VpcPeeringConnections[].VpcPeeringConnectionId"
+      }
+    },
+    "Vpc": {
+      "operation": "DescribeVpcs",
+      "resourceIdentifier": {
+        "CidrBlock": "Vpcs[].CidrBlock",
+        "DhcpOptionsId": "Vpcs[].DhcpOptionsId",
+        "VpcId": "Vpcs[].VpcId",
+        "InstanceTenancy": "Vpcs[].InstanceTenancy"
+      }
+    },
+    "VpnConnection": {
+      "operation": "DescribeVpnConnections",
+      "resourceIdentifier": {
+        "CustomerGatewayId": "VpnConnections[].CustomerGatewayId",
+        "VpnConnectionId": "VpnConnections[].VpnConnectionId"
+      }
+    },
+    "VpnGateway": {
+      "operation": "DescribeVpnGateways",
+      "resourceIdentifier": {
+        "AvailabilityZone": "VpnGateways[].AvailabilityZone",
+        "Type": "VpnGateways[].Type",
+        "VpnGatewayId": "VpnGateways[].VpnGatewayId",
+        "Tags": "VpnGateways[].Tags"
+      }
+    }
+  },
+  "operations": {
+    "AcceptReservedInstancesExchangeQuote": {
+      "ReservedInstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesListing",
+            "resourceIdentifier": "ReservedInstancesId"
+          }
+        ]
+      }
+    },
+    "AcceptVpcEndpointConnections": {
+      "ServiceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      },
+      "VpcEndpointIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "VpcEndpointId"
+          }
+        ]
+      }
+    },
+    "AcceptVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "AllocateAddress": {
+      "Domain": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "Domain"
+          }
+        ]
+      }
+    },
+    "AllocateHosts": {
+      "AutoPlacement": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "AutoPlacement"
+          }
+        ]
+      },
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      }
+    },
+    "AssignIpv6Addresses": {
+      "Ipv6Addresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "Ipv6Addresses"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      }
+    },
+    "AssignPrivateIpAddresses": {
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "PrivateIpAddresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "PrivateIpAddresses"
+          }
+        ]
+      }
+    },
+    "AssociateAddress": {
+      "AllocationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AllocationId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "PublicIp": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "PrivateIpAddress": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "PrivateIpAddress"
+          }
+        ]
+      }
+    },
+    "AssociateDhcpOptions": {
+      "DhcpOptionsId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "DhcpOptionsId"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "AssociateIamInstanceProfile": {
+      "IamInstanceProfile": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "IamInstanceProfile"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "AssociateRouteTable": {
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      },
+      "SubnetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "SubnetId"
+          }
+        ]
+      }
+    },
+    "AssociateSubnetCidrBlock": {
+      "SubnetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "SubnetId"
+          }
+        ]
+      }
+    },
+    "AssociateVpcCidrBlock": {
+      "CidrBlock": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "CidrBlock"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "AttachClassicLinkVpc": {
+      "Groups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "Groups"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "AttachInternetGateway": {
+      "InternetGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InternetGateway",
+            "resourceIdentifier": "InternetGatewayId"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "AttachNetworkInterface": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      }
+    },
+    "AttachVolume": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "AttachVpnGateway": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      },
+      "VpnGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "VpnGatewayId"
+          }
+        ]
+      }
+    },
+    "AuthorizeSecurityGroupEgress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    },
+    "AuthorizeSecurityGroupIngress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    },
+    "BundleInstance": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "Storage": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BundleTask",
+            "resourceIdentifier": "Storage"
+          }
+        ]
+      }
+    },
+    "CancelBundleTask": {
+      "BundleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BundleTask",
+            "resourceIdentifier": "BundleId"
+          }
+        ]
+      }
+    },
+    "CancelConversionTask": {
+      "ConversionTaskId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConversionTask",
+            "resourceIdentifier": "ConversionTaskId"
+          }
+        ]
+      }
+    },
+    "CancelExportTask": {
+      "ExportTaskId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "ExportTaskId"
+          }
+        ]
+      }
+    },
+    "CancelImportTask": {
+      "ImportTaskId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportSnapshotTask",
+            "resourceIdentifier": "ImportTaskId"
+          }
+        ]
+      }
+    },
+    "CancelReservedInstancesListing": {
+      "ReservedInstancesListingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesListing",
+            "resourceIdentifier": "ReservedInstancesListingId"
+          }
+        ]
+      }
+    },
+    "CancelSpotFleetRequests": {
+      "SpotFleetRequestIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestId"
+          }
+        ]
+      }
+    },
+    "CancelSpotInstanceRequests": {
+      "SpotInstanceRequestIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "SpotInstanceRequestId"
+          }
+        ]
+      }
+    },
+    "ConfirmProductInstance": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "ProductCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "ProductCodes"
+          }
+        ]
+      }
+    },
+    "CopyFpgaImage": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      }
+    },
+    "CopyImage": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Encrypted": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "Encrypted"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "CopySnapshot": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Encrypted": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "Encrypted"
+          }
+        ]
+      },
+      "KmsKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "KmsKeyId"
+          }
+        ]
+      }
+    },
+    "DeleteCustomerGateway": {
+      "CustomerGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnConnection",
+            "resourceIdentifier": "CustomerGatewayId"
+          }
+        ]
+      }
+    },
+    "DeleteDhcpOptions": {
+      "DhcpOptionsId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "DhcpOptionsId"
+          }
+        ]
+      }
+    },
+    "DeleteEgressOnlyInternetGateway": {
+      "EgressOnlyInternetGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EgressOnlyInternetGateway",
+            "resourceIdentifier": "EgressOnlyInternetGatewayId"
+          }
+        ]
+      }
+    },
+    "DeleteFleets": {
+      "FleetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DeleteFlowLogs": {
+      "FlowLogIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FlowLog",
+            "resourceIdentifier": "FlowLogId"
+          }
+        ]
+      }
+    },
+    "DeleteFpgaImage": {
+      "FpgaImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FpgaImage",
+            "resourceIdentifier": "FpgaImageId"
+          }
+        ]
+      }
+    },
+    "DeleteInternetGateway": {
+      "InternetGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InternetGateway",
+            "resourceIdentifier": "InternetGatewayId"
+          }
+        ]
+      }
+    },
+    "DeleteKeyPair": {
+      "KeyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "KeyPair",
+            "resourceIdentifier": "KeyName"
+          }
+        ]
+      }
+    },
+    "DeleteLaunchTemplate": {
+      "LaunchTemplateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      },
+      "LaunchTemplateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateName"
+          }
+        ]
+      }
+    },
+    "DeleteLaunchTemplateVersions": {
+      "LaunchTemplateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      },
+      "LaunchTemplateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateName"
+          }
+        ]
+      }
+    },
+    "DeleteNatGateway": {
+      "NatGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NatGateway",
+            "resourceIdentifier": "NatGatewayId"
+          }
+        ]
+      }
+    },
+    "DeleteNetworkAcl": {
+      "NetworkAclId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkAcl",
+            "resourceIdentifier": "NetworkAclId"
+          }
+        ]
+      }
+    },
+    "DeleteNetworkAclEntry": {
+      "NetworkAclId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkAcl",
+            "resourceIdentifier": "NetworkAclId"
+          }
+        ]
+      }
+    },
+    "DeleteNetworkInterface": {
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      }
+    },
+    "DeleteNetworkInterfacePermission": {
+      "NetworkInterfacePermissionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterfacePermission",
+            "resourceIdentifier": "NetworkInterfacePermissionId"
+          }
+        ]
+      }
+    },
+    "DeletePlacementGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DeleteRoute": {
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      }
+    },
+    "DeleteRouteTable": {
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      }
+    },
+    "DeleteSecurityGroup": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DeleteSnapshot": {
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "DeleteSubnet": {
+      "SubnetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "SubnetId"
+          }
+        ]
+      }
+    },
+    "DeleteTags": {
+      "Resources": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      },
+      "Tags": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "Tags"
+          }
+        ]
+      }
+    },
+    "DeleteVolume": {
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DeleteVpc": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcEndpointConnectionNotifications": {
+      "ConnectionNotificationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointConnectionNotification",
+            "resourceIdentifier": "ConnectionNotificationId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcEndpointServiceConfigurations": {
+      "ServiceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcEndpoints": {
+      "VpcEndpointIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "VpcEndpointId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "DeleteVpnConnection": {
+      "VpnConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnConnection",
+            "resourceIdentifier": "VpnConnectionId"
+          }
+        ]
+      }
+    },
+    "DeleteVpnConnectionRoute": {
+      "VpnConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnConnection",
+            "resourceIdentifier": "VpnConnectionId"
+          }
+        ]
+      }
+    },
+    "DeleteVpnGateway": {
+      "VpnGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "VpnGatewayId"
+          }
+        ]
+      }
+    },
+    "DeregisterImage": {
+      "ImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      }
+    },
+    "DescribeAccountAttributes": {
+      "AttributeNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AccountAttribute",
+            "resourceIdentifier": "AttributeName"
+          }
+        ]
+      }
+    },
+    "DescribeAddresses": {
+      "PublicIps": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      },
+      "AllocationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AllocationId"
+          }
+        ]
+      }
+    },
+    "DescribeAvailabilityZones": {
+      "ZoneNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AvailabilityZone",
+            "resourceIdentifier": "ZoneName"
+          }
+        ]
+      }
+    },
+    "DescribeBundleTasks": {
+      "BundleIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BundleTask",
+            "resourceIdentifier": "BundleId"
+          }
+        ]
+      }
+    },
+    "DescribeClassicLinkInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeConversionTasks": {
+      "ConversionTaskIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ConversionTask",
+            "resourceIdentifier": "ConversionTaskId"
+          }
+        ]
+      }
+    },
+    "DescribeCustomerGateways": {
+      "CustomerGatewayIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnConnection",
+            "resourceIdentifier": "CustomerGatewayId"
+          }
+        ]
+      }
+    },
+    "DescribeDhcpOptions": {
+      "DhcpOptionsIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "DhcpOptionsId"
+          }
+        ]
+      }
+    },
+    "DescribeEgressOnlyInternetGateways": {
+      "EgressOnlyInternetGatewayIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EgressOnlyInternetGateway",
+            "resourceIdentifier": "EgressOnlyInternetGatewayId"
+          }
+        ]
+      }
+    },
+    "DescribeElasticGpus": {
+      "ElasticGpuIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ElasticGpu",
+            "resourceIdentifier": "ElasticGpuId"
+          }
+        ]
+      }
+    },
+    "DescribeExportTasks": {
+      "ExportTaskIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ExportTask",
+            "resourceIdentifier": "ExportTaskId"
+          }
+        ]
+      }
+    },
+    "DescribeFleetHistory": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      }
+    },
+    "DescribeFleetInstances": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFleets": {
+      "FleetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFlowLogs": {
+      "FlowLogIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FlowLog",
+            "resourceIdentifier": "FlowLogId"
+          }
+        ]
+      }
+    },
+    "DescribeFpgaImageAttribute": {
+      "FpgaImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FpgaImage",
+            "resourceIdentifier": "FpgaImageId"
+          }
+        ]
+      }
+    },
+    "DescribeFpgaImages": {
+      "FpgaImageIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FpgaImage",
+            "resourceIdentifier": "FpgaImageId"
+          }
+        ]
+      }
+    },
+    "DescribeHostReservationOfferings": {
+      "OfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HostReservation",
+            "resourceIdentifier": "OfferingId"
+          }
+        ]
+      }
+    },
+    "DescribeHostReservations": {
+      "HostReservationIdSet": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "HostReservationId"
+          }
+        ]
+      }
+    },
+    "DescribeHosts": {
+      "HostIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "HostId"
+          }
+        ]
+      }
+    },
+    "DescribeIamInstanceProfileAssociations": {
+      "AssociationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DescribeIdFormat": {
+      "Resource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      }
+    },
+    "DescribeIdentityIdFormat": {
+      "Resource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      }
+    },
+    "DescribeImageAttribute": {
+      "ImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      }
+    },
+    "DescribeImages": {
+      "ImageIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      }
+    },
+    "DescribeImportImageTasks": {
+      "ImportTaskIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportSnapshotTask",
+            "resourceIdentifier": "ImportTaskId"
+          }
+        ]
+      }
+    },
+    "DescribeImportSnapshotTasks": {
+      "ImportTaskIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportSnapshotTask",
+            "resourceIdentifier": "ImportTaskId"
+          }
+        ]
+      }
+    },
+    "DescribeInstanceAttribute": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInstanceCreditSpecifications": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInstanceStatus": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeInternetGateways": {
+      "InternetGatewayIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InternetGateway",
+            "resourceIdentifier": "InternetGatewayId"
+          }
+        ]
+      }
+    },
+    "DescribeKeyPairs": {
+      "KeyNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "KeyPair",
+            "resourceIdentifier": "KeyName"
+          }
+        ]
+      }
+    },
+    "DescribeLaunchTemplateVersions": {
+      "LaunchTemplateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      },
+      "LaunchTemplateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateName"
+          }
+        ]
+      }
+    },
+    "DescribeLaunchTemplates": {
+      "LaunchTemplateIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      },
+      "LaunchTemplateNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateName"
+          }
+        ]
+      }
+    },
+    "DescribeMovingAddresses": {
+      "PublicIps": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      }
+    },
+    "DescribeNatGateways": {
+      "NatGatewayIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NatGateway",
+            "resourceIdentifier": "NatGatewayId"
+          }
+        ]
+      }
+    },
+    "DescribeNetworkAcls": {
+      "NetworkAclIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkAcl",
+            "resourceIdentifier": "NetworkAclId"
+          }
+        ]
+      }
+    },
+    "DescribeNetworkInterfaceAttribute": {
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      }
+    },
+    "DescribeNetworkInterfacePermissions": {
+      "NetworkInterfacePermissionIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterfacePermission",
+            "resourceIdentifier": "NetworkInterfacePermissionId"
+          }
+        ]
+      }
+    },
+    "DescribeNetworkInterfaces": {
+      "NetworkInterfaceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "NetworkInterfaceIds"
+          }
+        ]
+      }
+    },
+    "DescribePlacementGroups": {
+      "GroupNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DescribePrefixLists": {
+      "PrefixListIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PrefixList",
+            "resourceIdentifier": "PrefixListId"
+          }
+        ]
+      }
+    },
+    "DescribePrincipalIdFormat": {
+      "Resources": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      }
+    },
+    "DescribeRegions": {
+      "RegionNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Region",
+            "resourceIdentifier": "RegionName"
+          }
+        ]
+      }
+    },
+    "DescribeReservedInstances": {
+      "OfferingClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "OfferingClass"
+          }
+        ]
+      },
+      "ReservedInstancesIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ReservedInstancesIds"
+          }
+        ]
+      },
+      "OfferingType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "OfferingType"
+          }
+        ]
+      }
+    },
+    "DescribeReservedInstancesListings": {
+      "ReservedInstancesId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesListing",
+            "resourceIdentifier": "ReservedInstancesId"
+          }
+        ]
+      },
+      "ReservedInstancesListingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesListing",
+            "resourceIdentifier": "ReservedInstancesListingId"
+          }
+        ]
+      }
+    },
+    "DescribeReservedInstancesModifications": {
+      "ReservedInstancesModificationIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ReservedInstancesModificationId"
+          }
+        ]
+      }
+    },
+    "DescribeReservedInstancesOfferings": {
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      },
+      "OfferingClass": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "OfferingClass"
+          }
+        ]
+      },
+      "ProductDescription": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "ProductDescription"
+          }
+        ]
+      },
+      "ReservedInstancesOfferingIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "ReservedInstancesOfferingId"
+          }
+        ]
+      },
+      "InstanceTenancy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "InstanceTenancy"
+          }
+        ]
+      },
+      "OfferingType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "OfferingType"
+          }
+        ]
+      }
+    },
+    "DescribeRouteTables": {
+      "RouteTableIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "RouteTableIds"
+          }
+        ]
+      }
+    },
+    "DescribeScheduledInstanceAvailability": {
+      "MaxSlotDurationInHours": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "SlotDurationInHours"
+          }
+        ]
+      },
+      "MinSlotDurationInHours": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "SlotDurationInHours"
+          }
+        ]
+      },
+      "Recurrence": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "Recurrence"
+          }
+        ]
+      }
+    },
+    "DescribeScheduledInstances": {
+      "ScheduledInstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "ScheduledInstanceId"
+          }
+        ]
+      }
+    },
+    "DescribeSecurityGroupReferences": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      }
+    },
+    "DescribeSecurityGroups": {
+      "GroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DescribeSnapshotAttribute": {
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "DescribeSnapshots": {
+      "OwnerIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "OwnerId"
+          }
+        ]
+      },
+      "SnapshotIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "DescribeSpotFleetInstances": {
+      "SpotFleetRequestId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestId"
+          }
+        ]
+      }
+    },
+    "DescribeSpotFleetRequestHistory": {
+      "SpotFleetRequestId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestId"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      }
+    },
+    "DescribeSpotFleetRequests": {
+      "SpotFleetRequestIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestId"
+          }
+        ]
+      }
+    },
+    "DescribeSpotInstanceRequests": {
+      "SpotInstanceRequestIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "SpotInstanceRequestId"
+          }
+        ]
+      }
+    },
+    "DescribeSpotPriceHistory": {
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "EndTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "EndTime"
+          }
+        ]
+      },
+      "InstanceTypes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      },
+      "ProductDescriptions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "ProductDescription"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      }
+    },
+    "DescribeStaleSecurityGroups": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DescribeSubnets": {
+      "SubnetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "SubnetIds"
+          }
+        ]
+      }
+    },
+    "DescribeVolumeAttribute": {
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DescribeVolumeStatus": {
+      "VolumeIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DescribeVolumes": {
+      "VolumeIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DescribeVolumesModifications": {
+      "VolumeIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcAttribute": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcClassicLink": {
+      "VpcIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcClassicLinkDnsSupport": {
+      "VpcIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcEndpointConnectionNotifications": {
+      "ConnectionNotificationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointConnectionNotification",
+            "resourceIdentifier": "ConnectionNotificationId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcEndpointServiceConfigurations": {
+      "ServiceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcEndpointServicePermissions": {
+      "ServiceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcEndpointServices": {
+      "ServiceNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "ServiceName"
+          }
+        ]
+      }
+    },
+    "DescribeVpcEndpoints": {
+      "VpcEndpointIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "VpcEndpointId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcPeeringConnections": {
+      "VpcPeeringConnectionIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcs": {
+      "VpcIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DescribeVpnConnections": {
+      "VpnConnectionIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnConnection",
+            "resourceIdentifier": "VpnConnectionId"
+          }
+        ]
+      }
+    },
+    "DescribeVpnGateways": {
+      "VpnGatewayIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "VpnGatewayId"
+          }
+        ]
+      }
+    },
+    "DetachClassicLinkVpc": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DetachInternetGateway": {
+      "InternetGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InternetGateway",
+            "resourceIdentifier": "InternetGatewayId"
+          }
+        ]
+      },
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DetachNetworkInterface": {
+      "AttachmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "Attachment"
+          }
+        ]
+      }
+    },
+    "DetachVolume": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "DetachVpnGateway": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      },
+      "VpnGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "VpnGatewayId"
+          }
+        ]
+      }
+    },
+    "DisableVgwRoutePropagation": {
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      }
+    },
+    "DisableVpcClassicLink": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DisableVpcClassicLinkDnsSupport": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "DisassociateAddress": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      },
+      "PublicIp": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      }
+    },
+    "DisassociateIamInstanceProfile": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DisassociateRouteTable": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DisassociateSubnetCidrBlock": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "DisassociateVpcCidrBlock": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "EnableVgwRoutePropagation": {
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      }
+    },
+    "EnableVolumeIO": {
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "EnableVpcClassicLink": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "EnableVpcClassicLinkDnsSupport": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "GetConsoleOutput": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetConsoleScreenshot": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetHostReservationPurchasePreview": {
+      "HostIdSet": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HostReservation",
+            "resourceIdentifier": "HostIdSet"
+          }
+        ]
+      },
+      "OfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HostReservation",
+            "resourceIdentifier": "OfferingId"
+          }
+        ]
+      }
+    },
+    "GetLaunchTemplateData": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetPasswordData": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "GetReservedInstancesExchangeQuote": {
+      "ReservedInstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesListing",
+            "resourceIdentifier": "ReservedInstancesId"
+          }
+        ]
+      }
+    },
+    "ImportImage": {
+      "Architecture": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "Architecture"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Hypervisor": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "Hypervisor"
+          }
+        ]
+      },
+      "LicenseType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "LicenseType"
+          }
+        ]
+      },
+      "Platform": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "Platform"
+          }
+        ]
+      }
+    },
+    "ImportInstance": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "LaunchSpecification": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "LaunchSpecification"
+          }
+        ]
+      },
+      "Platform": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "Platform"
+          }
+        ]
+      }
+    },
+    "ImportKeyPair": {
+      "KeyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "KeyPair",
+            "resourceIdentifier": "KeyName"
+          }
+        ]
+      }
+    },
+    "ImportSnapshot": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "ImportVolume": {
+      "AvailabilityZone": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "AvailabilityZone"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "ModifyFleet": {
+      "ExcessCapacityTerminationPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "ExcessCapacityTerminationPolicy"
+          }
+        ]
+      },
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "TargetCapacitySpecification": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "TargetCapacitySpecification"
+          }
+        ]
+      }
+    },
+    "ModifyFpgaImageAttribute": {
+      "FpgaImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FpgaImage",
+            "resourceIdentifier": "FpgaImageId"
+          }
+        ]
+      },
+      "ProductCodes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "ProductCodes"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ModifyHosts": {
+      "AutoPlacement": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "AutoPlacement"
+          }
+        ]
+      },
+      "HostIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "HostId"
+          }
+        ]
+      }
+    },
+    "ModifyIdFormat": {
+      "Resource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      },
+      "UseLongIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "UseLongIds"
+          }
+        ]
+      }
+    },
+    "ModifyIdentityIdFormat": {
+      "Resource": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "Resource"
+          }
+        ]
+      },
+      "UseLongIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdFormat",
+            "resourceIdentifier": "UseLongIds"
+          }
+        ]
+      }
+    },
+    "ModifyImageAttribute": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "ImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      },
+      "ProductCodes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "ProductCodes"
+          }
+        ]
+      },
+      "Value": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "Value"
+          }
+        ]
+      }
+    },
+    "ModifyInstanceAttribute": {
+      "SourceDestCheck": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "SourceDestCheck"
+          }
+        ]
+      },
+      "BlockDeviceMappings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "BlockDeviceMappings"
+          }
+        ]
+      },
+      "EnaSupport": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "EnaSupport"
+          }
+        ]
+      },
+      "Groups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "Groups"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      },
+      "SriovNetSupport": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "SriovNetSupport"
+          }
+        ]
+      },
+      "Value": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Tag",
+            "resourceIdentifier": "Value"
+          }
+        ]
+      }
+    },
+    "ModifyInstanceCreditSpecification": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      }
+    },
+    "ModifyInstancePlacement": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "HostId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "HostId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "ModifyLaunchTemplate": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "LaunchTemplateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      },
+      "LaunchTemplateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateName"
+          }
+        ]
+      },
+      "DefaultVersion": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplateVersion",
+            "resourceIdentifier": "DefaultVersion"
+          }
+        ]
+      }
+    },
+    "ModifyNetworkInterfaceAttribute": {
+      "Attachment": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "Attachment"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Groups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "Groups"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "SourceDestCheck": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "SourceDestCheck"
+          }
+        ]
+      }
+    },
+    "ModifyReservedInstances": {
+      "ReservedInstancesIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ReservedInstancesIds"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      }
+    },
+    "ModifySnapshotAttribute": {
+      "GroupNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "ModifySpotFleetRequest": {
+      "ExcessCapacityTerminationPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "ExcessCapacityTerminationPolicy"
+          }
+        ]
+      },
+      "SpotFleetRequestId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestId"
+          }
+        ]
+      }
+    },
+    "ModifySubnetAttribute": {
+      "AssignIpv6AddressOnCreation": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "AssignIpv6AddressOnCreation"
+          }
+        ]
+      },
+      "MapPublicIpOnLaunch": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "MapPublicIpOnLaunch"
+          }
+        ]
+      },
+      "SubnetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "SubnetId"
+          }
+        ]
+      }
+    },
+    "ModifyVolume": {
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      },
+      "Size": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "Size"
+          }
+        ]
+      },
+      "VolumeType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeType"
+          }
+        ]
+      },
+      "Iops": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "Iops"
+          }
+        ]
+      }
+    },
+    "ModifyVolumeAttribute": {
+      "VolumeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "VolumeId"
+          }
+        ]
+      }
+    },
+    "ModifyVpcAttribute": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      }
+    },
+    "ModifyVpcEndpoint": {
+      "VpcEndpointId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "VpcEndpointId"
+          }
+        ]
+      },
+      "PolicyDocument": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "PolicyDocument"
+          }
+        ]
+      },
+      "PrivateDnsEnabled": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "PrivateDnsEnabled"
+          }
+        ]
+      }
+    },
+    "ModifyVpcEndpointConnectionNotification": {
+      "ConnectionNotificationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointConnectionNotification",
+            "resourceIdentifier": "ConnectionNotificationId"
+          }
+        ]
+      },
+      "ConnectionNotificationArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointConnectionNotification",
+            "resourceIdentifier": "ConnectionNotificationArn"
+          }
+        ]
+      },
+      "ConnectionEvents": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointConnectionNotification",
+            "resourceIdentifier": "ConnectionEvents"
+          }
+        ]
+      }
+    },
+    "ModifyVpcEndpointServiceConfiguration": {
+      "ServiceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      },
+      "AcceptanceRequired": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "AcceptanceRequired"
+          }
+        ]
+      },
+      "AddNetworkLoadBalancerArns": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "NetworkLoadBalancerArns"
+          }
+        ]
+      }
+    },
+    "ModifyVpcEndpointServicePermissions": {
+      "ServiceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      }
+    },
+    "ModifyVpcPeeringConnectionOptions": {
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "ModifyVpcTenancy": {
+      "VpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "VpcId"
+          }
+        ]
+      },
+      "InstanceTenancy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "InstanceTenancy"
+          }
+        ]
+      }
+    },
+    "MonitorInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "MoveAddressToVpc": {
+      "PublicIp": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      }
+    },
+    "PurchaseHostReservation": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "CurrencyCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "CurrencyCode"
+          }
+        ]
+      },
+      "HostIdSet": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HostReservation",
+            "resourceIdentifier": "HostIdSet"
+          }
+        ]
+      },
+      "OfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HostReservation",
+            "resourceIdentifier": "OfferingId"
+          }
+        ]
+      }
+    },
+    "PurchaseReservedInstancesOffering": {
+      "InstanceCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "InstanceCount"
+          }
+        ]
+      },
+      "ReservedInstancesOfferingId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesOffering",
+            "resourceIdentifier": "ReservedInstancesOfferingId"
+          }
+        ]
+      }
+    },
+    "PurchaseScheduledInstances": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      }
+    },
+    "RebootInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "RegisterImage": {
+      "ImageLocation": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "ImageLocation"
+          }
+        ]
+      },
+      "Architecture": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "Architecture"
+          }
+        ]
+      },
+      "BlockDeviceMappings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "BlockDeviceMappings"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "EnaSupport": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "EnaSupport"
+          }
+        ]
+      },
+      "KernelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "KernelId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "RamdiskId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "RamdiskId"
+          }
+        ]
+      },
+      "RootDeviceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "RootDeviceName"
+          }
+        ]
+      },
+      "SriovNetSupport": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "SriovNetSupport"
+          }
+        ]
+      },
+      "VirtualizationType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "VirtualizationType"
+          }
+        ]
+      }
+    },
+    "RejectVpcEndpointConnections": {
+      "ServiceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpointServiceConfiguration",
+            "resourceIdentifier": "ServiceId"
+          }
+        ]
+      },
+      "VpcEndpointIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcEndpoint",
+            "resourceIdentifier": "VpcEndpointId"
+          }
+        ]
+      }
+    },
+    "RejectVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "ReleaseAddress": {
+      "AllocationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Addresse",
+            "resourceIdentifier": "AllocationId"
+          }
+        ]
+      },
+      "PublicIp": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      }
+    },
+    "ReleaseHosts": {
+      "HostIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Host",
+            "resourceIdentifier": "HostId"
+          }
+        ]
+      }
+    },
+    "ReplaceIamInstanceProfileAssociation": {
+      "IamInstanceProfile": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "IamInstanceProfile"
+          }
+        ]
+      },
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      }
+    },
+    "ReplaceNetworkAclAssociation": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      },
+      "NetworkAclId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkAcl",
+            "resourceIdentifier": "NetworkAclId"
+          }
+        ]
+      }
+    },
+    "ReplaceNetworkAclEntry": {
+      "CidrBlock": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Vpc",
+            "resourceIdentifier": "CidrBlock"
+          }
+        ]
+      },
+      "NetworkAclId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkAcl",
+            "resourceIdentifier": "NetworkAclId"
+          }
+        ]
+      }
+    },
+    "ReplaceRoute": {
+      "EgressOnlyInternetGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EgressOnlyInternetGateway",
+            "resourceIdentifier": "EgressOnlyInternetGatewayId"
+          }
+        ]
+      },
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      },
+      "NatGatewayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NatGateway",
+            "resourceIdentifier": "NatGatewayId"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      },
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "ReplaceRouteTableAssociation": {
+      "AssociationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "AssociationId"
+          }
+        ]
+      },
+      "RouteTableId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RouteTable",
+            "resourceIdentifier": "RouteTableId"
+          }
+        ]
+      }
+    },
+    "ReportInstanceStatus": {
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Snapshot",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "EndTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "EndTime"
+          }
+        ]
+      },
+      "Instances": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Instance",
+            "resourceIdentifier": "Instances"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VolumesModification",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "RequestSpotFleet": {
+      "SpotFleetRequestConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotFleetRequest",
+            "resourceIdentifier": "SpotFleetRequestConfig"
+          }
+        ]
+      }
+    },
+    "RequestSpotInstances": {
+      "AvailabilityZoneGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "AvailabilityZoneGroup"
+          }
+        ]
+      },
+      "BlockDurationMinutes": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "BlockDurationMinutes"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "InstanceCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "InstanceCount"
+          }
+        ]
+      },
+      "LaunchGroup": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "LaunchGroup"
+          }
+        ]
+      },
+      "LaunchSpecification": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "LaunchSpecification"
+          }
+        ]
+      },
+      "SpotPrice": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "SpotPrice"
+          }
+        ]
+      },
+      "Type": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpnGateway",
+            "resourceIdentifier": "Type"
+          }
+        ]
+      },
+      "ValidFrom": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "ValidFrom"
+          }
+        ]
+      },
+      "ValidUntil": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "ValidUntil"
+          }
+        ]
+      },
+      "InstanceInterruptionBehavior": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceInterruptionBehavior"
+          }
+        ]
+      }
+    },
+    "ResetFpgaImageAttribute": {
+      "FpgaImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FpgaImage",
+            "resourceIdentifier": "FpgaImageId"
+          }
+        ]
+      }
+    },
+    "ResetImageAttribute": {
+      "ImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      }
+    },
+    "ResetInstanceAttribute": {
+      "InstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "ResetNetworkInterfaceAttribute": {
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "SourceDestCheck": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "SourceDestCheck"
+          }
+        ]
+      }
+    },
+    "ResetSnapshotAttribute": {
+      "SnapshotId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "SnapshotId"
+          }
+        ]
+      }
+    },
+    "RestoreAddressToClassic": {
+      "PublicIp": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MovingAddresse",
+            "resourceIdentifier": "PublicIp"
+          }
+        ]
+      }
+    },
+    "RevokeSecurityGroupEgress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    },
+    "RevokeSecurityGroupIngress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    },
+    "RunInstances": {
+      "BlockDeviceMappings": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "BlockDeviceMappings"
+          }
+        ]
+      },
+      "ImageId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ImportImageTask",
+            "resourceIdentifier": "ImageId"
+          }
+        ]
+      },
+      "InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotPriceHistory",
+            "resourceIdentifier": "InstanceType"
+          }
+        ]
+      },
+      "Ipv6Addresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "Ipv6Addresses"
+          }
+        ]
+      },
+      "KernelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "KernelId"
+          }
+        ]
+      },
+      "KeyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "KeyPair",
+            "resourceIdentifier": "KeyName"
+          }
+        ]
+      },
+      "RamdiskId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Image",
+            "resourceIdentifier": "RamdiskId"
+          }
+        ]
+      },
+      "SubnetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Subnet",
+            "resourceIdentifier": "SubnetId"
+          }
+        ]
+      },
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "IamInstanceProfile": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IamInstanceProfileAssociation",
+            "resourceIdentifier": "IamInstanceProfile"
+          }
+        ]
+      },
+      "NetworkInterfaces": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "PrivateIpAddress": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "PrivateIpAddress"
+          }
+        ]
+      },
+      "LaunchTemplate": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LaunchTemplate",
+            "resourceIdentifier": "LaunchTemplateId"
+          }
+        ]
+      }
+    },
+    "RunScheduledInstances": {
+      "ClientToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReservedInstancesModification",
+            "resourceIdentifier": "ClientToken"
+          }
+        ]
+      },
+      "InstanceCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "InstanceCount"
+          }
+        ]
+      },
+      "LaunchSpecification": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "LaunchSpecification"
+          }
+        ]
+      },
+      "ScheduledInstanceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ScheduledInstance",
+            "resourceIdentifier": "ScheduledInstanceId"
+          }
+        ]
+      }
+    },
+    "StartInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "StopInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "TerminateInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "UnassignIpv6Addresses": {
+      "Ipv6Addresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "Ipv6Addresses"
+          }
+        ]
+      },
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      }
+    },
+    "UnassignPrivateIpAddresses": {
+      "NetworkInterfaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "NetworkInterfaceId"
+          }
+        ]
+      },
+      "PrivateIpAddresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NetworkInterface",
+            "resourceIdentifier": "PrivateIpAddresses"
+          }
+        ]
+      }
+    },
+    "UnmonitorInstances": {
+      "InstanceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SpotInstanceRequest",
+            "resourceIdentifier": "InstanceId"
+          }
+        ]
+      }
+    },
+    "UpdateSecurityGroupRuleDescriptionsEgress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    },
+    "UpdateSecurityGroupRuleDescriptionsIngress": {
+      "GroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupId"
+          }
+        ]
+      },
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "IpPermissions": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SecurityGroup",
+            "resourceIdentifier": "IpPermissions"
+          }
+        ]
+      }
+    }
+  }
+}

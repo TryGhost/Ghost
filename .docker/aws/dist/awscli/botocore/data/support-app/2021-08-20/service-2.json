@@ -1,0 +1,661 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-08-20",
+    "endpointPrefix":"supportapp",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceAbbreviation":"SupportApp",
+    "serviceFullName":"AWS Support App",
+    "serviceId":"Support App",
+    "signatureVersion":"v4",
+    "signingName":"supportapp",
+    "uid":"support-app-2021-08-20"
+  },
+  "operations":{
+    "CreateSlackChannelConfiguration":{
+      "name":"CreateSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/create-slack-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSlackChannelConfigurationRequest"},
+      "output":{"shape":"CreateSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a Slack channel configuration for your Amazon Web Services account.</p> <note> <ul> <li> <p>You can add up to 5 Slack workspaces for your account.</p> </li> <li> <p>You can add up to 20 Slack channels for your account.</p> </li> </ul> </note> <p>A Slack channel can have up to 100 Amazon Web Services accounts. This means that only 100 accounts can add the same Slack channel to the Amazon Web Services Support App. We recommend that you only add the accounts that you need to manage support cases for your organization. This can reduce the notifications about case updates that you receive in the Slack channel.</p> <note> <p>We recommend that you choose a private Slack channel so that only members in that channel have read and write access to your support cases. Anyone in your Slack channel can create, update, or resolve support cases for your account. Users require an invitation to join private channels. </p> </note>"
+    },
+    "DeleteAccountAlias":{
+      "name":"DeleteAccountAlias",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/delete-account-alias",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteAccountAliasRequest"},
+      "output":{"shape":"DeleteAccountAliasResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes an alias for an Amazon Web Services account ID. The alias appears in the Amazon Web Services Support App page of the Amazon Web Services Support Center. The alias also appears in Slack messages from the Amazon Web Services Support App.</p>"
+    },
+    "DeleteSlackChannelConfiguration":{
+      "name":"DeleteSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/delete-slack-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSlackChannelConfigurationRequest"},
+      "output":{"shape":"DeleteSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a Slack channel configuration from your Amazon Web Services account. This operation doesn't delete your Slack channel.</p>"
+    },
+    "DeleteSlackWorkspaceConfiguration":{
+      "name":"DeleteSlackWorkspaceConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/delete-slack-workspace-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSlackWorkspaceConfigurationRequest"},
+      "output":{"shape":"DeleteSlackWorkspaceConfigurationResult"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a Slack workspace configuration from your Amazon Web Services account. This operation doesn't delete your Slack workspace.</p>"
+    },
+    "GetAccountAlias":{
+      "name":"GetAccountAlias",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/get-account-alias",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAccountAliasRequest"},
+      "output":{"shape":"GetAccountAliasResult"},
+      "errors":[
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the alias from an Amazon Web Services account ID. The alias appears in the Amazon Web Services Support App page of the Amazon Web Services Support Center. The alias also appears in Slack messages from the Amazon Web Services Support App.</p>"
+    },
+    "ListSlackChannelConfigurations":{
+      "name":"ListSlackChannelConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/list-slack-channel-configurations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSlackChannelConfigurationsRequest"},
+      "output":{"shape":"ListSlackChannelConfigurationsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the Slack channel configurations for an Amazon Web Services account.</p>"
+    },
+    "ListSlackWorkspaceConfigurations":{
+      "name":"ListSlackWorkspaceConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/list-slack-workspace-configurations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSlackWorkspaceConfigurationsRequest"},
+      "output":{"shape":"ListSlackWorkspaceConfigurationsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the Slack workspace configurations for an Amazon Web Services account.</p>"
+    },
+    "PutAccountAlias":{
+      "name":"PutAccountAlias",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/put-account-alias",
+        "responseCode":200
+      },
+      "input":{"shape":"PutAccountAliasRequest"},
+      "output":{"shape":"PutAccountAliasResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates or updates an individual alias for each Amazon Web Services account ID. The alias appears in the Amazon Web Services Support App page of the Amazon Web Services Support Center. The alias also appears in Slack messages from the Amazon Web Services Support App.</p>"
+    },
+    "RegisterSlackWorkspaceForOrganization":{
+      "name":"RegisterSlackWorkspaceForOrganization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/register-slack-workspace-for-organization",
+        "responseCode":200
+      },
+      "input":{"shape":"RegisterSlackWorkspaceForOrganizationRequest"},
+      "output":{"shape":"RegisterSlackWorkspaceForOrganizationResult"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Registers a Slack workspace for your Amazon Web Services account. To call this API, your account must be part of an organization in Organizations.</p> <p>If you're the <i>management account</i> and you want to register Slack workspaces for your organization, you must complete the following tasks:</p> <ol> <li> <p>Sign in to the <a href=\"https://console.aws.amazon.com/support/app\">Amazon Web Services Support Center</a> and authorize the Slack workspaces where you want your organization to have access to. See <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/authorize-slack-workspace.html\">Authorize a Slack workspace</a> in the <i>Amazon Web Services Support User Guide</i>.</p> </li> <li> <p>Call the <code>RegisterSlackWorkspaceForOrganization</code> API to authorize each Slack workspace for the organization.</p> </li> </ol> <p>After the management account authorizes the Slack workspace, member accounts can call this API to authorize the same Slack workspace for their individual accounts. Member accounts don't need to authorize the Slack workspace manually through the <a href=\"https://console.aws.amazon.com/support/app\">Amazon Web Services Support Center</a>.</p> <p>To use the Amazon Web Services Support App, each account must then complete the following tasks:</p> <ul> <li> <p>Create an Identity and Access Management (IAM) role with the required permission. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-permissions.html\">Managing access to the Amazon Web Services Support App</a>.</p> </li> <li> <p>Configure a Slack channel to use the Amazon Web Services Support App for support cases for that account. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/add-your-slack-channel.html\">Configuring a Slack channel</a>.</p> </li> </ul>"
+    },
+    "UpdateSlackChannelConfiguration":{
+      "name":"UpdateSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/control/update-slack-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSlackChannelConfigurationRequest"},
+      "output":{"shape":"UpdateSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates the configuration for a Slack channel, such as case update notifications.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>You don't have sufficient permission to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountType":{
+      "type":"string",
+      "enum":[
+        "management",
+        "member"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Your request has a conflict. For example, you might receive this error if you try the following:</p> <ul> <li> <p>Add, update, or delete a Slack channel configuration before you add a Slack workspace to your Amazon Web Services account.</p> </li> <li> <p>Add a Slack channel configuration that already exists in your Amazon Web Services account.</p> </li> <li> <p>Delete a Slack channel configuration for a live chat channel.</p> </li> <li> <p>Delete a Slack workspace from your Amazon Web Services account that has an active live chat channel.</p> </li> <li> <p>Call the <code>RegisterSlackWorkspaceForOrganization</code> API from an Amazon Web Services account that doesn't belong to an organization.</p> </li> <li> <p>Call the <code>RegisterSlackWorkspaceForOrganization</code> API from a member account, but the management account hasn't registered that workspace yet for the organization.</p> </li> </ul>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "channelId",
+        "channelRoleArn",
+        "notifyOnCaseSeverity",
+        "teamId"
+      ],
+      "members":{
+        "channelId":{
+          "shape":"channelId",
+          "documentation":"<p>The channel ID in Slack. This ID identifies a channel within a Slack workspace.</p>"
+        },
+        "channelName":{
+          "shape":"channelName",
+          "documentation":"<p>The name of the Slack channel that you configure for the Amazon Web Services Support App.</p>"
+        },
+        "channelRoleArn":{
+          "shape":"roleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations on Amazon Web Services. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-permissions.html\">Managing access to the Amazon Web Services Support App</a> in the <i>Amazon Web Services Support User Guide</i>.</p>"
+        },
+        "notifyOnAddCorrespondenceToCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case has a new correspondence.</p>"
+        },
+        "notifyOnCaseSeverity":{
+          "shape":"NotificationSeverityLevel",
+          "documentation":"<p>The case severity for a support case that you want to receive notifications.</p> <p>If you specify <code>high</code> or <code>all</code>, you must specify <code>true</code> for at least one of the following parameters:</p> <ul> <li> <p> <code>notifyOnAddCorrespondenceToCase</code> </p> </li> <li> <p> <code>notifyOnCreateOrReopenCase</code> </p> </li> <li> <p> <code>notifyOnResolveCase</code> </p> </li> </ul> <p>If you specify <code>none</code>, the following parameters must be null or <code>false</code>:</p> <ul> <li> <p> <code>notifyOnAddCorrespondenceToCase</code> </p> </li> <li> <p> <code>notifyOnCreateOrReopenCase</code> </p> </li> <li> <p> <code>notifyOnResolveCase</code> </p> </li> </ul> <note> <p>If you don't specify these parameters in your request, they default to <code>false</code>.</p> </note>"
+        },
+        "notifyOnCreateOrReopenCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is created or reopened.</p>"
+        },
+        "notifyOnResolveCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is resolved.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      }
+    },
+    "CreateSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteAccountAliasRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteAccountAliasResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "channelId",
+        "teamId"
+      ],
+      "members":{
+        "channelId":{
+          "shape":"channelId",
+          "documentation":"<p>The channel ID in Slack. This ID identifies a channel within a Slack workspace.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      }
+    },
+    "DeleteSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSlackWorkspaceConfigurationRequest":{
+      "type":"structure",
+      "required":["teamId"],
+      "members":{
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      }
+    },
+    "DeleteSlackWorkspaceConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetAccountAliasRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetAccountAliasResult":{
+      "type":"structure",
+      "members":{
+        "accountAlias":{
+          "shape":"awsAccountAlias",
+          "documentation":"<p>An alias or short name for an Amazon Web Services account.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ListSlackChannelConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"paginationToken",
+          "documentation":"<p>If the results of a search are large, the API only returns a portion of the results and includes a <code>nextToken</code> pagination token in the response. To retrieve the next batch of results, reissue the search request and include the returned token. When the API returns the last set of results, the response doesn't include a pagination token value.</p>"
+        }
+      }
+    },
+    "ListSlackChannelConfigurationsResult":{
+      "type":"structure",
+      "required":["slackChannelConfigurations"],
+      "members":{
+        "nextToken":{
+          "shape":"paginationToken",
+          "documentation":"<p>The point where pagination should resume when the response returns only partial results.</p>"
+        },
+        "slackChannelConfigurations":{
+          "shape":"slackChannelConfigurationList",
+          "documentation":"<p>The configurations for a Slack channel.</p>"
+        }
+      }
+    },
+    "ListSlackWorkspaceConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"paginationToken",
+          "documentation":"<p>If the results of a search are large, the API only returns a portion of the results and includes a <code>nextToken</code> pagination token in the response. To retrieve the next batch of results, reissue the search request and include the returned token. When the API returns the last set of results, the response doesn't include a pagination token value.</p>"
+        }
+      }
+    },
+    "ListSlackWorkspaceConfigurationsResult":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"paginationToken",
+          "documentation":"<p>The point where pagination should resume when the response returns only partial results.</p>"
+        },
+        "slackWorkspaceConfigurations":{
+          "shape":"SlackWorkspaceConfigurationList",
+          "documentation":"<p>The configurations for a Slack workspace.</p>"
+        }
+      }
+    },
+    "NotificationSeverityLevel":{
+      "type":"string",
+      "enum":[
+        "none",
+        "all",
+        "high"
+      ]
+    },
+    "PutAccountAliasRequest":{
+      "type":"structure",
+      "required":["accountAlias"],
+      "members":{
+        "accountAlias":{
+          "shape":"awsAccountAlias",
+          "documentation":"<p>An alias or short name for an Amazon Web Services account.</p>"
+        }
+      }
+    },
+    "PutAccountAliasResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "RegisterSlackWorkspaceForOrganizationRequest":{
+      "type":"structure",
+      "required":["teamId"],
+      "members":{
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>. Specify the Slack workspace that you want to use for your organization.</p>"
+        }
+      }
+    },
+    "RegisterSlackWorkspaceForOrganizationResult":{
+      "type":"structure",
+      "members":{
+        "accountType":{
+          "shape":"AccountType",
+          "documentation":"<p>Whether the Amazon Web Services account is a management or member account that's part of an organization in Organizations.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        },
+        "teamName":{
+          "shape":"teamName",
+          "documentation":"<p>The name of the Slack workspace.</p>"
+        }
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>The specified resource is missing or doesn't exist, such as an account alias, Slack channel configuration, or Slack workspace configuration.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Your Service Quotas request exceeds the quota for the service. For example, your Service Quotas request to Amazon Web Services Support App might exceed the maximum number of workspaces or channels per account, or the maximum number of accounts per Slack channel.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SlackChannelConfiguration":{
+      "type":"structure",
+      "required":[
+        "channelId",
+        "teamId"
+      ],
+      "members":{
+        "channelId":{
+          "shape":"channelId",
+          "documentation":"<p>The channel ID in Slack. This ID identifies a channel within a Slack workspace.</p>"
+        },
+        "channelName":{
+          "shape":"channelName",
+          "documentation":"<p>The name of the Slack channel that you configured with the Amazon Web Services Support App for your Amazon Web Services account.</p>"
+        },
+        "channelRoleArn":{
+          "shape":"roleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations on Amazon Web Services. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-permissions.html\">Managing access to the Amazon Web Services Support App</a> in the <i>Amazon Web Services Support User Guide</i>.</p>"
+        },
+        "notifyOnAddCorrespondenceToCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case has a new correspondence.</p>"
+        },
+        "notifyOnCaseSeverity":{
+          "shape":"NotificationSeverityLevel",
+          "documentation":"<p>The case severity for a support case that you want to receive notifications.</p>"
+        },
+        "notifyOnCreateOrReopenCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is created or reopened.</p>"
+        },
+        "notifyOnResolveCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is resolved.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for a Slack channel that you added for your Amazon Web Services account.</p>"
+    },
+    "SlackWorkspaceConfiguration":{
+      "type":"structure",
+      "required":["teamId"],
+      "members":{
+        "allowOrganizationMemberAccount":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether to allow member accounts to authorize Slack workspaces. Member accounts must be part of an organization in Organizations.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        },
+        "teamName":{
+          "shape":"teamName",
+          "documentation":"<p>The name of the Slack workspace.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for a Slack workspace that you added to an Amazon Web Services account.</p>"
+    },
+    "SlackWorkspaceConfigurationList":{
+      "type":"list",
+      "member":{"shape":"SlackWorkspaceConfiguration"}
+    },
+    "UpdateSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "channelId",
+        "teamId"
+      ],
+      "members":{
+        "channelId":{
+          "shape":"channelId",
+          "documentation":"<p>The channel ID in Slack. This ID identifies a channel within a Slack workspace.</p>"
+        },
+        "channelName":{
+          "shape":"channelName",
+          "documentation":"<p>The Slack channel name that you want to update.</p>"
+        },
+        "channelRoleArn":{
+          "shape":"roleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations on Amazon Web Services. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-permissions.html\">Managing access to the Amazon Web Services Support App</a> in the <i>Amazon Web Services Support User Guide</i>.</p>"
+        },
+        "notifyOnAddCorrespondenceToCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case has a new correspondence.</p>"
+        },
+        "notifyOnCaseSeverity":{
+          "shape":"NotificationSeverityLevel",
+          "documentation":"<p>The case severity for a support case that you want to receive notifications.</p> <p>If you specify <code>high</code> or <code>all</code>, at least one of the following parameters must be <code>true</code>:</p> <ul> <li> <p> <code>notifyOnAddCorrespondenceToCase</code> </p> </li> <li> <p> <code>notifyOnCreateOrReopenCase</code> </p> </li> <li> <p> <code>notifyOnResolveCase</code> </p> </li> </ul> <p>If you specify <code>none</code>, any of the following parameters that you specify in your request must be <code>false</code>:</p> <ul> <li> <p> <code>notifyOnAddCorrespondenceToCase</code> </p> </li> <li> <p> <code>notifyOnCreateOrReopenCase</code> </p> </li> <li> <p> <code>notifyOnResolveCase</code> </p> </li> </ul> <note> <p>If you don't specify these parameters in your request, the Amazon Web Services Support App uses the current values by default.</p> </note>"
+        },
+        "notifyOnCreateOrReopenCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is created or reopened.</p>"
+        },
+        "notifyOnResolveCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is resolved.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      }
+    },
+    "UpdateSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "channelId":{
+          "shape":"channelId",
+          "documentation":"<p>The channel ID in Slack. This ID identifies a channel within a Slack workspace.</p>"
+        },
+        "channelName":{
+          "shape":"channelName",
+          "documentation":"<p>The name of the Slack channel that you configure for the Amazon Web Services Support App.</p>"
+        },
+        "channelRoleArn":{
+          "shape":"roleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations on Amazon Web Services. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-permissions.html\">Managing access to the Amazon Web Services Support App</a> in the <i>Amazon Web Services Support User Guide</i>.</p>"
+        },
+        "notifyOnAddCorrespondenceToCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case has a new correspondence.</p>"
+        },
+        "notifyOnCaseSeverity":{
+          "shape":"NotificationSeverityLevel",
+          "documentation":"<p>The case severity for a support case that you want to receive notifications.</p>"
+        },
+        "notifyOnCreateOrReopenCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is created or reopened.</p>"
+        },
+        "notifyOnResolveCase":{
+          "shape":"booleanValue",
+          "documentation":"<p>Whether you want to get notified when a support case is resolved.</p>"
+        },
+        "teamId":{
+          "shape":"teamId",
+          "documentation":"<p>The team ID in Slack. This ID uniquely identifies a Slack workspace, such as <code>T012ABCDEFG</code>.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"errorMessage"}
+      },
+      "documentation":"<p>Your request input doesn't meet the constraints that the Amazon Web Services Support App specifies.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "awsAccountAlias":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "pattern":"^[\\w\\- ]+$"
+    },
+    "booleanValue":{
+      "type":"boolean",
+      "box":true
+    },
+    "channelId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^\\S+$"
+    },
+    "channelName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^.+$"
+    },
+    "errorMessage":{"type":"string"},
+    "paginationToken":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^\\S+$"
+    },
+    "roleArn":{
+      "type":"string",
+      "max":2048,
+      "min":31,
+      "pattern":"^arn:aws:iam::[0-9]{12}:role/(.+)$"
+    },
+    "slackChannelConfigurationList":{
+      "type":"list",
+      "member":{"shape":"SlackChannelConfiguration"}
+    },
+    "teamId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^\\S+$"
+    },
+    "teamName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^.+$"
+    }
+  },
+  "documentation":"<p><fullname>Amazon Web Services Support App in Slack</fullname> <p>You can use the Amazon Web Services Support App in Slack API to manage your support cases in Slack for your Amazon Web Services account. After you configure your Slack workspace and channel with the Amazon Web Services Support App, you can perform the following tasks directly in your Slack channel:</p> <ul> <li> <p>Create, search, update, and resolve your support cases</p> </li> <li> <p>Request service quota increases for your account</p> </li> <li> <p>Invite Amazon Web Services Support agents to your channel so that you can chat directly about your support cases</p> </li> </ul> <p>For more information about how to perform these actions in Slack, see the following documentation in the <i>Amazon Web Services Support User Guide</i>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/aws-support-app-for-slack.html\">Amazon Web Services Support App in Slack</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/joining-a-live-chat-session.html\">Joining a live chat session with Amazon Web Services Support</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/service-quota-increase.html\">Requesting service quota increases</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/support-app-commands.html\">Amazon Web Services Support App commands in Slack</a> </p> </li> </ul> <p>You can also use the Amazon Web Services Management Console instead of the Amazon Web Services Support App API to manage your Slack configurations. For more information, see <a href=\"https://docs.aws.amazon.com/awssupport/latest/user/authorize-slack-workspace.html\">Authorize a Slack workspace to enable the Amazon Web Services Support App</a>.</p> <note> <ul> <li> <p>You must have a Business or Enterprise Support plan to use the Amazon Web Services Support App API. </p> </li> <li> <p>For more information about the Amazon Web Services Support App endpoints, see the <a href=\"https://docs.aws.amazon.com/general/latest/gr/awssupport.html#awssupport_app_region\">Amazon Web Services Support App in Slack endpoints</a> in the <i>Amazon Web Services General Reference</i>.</p> </li> </ul> </note></p>"
+}

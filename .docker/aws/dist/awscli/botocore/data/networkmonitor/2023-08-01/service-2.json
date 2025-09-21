@@ -1,0 +1,1219 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-08-01",
+    "endpointPrefix":"networkmonitor",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon CloudWatch Network Monitor",
+    "serviceId":"NetworkMonitor",
+    "signatureVersion":"v4",
+    "signingName":"networkmonitor",
+    "uid":"networkmonitor-2023-08-01"
+  },
+  "operations":{
+    "CreateMonitor":{
+      "name":"CreateMonitor",
+      "http":{
+        "method":"POST",
+        "requestUri":"/monitors",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateMonitorInput"},
+      "output":{"shape":"CreateMonitorOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a monitor between a source subnet and destination IP address. Within a monitor you'll create one or more probes that monitor network traffic between your source Amazon Web Services VPC subnets and your destination IP addresses. Each probe then aggregates and sends metrics to Amazon CloudWatch.</p> <p>You can also create a monitor with probes using this command. For each probe, you define the following:</p> <ul> <li> <p> <code>source</code>—The subnet IDs where the probes will be created.</p> </li> <li> <p> <code>destination</code>— The target destination IP address for the probe.</p> </li> <li> <p> <code>destinationPort</code>—Required only if the protocol is <code>TCP</code>.</p> </li> <li> <p> <code>protocol</code>—The communication protocol between the source and destination. This will be either <code>TCP</code> or <code>ICMP</code>.</p> </li> <li> <p> <code>packetSize</code>—The size of the packets. This must be a number between <code>56</code> and <code>8500</code>.</p> </li> <li> <p>(Optional) <code>tags</code> —Key-value pairs created and assigned to the probe.</p> </li> </ul>",
+      "idempotent":true
+    },
+    "CreateProbe":{
+      "name":"CreateProbe",
+      "http":{
+        "method":"POST",
+        "requestUri":"/monitors/{monitorName}/probes",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateProbeInput"},
+      "output":{"shape":"CreateProbeOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Create a probe within a monitor. Once you create a probe, and it begins monitoring your network traffic, you'll incur billing charges for that probe. This action requires the <code>monitorName</code> parameter. Run <code>ListMonitors</code> to get a list of monitor names. Note the name of the <code>monitorName</code> you want to create the probe for.</p>",
+      "idempotent":true
+    },
+    "DeleteMonitor":{
+      "name":"DeleteMonitor",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteMonitorInput"},
+      "output":{"shape":"DeleteMonitorOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a specified monitor.</p> <p>This action requires the <code>monitorName</code> parameter. Run <code>ListMonitors</code> to get a list of monitor names. </p>",
+      "idempotent":true
+    },
+    "DeleteProbe":{
+      "name":"DeleteProbe",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/monitors/{monitorName}/probes/{probeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteProbeInput"},
+      "output":{"shape":"DeleteProbeOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Deletes the specified probe. Once a probe is deleted you'll no longer incur any billing fees for that probe.</p> <p>This action requires both the <code>monitorName</code> and <code>probeId</code> parameters. Run <code>ListMonitors</code> to get a list of monitor names. Run <code>GetMonitor</code> to get a list of probes and probe IDs. You can only delete a single probe at a time using this action. </p>",
+      "idempotent":true
+    },
+    "GetMonitor":{
+      "name":"GetMonitor",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMonitorInput"},
+      "output":{"shape":"GetMonitorOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details about a specific monitor. </p> <p>This action requires the <code>monitorName</code> parameter. Run <code>ListMonitors</code> to get a list of monitor names. </p>"
+    },
+    "GetProbe":{
+      "name":"GetProbe",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors/{monitorName}/probes/{probeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetProbeInput"},
+      "output":{"shape":"GetProbeOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the details about a probe. This action requires both the <code>monitorName</code> and <code>probeId</code> parameters. Run <code>ListMonitors</code> to get a list of monitor names. Run <code>GetMonitor</code> to get a list of probes and probe IDs. </p>"
+    },
+    "ListMonitors":{
+      "name":"ListMonitors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMonitorsInput"},
+      "output":{"shape":"ListMonitorsOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of all of your monitors.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Lists the tags assigned to this resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Adds key-value pairs to a monitor or probe.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Removes a key-value pair from a monitor or probe.</p>",
+      "idempotent":true
+    },
+    "UpdateMonitor":{
+      "name":"UpdateMonitor",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateMonitorInput"},
+      "output":{"shape":"UpdateMonitorOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates the <code>aggregationPeriod</code> for a monitor. Monitors support an <code>aggregationPeriod</code> of either <code>30</code> or <code>60</code> seconds. This action requires the <code>monitorName</code> and <code>probeId</code> parameter. Run <code>ListMonitors</code> to get a list of monitor names. </p>",
+      "idempotent":true
+    },
+    "UpdateProbe":{
+      "name":"UpdateProbe",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/monitors/{monitorName}/probes/{probeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateProbeInput"},
+      "output":{"shape":"UpdateProbeOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates a monitor probe. This action requires both the <code>monitorName</code> and <code>probeId</code> parameters. Run <code>ListMonitors</code> to get a list of monitor names. Run <code>GetMonitor</code> to get a list of probes and probe IDs. </p> <p>You can update the following para create a monitor with probes using this command. For each probe, you define the following:</p> <ul> <li> <p> <code>state</code>—The state of the probe.</p> </li> <li> <p> <code>destination</code>— The target destination IP address for the probe.</p> </li> <li> <p> <code>destinationPort</code>—Required only if the protocol is <code>TCP</code>.</p> </li> <li> <p> <code>protocol</code>—The communication protocol between the source and destination. This will be either <code>TCP</code> or <code>ICMP</code>.</p> </li> <li> <p> <code>packetSize</code>—The size of the packets. This must be a number between <code>56</code> and <code>8500</code>.</p> </li> <li> <p>(Optional) <code>tags</code> —Key-value pairs created and assigned to the probe.</p> </li> </ul>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AddressFamily":{
+      "type":"string",
+      "enum":[
+        "IPV4",
+        "IPV6"
+      ]
+    },
+    "AggregationPeriod":{
+      "type":"long",
+      "box":true,
+      "min":30
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:.*"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>This operation attempted to create a resource that already exists.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name identifying the monitor. It can contain only letters, underscores (_), or dashes (-), and can be up to 200 characters.</p>"
+        },
+        "probes":{
+          "shape":"CreateMonitorProbeInputList",
+          "documentation":"<p>Displays a list of all of the probes created for a monitor.</p>"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The time, in seconds, that metrics are aggregated and sent to Amazon CloudWatch. Valid values are either <code>30</code> or <code>60</code>. <code>60</code> is the default if no period is chosen.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure the idempotency of the request. Only returned if a client token was provided in the request.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs created and assigned to the monitor.</p>"
+        }
+      }
+    },
+    "CreateMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "state"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The ARN of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>"
+        },
+        "state":{
+          "shape":"MonitorState",
+          "documentation":"<p>The state of the monitor.</p>"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The number of seconds that metrics are aggregated by and sent to Amazon CloudWatch. This will be either <code>30</code> or <code>60</code>. </p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the monitor.</p>"
+        }
+      }
+    },
+    "CreateMonitorProbeInput":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the subnet.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The destination IP address. This must be either <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The port associated with the <code>destination</code>. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The protocol used for the network traffic between the <code>source</code> and <code>destination</code>. This must be either <code>TCP</code> or <code>ICMP</code>.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The size of the packets sent between the source and destination. This must be a number between <code>56</code> and <code>8500</code>.</p>"
+        },
+        "probeTags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs created and assigned to the monitor.</p>"
+        }
+      },
+      "documentation":"<p>Creates a monitor probe.</p>"
+    },
+    "CreateMonitorProbeInputList":{
+      "type":"list",
+      "member":{"shape":"CreateMonitorProbeInput"}
+    },
+    "CreateProbeInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "probe"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor to associated with the probe. </p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "probe":{
+          "shape":"ProbeInput",
+          "documentation":"<p>Describes the details of an individual probe for a monitor.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>Unique, case-sensitive identifier to ensure the idempotency of the request. Only returned if a client token was provided in the request.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs created and assigned to the probe.</p>"
+        }
+      }
+    },
+    "CreateProbeOutput":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe for which details are returned.</p>"
+        },
+        "probeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe.</p>"
+        },
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The destination IP address for the monitor. This must be either an IPv4 or IPv6 address.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The port associated with the <code>destination</code>. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The protocol used for the network traffic between the <code>source</code> and <code>destination</code>. This must be either <code>TCP</code> or <code>ICMP</code>.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The size of the packets sent between the source and destination. This must be a number between <code>56</code> and <code>8500</code>.</p>"
+        },
+        "addressFamily":{
+          "shape":"AddressFamily",
+          "documentation":"<p>Indicates whether the IP address is <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the source VPC or subnet.</p>"
+        },
+        "state":{
+          "shape":"ProbeState",
+          "documentation":"<p>The state of the probe.</p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date when the probe was last modified. </p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the probe.</p>"
+        }
+      }
+    },
+    "DeleteMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor to delete. </p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        }
+      }
+    },
+    "DeleteMonitorOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteProbeInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "probeId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor to delete. </p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe to delete. </p>",
+          "location":"uri",
+          "locationName":"probeId"
+        }
+      }
+    },
+    "DeleteProbeOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Destination":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "GetMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor that details are returned for.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        }
+      }
+    },
+    "GetMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "state",
+        "aggregationPeriod",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The ARN of the selected monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor. </p>"
+        },
+        "state":{
+          "shape":"MonitorState",
+          "documentation":"<p>Lists the status of the <code>state</code> of each monitor. </p>"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The aggregation period for the specified monitor.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the monitor.</p>"
+        },
+        "probes":{
+          "shape":"ProbeList",
+          "documentation":"<p>The details about each probe associated with that monitor. </p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date when the monitor was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date when the monitor was last modified.</p>"
+        }
+      }
+    },
+    "GetProbeInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "probeId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor associated with the probe. Run <code>ListMonitors</code> to get a list of monitor names.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe to get information about. Run <code>GetMonitor</code> action to get a list of probes and probe IDs for the monitor.</p>",
+          "location":"uri",
+          "locationName":"probeId"
+        }
+      }
+    },
+    "GetProbeOutput":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe for which details are returned.</p>"
+        },
+        "probeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe.</p>"
+        },
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The destination IP address for the monitor. This must be either an IPv4 or IPv6 address.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The port associated with the <code>destination</code>. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The protocol used for the network traffic between the <code>source</code> and <code>destination</code>. This must be either <code>TCP</code> or <code>ICMP</code>.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The size of the packets sent between the source and destination. This must be a number between <code>56</code> and <code>8500</code>.</p>"
+        },
+        "addressFamily":{
+          "shape":"AddressFamily",
+          "documentation":"<p>Indicates whether the IP address is <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the source VPC or subnet.</p>"
+        },
+        "state":{
+          "shape":"ProbeState",
+          "documentation":"<p>The state of the probe.</p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was last modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the probe.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "Iso8601Timestamp":{"type":"timestamp"},
+    "ListMonitorsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return with a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p> <p>If <code>MaxResults</code> is given a value larger than 100, only 100 results are returned.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "state":{
+          "shape":"String",
+          "documentation":"<p>The list of all monitors and their states.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        }
+      }
+    },
+    "ListMonitorsOutput":{
+      "type":"structure",
+      "required":["monitors"],
+      "members":{
+        "monitors":{
+          "shape":"MonitorList",
+          "documentation":"<p>Lists individual details about each of your monitors.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The </p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Lists the tags assigned to the resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "MonitorArn":{
+      "type":"string",
+      "max":512,
+      "min":20,
+      "pattern":"arn:.*"
+    },
+    "MonitorList":{
+      "type":"list",
+      "member":{"shape":"MonitorSummary"}
+    },
+    "MonitorState":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "ACTIVE",
+        "INACTIVE",
+        "ERROR",
+        "DELETING"
+      ]
+    },
+    "MonitorSummary":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "state"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The ARN of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>"
+        },
+        "state":{
+          "shape":"MonitorState",
+          "documentation":"<p>The state of the monitor.</p>"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The time, in seconds, that metrics are collected and sent to Amazon CloudWatch. Valid values are either <code>30</code> or <code>60</code>.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the monitor.</p>"
+        }
+      },
+      "documentation":"<p>Displays summary information about a monitor.</p>"
+    },
+    "PacketSize":{
+      "type":"integer",
+      "box":true,
+      "max":8500,
+      "min":56
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":4096,
+      "min":0
+    },
+    "Port":{
+      "type":"integer",
+      "box":true,
+      "max":65536,
+      "min":0
+    },
+    "Probe":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe.</p>"
+        },
+        "probeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe.</p>"
+        },
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the probe source subnet.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The destination for the probe. This should be either an <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The destination port for the probe. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The network protocol for the destination. This can be either <code>TCP</code> or <code>ICMP</code>. If the protocol is <code>TCP</code>, then <code>port</code> is also required.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The size of the packets traveling between the <code>source</code> and <code>destination</code>. This must be a number between <code>56</code> and </p>"
+        },
+        "addressFamily":{
+          "shape":"AddressFamily",
+          "documentation":"<p>The IPv4 or IPv6 address for the probe.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the source VPC subnet.</p>"
+        },
+        "state":{
+          "shape":"ProbeState",
+          "documentation":"<p>The state of the probe.</p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date the probe was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was last modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs created and assigned to the probe.</p>"
+        }
+      },
+      "documentation":"<p>Describes information about a network monitor probe.</p>"
+    },
+    "ProbeId":{
+      "type":"string",
+      "pattern":"probe-[a-z0-9A-Z-]{21,64}"
+    },
+    "ProbeInput":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the subnet.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The destination IP address. This must be either <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The port associated with the <code>destination</code>. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The protocol used for the network traffic between the <code>source</code> and <code>destination</code>. This must be either <code>TCP</code> or <code>ICMP</code>.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The size of the packets sent between the source and destination. This must be a number between <code>56</code> and <code>8500</code>.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs created and assigned to the monitor.</p>"
+        }
+      },
+      "documentation":"<p>Defines a probe when creating a probe or monitor.</p>"
+    },
+    "ProbeList":{
+      "type":"list",
+      "member":{"shape":"Probe"}
+    },
+    "ProbeState":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "ACTIVE",
+        "INACTIVE",
+        "ERROR",
+        "DELETING",
+        "DELETED"
+      ]
+    },
+    "Protocol":{
+      "type":"string",
+      "enum":[
+        "TCP",
+        "ICMP"
+      ]
+    },
+    "ResourceName":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The specified resource does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>This request exceeds a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the monitor or probe to tag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs assigned to the monitor or probe.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the monitor or probe that the tag should be removed from. </p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The key-value pa</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateMonitorInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "aggregationPeriod"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor to update. </p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The aggregation time, in seconds, to change to. This must be either <code>30</code> or <code>60</code>. </p>"
+        }
+      }
+    },
+    "UpdateMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "state"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The ARN of the monitor that was updated.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor that was updated.</p>"
+        },
+        "state":{
+          "shape":"MonitorState",
+          "documentation":"<p>The state of the updated monitor.</p>"
+        },
+        "aggregationPeriod":{
+          "shape":"AggregationPeriod",
+          "documentation":"<p>The changed aggregation period.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of key-value pairs associated with the monitor.</p>"
+        }
+      }
+    },
+    "UpdateProbeInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "probeId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor that the probe was updated for.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The ID of the probe to update.</p>",
+          "location":"uri",
+          "locationName":"probeId"
+        },
+        "state":{
+          "shape":"ProbeState",
+          "documentation":"<p>The state of the probe update.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The updated IP address for the probe destination. This must be either an IPv4 or IPv6 address.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The updated port for the probe destination. This is required only if the <code>protocol</code> is <code>TCP</code> and must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The updated network protocol for the destination. This can be either <code>TCP</code> or <code>ICMP</code>. If the protocol is <code>TCP</code>, then <code>port</code> is also required.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>he updated packets size for network traffic between the source and destination. This must be a number between <code>56</code> and <code>8500</code>.</p>"
+        }
+      }
+    },
+    "UpdateProbeOutput":{
+      "type":"structure",
+      "required":[
+        "sourceArn",
+        "destination",
+        "protocol"
+      ],
+      "members":{
+        "probeId":{
+          "shape":"ProbeId",
+          "documentation":"<p>The updated ID of the probe.</p>"
+        },
+        "probeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The updated ARN of the probe.</p>"
+        },
+        "sourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The updated ARN of the source subnet.</p>"
+        },
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>The updated destination IP address for the probe.</p>"
+        },
+        "destinationPort":{
+          "shape":"Port",
+          "documentation":"<p>The updated destination port. This must be a number between <code>1</code> and <code>65536</code>.</p>"
+        },
+        "protocol":{
+          "shape":"Protocol",
+          "documentation":"<p>The updated protocol for the probe.</p>"
+        },
+        "packetSize":{
+          "shape":"PacketSize",
+          "documentation":"<p>The updated packet size for the probe. </p>"
+        },
+        "addressFamily":{
+          "shape":"AddressFamily",
+          "documentation":"<p>The updated IP address family. This must be either <code>IPV4</code> or <code>IPV6</code>.</p>"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The updated ID of the source VPC subnet ID.</p>"
+        },
+        "state":{
+          "shape":"ProbeState",
+          "documentation":"<p>The state of the updated probe.</p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The time and date that the probe was last updated.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Update tags for a probe.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>One of the parameters for the request is not valid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VpcId":{
+      "type":"string",
+      "pattern":"vpc-[a-zA-Z0-9]{8,32}"
+    }
+  },
+  "documentation":"<p>Amazon CloudWatch Network Monitor is an Amazon Web Services active network monitoring service that identifies if a network issues exists within the Amazon Web Services network or your own company network. Within Network Monitor you'll choose the source VPCs and subnets from the Amazon Web Services network in which you operate and then you'll choose the destination IP addresses from your on-premises network. From these sources and destinations, Network Monitor creates a monitor containing all the possible source and destination combinations, each of which is called a probe, within a single monitor. These probes then monitor network traffic to help you identify where network issues might be affecting your traffic.</p> <p>Before you begin, ensure the Amazon Web Services CLI is configured in the Amazon Web Services Account where you will create the Network Monitor resource. Network Monitor doesn’t support creation on cross-account resources, but you can create a Network Monitor in any subnet belonging to a VPC owned by your Account.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/what-is-network-monitor.html\">Using Amazon CloudWatch Network Monitor</a> in the <i>Amazon CloudWatch User Guide</i>.</p>"
+}

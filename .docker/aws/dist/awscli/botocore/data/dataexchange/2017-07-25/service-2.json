@@ -1,0 +1,4710 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-07-25",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"dataexchange",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Data Exchange",
+    "serviceId":"DataExchange",
+    "signatureVersion":"v4",
+    "signingName":"dataexchange",
+    "uid":"dataexchange-2017-07-25"
+  },
+  "operations":{
+    "AcceptDataGrant":{
+      "name":"AcceptDataGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-grants/{DataGrantArn}/accept",
+        "responseCode":200
+      },
+      "input":{"shape":"AcceptDataGrantRequest"},
+      "output":{"shape":"AcceptDataGrantResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation accepts a data grant.</p>"
+    },
+    "CancelJob":{
+      "name":"CancelJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/jobs/{JobId}",
+        "responseCode":204
+      },
+      "input":{"shape":"CancelJobRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation cancels a job. Jobs can be cancelled only when they are in the WAITING state.</p>"
+    },
+    "CreateDataGrant":{
+      "name":"CreateDataGrant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-grants",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateDataGrantRequest"},
+      "output":{"shape":"CreateDataGrantResponse"},
+      "errors":[
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation creates a data grant.</p>"
+    },
+    "CreateDataSet":{
+      "name":"CreateDataSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-sets",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateDataSetRequest"},
+      "output":{"shape":"CreateDataSetResponse"},
+      "errors":[
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation creates a data set.</p>"
+    },
+    "CreateEventAction":{
+      "name":"CreateEventAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/event-actions",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateEventActionRequest"},
+      "output":{"shape":"CreateEventActionResponse"},
+      "errors":[
+        {"shape":"ServiceLimitExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation creates an event action.</p>"
+    },
+    "CreateJob":{
+      "name":"CreateJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/jobs",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateJobRequest"},
+      "output":{"shape":"CreateJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation creates a job.</p>"
+    },
+    "CreateRevision":{
+      "name":"CreateRevision",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateRevisionRequest"},
+      "output":{"shape":"CreateRevisionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation creates a revision for a data set.</p>"
+    },
+    "DeleteAsset":{
+      "name":"DeleteAsset",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}/assets/{AssetId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAssetRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation deletes an asset.</p>"
+    },
+    "DeleteDataGrant":{
+      "name":"DeleteDataGrant",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/data-grants/{DataGrantId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteDataGrantRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation deletes a data grant.</p>"
+    },
+    "DeleteDataSet":{
+      "name":"DeleteDataSet",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/data-sets/{DataSetId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteDataSetRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation deletes a data set.</p>"
+    },
+    "DeleteEventAction":{
+      "name":"DeleteEventAction",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/event-actions/{EventActionId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteEventActionRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation deletes the event action.</p>"
+    },
+    "DeleteRevision":{
+      "name":"DeleteRevision",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteRevisionRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation deletes a revision.</p>"
+    },
+    "GetAsset":{
+      "name":"GetAsset",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}/assets/{AssetId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAssetRequest"},
+      "output":{"shape":"GetAssetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about an asset.</p>"
+    },
+    "GetDataGrant":{
+      "name":"GetDataGrant",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-grants/{DataGrantId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataGrantRequest"},
+      "output":{"shape":"GetDataGrantResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about a data grant.</p>"
+    },
+    "GetDataSet":{
+      "name":"GetDataSet",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets/{DataSetId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataSetRequest"},
+      "output":{"shape":"GetDataSetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about a data set.</p>"
+    },
+    "GetEventAction":{
+      "name":"GetEventAction",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/event-actions/{EventActionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEventActionRequest"},
+      "output":{"shape":"GetEventActionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation retrieves information about an event action.</p>"
+    },
+    "GetJob":{
+      "name":"GetJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/jobs/{JobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetJobRequest"},
+      "output":{"shape":"GetJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about a job.</p>"
+    },
+    "GetReceivedDataGrant":{
+      "name":"GetReceivedDataGrant",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/received-data-grants/{DataGrantArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetReceivedDataGrantRequest"},
+      "output":{"shape":"GetReceivedDataGrantResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about a received data grant.</p>"
+    },
+    "GetRevision":{
+      "name":"GetRevision",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRevisionRequest"},
+      "output":{"shape":"GetRevisionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about a revision.</p>"
+    },
+    "ListDataGrants":{
+      "name":"ListDataGrants",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-grants",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataGrantsRequest"},
+      "output":{"shape":"ListDataGrantsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about all data grants.</p>"
+    },
+    "ListDataSetRevisions":{
+      "name":"ListDataSetRevisions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataSetRevisionsRequest"},
+      "output":{"shape":"ListDataSetRevisionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation lists a data set's revisions sorted by CreatedAt in descending order.</p>"
+    },
+    "ListDataSets":{
+      "name":"ListDataSets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataSetsRequest"},
+      "output":{"shape":"ListDataSetsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation lists your data sets. When listing by origin OWNED, results are sorted by CreatedAt in descending order. When listing by origin ENTITLED, there is no order.</p>"
+    },
+    "ListEventActions":{
+      "name":"ListEventActions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/event-actions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEventActionsRequest"},
+      "output":{"shape":"ListEventActionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation lists your event actions.</p>"
+    },
+    "ListJobs":{
+      "name":"ListJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListJobsRequest"},
+      "output":{"shape":"ListJobsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation lists your jobs sorted by CreatedAt in descending order.</p>"
+    },
+    "ListReceivedDataGrants":{
+      "name":"ListReceivedDataGrants",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/received-data-grants",
+        "responseCode":200
+      },
+      "input":{"shape":"ListReceivedDataGrantsRequest"},
+      "output":{"shape":"ListReceivedDataGrantsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation returns information about all received data grants.</p>"
+    },
+    "ListRevisionAssets":{
+      "name":"ListRevisionAssets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}/assets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRevisionAssetsRequest"},
+      "output":{"shape":"ListRevisionAssetsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation lists a revision's assets sorted alphabetically in descending order.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "documentation":"<p>This operation lists the tags on the resource.</p>"
+    },
+    "RevokeRevision":{
+      "name":"RevokeRevision",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}/revoke",
+        "responseCode":200
+      },
+      "input":{"shape":"RevokeRevisionRequest"},
+      "output":{"shape":"RevokeRevisionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation revokes subscribers' access to a revision.</p>"
+    },
+    "SendApiAsset":{
+      "name":"SendApiAsset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1",
+        "responseCode":200
+      },
+      "input":{"shape":"SendApiAssetRequest"},
+      "output":{"shape":"SendApiAssetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation invokes an API Gateway API asset. The request is proxied to the provider’s API Gateway API.</p>",
+      "endpoint":{"hostPrefix":"api-fulfill."}
+    },
+    "SendDataSetNotification":{
+      "name":"SendDataSetNotification",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/data-sets/{DataSetId}/notification",
+        "responseCode":202
+      },
+      "input":{"shape":"SendDataSetNotificationRequest"},
+      "output":{"shape":"SendDataSetNotificationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>The type of event associated with the data set.</p>"
+    },
+    "StartJob":{
+      "name":"StartJob",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/jobs/{JobId}",
+        "responseCode":202
+      },
+      "input":{"shape":"StartJobRequest"},
+      "output":{"shape":"StartJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation starts a job.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "documentation":"<p>This operation tags a resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":204
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "documentation":"<p>This operation removes one or more tags from a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateAsset":{
+      "name":"UpdateAsset",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}/assets/{AssetId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateAssetRequest"},
+      "output":{"shape":"UpdateAssetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation updates an asset.</p>"
+    },
+    "UpdateDataSet":{
+      "name":"UpdateDataSet",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/data-sets/{DataSetId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDataSetRequest"},
+      "output":{"shape":"UpdateDataSetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation updates a data set.</p>"
+    },
+    "UpdateEventAction":{
+      "name":"UpdateEventAction",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/event-actions/{EventActionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateEventActionRequest"},
+      "output":{"shape":"UpdateEventActionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation updates the event action.</p>"
+    },
+    "UpdateRevision":{
+      "name":"UpdateRevision",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/v1/data-sets/{DataSetId}/revisions/{RevisionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRevisionRequest"},
+      "output":{"shape":"UpdateRevisionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>This operation updates a revision.</p>"
+    }
+  },
+  "shapes":{
+    "AcceptDataGrantRequest":{
+      "type":"structure",
+      "required":["DataGrantArn"],
+      "members":{
+        "DataGrantArn":{
+          "shape":"DataGrantArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant to accept.</p>",
+          "location":"uri",
+          "locationName":"DataGrantArn"
+        }
+      }
+    },
+    "AcceptDataGrantResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "GrantDistributionScope",
+        "DataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the accepted data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "Description":{
+          "shape":"DataGrantDescription",
+          "documentation":"<p>The description of the accepted data grant.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "GrantDistributionScope":{
+          "shape":"GrantDistributionScope",
+          "documentation":"<p>The distribution scope for the data grant.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the accepted data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        }
+      }
+    },
+    "AcceptanceStateFilterValue":{
+      "type":"string",
+      "enum":[
+        "PENDING_RECEIVER_ACCEPTANCE",
+        "ACCEPTED"
+      ]
+    },
+    "AcceptanceStateFilterValues":{
+      "type":"list",
+      "member":{"shape":"AcceptanceStateFilterValue"}
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>Access to the resource is denied.</p>"
+        }
+      },
+      "documentation":"<p>Access to the resource is denied.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Action":{
+      "type":"structure",
+      "members":{
+        "ExportRevisionToS3":{
+          "shape":"AutoExportRevisionToS3RequestDetails",
+          "documentation":"<p>Details for the export revision to Amazon S3 action.</p>"
+        }
+      },
+      "documentation":"<p>What occurs after a certain event.</p>"
+    },
+    "ApiDescription":{"type":"string"},
+    "ApiGatewayApiAsset":{
+      "type":"structure",
+      "members":{
+        "ApiDescription":{
+          "shape":"ApiDescription",
+          "documentation":"<p>The API description of the API asset.</p>"
+        },
+        "ApiEndpoint":{
+          "shape":"__string",
+          "documentation":"<p>The API endpoint of the API asset.</p>"
+        },
+        "ApiId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier of the API asset.</p>"
+        },
+        "ApiKey":{
+          "shape":"__string",
+          "documentation":"<p>The API key of the API asset.</p>"
+        },
+        "ApiName":{
+          "shape":"__string",
+          "documentation":"<p>The API name of the API asset.</p>"
+        },
+        "ApiSpecificationDownloadUrl":{
+          "shape":"__string",
+          "documentation":"<p>The download URL of the API specification of the API asset.</p>"
+        },
+        "ApiSpecificationDownloadUrlExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the upload URL expires, in ISO 8601 format.</p>"
+        },
+        "ProtocolType":{
+          "shape":"ProtocolType",
+          "documentation":"<p>The protocol type of the API asset.</p>"
+        },
+        "Stage":{
+          "shape":"__string",
+          "documentation":"<p>The stage of the API asset.</p>"
+        }
+      },
+      "documentation":"<p>The API Gateway API that is the asset.</p>"
+    },
+    "Arn":{"type":"string"},
+    "AssetDestinationEntry":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "Bucket"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset.</p>"
+        },
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket that is the destination for the asset.</p>"
+        },
+        "Key":{
+          "shape":"__string",
+          "documentation":"<p>The name of the object in Amazon S3 for the asset.</p>"
+        }
+      },
+      "documentation":"<p>The destination for the asset.</p>"
+    },
+    "AssetDetails":{
+      "type":"structure",
+      "members":{
+        "S3SnapshotAsset":{
+          "shape":"S3SnapshotAsset",
+          "documentation":"<p>The Amazon S3 object that is the asset.</p>"
+        },
+        "RedshiftDataShareAsset":{
+          "shape":"RedshiftDataShareAsset",
+          "documentation":"<p>The Amazon Redshift datashare that is the asset.</p>"
+        },
+        "ApiGatewayApiAsset":{
+          "shape":"ApiGatewayApiAsset",
+          "documentation":"<p>Information about the API Gateway API asset.</p>"
+        },
+        "S3DataAccessAsset":{
+          "shape":"S3DataAccessAsset",
+          "documentation":"<p>The Amazon S3 data access that is the asset.</p>"
+        },
+        "LakeFormationDataPermissionAsset":{
+          "shape":"LakeFormationDataPermissionAsset",
+          "documentation":"<p>The AWS Lake Formation data permission that is the asset.</p>"
+        }
+      },
+      "documentation":"<p>Details about the asset.</p>"
+    },
+    "AssetEntry":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "AssetDetails",
+        "AssetType",
+        "CreatedAt",
+        "DataSetId",
+        "Id",
+        "Name",
+        "RevisionId",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the asset.</p>"
+        },
+        "AssetDetails":{
+          "shape":"AssetDetails",
+          "documentation":"<p>Details about the asset.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this asset.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset.</p>"
+        },
+        "Name":{
+          "shape":"AssetName",
+          "documentation":"<p>The name of the asset. When importing from Amazon S3, the Amazon S3 object key is used as the asset name. When exporting to Amazon S3, the asset name is used as default target Amazon S3 object key. When importing from Amazon API Gateway API, the API name is used as the asset name. When importing from Amazon Redshift, the datashare name is used as the asset name. When importing from AWS Lake Formation, the static values of \"Database(s) included in LF-tag policy\" or \"Table(s) included in LF-tag policy\" are used as the asset name.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this asset.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The asset ID of the owned asset corresponding to the entitled asset being viewed. This parameter is returned when an asset owner is viewing the entitled copy of its owned asset.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was last updated, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>An asset in AWS Data Exchange is a piece of data (Amazon S3 object) or a means of fulfilling data (Amazon Redshift datashare or Amazon API Gateway API, AWS Lake Formation data permission, or Amazon S3 data access). The asset can be a structured data file, an image file, or some other data file that can be stored as an Amazon S3 object, an Amazon API Gateway API, or an Amazon Redshift datashare, an AWS Lake Formation data permission, or an Amazon S3 data access. When you create an import job for your files, API Gateway APIs, Amazon Redshift datashares, AWS Lake Formation data permission, or Amazon S3 data access, you create an asset in AWS Data Exchange.</p>"
+    },
+    "AssetName":{"type":"string"},
+    "AssetSourceEntry":{
+      "type":"structure",
+      "required":[
+        "Bucket",
+        "Key"
+      ],
+      "members":{
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket that's part of the source of the asset.</p>"
+        },
+        "Key":{
+          "shape":"__string",
+          "documentation":"<p>The name of the object in Amazon S3 for the asset.</p>"
+        }
+      },
+      "documentation":"<p>The source of the assets.</p>"
+    },
+    "AssetType":{
+      "type":"string",
+      "enum":[
+        "S3_SNAPSHOT",
+        "REDSHIFT_DATA_SHARE",
+        "API_GATEWAY_API",
+        "S3_DATA_ACCESS",
+        "LAKE_FORMATION_DATA_PERMISSION"
+      ]
+    },
+    "AutoExportRevisionDestinationEntry":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket that is the destination for the event action.</p>"
+        },
+        "KeyPattern":{
+          "shape":"__string",
+          "documentation":"<p>A string representing the pattern for generated names of the individual assets in the revision. For more information about key patterns, see <a href=\"https://docs.aws.amazon.com/data-exchange/latest/userguide/jobs.html#revision-export-keypatterns\">Key patterns when exporting revisions</a>.</p>"
+        }
+      },
+      "documentation":"<p>A revision destination is the Amazon S3 bucket folder destination to where the export will be sent.</p>"
+    },
+    "AutoExportRevisionToS3RequestDetails":{
+      "type":"structure",
+      "required":["RevisionDestination"],
+      "members":{
+        "Encryption":{
+          "shape":"ExportServerSideEncryption",
+          "documentation":"<p>Encryption configuration for the auto export job.</p>"
+        },
+        "RevisionDestination":{
+          "shape":"AutoExportRevisionDestinationEntry",
+          "documentation":"<p>A revision destination is the Amazon S3 bucket folder destination to where the export will be sent.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":".*/^[\\d]{12}$/.*"
+    },
+    "CancelJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a job.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[\\x21-\\x7E]{1,64}"
+    },
+    "Code":{
+      "type":"string",
+      "enum":[
+        "ACCESS_DENIED_EXCEPTION",
+        "INTERNAL_SERVER_EXCEPTION",
+        "MALWARE_DETECTED",
+        "RESOURCE_NOT_FOUND_EXCEPTION",
+        "SERVICE_QUOTA_EXCEEDED_EXCEPTION",
+        "VALIDATION_EXCEPTION",
+        "MALWARE_SCAN_ENCRYPTED_FILE"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The request couldn't be completed because it conflicted with the current state of the resource.</p>"
+        },
+        "ResourceId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the resource with the conflict.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource with the conflict.</p>"
+        }
+      },
+      "documentation":"<p>The request couldn't be completed because it conflicted with the current state of the resource.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateDataGrantRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "GrantDistributionScope",
+        "ReceiverPrincipal",
+        "SourceDataSetId"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "GrantDistributionScope":{
+          "shape":"GrantDistributionScope",
+          "documentation":"<p>The distribution scope of the data grant.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "SourceDataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set used to create the data grant.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the data grant.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags to add to the data grant. A tag is a key-value pair.</p>"
+        }
+      }
+    },
+    "CreateDataGrantResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "SenderPrincipal",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "GrantDistributionScope",
+        "DataSetId",
+        "SourceDataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "Description":{
+          "shape":"DataGrantDescription",
+          "documentation":"<p>The description of the data grant.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "GrantDistributionScope":{
+          "shape":"GrantDistributionScope",
+          "documentation":"<p>The distribution scope for the data grant.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "SourceDataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set used to create the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags associated to the data grant. A tag is a key-value pair.</p>"
+        }
+      }
+    },
+    "CreateDataSetRequest":{
+      "type":"structure",
+      "required":[
+        "AssetType",
+        "Description",
+        "Name"
+      ],
+      "members":{
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the data set. This value can be up to 16,348 characters long.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>A data set tag is an optional label that you can assign to a data set when you create it. Each tag consists of a key and an optional value, both of which you define. When you use tagging, you can also use tag-based access control in IAM policies to control access to these data sets and revisions.</p>"
+        }
+      }
+    },
+    "CreateDataSetResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the data set.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was created, in ISO 8601 format.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the data set.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "Origin":{
+          "shape":"Origin",
+          "documentation":"<p>A property that defines the data set as OWNED by the account (for providers) or ENTITLED to the account (for subscribers).</p>"
+        },
+        "OriginDetails":{
+          "shape":"OriginDetails",
+          "documentation":"<p>If the origin of this data set is ENTITLED, includes the details for the product on AWS Marketplace.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID of the owned data set corresponding to the entitled data set being viewed. This parameter is returned when a data set owner is viewing the entitled copy of its owned data set.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the data set.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "CreateEventActionRequest":{
+      "type":"structure",
+      "required":[
+        "Action",
+        "Event"
+      ],
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>What occurs to start an action.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>Key-value pairs that you can associate with the event action.</p>"
+        }
+      }
+    },
+    "CreateEventActionResponse":{
+      "type":"structure",
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the event action.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was created, in ISO 8601 format.</p>"
+        },
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>What occurs to start an action.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the event action.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the event action.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "CreateJobRequest":{
+      "type":"structure",
+      "required":[
+        "Details",
+        "Type"
+      ],
+      "members":{
+        "Details":{
+          "shape":"RequestDetails",
+          "documentation":"<p>The details for the CreateJob request.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of job to be created.</p>"
+        }
+      }
+    },
+    "CreateJobResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the job.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was created, in ISO 8601 format.</p>"
+        },
+        "Details":{
+          "shape":"ResponseDetails",
+          "documentation":"<p>Details about the job.</p>"
+        },
+        "Errors":{
+          "shape":"ListOfJobError",
+          "documentation":"<p>The errors associated with jobs.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the job.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The state of the job.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The job type.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "CreateRevisionRequest":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>A revision tag is an optional label that you can assign to a revision when you create it. Each tag consists of a key and an optional value, both of which you define. When you use tagging, you can also use tag-based access control in IAM policies to control access to these data sets and revisions.</p>"
+        }
+      }
+    },
+    "CreateRevisionResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the revision.</p>"
+        },
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the data set revision.</p>"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>To publish a revision to a data set in a product, the revision must first be finalized. Finalizing a revision tells AWS Data Exchange that your changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products. Finalized revisions can be published through the AWS Data Exchange console or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace Catalog API action. When using the API, revisions are uniquely identified by their ARN.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID of the owned revision corresponding to the entitled revision being viewed. This parameter is returned when a revision owner is viewing the entitled copy of its owned revision.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the revision.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was last updated, in ISO 8601 format.</p>"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        },
+        "Revoked":{
+          "shape":"__boolean",
+          "documentation":"<p>A status indicating that subscribers' access to the revision was revoked.</p>"
+        },
+        "RevokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was revoked, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "CreateS3DataAccessFromS3BucketRequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSource",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSource":{
+          "shape":"S3DataAccessAssetSourceEntry",
+          "documentation":"<p>Details about the S3 data access source asset.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the creation of this Amazon S3 data access.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to create an Amazon S3 data access from an S3 bucket.</p>"
+    },
+    "CreateS3DataAccessFromS3BucketResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSource",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSource":{
+          "shape":"S3DataAccessAssetSourceEntry",
+          "documentation":"<p>Details about the asset source from an Amazon S3 bucket.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for this data set.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        }
+      },
+      "documentation":"<p>Details about the response of the operation to create an S3 data access from an S3 bucket.</p>"
+    },
+    "DataGrantAcceptanceState":{
+      "type":"string",
+      "enum":[
+        "PENDING_RECEIVER_ACCEPTANCE",
+        "ACCEPTED"
+      ]
+    },
+    "DataGrantArn":{
+      "type":"string",
+      "pattern":"arn:aws:dataexchange:[\\-a-z0-9]*:(\\d{12}):data-grants\\/[a-zA-Z0-9]{30,40}"
+    },
+    "DataGrantDescription":{
+      "type":"string",
+      "max":16384,
+      "min":1
+    },
+    "DataGrantId":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9]{30,40}$|^arn:aws:dataexchange:[\\-a-z0-9]*:(\\d{12}):data-grants\\/[a-zA-Z0-9]{30,40}"
+    },
+    "DataGrantName":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "DataGrantSummaryEntry":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "SenderPrincipal",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "DataSetId",
+        "SourceDataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "SourceDataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set used to create the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Information about a data grant.</p>"
+    },
+    "DataSetEntry":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "AssetType",
+        "CreatedAt",
+        "Description",
+        "Id",
+        "Name",
+        "Origin",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the data set.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was created, in ISO 8601 format.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the data set.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "Origin":{
+          "shape":"Origin",
+          "documentation":"<p>A property that defines the data set as OWNED by the account (for providers) or ENTITLED to the account (for subscribers).</p>"
+        },
+        "OriginDetails":{
+          "shape":"OriginDetails",
+          "documentation":"<p>If the origin of this data set is ENTITLED, includes the details for the product on AWS Marketplace.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID of the owned data set corresponding to the entitled data set being viewed. This parameter is returned when a data set owner is viewing the entitled copy of its owned data set.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was last updated, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>A data set is an AWS resource with one or more revisions.</p>"
+    },
+    "DataUpdateRequestDetails":{
+      "type":"structure",
+      "members":{
+        "DataUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A datetime in the past when the data was updated. This typically means that the underlying resource supporting the data set was updated.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to a data update type notification.</p>"
+    },
+    "DatabaseLFTagPolicy":{
+      "type":"structure",
+      "required":["Expression"],
+      "members":{
+        "Expression":{
+          "shape":"ListOfLFTags",
+          "documentation":"<p>A list of LF-tag conditions that apply to database resources.</p>"
+        }
+      },
+      "documentation":"<p>The LF-tag policy for database resources.</p>"
+    },
+    "DatabaseLFTagPolicyAndPermissions":{
+      "type":"structure",
+      "required":[
+        "Expression",
+        "Permissions"
+      ],
+      "members":{
+        "Expression":{
+          "shape":"ListOfLFTags",
+          "documentation":"<p>A list of LF-tag conditions that apply to database resources.</p>"
+        },
+        "Permissions":{
+          "shape":"ListOfDatabaseLFTagPolicyPermissions",
+          "documentation":"<p>The permissions granted to subscribers on database resources.</p>"
+        }
+      },
+      "documentation":"<p>The LF-tag policy and permissions for database resources.</p>"
+    },
+    "DatabaseLFTagPolicyPermission":{
+      "type":"string",
+      "enum":["DESCRIBE"]
+    },
+    "DeleteAssetRequest":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for an asset.</p>",
+          "location":"uri",
+          "locationName":"AssetId"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "DeleteDataGrantRequest":{
+      "type":"structure",
+      "required":["DataGrantId"],
+      "members":{
+        "DataGrantId":{
+          "shape":"DataGrantId",
+          "documentation":"<p>The ID of the data grant to delete.</p>",
+          "location":"uri",
+          "locationName":"DataGrantId"
+        }
+      }
+    },
+    "DeleteDataSetRequest":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        }
+      }
+    },
+    "DeleteEventActionRequest":{
+      "type":"structure",
+      "required":["EventActionId"],
+      "members":{
+        "EventActionId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the event action.</p>",
+          "location":"uri",
+          "locationName":"EventActionId"
+        }
+      }
+    },
+    "DeleteRevisionRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "DeprecationRequestDetails":{
+      "type":"structure",
+      "required":["DeprecationAt"],
+      "members":{
+        "DeprecationAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A datetime in the future when the data set will be deprecated.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to a deprecation type notification.</p>"
+    },
+    "Description":{"type":"string"},
+    "Details":{
+      "type":"structure",
+      "members":{
+        "ImportAssetFromSignedUrlJobErrorDetails":{
+          "shape":"ImportAssetFromSignedUrlJobErrorDetails",
+          "documentation":"<p>Information about the job error.</p>"
+        },
+        "ImportAssetsFromS3JobErrorDetails":{
+          "shape":"ListOfAssetSourceEntry",
+          "documentation":"<p>Details about the job error.</p>"
+        }
+      },
+      "documentation":"<p>Information about the job error.</p>"
+    },
+    "Event":{
+      "type":"structure",
+      "members":{
+        "RevisionPublished":{
+          "shape":"RevisionPublished",
+          "documentation":"<p>What occurs to start the revision publish action.</p>"
+        }
+      },
+      "documentation":"<p>What occurs to start an action.</p>"
+    },
+    "EventActionEntry":{
+      "type":"structure",
+      "required":[
+        "Action",
+        "Arn",
+        "CreatedAt",
+        "Event",
+        "Id",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the event action.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was created, in ISO 8601 format.</p>"
+        },
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>What occurs to start an action.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the event action.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was last updated, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>An event action is an object that defines the relationship between a specific event and an automated action that will be taken on behalf of the customer.</p>"
+    },
+    "ExceptionCause":{
+      "type":"string",
+      "enum":[
+        "InsufficientS3BucketPolicy",
+        "S3AccessDenied"
+      ]
+    },
+    "ExportAssetToSignedUrlRequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset that is exported to a signed URL.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this export request.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "ExportAssetToSignedUrlResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset associated with this export job.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this export response.</p>"
+        },
+        "SignedUrl":{
+          "shape":"__string",
+          "documentation":"<p>The signed URL for the export request.</p>"
+        },
+        "SignedUrlExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the signed URL expires, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The details of the export to signed URL response.</p>"
+    },
+    "ExportAssetsToS3RequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetDestinations",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetDestinations":{
+          "shape":"ListOfAssetDestinationEntry",
+          "documentation":"<p>The destination for the asset.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "Encryption":{
+          "shape":"ExportServerSideEncryption",
+          "documentation":"<p>Encryption configuration for the export job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this export request.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "ExportAssetsToS3ResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetDestinations",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetDestinations":{
+          "shape":"ListOfAssetDestinationEntry",
+          "documentation":"<p>The destination in Amazon S3 where the asset is exported.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "Encryption":{
+          "shape":"ExportServerSideEncryption",
+          "documentation":"<p>Encryption configuration of the export job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this export response.</p>"
+        }
+      },
+      "documentation":"<p>Details about the export to Amazon S3 response.</p>"
+    },
+    "ExportRevisionsToS3RequestDetails":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionDestinations"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "Encryption":{
+          "shape":"ExportServerSideEncryption",
+          "documentation":"<p>Encryption configuration for the export job.</p>"
+        },
+        "RevisionDestinations":{
+          "shape":"ListOfRevisionDestinationEntry",
+          "documentation":"<p>The destination for the revision.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "ExportRevisionsToS3ResponseDetails":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionDestinations"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this export job.</p>"
+        },
+        "Encryption":{
+          "shape":"ExportServerSideEncryption",
+          "documentation":"<p>Encryption configuration of the export job.</p>"
+        },
+        "RevisionDestinations":{
+          "shape":"ListOfRevisionDestinationEntry",
+          "documentation":"<p>The destination in Amazon S3 where the revision is exported.</p>"
+        },
+        "EventActionArn":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the event action.</p>"
+        }
+      },
+      "documentation":"<p>Details about the export revisions to Amazon S3 response.</p>"
+    },
+    "ExportServerSideEncryption":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "KmsKeyArn":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the AWS KMS key you want to use to encrypt the Amazon S3 objects. This parameter is required if you choose aws:kms as an encryption type.</p>"
+        },
+        "Type":{
+          "shape":"ServerSideEncryptionTypes",
+          "documentation":"<p>The type of server side encryption used for encrypting the objects in Amazon S3.</p>"
+        }
+      },
+      "documentation":"<p>Encryption configuration of the export job. Includes the encryption type in addition to the AWS KMS key. The KMS key is only necessary if you chose the KMS encryption type.</p>"
+    },
+    "GetAssetRequest":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for an asset.</p>",
+          "location":"uri",
+          "locationName":"AssetId"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "GetAssetResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the asset.</p>"
+        },
+        "AssetDetails":{
+          "shape":"AssetDetails",
+          "documentation":"<p>Details about the asset.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this asset.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset.</p>"
+        },
+        "Name":{
+          "shape":"AssetName",
+          "documentation":"<p>The name of the asset. When importing from Amazon S3, the Amazon S3 object key is used as the asset name. When exporting to Amazon S3, the asset name is used as default target Amazon S3 object key. When importing from Amazon API Gateway API, the API name is used as the asset name. When importing from Amazon Redshift, the datashare name is used as the asset name. When importing from AWS Lake Formation, the static values of \"Database(s) included in the LF-tag policy\" or \"Table(s) included in the LF-tag policy\" are used as the asset name.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this asset.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The asset ID of the owned asset corresponding to the entitled asset being viewed. This parameter is returned when an asset owner is viewing the entitled copy of its owned asset.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetDataGrantRequest":{
+      "type":"structure",
+      "required":["DataGrantId"],
+      "members":{
+        "DataGrantId":{
+          "shape":"DataGrantId",
+          "documentation":"<p>The ID of the data grant.</p>",
+          "location":"uri",
+          "locationName":"DataGrantId"
+        }
+      }
+    },
+    "GetDataGrantResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "SenderPrincipal",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "GrantDistributionScope",
+        "DataSetId",
+        "SourceDataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "Description":{
+          "shape":"DataGrantDescription",
+          "documentation":"<p>The description of the data grant.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "GrantDistributionScope":{
+          "shape":"GrantDistributionScope",
+          "documentation":"<p>The distribution scope for the data grant.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "SourceDataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set used to create the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags associated to the data grant. A tag is a key-value pair.</p>"
+        }
+      }
+    },
+    "GetDataSetRequest":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        }
+      }
+    },
+    "GetDataSetResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the data set.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was created, in ISO 8601 format.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the data set.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "Origin":{
+          "shape":"Origin",
+          "documentation":"<p>A property that defines the data set as OWNED by the account (for providers) or ENTITLED to the account (for subscribers).</p>"
+        },
+        "OriginDetails":{
+          "shape":"OriginDetails",
+          "documentation":"<p>If the origin of this data set is ENTITLED, includes the details for the product on AWS Marketplace.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID of the owned data set corresponding to the entitled data set being viewed. This parameter is returned when a data set owner is viewing the entitled copy of its owned data set.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the data set.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetEventActionRequest":{
+      "type":"structure",
+      "required":["EventActionId"],
+      "members":{
+        "EventActionId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the event action.</p>",
+          "location":"uri",
+          "locationName":"EventActionId"
+        }
+      }
+    },
+    "GetEventActionResponse":{
+      "type":"structure",
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the event action.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was created, in ISO 8601 format.</p>"
+        },
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>What occurs to start an action.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the event action.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the event action.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a job.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "GetJobResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the job.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was created, in ISO 8601 format.</p>"
+        },
+        "Details":{
+          "shape":"ResponseDetails",
+          "documentation":"<p>Details about the job.</p>"
+        },
+        "Errors":{
+          "shape":"ListOfJobError",
+          "documentation":"<p>The errors associated with jobs.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the job.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The state of the job.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The job type.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetReceivedDataGrantRequest":{
+      "type":"structure",
+      "required":["DataGrantArn"],
+      "members":{
+        "DataGrantArn":{
+          "shape":"DataGrantArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>",
+          "location":"uri",
+          "locationName":"DataGrantArn"
+        }
+      }
+    },
+    "GetReceivedDataGrantResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "GrantDistributionScope",
+        "DataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "Description":{
+          "shape":"DataGrantDescription",
+          "documentation":"<p>The description of the data grant.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "GrantDistributionScope":{
+          "shape":"GrantDistributionScope",
+          "documentation":"<p>The distribution scope for the data grant.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        }
+      }
+    },
+    "GetRevisionRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "GetRevisionResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the revision.</p>"
+        },
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the data set revision.</p>"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>To publish a revision to a data set in a product, the revision must first be finalized. Finalizing a revision tells AWS Data Exchange that your changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products. Finalized revisions can be published through the AWS Data Exchange console or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace Catalog API action. When using the API, revisions are uniquely identified by their ARN.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID of the owned revision corresponding to the entitled revision being viewed. This parameter is returned when a revision owner is viewing the entitled copy of its owned revision.</p>"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The tags for the revision.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was last updated, in ISO 8601 format.</p>"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        },
+        "Revoked":{
+          "shape":"__boolean",
+          "documentation":"<p>A status indicating that subscribers' access to the revision was revoked.</p>"
+        },
+        "RevokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was revoked, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GrantDistributionScope":{
+      "type":"string",
+      "enum":[
+        "AWS_ORGANIZATION",
+        "NONE"
+      ]
+    },
+    "Id":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9]{30,40}"
+    },
+    "ImportAssetFromApiGatewayApiRequestDetails":{
+      "type":"structure",
+      "required":[
+        "ApiId",
+        "ApiName",
+        "ApiSpecificationMd5Hash",
+        "DataSetId",
+        "ProtocolType",
+        "RevisionId",
+        "Stage"
+      ],
+      "members":{
+        "ApiDescription":{
+          "shape":"ApiDescription",
+          "documentation":"<p>The API description. Markdown supported.</p>"
+        },
+        "ApiId":{
+          "shape":"__string",
+          "documentation":"<p>The API Gateway API ID.</p>"
+        },
+        "ApiKey":{
+          "shape":"__string",
+          "documentation":"<p>The API Gateway API key.</p>"
+        },
+        "ApiName":{
+          "shape":"__string",
+          "documentation":"<p>The API name.</p>"
+        },
+        "ApiSpecificationMd5Hash":{
+          "shape":"__stringMin24Max24PatternAZaZ094AZaZ092AZaZ093",
+          "documentation":"<p>The Base64-encoded MD5 hash of the OpenAPI 3.0 JSON API specification file. It is used to ensure the integrity of the file.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID.</p>"
+        },
+        "ProtocolType":{
+          "shape":"ProtocolType",
+          "documentation":"<p>The protocol type.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID.</p>"
+        },
+        "Stage":{
+          "shape":"__string",
+          "documentation":"<p>The API stage.</p>"
+        }
+      },
+      "documentation":"<p>The request details.</p>"
+    },
+    "ImportAssetFromApiGatewayApiResponseDetails":{
+      "type":"structure",
+      "required":[
+        "ApiId",
+        "ApiName",
+        "ApiSpecificationMd5Hash",
+        "ApiSpecificationUploadUrl",
+        "ApiSpecificationUploadUrlExpiresAt",
+        "DataSetId",
+        "ProtocolType",
+        "RevisionId",
+        "Stage"
+      ],
+      "members":{
+        "ApiDescription":{
+          "shape":"ApiDescription",
+          "documentation":"<p>The API description.</p>"
+        },
+        "ApiId":{
+          "shape":"__string",
+          "documentation":"<p>The API ID.</p>"
+        },
+        "ApiKey":{
+          "shape":"__string",
+          "documentation":"<p>The API key.</p>"
+        },
+        "ApiName":{
+          "shape":"__string",
+          "documentation":"<p>The API name.</p>"
+        },
+        "ApiSpecificationMd5Hash":{
+          "shape":"__stringMin24Max24PatternAZaZ094AZaZ092AZaZ093",
+          "documentation":"<p>The Base64-encoded Md5 hash for the API asset, used to ensure the integrity of the API at that location.</p>"
+        },
+        "ApiSpecificationUploadUrl":{
+          "shape":"__string",
+          "documentation":"<p>The upload URL of the API specification.</p>"
+        },
+        "ApiSpecificationUploadUrlExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the upload URL expires, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID.</p>"
+        },
+        "ProtocolType":{
+          "shape":"ProtocolType",
+          "documentation":"<p>The protocol type.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID.</p>"
+        },
+        "Stage":{
+          "shape":"__string",
+          "documentation":"<p>The API stage.</p>"
+        }
+      },
+      "documentation":"<p>The response details.</p>"
+    },
+    "ImportAssetFromSignedUrlJobErrorDetails":{
+      "type":"structure",
+      "required":["AssetName"],
+      "members":{
+        "AssetName":{
+          "shape":"AssetName",
+          "documentation":"<p>Details about the job error.</p>"
+        }
+      },
+      "documentation":"<p>Details about the job error.</p>"
+    },
+    "ImportAssetFromSignedUrlRequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetName",
+        "DataSetId",
+        "Md5Hash",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetName":{
+          "shape":"AssetName",
+          "documentation":"<p>The name of the asset. When importing from Amazon S3, the Amazon S3 object key is used as the asset name.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "Md5Hash":{
+          "shape":"__stringMin24Max24PatternAZaZ094AZaZ092AZaZ093",
+          "documentation":"<p>The Base64-encoded Md5 hash for the asset, used to ensure the integrity of the file at that location.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import request.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "ImportAssetFromSignedUrlResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetName",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetName":{
+          "shape":"AssetName",
+          "documentation":"<p>The name for the asset associated with this import job.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "Md5Hash":{
+          "shape":"__stringMin24Max24PatternAZaZ094AZaZ092AZaZ093",
+          "documentation":"<p>The Base64-encoded Md5 hash for the asset, used to ensure the integrity of the file at that location.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import response.</p>"
+        },
+        "SignedUrl":{
+          "shape":"__string",
+          "documentation":"<p>The signed URL.</p>"
+        },
+        "SignedUrlExpiresAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time and date at which the signed URL expires, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The details in the response for an import request, including the signed URL and other information.</p>"
+    },
+    "ImportAssetsFromLakeFormationTagPolicyRequestDetails":{
+      "type":"structure",
+      "required":[
+        "CatalogId",
+        "RoleArn",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "CatalogId":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The identifier for the AWS Glue Data Catalog.</p>"
+        },
+        "Database":{
+          "shape":"DatabaseLFTagPolicyAndPermissions",
+          "documentation":"<p>A structure for the database object.</p>"
+        },
+        "Table":{
+          "shape":"TableLFTagPolicyAndPermissions",
+          "documentation":"<p>A structure for the table object.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The IAM role's ARN that allows AWS Data Exchange to assume the role and grant and revoke permissions of subscribers to AWS Lake Formation data permissions.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import job.</p>"
+        }
+      },
+      "documentation":"<p>Details about the assets imported from an AWS Lake Formation tag policy request.</p>"
+    },
+    "ImportAssetsFromLakeFormationTagPolicyResponseDetails":{
+      "type":"structure",
+      "required":[
+        "CatalogId",
+        "RoleArn",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "CatalogId":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The identifier for the AWS Glue Data Catalog.</p>"
+        },
+        "Database":{
+          "shape":"DatabaseLFTagPolicyAndPermissions",
+          "documentation":"<p>A structure for the database object.</p>"
+        },
+        "Table":{
+          "shape":"TableLFTagPolicyAndPermissions",
+          "documentation":"<p>A structure for the table object.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The IAM role's ARN that allows AWS Data Exchange to assume the role and grant and revoke permissions to AWS Lake Formation data permissions.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import job.</p>"
+        }
+      },
+      "documentation":"<p>Details from an import AWS Lake Formation tag policy job response.</p>"
+    },
+    "ImportAssetsFromRedshiftDataSharesRequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSources",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSources":{
+          "shape":"ListOfRedshiftDataShareAssetSourceEntry",
+          "documentation":"<p>A list of Amazon Redshift datashare assets.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import job.</p>"
+        }
+      },
+      "documentation":"<p>Details from an import from Amazon Redshift datashare request.</p>"
+    },
+    "ImportAssetsFromRedshiftDataSharesResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSources",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSources":{
+          "shape":"ListOfRedshiftDataShareAssetSourceEntry",
+          "documentation":"<p>A list of Amazon Redshift datashare asset sources.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import job.</p>"
+        }
+      },
+      "documentation":"<p>Details from an import from Amazon Redshift datashare response.</p>"
+    },
+    "ImportAssetsFromS3RequestDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSources",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSources":{
+          "shape":"ListOfAssetSourceEntry",
+          "documentation":"<p>Is a list of Amazon S3 bucket and object key pairs.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import request.</p>"
+        }
+      },
+      "documentation":"<p>Details of the operation to be performed by the job.</p>"
+    },
+    "ImportAssetsFromS3ResponseDetails":{
+      "type":"structure",
+      "required":[
+        "AssetSources",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetSources":{
+          "shape":"ListOfAssetSourceEntry",
+          "documentation":"<p>Is a list of Amazon S3 bucket and object key pairs.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this import job.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this import response.</p>"
+        }
+      },
+      "documentation":"<p>Details from an import from Amazon S3 response.</p>"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The message identifying the service exception that occurred.</p>"
+        }
+      },
+      "documentation":"<p>An exception occurred with the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "JobEntry":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreatedAt",
+        "Details",
+        "Id",
+        "State",
+        "Type",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the job.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was created, in ISO 8601 format.</p>"
+        },
+        "Details":{
+          "shape":"ResponseDetails",
+          "documentation":"<p>Details of the operation to be performed by the job, such as export destination details or import source details.</p>"
+        },
+        "Errors":{
+          "shape":"ListOfJobError",
+          "documentation":"<p>Errors for jobs.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the job.</p>"
+        },
+        "State":{
+          "shape":"State",
+          "documentation":"<p>The state of the job.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The job type.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the job was last updated, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>AWS Data Exchange Jobs are asynchronous import or export operations used to create or copy assets. A data set owner can both import and export as they see fit. Someone with an entitlement to a data set can only export. Jobs are deleted 90 days after they are created.</p>"
+    },
+    "JobError":{
+      "type":"structure",
+      "required":[
+        "Code",
+        "Message"
+      ],
+      "members":{
+        "Code":{
+          "shape":"Code",
+          "documentation":"<p>The code for the job error.</p>"
+        },
+        "Details":{
+          "shape":"Details",
+          "documentation":"<p>The details about the job error.</p>"
+        },
+        "LimitName":{
+          "shape":"JobErrorLimitName",
+          "documentation":"<p>The name of the limit that was reached.</p>"
+        },
+        "LimitValue":{
+          "shape":"__double",
+          "documentation":"<p>The value of the exceeded limit.</p>"
+        },
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The message related to the job error.</p>"
+        },
+        "ResourceId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the resource related to the error.</p>"
+        },
+        "ResourceType":{
+          "shape":"JobErrorResourceTypes",
+          "documentation":"<p>The type of resource related to the error.</p>"
+        }
+      },
+      "documentation":"<p>An error that occurred with the job request.</p>"
+    },
+    "JobErrorLimitName":{
+      "type":"string",
+      "enum":[
+        "Assets per revision",
+        "Asset size in GB",
+        "Amazon Redshift datashare assets per revision",
+        "AWS Lake Formation data permission assets per revision",
+        "Amazon S3 data access assets per revision"
+      ]
+    },
+    "JobErrorResourceTypes":{
+      "type":"string",
+      "enum":[
+        "REVISION",
+        "ASSET",
+        "DATA_SET"
+      ]
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "KmsKeyToGrant":{
+      "type":"structure",
+      "required":["KmsKeyArn"],
+      "members":{
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The AWS KMS CMK (Key Management System Customer Managed Key) used to encrypt S3 objects in the shared S3 Bucket. AWS Data exchange will create a KMS grant for each subscriber to allow them to access and decrypt their entitled data that is encrypted using this KMS key specified.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Resource Name (ARN) of the AWS KMS key used to encrypt the shared S3 objects.</p>"
+    },
+    "LFPermission":{
+      "type":"string",
+      "enum":[
+        "DESCRIBE",
+        "SELECT"
+      ]
+    },
+    "LFResourceDetails":{
+      "type":"structure",
+      "members":{
+        "Database":{
+          "shape":"DatabaseLFTagPolicy",
+          "documentation":"<p>Details about the database resource included in the AWS Lake Formation data permission.</p>"
+        },
+        "Table":{
+          "shape":"TableLFTagPolicy",
+          "documentation":"<p>Details about the table resource included in the AWS Lake Formation data permission.</p>"
+        }
+      },
+      "documentation":"<p>Details about the AWS Lake Formation resource (Table or Database) included in the AWS Lake Formation data permission.</p>"
+    },
+    "LFResourceType":{
+      "type":"string",
+      "enum":[
+        "TABLE",
+        "DATABASE"
+      ]
+    },
+    "LFTag":{
+      "type":"structure",
+      "required":[
+        "TagKey",
+        "TagValues"
+      ],
+      "members":{
+        "TagKey":{
+          "shape":"String",
+          "documentation":"<p>The key name for the LF-tag.</p>"
+        },
+        "TagValues":{
+          "shape":"ListOfLFTagValues",
+          "documentation":"<p>A list of LF-tag values.</p>"
+        }
+      },
+      "documentation":"<p>A structure that allows an LF-admin to grant permissions on certain conditions.</p>"
+    },
+    "LFTagPolicyDetails":{
+      "type":"structure",
+      "required":[
+        "CatalogId",
+        "ResourceType",
+        "ResourceDetails"
+      ],
+      "members":{
+        "CatalogId":{
+          "shape":"AwsAccountId",
+          "documentation":"<p>The identifier for the AWS Glue Data Catalog.</p>"
+        },
+        "ResourceType":{
+          "shape":"LFResourceType",
+          "documentation":"<p>The resource type for which the LF-tag policy applies.</p>"
+        },
+        "ResourceDetails":{
+          "shape":"LFResourceDetails",
+          "documentation":"<p>Details for the Lake Formation Resources included in the LF-tag policy.</p>"
+        }
+      },
+      "documentation":"<p>Details about the LF-tag policy.</p>"
+    },
+    "LakeFormationDataPermissionAsset":{
+      "type":"structure",
+      "required":[
+        "LakeFormationDataPermissionDetails",
+        "LakeFormationDataPermissionType",
+        "Permissions"
+      ],
+      "members":{
+        "LakeFormationDataPermissionDetails":{
+          "shape":"LakeFormationDataPermissionDetails",
+          "documentation":"<p>Details about the AWS Lake Formation data permission.</p>"
+        },
+        "LakeFormationDataPermissionType":{
+          "shape":"LakeFormationDataPermissionType",
+          "documentation":"<p>The data permission type.</p>"
+        },
+        "Permissions":{
+          "shape":"ListOfLFPermissions",
+          "documentation":"<p>The permissions granted to the subscribers on the resource.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The IAM role's ARN that allows AWS Data Exchange to assume the role and grant and revoke permissions to AWS Lake Formation data permissions.</p>"
+        }
+      },
+      "documentation":"<p>The AWS Lake Formation data permission asset.</p>"
+    },
+    "LakeFormationDataPermissionDetails":{
+      "type":"structure",
+      "members":{
+        "LFTagPolicy":{
+          "shape":"LFTagPolicyDetails",
+          "documentation":"<p>Details about the LF-tag policy.</p>"
+        }
+      },
+      "documentation":"<p>Details about the AWS Lake Formation data permission.</p>"
+    },
+    "LakeFormationDataPermissionType":{
+      "type":"string",
+      "enum":["LFTagPolicy"]
+    },
+    "LakeFormationTagPolicyDetails":{
+      "type":"structure",
+      "members":{
+        "Database":{
+          "shape":"__string",
+          "documentation":"<p>The underlying Glue database that the notification is referring to.</p>"
+        },
+        "Table":{
+          "shape":"__string",
+          "documentation":"<p>The underlying Glue table that the notification is referring to.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to the affected scope in this LF data set.</p>"
+    },
+    "LimitName":{
+      "type":"string",
+      "enum":[
+        "Products per account",
+        "Data sets per account",
+        "Data sets per product",
+        "Revisions per data set",
+        "Assets per revision",
+        "Assets per import job from Amazon S3",
+        "Asset per export job from Amazon S3",
+        "Asset size in GB",
+        "Concurrent in progress jobs to export assets to Amazon S3",
+        "Concurrent in progress jobs to export assets to a signed URL",
+        "Concurrent in progress jobs to import assets from Amazon S3",
+        "Concurrent in progress jobs to import assets from a signed URL",
+        "Concurrent in progress jobs to export revisions to Amazon S3",
+        "Event actions per account",
+        "Auto export event actions per data set",
+        "Amazon Redshift datashare assets per import job from Redshift",
+        "Concurrent in progress jobs to import assets from Amazon Redshift datashares",
+        "Revisions per Amazon Redshift datashare data set",
+        "Amazon Redshift datashare assets per revision",
+        "Concurrent in progress jobs to import assets from an API Gateway API",
+        "Amazon API Gateway API assets per revision",
+        "Revisions per Amazon API Gateway API data set",
+        "Concurrent in progress jobs to import assets from an AWS Lake Formation tag policy",
+        "AWS Lake Formation data permission assets per revision",
+        "Revisions per AWS Lake Formation data permission data set",
+        "Revisions per Amazon S3 data access data set",
+        "Amazon S3 data access assets per revision",
+        "Concurrent in progress jobs to create Amazon S3 data access assets from S3 buckets",
+        "Active and pending data grants",
+        "Pending data grants per consumer"
+      ]
+    },
+    "ListDataGrantsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be included in the next page.</p>",
+          "box":true,
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The pagination token used to retrieve the next page of results for this operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDataGrantsResponse":{
+      "type":"structure",
+      "members":{
+        "DataGrantSummaries":{
+          "shape":"ListOfDataGrantSummaryEntry",
+          "documentation":"<p>An object that contains a list of data grant information.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the next page of results for this operation.</p>"
+        }
+      }
+    },
+    "ListDataSetRevisionsRequest":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned by a single call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDataSetRevisionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        },
+        "Revisions":{
+          "shape":"ListOfRevisionEntry",
+          "documentation":"<p>The asset objects listed by the request.</p>"
+        }
+      }
+    },
+    "ListDataSetsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned by a single call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "Origin":{
+          "shape":"__string",
+          "documentation":"<p>A property that defines the data set as OWNED by the account (for providers) or ENTITLED to the account (for subscribers).</p>",
+          "location":"querystring",
+          "locationName":"origin"
+        }
+      }
+    },
+    "ListDataSetsResponse":{
+      "type":"structure",
+      "members":{
+        "DataSets":{
+          "shape":"ListOfDataSetEntry",
+          "documentation":"<p>The data set objects listed by the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        }
+      }
+    },
+    "ListEventActionsRequest":{
+      "type":"structure",
+      "members":{
+        "EventSourceId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the event source.</p>",
+          "location":"querystring",
+          "locationName":"eventSourceId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned by a single call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListEventActionsResponse":{
+      "type":"structure",
+      "members":{
+        "EventActions":{
+          "shape":"ListOfEventActionEntry",
+          "documentation":"<p>The event action objects listed by the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        }
+      }
+    },
+    "ListJobsRequest":{
+      "type":"structure",
+      "members":{
+        "DataSetId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"querystring",
+          "locationName":"dataSetId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned by a single call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "RevisionId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"querystring",
+          "locationName":"revisionId"
+        }
+      }
+    },
+    "ListJobsResponse":{
+      "type":"structure",
+      "members":{
+        "Jobs":{
+          "shape":"ListOfJobEntry",
+          "documentation":"<p>The jobs listed by the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        }
+      }
+    },
+    "ListOfAssetDestinationEntry":{
+      "type":"list",
+      "member":{"shape":"AssetDestinationEntry"}
+    },
+    "ListOfAssetEntry":{
+      "type":"list",
+      "member":{"shape":"AssetEntry"}
+    },
+    "ListOfAssetSourceEntry":{
+      "type":"list",
+      "member":{"shape":"AssetSourceEntry"}
+    },
+    "ListOfDataGrantSummaryEntry":{
+      "type":"list",
+      "member":{"shape":"DataGrantSummaryEntry"}
+    },
+    "ListOfDataSetEntry":{
+      "type":"list",
+      "member":{"shape":"DataSetEntry"}
+    },
+    "ListOfDatabaseLFTagPolicyPermissions":{
+      "type":"list",
+      "member":{"shape":"DatabaseLFTagPolicyPermission"}
+    },
+    "ListOfEventActionEntry":{
+      "type":"list",
+      "member":{"shape":"EventActionEntry"}
+    },
+    "ListOfJobEntry":{
+      "type":"list",
+      "member":{"shape":"JobEntry"}
+    },
+    "ListOfJobError":{
+      "type":"list",
+      "member":{"shape":"JobError"}
+    },
+    "ListOfKmsKeysToGrant":{
+      "type":"list",
+      "member":{"shape":"KmsKeyToGrant"},
+      "max":10,
+      "min":1
+    },
+    "ListOfLFPermissions":{
+      "type":"list",
+      "member":{"shape":"LFPermission"}
+    },
+    "ListOfLFTagValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ListOfLFTags":{
+      "type":"list",
+      "member":{"shape":"LFTag"}
+    },
+    "ListOfLakeFormationTagPolicies":{
+      "type":"list",
+      "member":{"shape":"LakeFormationTagPolicyDetails"}
+    },
+    "ListOfReceivedDataGrantSummariesEntry":{
+      "type":"list",
+      "member":{"shape":"ReceivedDataGrantSummariesEntry"}
+    },
+    "ListOfRedshiftDataShareAssetSourceEntry":{
+      "type":"list",
+      "member":{"shape":"RedshiftDataShareAssetSourceEntry"}
+    },
+    "ListOfRedshiftDataShares":{
+      "type":"list",
+      "member":{"shape":"RedshiftDataShareDetails"}
+    },
+    "ListOfRevisionDestinationEntry":{
+      "type":"list",
+      "member":{"shape":"RevisionDestinationEntry"}
+    },
+    "ListOfRevisionEntry":{
+      "type":"list",
+      "member":{"shape":"RevisionEntry"}
+    },
+    "ListOfS3DataAccesses":{
+      "type":"list",
+      "member":{"shape":"S3DataAccessDetails"}
+    },
+    "ListOfSchemaChangeDetails":{
+      "type":"list",
+      "member":{"shape":"SchemaChangeDetails"}
+    },
+    "ListOfTableTagPolicyLFPermissions":{
+      "type":"list",
+      "member":{"shape":"TableTagPolicyLFPermission"}
+    },
+    "ListOf__string":{
+      "type":"list",
+      "member":{"shape":"__string"}
+    },
+    "ListReceivedDataGrantsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to be included in the next page.</p>",
+          "box":true,
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The pagination token used to retrieve the next page of results for this operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "AcceptanceState":{
+          "shape":"AcceptanceStateFilterValues",
+          "documentation":"<p>The acceptance state of the data grants to list.</p>",
+          "location":"querystring",
+          "locationName":"acceptanceState"
+        }
+      }
+    },
+    "ListReceivedDataGrantsResponse":{
+      "type":"structure",
+      "members":{
+        "DataGrantSummaries":{
+          "shape":"ListOfReceivedDataGrantSummariesEntry",
+          "documentation":"<p>An object that contains a list of received data grant information.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token used to retrieve the next page of results for this operation.</p>"
+        }
+      }
+    },
+    "ListRevisionAssetsRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned by a single call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"__string",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "ListRevisionAssetsResponse":{
+      "type":"structure",
+      "members":{
+        "Assets":{
+          "shape":"ListOfAssetEntry",
+          "documentation":"<p>The asset objects listed by the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token value retrieved from a previous call to access the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"__string",
+          "documentation":"<p>An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>A label that consists of a customer-defined key and an optional value.</p>",
+          "locationName":"tags"
+        }
+      }
+    },
+    "MapOf__string":{
+      "type":"map",
+      "key":{"shape":"__string"},
+      "value":{"shape":"__string"}
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":200,
+      "min":1
+    },
+    "Name":{"type":"string"},
+    "NextToken":{"type":"string"},
+    "NotificationDetails":{
+      "type":"structure",
+      "members":{
+        "DataUpdate":{
+          "shape":"DataUpdateRequestDetails",
+          "documentation":"<p>Extra details specific to a data update type notification.</p>"
+        },
+        "Deprecation":{
+          "shape":"DeprecationRequestDetails",
+          "documentation":"<p>Extra details specific to a deprecation type notification.</p>"
+        },
+        "SchemaChange":{
+          "shape":"SchemaChangeRequestDetails",
+          "documentation":"<p>Extra details specific to a schema change type notification.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to this notification.</p>"
+    },
+    "NotificationType":{
+      "type":"string",
+      "enum":[
+        "DATA_DELAY",
+        "DATA_UPDATE",
+        "DEPRECATION",
+        "SCHEMA_CHANGE"
+      ]
+    },
+    "Origin":{
+      "type":"string",
+      "enum":[
+        "OWNED",
+        "ENTITLED"
+      ]
+    },
+    "OriginDetails":{
+      "type":"structure",
+      "members":{
+        "ProductId":{
+          "shape":"__string",
+          "documentation":"<p>The product ID of the origin of the data set.</p>"
+        },
+        "DataGrantId":{
+          "shape":"__string",
+          "documentation":"<p>The ID of the data grant.</p>"
+        }
+      },
+      "documentation":"<p>Details about the origin of the data set.</p>"
+    },
+    "ProtocolType":{
+      "type":"string",
+      "enum":["REST"]
+    },
+    "ReceivedDataGrantSummariesEntry":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "SenderPrincipal",
+        "ReceiverPrincipal",
+        "AcceptanceState",
+        "DataSetId",
+        "Id",
+        "Arn",
+        "CreatedAt",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DataGrantName",
+          "documentation":"<p>The name of the data grant.</p>"
+        },
+        "SenderPrincipal":{
+          "shape":"SenderPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant sender.</p>"
+        },
+        "ReceiverPrincipal":{
+          "shape":"ReceiverPrincipal",
+          "documentation":"<p>The Amazon Web Services account ID of the data grant receiver.</p>"
+        },
+        "AcceptanceState":{
+          "shape":"DataGrantAcceptanceState",
+          "documentation":"<p>The acceptance state of the data grant.</p>"
+        },
+        "AcceptedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was accepted.</p>"
+        },
+        "EndsAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when access to the associated data set ends.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data set associated to the data grant.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the data grant.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the data grant.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the data grant was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Information about a received data grant.</p>"
+    },
+    "ReceiverPrincipal":{
+      "type":"string",
+      "pattern":"\\d{12}"
+    },
+    "RedshiftDataShareAsset":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the datashare asset.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Redshift datashare asset.</p>"
+    },
+    "RedshiftDataShareAssetSourceEntry":{
+      "type":"structure",
+      "required":["DataShareArn"],
+      "members":{
+        "DataShareArn":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the datashare asset.</p>"
+        }
+      },
+      "documentation":"<p>The source of the Amazon Redshift datashare asset.</p>"
+    },
+    "RedshiftDataShareDetails":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Database"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"__string",
+          "documentation":"<p>The ARN of the underlying Redshift data share that is being affected by this notification.</p>"
+        },
+        "Database":{
+          "shape":"__string",
+          "documentation":"<p>The database name in the Redshift data share that is being affected by this notification.</p>"
+        },
+        "Function":{
+          "shape":"__string",
+          "documentation":"<p>A function name in the Redshift database that is being affected by this notification.</p>"
+        },
+        "Table":{
+          "shape":"__string",
+          "documentation":"<p>A table name in the Redshift database that is being affected by this notification.</p>"
+        },
+        "Schema":{
+          "shape":"__string",
+          "documentation":"<p>A schema name in the Redshift database that is being affected by this notification.</p>"
+        },
+        "View":{
+          "shape":"__string",
+          "documentation":"<p>A view name in the Redshift database that is being affected by this notification.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to the affected scope in this Redshift data set.</p>"
+    },
+    "RequestDetails":{
+      "type":"structure",
+      "members":{
+        "ExportAssetToSignedUrl":{
+          "shape":"ExportAssetToSignedUrlRequestDetails",
+          "documentation":"<p>Details about the export to signed URL request.</p>"
+        },
+        "ExportAssetsToS3":{
+          "shape":"ExportAssetsToS3RequestDetails",
+          "documentation":"<p>Details about the export to Amazon S3 request.</p>"
+        },
+        "ExportRevisionsToS3":{
+          "shape":"ExportRevisionsToS3RequestDetails",
+          "documentation":"<p>Details about the export to Amazon S3 request.</p>"
+        },
+        "ImportAssetFromSignedUrl":{
+          "shape":"ImportAssetFromSignedUrlRequestDetails",
+          "documentation":"<p>Details about the import from Amazon S3 request.</p>"
+        },
+        "ImportAssetsFromS3":{
+          "shape":"ImportAssetsFromS3RequestDetails",
+          "documentation":"<p>Details about the import asset from API Gateway API request.</p>"
+        },
+        "ImportAssetsFromRedshiftDataShares":{
+          "shape":"ImportAssetsFromRedshiftDataSharesRequestDetails",
+          "documentation":"<p>Details from an import from Amazon Redshift datashare request.</p>"
+        },
+        "ImportAssetFromApiGatewayApi":{
+          "shape":"ImportAssetFromApiGatewayApiRequestDetails",
+          "documentation":"<p>Details about the import from signed URL request.</p>"
+        },
+        "CreateS3DataAccessFromS3Bucket":{
+          "shape":"CreateS3DataAccessFromS3BucketRequestDetails",
+          "documentation":"<p>Details of the request to create S3 data access from the Amazon S3 bucket.</p>"
+        },
+        "ImportAssetsFromLakeFormationTagPolicy":{
+          "shape":"ImportAssetsFromLakeFormationTagPolicyRequestDetails",
+          "documentation":"<p>Request details for the ImportAssetsFromLakeFormationTagPolicy job.</p>"
+        }
+      },
+      "documentation":"<p>The details for the request.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The resource couldn't be found.</p>"
+        },
+        "ResourceId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the resource that couldn't be found.</p>"
+        },
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of resource that couldn't be found.</p>"
+        }
+      },
+      "documentation":"<p>The resource couldn't be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "DATA_SET",
+        "REVISION",
+        "ASSET",
+        "JOB",
+        "EVENT_ACTION",
+        "DATA_GRANT"
+      ]
+    },
+    "ResponseDetails":{
+      "type":"structure",
+      "members":{
+        "ExportAssetToSignedUrl":{
+          "shape":"ExportAssetToSignedUrlResponseDetails",
+          "documentation":"<p>Details for the export to signed URL response.</p>"
+        },
+        "ExportAssetsToS3":{
+          "shape":"ExportAssetsToS3ResponseDetails",
+          "documentation":"<p>Details for the export to Amazon S3 response.</p>"
+        },
+        "ExportRevisionsToS3":{
+          "shape":"ExportRevisionsToS3ResponseDetails",
+          "documentation":"<p>Details for the export revisions to Amazon S3 response.</p>"
+        },
+        "ImportAssetFromSignedUrl":{
+          "shape":"ImportAssetFromSignedUrlResponseDetails",
+          "documentation":"<p>Details for the import from signed URL response.</p>"
+        },
+        "ImportAssetsFromS3":{
+          "shape":"ImportAssetsFromS3ResponseDetails",
+          "documentation":"<p>Details for the import from Amazon S3 response.</p>"
+        },
+        "ImportAssetsFromRedshiftDataShares":{
+          "shape":"ImportAssetsFromRedshiftDataSharesResponseDetails",
+          "documentation":"<p>Details from an import from Amazon Redshift datashare response.</p>"
+        },
+        "ImportAssetFromApiGatewayApi":{
+          "shape":"ImportAssetFromApiGatewayApiResponseDetails",
+          "documentation":"<p>The response details.</p>"
+        },
+        "CreateS3DataAccessFromS3Bucket":{
+          "shape":"CreateS3DataAccessFromS3BucketResponseDetails",
+          "documentation":"<p>Response details from the CreateS3DataAccessFromS3Bucket job.</p>"
+        },
+        "ImportAssetsFromLakeFormationTagPolicy":{
+          "shape":"ImportAssetsFromLakeFormationTagPolicyResponseDetails",
+          "documentation":"<p>Response details from the ImportAssetsFromLakeFormationTagPolicy job.</p>"
+        }
+      },
+      "documentation":"<p>Details for the response.</p>"
+    },
+    "RevisionDestinationEntry":{
+      "type":"structure",
+      "required":[
+        "Bucket",
+        "RevisionId"
+      ],
+      "members":{
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket that is the destination for the assets in the revision.</p>"
+        },
+        "KeyPattern":{
+          "shape":"__string",
+          "documentation":"<p>A string representing the pattern for generated names of the individual assets in the revision. For more information about key patterns, see <a href=\"https://docs.aws.amazon.com/data-exchange/latest/userguide/jobs.html#revision-export-keypatterns\">Key patterns when exporting revisions</a>.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        }
+      },
+      "documentation":"<p>The destination where the assets in the revision will be exported.</p>"
+    },
+    "RevisionEntry":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreatedAt",
+        "DataSetId",
+        "Id",
+        "UpdatedAt"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the revision.</p>"
+        },
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the data set revision.</p>"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>To publish a revision to a data set in a product, the revision must first be finalized. Finalizing a revision tells AWS Data Exchange that your changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products. Finalized revisions can be published through the AWS Data Exchange console or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace Catalog API action. When using the API, revisions are uniquely identified by their ARN.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID of the owned revision corresponding to the entitled revision being viewed. This parameter is returned when a revision owner is viewing the entitled copy of its owned revision.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was last updated, in ISO 8601 format.</p>"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        },
+        "Revoked":{
+          "shape":"__boolean",
+          "documentation":"<p>A status indicating that subscribers' access to the revision was revoked.</p>"
+        },
+        "RevokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was revoked, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>A revision is a container for one or more assets.</p>"
+    },
+    "RevisionPublished":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID of the published revision.</p>"
+        }
+      },
+      "documentation":"<p>Information about the published revision.</p>"
+    },
+    "RevokeRevisionRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionId",
+        "RevocationComment"
+      ],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        }
+      }
+    },
+    "RevokeRevisionResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the revision.</p>"
+        },
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the data set revision.</p>"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>To publish a revision to a data set in a product, the revision must first be finalized. Finalizing a revision tells AWS Data Exchange that changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products. Finalized revisions can be published through the AWS Data Exchange console or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace Catalog API action. When using the API, revisions are uniquely identified by their ARN.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID of the owned revision corresponding to the entitled revision being viewed. This parameter is returned when a revision owner is viewing the entitled copy of its owned revision.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was last updated, in ISO 8601 format.</p>"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        },
+        "Revoked":{
+          "shape":"__boolean",
+          "documentation":"<p>A status indicating that subscribers' access to the revision was revoked.</p>"
+        },
+        "RevokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was revoked, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "RoleArn":{
+      "type":"string",
+      "pattern":"arn:aws:iam::(\\d{12}):role\\/.+"
+    },
+    "S3DataAccessAsset":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket hosting data to be shared in the S3 data access.</p>"
+        },
+        "KeyPrefixes":{
+          "shape":"ListOf__string",
+          "documentation":"<p>The Amazon S3 bucket used for hosting shared data in the Amazon S3 data access.</p>"
+        },
+        "Keys":{
+          "shape":"ListOf__string",
+          "documentation":"<p>S3 keys made available using this asset.</p>"
+        },
+        "S3AccessPointAlias":{
+          "shape":"__string",
+          "documentation":"<p>The automatically-generated bucket-style alias for your Amazon S3 Access Point. Customers can access their entitled data using the S3 Access Point alias.</p>"
+        },
+        "S3AccessPointArn":{
+          "shape":"__string",
+          "documentation":"<p>The ARN for your Amazon S3 Access Point. Customers can also access their entitled data using the S3 Access Point ARN.</p>"
+        },
+        "KmsKeysToGrant":{
+          "shape":"ListOfKmsKeysToGrant",
+          "documentation":"<p> List of AWS KMS CMKs (Key Management System Customer Managed Keys) and ARNs used to encrypt S3 objects being shared in this S3 Data Access asset. Providers must include all AWS KMS keys used to encrypt these shared S3 objects.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 data access that is the asset.</p>"
+    },
+    "S3DataAccessAssetSourceEntry":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"__string",
+          "documentation":"<p>The Amazon S3 bucket used for hosting shared data in the Amazon S3 data access.</p>"
+        },
+        "KeyPrefixes":{
+          "shape":"ListOf__string",
+          "documentation":"<p>Organizes Amazon S3 asset key prefixes stored in an Amazon S3 bucket.</p>"
+        },
+        "Keys":{
+          "shape":"ListOf__string",
+          "documentation":"<p>The keys used to create the Amazon S3 data access.</p>"
+        },
+        "KmsKeysToGrant":{
+          "shape":"ListOfKmsKeysToGrant",
+          "documentation":"<p>List of AWS KMS CMKs (Key Management System Customer Managed Keys) and ARNs used to encrypt S3 objects being shared in this S3 Data Access asset.</p>"
+        }
+      },
+      "documentation":"<p>Source details for an Amazon S3 data access asset.</p>"
+    },
+    "S3DataAccessDetails":{
+      "type":"structure",
+      "members":{
+        "KeyPrefixes":{
+          "shape":"ListOf__string",
+          "documentation":"<p>A list of the key prefixes affected by this notification. This can have up to 50 entries.</p>"
+        },
+        "Keys":{
+          "shape":"ListOf__string",
+          "documentation":"<p>A list of the keys affected by this notification. This can have up to 50 entries.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to the affected scope in this S3 Data Access data set.</p>"
+    },
+    "S3SnapshotAsset":{
+      "type":"structure",
+      "required":["Size"],
+      "members":{
+        "Size":{
+          "shape":"__doubleMin0",
+          "documentation":"<p>The size of the Amazon S3 object that is the object.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 object that is the asset.</p>"
+    },
+    "SchemaChangeDetails":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Type"
+      ],
+      "members":{
+        "Name":{
+          "shape":"__string",
+          "documentation":"<p>Name of the changing field. This value can be up to 255 characters long.</p>"
+        },
+        "Type":{
+          "shape":"SchemaChangeType",
+          "documentation":"<p>Is the field being added, removed, or modified?</p>"
+        },
+        "Description":{
+          "shape":"__string",
+          "documentation":"<p>Description of what's changing about this field. This value can be up to 512 characters long.</p>"
+        }
+      },
+      "documentation":"<p>Object encompassing information about a schema change to a single, particular field, a notification can have up to 100 of these.</p>"
+    },
+    "SchemaChangeRequestDetails":{
+      "type":"structure",
+      "required":["SchemaChangeAt"],
+      "members":{
+        "Changes":{
+          "shape":"ListOfSchemaChangeDetails",
+          "documentation":"<p>List of schema changes happening in the scope of this notification. This can have up to 100 entries.</p>"
+        },
+        "SchemaChangeAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>A date in the future when the schema change is taking effect.</p>"
+        }
+      },
+      "documentation":"<p>Extra details specific to this schema change type notification.</p>"
+    },
+    "SchemaChangeType":{
+      "type":"string",
+      "enum":[
+        "ADD",
+        "REMOVE",
+        "MODIFY"
+      ]
+    },
+    "ScopeDetails":{
+      "type":"structure",
+      "members":{
+        "LakeFormationTagPolicies":{
+          "shape":"ListOfLakeFormationTagPolicies",
+          "documentation":"<p>Underlying LF resources that will be affected by this notification.</p>"
+        },
+        "RedshiftDataShares":{
+          "shape":"ListOfRedshiftDataShares",
+          "documentation":"<p>Underlying Redshift resources that will be affected by this notification.</p>"
+        },
+        "S3DataAccesses":{
+          "shape":"ListOfS3DataAccesses",
+          "documentation":"<p>Underlying S3 resources that will be affected by this notification.</p>"
+        }
+      },
+      "documentation":"<p>Details about the scope of the notifications such as the affected resources.</p>"
+    },
+    "SendApiAssetRequest":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "Body":{
+          "shape":"__string",
+          "documentation":"<p>The request body.</p>"
+        },
+        "QueryStringParameters":{
+          "shape":"MapOf__string",
+          "documentation":"<p>Attach query string parameters to the end of the URI (for example, /v1/examplePath?exampleParam=exampleValue).</p>",
+          "location":"querystring"
+        },
+        "AssetId":{
+          "shape":"__string",
+          "documentation":"<p>Asset ID value for the API request.</p>",
+          "location":"header",
+          "locationName":"x-amzn-dataexchange-asset-id"
+        },
+        "DataSetId":{
+          "shape":"__string",
+          "documentation":"<p>Data set ID value for the API request.</p>",
+          "location":"header",
+          "locationName":"x-amzn-dataexchange-data-set-id"
+        },
+        "RequestHeaders":{
+          "shape":"MapOf__string",
+          "documentation":"<p>Any header value prefixed with x-amzn-dataexchange-header- will have that stripped before sending the Asset API request. Use this when you want to override a header that AWS Data Exchange uses. Alternatively, you can use the header without a prefix to the HTTP request.</p>",
+          "location":"headers",
+          "locationName":"x-amzn-dataexchange-header-"
+        },
+        "Method":{
+          "shape":"__string",
+          "documentation":"<p>HTTP method value for the API request. Alternatively, you can use the appropriate verb in your request.</p>",
+          "location":"header",
+          "locationName":"x-amzn-dataexchange-http-method"
+        },
+        "Path":{
+          "shape":"__string",
+          "documentation":"<p>URI path value for the API request. Alternatively, you can set the URI path directly by invoking /v1/{pathValue}.</p>",
+          "location":"header",
+          "locationName":"x-amzn-dataexchange-path"
+        },
+        "RevisionId":{
+          "shape":"__string",
+          "documentation":"<p>Revision ID value for the API request.</p>",
+          "location":"header",
+          "locationName":"x-amzn-dataexchange-revision-id"
+        }
+      },
+      "payload":"Body"
+    },
+    "SendApiAssetResponse":{
+      "type":"structure",
+      "members":{
+        "Body":{
+          "shape":"__string",
+          "documentation":"<p>The response body from the underlying API tracked by the API asset.</p>"
+        },
+        "ResponseHeaders":{
+          "shape":"MapOf__string",
+          "documentation":"<p>The response headers from the underlying API tracked by the API asset.</p>",
+          "location":"headers",
+          "locationName":""
+        }
+      },
+      "payload":"Body"
+    },
+    "SendDataSetNotificationRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "Type"
+      ],
+      "members":{
+        "Scope":{
+          "shape":"ScopeDetails",
+          "documentation":"<p>Affected scope of this notification such as the underlying resources affected by the notification event.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Idempotency key for the notification, this key allows us to deduplicate notifications that are sent in quick succession erroneously.</p>",
+          "idempotencyToken":true
+        },
+        "Comment":{
+          "shape":"__stringMin0Max4096",
+          "documentation":"<p>Free-form text field for providers to add information about their notifications.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>Affected data set of the notification.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "Details":{
+          "shape":"NotificationDetails",
+          "documentation":"<p>Extra details specific to this notification type.</p>"
+        },
+        "Type":{
+          "shape":"NotificationType",
+          "documentation":"<p>The type of the notification. Describing the kind of event the notification is alerting you to.</p>"
+        }
+      }
+    },
+    "SendDataSetNotificationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "SenderPrincipal":{
+      "type":"string",
+      "pattern":"\\d{12}"
+    },
+    "ServerSideEncryptionTypes":{
+      "type":"string",
+      "enum":[
+        "aws:kms",
+        "AES256"
+      ]
+    },
+    "ServiceLimitExceededException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "LimitName":{
+          "shape":"LimitName",
+          "documentation":"<p>The name of the limit that was reached.</p>"
+        },
+        "LimitValue":{
+          "shape":"__double",
+          "documentation":"<p>The value of the exceeded limit.</p>"
+        },
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The request has exceeded the quotas imposed by the service.</p>"
+        }
+      },
+      "documentation":"<p>The request has exceeded the quotas imposed by the service.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "StartJobRequest":{
+      "type":"structure",
+      "required":["JobId"],
+      "members":{
+        "JobId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a job.</p>",
+          "location":"uri",
+          "locationName":"JobId"
+        }
+      }
+    },
+    "StartJobResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "State":{
+      "type":"string",
+      "enum":[
+        "WAITING",
+        "IN_PROGRESS",
+        "ERROR",
+        "COMPLETED",
+        "CANCELLED",
+        "TIMED_OUT"
+      ]
+    },
+    "String":{"type":"string"},
+    "TableLFTagPolicy":{
+      "type":"structure",
+      "required":["Expression"],
+      "members":{
+        "Expression":{
+          "shape":"ListOfLFTags",
+          "documentation":"<p>A list of LF-tag conditions that apply to table resources.</p>"
+        }
+      },
+      "documentation":"<p>The LF-tag policy for a table resource.</p>"
+    },
+    "TableLFTagPolicyAndPermissions":{
+      "type":"structure",
+      "required":[
+        "Expression",
+        "Permissions"
+      ],
+      "members":{
+        "Expression":{
+          "shape":"ListOfLFTags",
+          "documentation":"<p>A list of LF-tag conditions that apply to table resources.</p>"
+        },
+        "Permissions":{
+          "shape":"ListOfTableTagPolicyLFPermissions",
+          "documentation":"<p>The permissions granted to subscribers on table resources.</p>"
+        }
+      },
+      "documentation":"<p>The LF-tag policy and permissions that apply to table resources.</p>"
+    },
+    "TableTagPolicyLFPermission":{
+      "type":"string",
+      "enum":[
+        "DESCRIBE",
+        "SELECT"
+      ]
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"__string",
+          "documentation":"<p>An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"MapOf__string",
+          "documentation":"<p>A label that consists of a customer-defined key and an optional value.</p>",
+          "locationName":"tags"
+        }
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The limit on the number of requests per second was exceeded.</p>"
+        }
+      },
+      "documentation":"<p>The limit on the number of requests per second was exceeded.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "Type":{
+      "type":"string",
+      "enum":[
+        "IMPORT_ASSETS_FROM_S3",
+        "IMPORT_ASSET_FROM_SIGNED_URL",
+        "EXPORT_ASSETS_TO_S3",
+        "EXPORT_ASSET_TO_SIGNED_URL",
+        "EXPORT_REVISIONS_TO_S3",
+        "IMPORT_ASSETS_FROM_REDSHIFT_DATA_SHARES",
+        "IMPORT_ASSET_FROM_API_GATEWAY_API",
+        "CREATE_S3_DATA_ACCESS_FROM_S3_BUCKET",
+        "IMPORT_ASSETS_FROM_LAKE_FORMATION_TAG_POLICY"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"__string",
+          "documentation":"<p>An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"ListOf__string",
+          "documentation":"<p>The key tags.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UpdateAssetRequest":{
+      "type":"structure",
+      "required":[
+        "AssetId",
+        "DataSetId",
+        "Name",
+        "RevisionId"
+      ],
+      "members":{
+        "AssetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for an asset.</p>",
+          "location":"uri",
+          "locationName":"AssetId"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "Name":{
+          "shape":"AssetName",
+          "documentation":"<p>The name of the asset. When importing from Amazon S3, the Amazon S3 object key is used as the asset name. When exporting to Amazon S3, the asset name is used as default target Amazon S3 object key. When importing from Amazon API Gateway API, the API name is used as the asset name. When importing from Amazon Redshift, the datashare name is used as the asset name. When importing from AWS Lake Formation, the static values of \"Database(s) included in the LF-tag policy\" or \"Table(s) included in LF-tag policy\" are used as the name.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "UpdateAssetResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the asset.</p>"
+        },
+        "AssetDetails":{
+          "shape":"AssetDetails",
+          "documentation":"<p>Details about the asset.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with this asset.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the asset.</p>"
+        },
+        "Name":{
+          "shape":"AssetName",
+          "documentation":"<p>The name of the asset. When importing from Amazon S3, the Amazon S3 object key is used as the asset name. When exporting to Amazon S3, the asset name is used as default target Amazon S3 object key. When importing from Amazon API Gateway API, the API name is used as the asset name. When importing from Amazon Redshift, the datashare name is used as the asset name. When importing from AWS Lake Formation, the static values of \"Database(s) included in the LF-tag policy\"- or \"Table(s) included in LF-tag policy\" are used as the asset name.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision associated with this asset.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The asset ID of the owned asset corresponding to the entitled asset being viewed. This parameter is returned when an asset owner is viewing the entitled copy of its owned asset.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the asset was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "UpdateDataSetRequest":{
+      "type":"structure",
+      "required":["DataSetId"],
+      "members":{
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the data set.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        }
+      }
+    },
+    "UpdateDataSetResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the data set.</p>"
+        },
+        "AssetType":{
+          "shape":"AssetType",
+          "documentation":"<p>The type of asset that is added to a data set.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was created, in ISO 8601 format.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the data set.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "Origin":{
+          "shape":"Origin",
+          "documentation":"<p>A property that defines the data set as OWNED by the account (for providers) or ENTITLED to the account (for subscribers).</p>"
+        },
+        "OriginDetails":{
+          "shape":"OriginDetails",
+          "documentation":"<p>If the origin of this data set is ENTITLED, includes the details for the product on AWS Marketplace.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The data set ID of the owned data set corresponding to the entitled data set being viewed. This parameter is returned when a data set owner is viewing the entitled copy of its owned data set.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the data set was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "UpdateEventActionRequest":{
+      "type":"structure",
+      "required":["EventActionId"],
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "EventActionId":{
+          "shape":"__string",
+          "documentation":"<p>The unique identifier for the event action.</p>",
+          "location":"uri",
+          "locationName":"EventActionId"
+        }
+      }
+    },
+    "UpdateEventActionResponse":{
+      "type":"structure",
+      "members":{
+        "Action":{
+          "shape":"Action",
+          "documentation":"<p>What occurs after a certain event.</p>"
+        },
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the event action.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was created, in ISO 8601 format.</p>"
+        },
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>What occurs to start an action.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the event action.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the event action was last updated, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "UpdateRevisionRequest":{
+      "type":"structure",
+      "required":[
+        "DataSetId",
+        "RevisionId"
+      ],
+      "members":{
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a data set.</p>",
+          "location":"uri",
+          "locationName":"DataSetId"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>Finalizing a revision tells AWS Data Exchange that your changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products.</p>"
+        },
+        "RevisionId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for a revision.</p>",
+          "location":"uri",
+          "locationName":"RevisionId"
+        }
+      }
+    },
+    "UpdateRevisionResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN for the revision.</p>"
+        },
+        "Comment":{
+          "shape":"__stringMin0Max16384",
+          "documentation":"<p>An optional comment about the revision.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was created, in ISO 8601 format.</p>"
+        },
+        "DataSetId":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the data set associated with the data set revision.</p>"
+        },
+        "Finalized":{
+          "shape":"__boolean",
+          "documentation":"<p>To publish a revision to a data set in a product, the revision must first be finalized. Finalizing a revision tells AWS Data Exchange that changes to the assets in the revision are complete. After it's in this read-only state, you can publish the revision to your products. Finalized revisions can be published through the AWS Data Exchange console or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace Catalog API action. When using the API, revisions are uniquely identified by their ARN.</p>"
+        },
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The unique identifier for the revision.</p>"
+        },
+        "SourceId":{
+          "shape":"Id",
+          "documentation":"<p>The revision ID of the owned revision corresponding to the entitled revision being viewed. This parameter is returned when a revision owner is viewing the entitled copy of its owned revision.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was last updated, in ISO 8601 format.</p>"
+        },
+        "RevocationComment":{
+          "shape":"__stringMin10Max512",
+          "documentation":"<p>A required comment to inform subscribers of the reason their access to the revision was revoked.</p>"
+        },
+        "Revoked":{
+          "shape":"__boolean",
+          "documentation":"<p>A status indicating that subscribers' access to the revision was revoked.</p>"
+        },
+        "RevokedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time that the revision was revoked, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{
+          "shape":"__string",
+          "documentation":"<p>The message that informs you about what was invalid about the request.</p>"
+        },
+        "ExceptionCause":{
+          "shape":"ExceptionCause",
+          "documentation":"<p>The unique identifier for the resource that couldn't be found.</p>"
+        }
+      },
+      "documentation":"<p>The request was invalid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "__boolean":{"type":"boolean"},
+    "__double":{"type":"double"},
+    "__doubleMin0":{"type":"double"},
+    "__string":{"type":"string"},
+    "__stringMin0Max16384":{
+      "type":"string",
+      "max":16384,
+      "min":0
+    },
+    "__stringMin0Max4096":{
+      "type":"string",
+      "max":4096,
+      "min":0
+    },
+    "__stringMin10Max512":{
+      "type":"string",
+      "max":512,
+      "min":10
+    },
+    "__stringMin24Max24PatternAZaZ094AZaZ092AZaZ093":{
+      "type":"string",
+      "max":24,
+      "min":24,
+      "pattern":"(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?"
+    }
+  },
+  "documentation":"<p>AWS Data Exchange is a service that makes it easy for AWS customers to exchange data in the cloud. You can use the AWS Data Exchange APIs to create, update, manage, and access file-based data set in the AWS Cloud.</p> <p>As a subscriber, you can view and access the data sets that you have an entitlement to through a subscription. You can use the APIs to download or copy your entitled data sets to Amazon Simple Storage Service (Amazon S3) for use across a variety of AWS analytics and machine learning services.</p> <p>As a provider, you can create and manage your data sets that you would like to publish to a product. Being able to package and provide your data sets into products requires a few steps to determine eligibility. For more information, visit the <i>AWS Data Exchange User Guide</i>.</p> <p>A data set is a collection of data that can be changed or updated over time. Data sets can be updated using revisions, which represent a new version or incremental change to a data set. A revision contains one or more assets. An asset in AWS Data Exchange is a piece of data that can be stored as an Amazon S3 object, Redshift datashare, API Gateway API, AWS Lake Formation data permission, or Amazon S3 data access. The asset can be a structured data file, an image file, or some other data file. Jobs are asynchronous import or export operations used to create or copy assets.</p>"
+}

@@ -1,0 +1,309 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Organization": {
+      "operation": "ListOrganizations",
+      "resourceIdentifier": {
+        "OrganizationId": "OrganizationSummaries[].OrganizationId",
+        "Alias": "OrganizationSummaries[].Alias"
+      }
+    }
+  },
+  "operations": {
+    "AssociateDelegateToResource": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "AssociateMemberToGroup": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DeleteAlias": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      },
+      "Alias": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "Alias"
+          }
+        ]
+      }
+    },
+    "DeleteGroup": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DeleteMailboxPermissions": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DeleteResource": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DeleteUser": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DeregisterFromWorkMail": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeGroup": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeOrganization": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeResource": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DescribeUser": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DisassociateDelegateFromResource": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "DisassociateMemberFromGroup": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListAliases": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListGroupMembers": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListGroups": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListMailboxPermissions": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListResourceDelegates": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListResources": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ListUsers": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "PutMailboxPermissions": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "RegisterToWorkMail": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "ResetPassword": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "UpdatePrimaryEmailAddress": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    },
+    "UpdateResource": {
+      "OrganizationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Organization",
+            "resourceIdentifier": "OrganizationId"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,1271 @@
+{
+  "version": "1.0",
+  "resources": {
+    "AccessKey": {
+      "operation": "ListAccessKeys",
+      "resourceIdentifier": {
+        "AccessKeyId": "AccessKeyMetadata[].AccessKeyId"
+      }
+    },
+    "AccountAliase": {
+      "operation": "ListAccountAliases",
+      "resourceIdentifier": {
+        "AccountAliase": "AccountAliases[]"
+      }
+    },
+    "Group": {
+      "operation": "ListGroups",
+      "resourceIdentifier": {
+        "GroupName": "Groups[].GroupName"
+      }
+    },
+    "InstanceProfile": {
+      "operation": "ListInstanceProfiles",
+      "resourceIdentifier": {
+        "InstanceProfileName": "InstanceProfiles[].InstanceProfileName"
+      }
+    },
+    "Policy": {
+      "operation": "ListPolicies",
+      "resourceIdentifier": {
+        "PolicyName": "Policies[].PolicyName"
+      }
+    },
+    "Role": {
+      "operation": "ListRoles",
+      "resourceIdentifier": {
+        "RoleName": "Roles[].RoleName",
+        "Description": "Roles[].Description",
+        "MaxSessionDuration": "Roles[].MaxSessionDuration"
+      }
+    },
+    "SSHPublicKey": {
+      "operation": "ListSSHPublicKeys",
+      "resourceIdentifier": {
+        "SSHPublicKeyId": "SSHPublicKeys[].SSHPublicKeyId"
+      }
+    },
+    "ServerCertificate": {
+      "operation": "ListServerCertificates",
+      "resourceIdentifier": {
+        "ServerCertificateName": "ServerCertificateMetadataList[].ServerCertificateName"
+      }
+    },
+    "ServiceSpecificCredential": {
+      "operation": "ListServiceSpecificCredentials",
+      "resourceIdentifier": {
+        "ServiceSpecificCredentialId": "ServiceSpecificCredentials[].ServiceSpecificCredentialId",
+        "ServiceName": "ServiceSpecificCredentials[].ServiceName"
+      }
+    },
+    "SigningCertificate": {
+      "operation": "ListSigningCertificates",
+      "resourceIdentifier": {
+        "CertificateId": "Certificates[].CertificateId",
+        "CertificateBody": "Certificates[].CertificateBody",
+        "Status": "Certificates[].Status"
+      }
+    },
+    "User": {
+      "operation": "ListUsers",
+      "resourceIdentifier": {
+        "Path": "Users[].Path",
+        "UserName": "Users[].UserName",
+        "PermissionsBoundary": "Users[].PermissionsBoundary"
+      }
+    },
+    "VirtualMFADevice": {
+      "operation": "ListVirtualMFADevices",
+      "resourceIdentifier": {
+        "SerialNumber": "VirtualMFADevices[].SerialNumber"
+      }
+    }
+  },
+  "operations": {
+    "AddRoleToInstanceProfile": {
+      "InstanceProfileName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "InstanceProfileName"
+          }
+        ]
+      },
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "AddUserToGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "AttachGroupPolicy": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "AttachRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "AttachUserPolicy": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "DeactivateMFADevice": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SerialNumber": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VirtualMFADevice",
+            "resourceIdentifier": "SerialNumber"
+          }
+        ]
+      }
+    },
+    "DeleteAccessKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "AccessKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AccessKey",
+            "resourceIdentifier": "AccessKeyId"
+          }
+        ]
+      }
+    },
+    "DeleteAccountAlias": {
+      "AccountAlias": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AccountAliase",
+            "resourceIdentifier": "AccountAliase"
+          }
+        ]
+      }
+    },
+    "DeleteGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DeleteGroupPolicy": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "DeleteInstanceProfile": {
+      "InstanceProfileName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "InstanceProfileName"
+          }
+        ]
+      }
+    },
+    "DeleteLoginProfile": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "DeleteRole": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "DeleteRolePermissionsBoundary": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "DeleteRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "DeleteSSHPublicKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SSHPublicKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SSHPublicKey",
+            "resourceIdentifier": "SSHPublicKeyId"
+          }
+        ]
+      }
+    },
+    "DeleteServerCertificate": {
+      "ServerCertificateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServerCertificate",
+            "resourceIdentifier": "ServerCertificateName"
+          }
+        ]
+      }
+    },
+    "DeleteServiceLinkedRole": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "DeleteServiceSpecificCredential": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "ServiceSpecificCredentialId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServiceSpecificCredential",
+            "resourceIdentifier": "ServiceSpecificCredentialId"
+          }
+        ]
+      }
+    },
+    "DeleteSigningCertificate": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "CertificateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "CertificateId"
+          }
+        ]
+      }
+    },
+    "DeleteUser": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "DeleteUserPermissionsBoundary": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "DeleteUserPolicy": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "DeleteVirtualMFADevice": {
+      "SerialNumber": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VirtualMFADevice",
+            "resourceIdentifier": "SerialNumber"
+          }
+        ]
+      }
+    },
+    "DetachGroupPolicy": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "DetachRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "DetachUserPolicy": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "EnableMFADevice": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SerialNumber": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VirtualMFADevice",
+            "resourceIdentifier": "SerialNumber"
+          }
+        ]
+      }
+    },
+    "GetAccessKeyLastUsed": {
+      "AccessKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AccessKey",
+            "resourceIdentifier": "AccessKeyId"
+          }
+        ]
+      }
+    },
+    "GetGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "GetGroupPolicy": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "GetInstanceProfile": {
+      "InstanceProfileName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "InstanceProfileName"
+          }
+        ]
+      }
+    },
+    "GetLoginProfile": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "GetRole": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "GetRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "GetSSHPublicKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SSHPublicKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SSHPublicKey",
+            "resourceIdentifier": "SSHPublicKeyId"
+          }
+        ]
+      }
+    },
+    "GetServerCertificate": {
+      "ServerCertificateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServerCertificate",
+            "resourceIdentifier": "ServerCertificateName"
+          }
+        ]
+      }
+    },
+    "GetUser": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "GetUserPolicy": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "ListAccessKeys": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListAttachedGroupPolicies": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "ListAttachedRolePolicies": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "ListAttachedUserPolicies": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListGroupPolicies": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "ListGroupsForUser": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListInstanceProfilesForRole": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "ListMFADevices": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListRolePolicies": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "ListSSHPublicKeys": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListServiceSpecificCredentials": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "ServiceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServiceSpecificCredential",
+            "resourceIdentifier": "ServiceName"
+          }
+        ]
+      }
+    },
+    "ListSigningCertificates": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ListUserPolicies": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "PutGroupPolicy": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "PutRolePermissionsBoundary": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "PermissionsBoundary": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "PermissionsBoundary"
+          }
+        ]
+      }
+    },
+    "PutRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "PutUserPermissionsBoundary": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "PermissionsBoundary": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "PermissionsBoundary"
+          }
+        ]
+      }
+    },
+    "PutUserPolicy": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "PolicyName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Policy",
+            "resourceIdentifier": "PolicyName"
+          }
+        ]
+      }
+    },
+    "RemoveRoleFromInstanceProfile": {
+      "InstanceProfileName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "InstanceProfile",
+            "resourceIdentifier": "InstanceProfileName"
+          }
+        ]
+      },
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "RemoveUserFromGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      },
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "ResetServiceSpecificCredential": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "ServiceSpecificCredentialId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServiceSpecificCredential",
+            "resourceIdentifier": "ServiceSpecificCredentialId"
+          }
+        ]
+      }
+    },
+    "ResyncMFADevice": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SerialNumber": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VirtualMFADevice",
+            "resourceIdentifier": "SerialNumber"
+          }
+        ]
+      }
+    },
+    "UpdateAccessKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "AccessKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AccessKey",
+            "resourceIdentifier": "AccessKeyId"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "UpdateAssumeRolePolicy": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      }
+    },
+    "UpdateGroup": {
+      "GroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Group",
+            "resourceIdentifier": "GroupName"
+          }
+        ]
+      }
+    },
+    "UpdateLoginProfile": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "UpdateRole": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "MaxSessionDuration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "MaxSessionDuration"
+          }
+        ]
+      }
+    },
+    "UpdateRoleDescription": {
+      "RoleName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "RoleName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Role",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    },
+    "UpdateSSHPublicKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "SSHPublicKeyId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SSHPublicKey",
+            "resourceIdentifier": "SSHPublicKeyId"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "UpdateServerCertificate": {
+      "ServerCertificateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServerCertificate",
+            "resourceIdentifier": "ServerCertificateName"
+          }
+        ]
+      },
+      "NewServerCertificateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServerCertificate",
+            "resourceIdentifier": "ServerCertificateName"
+          }
+        ]
+      }
+    },
+    "UpdateServiceSpecificCredential": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "ServiceSpecificCredentialId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServiceSpecificCredential",
+            "resourceIdentifier": "ServiceSpecificCredentialId"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "UpdateSigningCertificate": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "CertificateId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "CertificateId"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "UpdateUser": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "UploadSSHPublicKey": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      }
+    },
+    "UploadServerCertificate": {
+      "Path": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "Path"
+          }
+        ]
+      },
+      "ServerCertificateName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ServerCertificate",
+            "resourceIdentifier": "ServerCertificateName"
+          }
+        ]
+      },
+      "CertificateBody": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "CertificateBody"
+          }
+        ]
+      }
+    },
+    "UploadSigningCertificate": {
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "User",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "CertificateBody": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SigningCertificate",
+            "resourceIdentifier": "CertificateBody"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Deployment": {
+      "operation": "ListDeployments",
+      "resourceIdentifier": {
+        "deployment": "deployments[]"
+      }
+    },
+    "OnPremisesInstance": {
+      "operation": "ListOnPremisesInstances",
+      "resourceIdentifier": {
+        "instanceName": "instanceNames[]"
+      }
+    }
+  },
+  "operations": {
+    "AddTagsToOnPremisesInstances": {
+      "instanceNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "BatchGetDeploymentInstances": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "BatchGetOnPremisesInstances": {
+      "instanceNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "ContinueDeployment": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "DeregisterOnPremisesInstance": {
+      "instanceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "GetDeployment": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "GetDeploymentInstance": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "GetOnPremisesInstance": {
+      "instanceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "ListDeploymentInstances": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "PutLifecycleEventHookExecutionStatus": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "RegisterOnPremisesInstance": {
+      "instanceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "RemoveTagsFromOnPremisesInstances": {
+      "instanceNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "OnPremisesInstance",
+            "resourceIdentifier": "instanceName"
+          }
+        ]
+      }
+    },
+    "SkipWaitTimeForInstanceTermination": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    },
+    "StopDeployment": {
+      "deploymentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Deployment",
+            "resourceIdentifier": "deployment"
+          }
+        ]
+      }
+    }
+  }
+}

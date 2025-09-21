@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "resources": {
+    "NamedQuery": {
+      "operation": "ListNamedQueries",
+      "resourceIdentifier": {
+        "NamedQueryId": "NamedQueryIds[]"
+      }
+    },
+    "QueryExecution": {
+      "operation": "ListQueryExecutions",
+      "resourceIdentifier": {
+        "QueryExecutionId": "QueryExecutionIds[]"
+      }
+    }
+  },
+  "operations": {
+    "BatchGetNamedQuery": {
+      "NamedQueryIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NamedQuery",
+            "resourceIdentifier": "NamedQueryId"
+          }
+        ]
+      }
+    },
+    "BatchGetQueryExecution": {
+      "QueryExecutionIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QueryExecution",
+            "resourceIdentifier": "QueryExecutionId"
+          }
+        ]
+      }
+    },
+    "DeleteNamedQuery": {
+      "NamedQueryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NamedQuery",
+            "resourceIdentifier": "NamedQueryId"
+          }
+        ]
+      }
+    },
+    "GetNamedQuery": {
+      "NamedQueryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NamedQuery",
+            "resourceIdentifier": "NamedQueryId"
+          }
+        ]
+      }
+    },
+    "GetQueryExecution": {
+      "QueryExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QueryExecution",
+            "resourceIdentifier": "QueryExecutionId"
+          }
+        ]
+      }
+    },
+    "GetQueryResults": {
+      "QueryExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QueryExecution",
+            "resourceIdentifier": "QueryExecutionId"
+          }
+        ]
+      }
+    },
+    "StopQueryExecution": {
+      "QueryExecutionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QueryExecution",
+            "resourceIdentifier": "QueryExecutionId"
+          }
+        ]
+      }
+    }
+  }
+}

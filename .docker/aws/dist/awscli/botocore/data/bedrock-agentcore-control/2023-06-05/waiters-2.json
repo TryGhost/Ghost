@@ -1,0 +1,26 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "MemoryCreated" : {
+      "delay" : 2,
+      "maxAttempts" : 60,
+      "operation" : "GetMemory",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "memory.status",
+        "state" : "retry",
+        "expected" : "CREATING"
+      }, {
+        "matcher" : "path",
+        "argument" : "memory.status",
+        "state" : "success",
+        "expected" : "ACTIVE"
+      }, {
+        "matcher" : "path",
+        "argument" : "memory.status",
+        "state" : "failure",
+        "expected" : "FAILED"
+      } ]
+    }
+  }
+}

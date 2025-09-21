@@ -1,0 +1,2977 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-02-28",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"bedrock-agentcore",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Bedrock AgentCore Data Plane Fronting Layer",
+    "serviceId":"Bedrock AgentCore",
+    "signatureVersion":"v4",
+    "signingName":"bedrock-agentcore",
+    "uid":"bedrock-agentcore-2024-02-28"
+  },
+  "operations":{
+    "CreateEvent":{
+      "name":"CreateEvent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/events",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateEventInput"},
+      "output":{"shape":"CreateEventOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Creates an event in an AgentCore Memory resource. Events represent interactions or activities that occur within a session and are associated with specific actors.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:CreateEvent</code> permission.</p> <p>This operation is subject to request rate limiting.</p>",
+      "idempotent":true
+    },
+    "DeleteEvent":{
+      "name":"DeleteEvent",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/memories/{memoryId}/actor/{actorId}/sessions/{sessionId}/events/{eventId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteEventInput"},
+      "output":{"shape":"DeleteEventOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Deletes an event from an AgentCore Memory resource. When you delete an event, it is permanently removed.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:DeleteEvent</code> permission.</p>"
+    },
+    "DeleteMemoryRecord":{
+      "name":"DeleteMemoryRecord",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/memories/{memoryId}/memoryRecords/{memoryRecordId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteMemoryRecordInput"},
+      "output":{"shape":"DeleteMemoryRecordOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Deletes a memory record from an AgentCore Memory resource. When you delete a memory record, it is permanently removed.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:DeleteMemoryRecord</code> permission.</p>"
+    },
+    "GetBrowserSession":{
+      "name":"GetBrowserSession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/browsers/{browserIdentifier}/sessions/get",
+        "responseCode":200
+      },
+      "input":{"shape":"GetBrowserSessionRequest"},
+      "output":{"shape":"GetBrowserSessionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about a specific browser session in Amazon Bedrock. This operation returns the session's configuration, current status, associated streams, and metadata.</p> <p>To get a browser session, you must specify both the browser identifier and the session ID. The response includes information about the session's viewport configuration, timeout settings, and stream endpoints.</p> <p>The following operations are related to <code>GetBrowserSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartBrowserSession.html\">StartBrowserSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_ListBrowserSessions.html\">ListBrowserSessions</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StopBrowserSession.html\">StopBrowserSession</a> </p> </li> </ul>"
+    },
+    "GetCodeInterpreterSession":{
+      "name":"GetCodeInterpreterSession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/code-interpreters/{codeInterpreterIdentifier}/sessions/get",
+        "responseCode":200
+      },
+      "input":{"shape":"GetCodeInterpreterSessionRequest"},
+      "output":{"shape":"GetCodeInterpreterSessionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about a specific code interpreter session in Amazon Bedrock. This operation returns the session's configuration, current status, and metadata.</p> <p>To get a code interpreter session, you must specify both the code interpreter identifier and the session ID. The response includes information about the session's timeout settings and current status.</p> <p>The following operations are related to <code>GetCodeInterpreterSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartCodeInterpreterSession.html\">StartCodeInterpreterSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_ListCodeInterpreterSessions.html\">ListCodeInterpreterSessions</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StopCodeInterpreterSession.html\">StopCodeInterpreterSession</a> </p> </li> </ul>"
+    },
+    "GetEvent":{
+      "name":"GetEvent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/memories/{memoryId}/actor/{actorId}/sessions/{sessionId}/events/{eventId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEventInput"},
+      "output":{"shape":"GetEventOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Retrieves information about a specific event in an AgentCore Memory resource.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:GetEvent</code> permission.</p>"
+    },
+    "GetMemoryRecord":{
+      "name":"GetMemoryRecord",
+      "http":{
+        "method":"GET",
+        "requestUri":"/memories/{memoryId}/memoryRecord/{memoryRecordId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMemoryRecordInput"},
+      "output":{"shape":"GetMemoryRecordOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Retrieves a specific memory record from an AgentCore Memory resource.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:GetMemoryRecord</code> permission.</p>"
+    },
+    "GetResourceApiKey":{
+      "name":"GetResourceApiKey",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identities/api-key",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResourceApiKeyRequest"},
+      "output":{"shape":"GetResourceApiKeyResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves an API Key associated with an API Key Credential Provider</p>"
+    },
+    "GetResourceOauth2Token":{
+      "name":"GetResourceOauth2Token",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identities/oauth2/token",
+        "responseCode":200
+      },
+      "input":{"shape":"GetResourceOauth2TokenRequest"},
+      "output":{"shape":"GetResourceOauth2TokenResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the OAuth 2.0 token of the provided resource</p>"
+    },
+    "GetWorkloadAccessToken":{
+      "name":"GetWorkloadAccessToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identities/GetWorkloadAccessToken",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkloadAccessTokenRequest"},
+      "output":{"shape":"GetWorkloadAccessTokenResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Obtains an Workload access token for agentic workloads not acting on behalf of user.</p>"
+    },
+    "GetWorkloadAccessTokenForJWT":{
+      "name":"GetWorkloadAccessTokenForJWT",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identities/GetWorkloadAccessTokenForJWT",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkloadAccessTokenForJWTRequest"},
+      "output":{"shape":"GetWorkloadAccessTokenForJWTResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Obtains an Workload access token for agentic workloads acting on behalf of user with JWT token</p>"
+    },
+    "GetWorkloadAccessTokenForUserId":{
+      "name":"GetWorkloadAccessTokenForUserId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identities/GetWorkloadAccessTokenForUserId",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkloadAccessTokenForUserIdRequest"},
+      "output":{"shape":"GetWorkloadAccessTokenForUserIdResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Obtains an Workload access token for agentic workloads acting on behalf of user with User Id.</p>"
+    },
+    "InvokeAgentRuntime":{
+      "name":"InvokeAgentRuntime",
+      "http":{
+        "method":"POST",
+        "requestUri":"/runtimes/{agentRuntimeArn}/invocations",
+        "responseCode":200
+      },
+      "input":{"shape":"InvokeAgentRuntimeRequest"},
+      "output":{"shape":"InvokeAgentRuntimeResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"RuntimeClientError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Sends a request to an agent or tool hosted in an Amazon Bedrock AgentCore Runtime and receives responses in real-time. </p> <p>To invoke an agent you must specify the AgentCore Runtime ARN and provide a payload containing your request. You can optionally specify a qualifier to target a specific version or endpoint of the agent.</p> <p>This operation supports streaming responses, allowing you to receive partial responses as they become available. We recommend using pagination to ensure that the operation returns quickly and successfully when processing large responses.</p> <p>For example code, see <a href=\"https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-invoke-agent.html\">Invoke an AgentCore Runtime agent</a>. </p> <p>If you're integrating your agent with OAuth, you can't use the Amazon Web Services SDK to call <code>InvokeAgentRuntime</code>. Instead, make a HTTPS request to <code>InvokeAgentRuntime</code>. For an example, see <a href=\"https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-oauth.html\">Authenticate and authorize with Inbound Auth and Outbound Auth</a>.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:InvokeAgentRuntime</code> permission.</p>"
+    },
+    "InvokeCodeInterpreter":{
+      "name":"InvokeCodeInterpreter",
+      "http":{
+        "method":"POST",
+        "requestUri":"/code-interpreters/{codeInterpreterIdentifier}/tools/invoke",
+        "responseCode":200
+      },
+      "input":{"shape":"InvokeCodeInterpreterRequest"},
+      "output":{"shape":"InvokeCodeInterpreterResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Executes code within an active code interpreter session in Amazon Bedrock. This operation processes the provided code, runs it in a secure environment, and returns the execution results including output, errors, and generated visualizations.</p> <p>To execute code, you must specify the code interpreter identifier, session ID, and the code to run in the arguments parameter. The operation returns a stream containing the execution results, which can include text output, error messages, and data visualizations.</p> <p>This operation is subject to request rate limiting based on your account's service quotas.</p> <p>The following operations are related to <code>InvokeCodeInterpreter</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartCodeInterpreterSession.html\">StartCodeInterpreterSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetCodeInterpreterSession.html\">GetCodeInterpreterSession</a> </p> </li> </ul>"
+    },
+    "ListActors":{
+      "name":"ListActors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/actors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListActorsInput"},
+      "output":{"shape":"ListActorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Lists all actors in an AgentCore Memory resource. We recommend using pagination to ensure that the operation returns quickly and successfully.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:ListActors</code> permission.</p>"
+    },
+    "ListBrowserSessions":{
+      "name":"ListBrowserSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/browsers/{browserIdentifier}/sessions/list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListBrowserSessionsRequest"},
+      "output":{"shape":"ListBrowserSessionsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of browser sessions in Amazon Bedrock that match the specified criteria. This operation returns summary information about each session, including identifiers, status, and timestamps.</p> <p>You can filter the results by browser identifier and session status. The operation supports pagination to handle large result sets efficiently.</p> <p>We recommend using pagination to ensure that the operation returns quickly and successfully when retrieving large numbers of sessions.</p> <p>The following operations are related to <code>ListBrowserSessions</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartBrowserSession.html\">StartBrowserSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetBrowserSession.html\">GetBrowserSession</a> </p> </li> </ul>"
+    },
+    "ListCodeInterpreterSessions":{
+      "name":"ListCodeInterpreterSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/code-interpreters/{codeInterpreterIdentifier}/sessions/list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListCodeInterpreterSessionsRequest"},
+      "output":{"shape":"ListCodeInterpreterSessionsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves a list of code interpreter sessions in Amazon Bedrock that match the specified criteria. This operation returns summary information about each session, including identifiers, status, and timestamps.</p> <p>You can filter the results by code interpreter identifier and session status. The operation supports pagination to handle large result sets efficiently.</p> <p>We recommend using pagination to ensure that the operation returns quickly and successfully when retrieving large numbers of sessions.</p> <p>The following operations are related to <code>ListCodeInterpreterSessions</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartCodeInterpreterSession.html\">StartCodeInterpreterSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetCodeInterpreterSession.html\">GetCodeInterpreterSession</a> </p> </li> </ul>"
+    },
+    "ListEvents":{
+      "name":"ListEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/actor/{actorId}/sessions/{sessionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEventsInput"},
+      "output":{"shape":"ListEventsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Lists events in an AgentCore Memory resource based on specified criteria. We recommend using pagination to ensure that the operation returns quickly and successfully.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:ListEvents</code> permission.</p>"
+    },
+    "ListMemoryRecords":{
+      "name":"ListMemoryRecords",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/memoryRecords",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMemoryRecordsInput"},
+      "output":{"shape":"ListMemoryRecordsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Lists memory records in an AgentCore Memory resource based on specified criteria. We recommend using pagination to ensure that the operation returns quickly and successfully.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:ListMemoryRecords</code> permission.</p>"
+    },
+    "ListSessions":{
+      "name":"ListSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/actor/{actorId}/sessions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSessionsInput"},
+      "output":{"shape":"ListSessionsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Lists sessions in an AgentCore Memory resource based on specified criteria. We recommend using pagination to ensure that the operation returns quickly and successfully.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:ListSessions</code> permission.</p>"
+    },
+    "RetrieveMemoryRecords":{
+      "name":"RetrieveMemoryRecords",
+      "http":{
+        "method":"POST",
+        "requestUri":"/memories/{memoryId}/retrieve",
+        "responseCode":200
+      },
+      "input":{"shape":"RetrieveMemoryRecordsInput"},
+      "output":{"shape":"RetrieveMemoryRecordsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottledException"},
+        {"shape":"ServiceException"}
+      ],
+      "documentation":"<p>Searches for and retrieves memory records from an AgentCore Memory resource based on specified search criteria. We recommend using pagination to ensure that the operation returns quickly and successfully.</p> <p>To use this operation, you must have the <code>bedrock-agentcore:RetrieveMemoryRecords</code> permission.</p>"
+    },
+    "StartBrowserSession":{
+      "name":"StartBrowserSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/browsers/{browserIdentifier}/sessions/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartBrowserSessionRequest"},
+      "output":{"shape":"StartBrowserSessionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates and initializes a browser session in Amazon Bedrock. The session enables agents to navigate and interact with web content, extract information from websites, and perform web-based tasks as part of their response generation.</p> <p>To create a session, you must specify a browser identifier and a name. You can also configure the viewport dimensions to control the visible area of web content. The session remains active until it times out or you explicitly stop it using the <code>StopBrowserSession</code> operation.</p> <p>The following operations are related to <code>StartBrowserSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetBrowserSession.html\">GetBrowserSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_UpdateBrowserStream.html\">UpdateBrowserStream</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StopBrowserSession.html\">StopBrowserSession</a> </p> </li> </ul>",
+      "idempotent":true
+    },
+    "StartCodeInterpreterSession":{
+      "name":"StartCodeInterpreterSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/code-interpreters/{codeInterpreterIdentifier}/sessions/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartCodeInterpreterSessionRequest"},
+      "output":{"shape":"StartCodeInterpreterSessionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates and initializes a code interpreter session in Amazon Bedrock. The session enables agents to execute code as part of their response generation, supporting programming languages such as Python for data analysis, visualization, and computation tasks.</p> <p>To create a session, you must specify a code interpreter identifier and a name. The session remains active until it times out or you explicitly stop it using the <code>StopCodeInterpreterSession</code> operation.</p> <p>The following operations are related to <code>StartCodeInterpreterSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_InvokeCodeInterpreter.html\">InvokeCodeInterpreter</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetCodeInterpreterSession.html\">GetCodeInterpreterSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StopCodeInterpreterSession.html\">StopCodeInterpreterSession</a> </p> </li> </ul>",
+      "idempotent":true
+    },
+    "StopBrowserSession":{
+      "name":"StopBrowserSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/browsers/{browserIdentifier}/sessions/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopBrowserSessionRequest"},
+      "output":{"shape":"StopBrowserSessionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Terminates an active browser session in Amazon Bedrock. This operation stops the session, releases associated resources, and makes the session unavailable for further use.</p> <p>To stop a browser session, you must specify both the browser identifier and the session ID. Once stopped, a session cannot be restarted; you must create a new session using <code>StartBrowserSession</code>.</p> <p>The following operations are related to <code>StopBrowserSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartBrowserSession.html\">StartBrowserSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetBrowserSession.html\">GetBrowserSession</a> </p> </li> </ul>",
+      "idempotent":true
+    },
+    "StopCodeInterpreterSession":{
+      "name":"StopCodeInterpreterSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/code-interpreters/{codeInterpreterIdentifier}/sessions/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopCodeInterpreterSessionRequest"},
+      "output":{"shape":"StopCodeInterpreterSessionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Terminates an active code interpreter session in Amazon Bedrock. This operation stops the session, releases associated resources, and makes the session unavailable for further use.</p> <p>To stop a code interpreter session, you must specify both the code interpreter identifier and the session ID. Once stopped, a session cannot be restarted; you must create a new session using <code>StartCodeInterpreterSession</code>.</p> <p>The following operations are related to <code>StopCodeInterpreterSession</code>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/API_StartCodeInterpreterSession.html\">StartCodeInterpreterSession</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/API_GetCodeInterpreterSession.html\">GetCodeInterpreterSession</a> </p> </li> </ul>",
+      "idempotent":true
+    },
+    "UpdateBrowserStream":{
+      "name":"UpdateBrowserStream",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/browsers/{browserIdentifier}/sessions/streams/update",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateBrowserStreamRequest"},
+      "output":{"shape":"UpdateBrowserStreamResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a browser stream. To use this operation, you must have permissions to perform the bedrock:UpdateBrowserStream action.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when you do not have sufficient permissions to perform an action. Verify that your IAM policy includes the necessary permissions for the operation you are trying to perform.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessTokenType":{
+      "type":"string",
+      "max":131072,
+      "min":1,
+      "sensitive":true
+    },
+    "ActorId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-_/]*"
+    },
+    "ActorSummary":{
+      "type":"structure",
+      "required":["actorId"],
+      "members":{
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The unique identifier of the actor.</p>"
+        }
+      },
+      "documentation":"<p>Contains summary information about an actor in an AgentCore Memory resource.</p>"
+    },
+    "ActorSummaryList":{
+      "type":"list",
+      "member":{"shape":"ActorSummary"}
+    },
+    "ApiKeyType":{
+      "type":"string",
+      "max":65536,
+      "min":1,
+      "sensitive":true
+    },
+    "AutomationStream":{
+      "type":"structure",
+      "required":[
+        "streamEndpoint",
+        "streamStatus"
+      ],
+      "members":{
+        "streamEndpoint":{
+          "shape":"BrowserStreamEndpoint",
+          "documentation":"<p>The endpoint URL for the automation stream. This URL is used to establish a WebSocket connection to the stream for sending commands and receiving responses.</p>"
+        },
+        "streamStatus":{
+          "shape":"AutomationStreamStatus",
+          "documentation":"<p>The current status of the automation stream. This indicates whether the stream is available for use. Possible values include ACTIVE, CONNECTING, and DISCONNECTED.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for a stream that enables programmatic control of a browser session in Amazon Bedrock. This stream provides a bidirectional communication channel for sending commands to the browser and receiving responses, allowing agents to automate web interactions such as navigation, form filling, and element clicking.</p>"
+    },
+    "AutomationStreamStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "AutomationStreamUpdate":{
+      "type":"structure",
+      "members":{
+        "streamStatus":{
+          "shape":"AutomationStreamStatus",
+          "documentation":"<p>The status of the automation stream.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an update to an automation stream.</p>"
+    },
+    "Blob":{"type":"blob"},
+    "Body":{
+      "type":"blob",
+      "max":100000000,
+      "min":0,
+      "sensitive":true
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "Branch":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "rootEventId":{
+          "shape":"EventId",
+          "documentation":"<p>The identifier of the root event for this branch.</p>"
+        },
+        "name":{
+          "shape":"BranchName",
+          "documentation":"<p>The name of the branch.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a branch in an AgentCore Memory resource. Branches allow for organizing events into different conversation threads or paths.</p>"
+    },
+    "BranchFilter":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"BranchName",
+          "documentation":"<p>The name of the branch to filter by.</p>"
+        },
+        "includeParentBranches":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to include parent branches in the results. Set to true to include parent branches, or false to exclude them.</p>"
+        }
+      },
+      "documentation":"<p>Contains filter criteria for branches when listing events.</p>"
+    },
+    "BranchName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-_]*"
+    },
+    "BrowserSessionId":{
+      "type":"string",
+      "pattern":"[0-9a-zA-Z]{1,40}"
+    },
+    "BrowserSessionStatus":{
+      "type":"string",
+      "enum":[
+        "READY",
+        "TERMINATED"
+      ]
+    },
+    "BrowserSessionStream":{
+      "type":"structure",
+      "required":["automationStream"],
+      "members":{
+        "automationStream":{
+          "shape":"AutomationStream",
+          "documentation":"<p>The stream that enables programmatic control of the browser. This stream allows agents to perform actions such as navigating to URLs, clicking elements, and filling forms.</p>"
+        },
+        "liveViewStream":{
+          "shape":"LiveViewStream",
+          "documentation":"<p>The stream that provides a visual representation of the browser content. This stream allows agents to observe the current state of the browser, including rendered web pages and visual elements.</p>"
+        }
+      },
+      "documentation":"<p>The collection of streams associated with a browser session in Amazon Bedrock. These streams provide different ways to interact with and observe the browser session, including programmatic control and visual representation of the browser content.</p>"
+    },
+    "BrowserSessionSummaries":{
+      "type":"list",
+      "member":{"shape":"BrowserSessionSummary"}
+    },
+    "BrowserSessionSummary":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the browser associated with the session. This identifier specifies which browser environment is used for the session.</p>"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The unique identifier of the browser session. This identifier is used in operations that interact with the session.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the browser session. This name helps identify and manage the session.</p>"
+        },
+        "status":{
+          "shape":"BrowserSessionStatus",
+          "documentation":"<p>The current status of the browser session. Possible values include ACTIVE, STOPPING, and STOPPED.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the browser session was created. This value is in ISO 8601 format.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the browser session was last updated. This value is in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>A condensed representation of a browser session in Amazon Bedrock. This structure contains key information about a browser session, including identifiers, status, and timestamps, without the full details of the session configuration and streams.</p>"
+    },
+    "BrowserSessionTimeout":{
+      "type":"integer",
+      "box":true,
+      "max":28800,
+      "min":1
+    },
+    "BrowserStreamEndpoint":{
+      "type":"string",
+      "max":512,
+      "min":10
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":256,
+      "min":33,
+      "pattern":"[a-zA-Z0-9](-*[a-zA-Z0-9]){0,256}"
+    },
+    "CodeInterpreterResult":{
+      "type":"structure",
+      "required":["content"],
+      "members":{
+        "content":{
+          "shape":"ContentBlockList",
+          "documentation":"<p>The textual content of the execution result. This includes standard output from the code execution, such as print statements, console output, and text representations of results.</p>"
+        },
+        "structuredContent":{
+          "shape":"ToolResultStructuredContent",
+          "documentation":"<p>The structured content of the execution result. This includes additional metadata about the execution, such as execution time, memory usage, and structured representations of output data. The format depends on the specific code interpreter and execution context.</p>"
+        },
+        "isError":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the result represents an error. If true, the content contains error messages or exception information. If false, the content contains successful execution results.</p>"
+        }
+      },
+      "documentation":"<p>The output produced by executing code in a code interpreter session in Amazon Bedrock. This structure contains the results of code execution, including textual output, structured data, and error information. Agents use these results to generate responses that incorporate computation, data analysis, and visualization.</p>",
+      "event":true
+    },
+    "CodeInterpreterSessionId":{
+      "type":"string",
+      "pattern":"[0-9a-zA-Z]{1,40}"
+    },
+    "CodeInterpreterSessionStatus":{
+      "type":"string",
+      "enum":[
+        "READY",
+        "TERMINATED"
+      ]
+    },
+    "CodeInterpreterSessionSummaries":{
+      "type":"list",
+      "member":{"shape":"CodeInterpreterSessionSummary"}
+    },
+    "CodeInterpreterSessionSummary":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId",
+        "status",
+        "createdAt"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter associated with the session. This identifier specifies which code interpreter environment is used for the session.</p>"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The unique identifier of the code interpreter session. This identifier is used in operations that interact with the session.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the code interpreter session. This name helps identify and manage the session.</p>"
+        },
+        "status":{
+          "shape":"CodeInterpreterSessionStatus",
+          "documentation":"<p>The current status of the code interpreter session. Possible values include ACTIVE, STOPPING, and STOPPED.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the code interpreter session was created. This value is in ISO 8601 format.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the code interpreter session was last updated. This value is in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>A condensed representation of a code interpreter session in Amazon Bedrock. This structure contains key information about a code interpreter session, including identifiers, status, and timestamps, without the full details of the session configuration.</p>"
+    },
+    "CodeInterpreterSessionTimeout":{
+      "type":"integer",
+      "box":true,
+      "max":28800,
+      "min":1
+    },
+    "CodeInterpreterStreamOutput":{
+      "type":"structure",
+      "members":{
+        "result":{"shape":"CodeInterpreterResult"},
+        "accessDeniedException":{"shape":"AccessDeniedException"},
+        "conflictException":{"shape":"ConflictException"},
+        "internalServerException":{"shape":"InternalServerException"},
+        "resourceNotFoundException":{"shape":"ResourceNotFoundException"},
+        "serviceQuotaExceededException":{"shape":"ServiceQuotaExceededException"},
+        "throttlingException":{"shape":"ThrottlingException"},
+        "validationException":{"shape":"ValidationException"}
+      },
+      "documentation":"<p>Contains output from a code interpreter stream.</p>",
+      "eventstream":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when the request conflicts with the current state of the resource. This can happen when trying to modify a resource that is currently being modified by another request, or when trying to create a resource that already exists.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Content":{
+      "type":"structure",
+      "members":{
+        "text":{
+          "shape":"ContentTextString",
+          "documentation":"<p>The text content of the memory item.</p>"
+        }
+      },
+      "documentation":"<p>Contains the content of a memory item.</p>",
+      "union":true
+    },
+    "ContentBlock":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"ContentBlockType",
+          "documentation":"<p>The type of content in the block.</p>"
+        },
+        "text":{
+          "shape":"String",
+          "documentation":"<p>The text content of the block.</p>"
+        },
+        "data":{
+          "shape":"Blob",
+          "documentation":"<p>The binary data content of the block.</p>"
+        },
+        "mimeType":{
+          "shape":"String",
+          "documentation":"<p>The MIME type of the content.</p>"
+        },
+        "uri":{
+          "shape":"String",
+          "documentation":"<p>The URI of the content.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the content block.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the content block.</p>"
+        },
+        "size":{
+          "shape":"Long",
+          "documentation":"<p>The size of the content in bytes.</p>"
+        },
+        "resource":{
+          "shape":"ResourceContent",
+          "documentation":"<p>The resource associated with the content block.</p>"
+        }
+      },
+      "documentation":"<p>A block of content in a response.</p>"
+    },
+    "ContentBlockList":{
+      "type":"list",
+      "member":{"shape":"ContentBlock"}
+    },
+    "ContentBlockType":{
+      "type":"string",
+      "enum":[
+        "text",
+        "image",
+        "resource",
+        "resource_link"
+      ]
+    },
+    "ContentTextString":{
+      "type":"string",
+      "max":9000,
+      "min":1,
+      "sensitive":true
+    },
+    "Conversational":{
+      "type":"structure",
+      "required":[
+        "content",
+        "role"
+      ],
+      "members":{
+        "content":{
+          "shape":"Content",
+          "documentation":"<p>The content of the conversation message.</p>"
+        },
+        "role":{
+          "shape":"Role",
+          "documentation":"<p>The role of the participant in the conversation (for example, \"user\" or \"assistant\").</p>"
+        }
+      },
+      "documentation":"<p>Contains conversational content for an event payload.</p>"
+    },
+    "CreateEventInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "actorId",
+        "eventTimestamp",
+        "payload"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource in which to create the event.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor associated with this event. An actor represents an entity that participates in sessions and generates events.</p>"
+        },
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the session in which this event occurs. A session represents a sequence of related events.</p>"
+        },
+        "eventTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the event occurred. If not specified, the current time is used.</p>"
+        },
+        "payload":{
+          "shape":"PayloadTypeList",
+          "documentation":"<p>The content payload of the event. This can include conversational data or binary content.</p>"
+        },
+        "branch":{
+          "shape":"Branch",
+          "documentation":"<p>The branch information for this event. Branches allow for organizing events into different conversation threads or paths.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the operation completes no more than one time. If this token matches a previous request, AgentCore ignores the request, but does not return an error.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateEventOutput":{
+      "type":"structure",
+      "required":["event"],
+      "members":{
+        "event":{
+          "shape":"Event",
+          "documentation":"<p>The event that was created.</p>"
+        }
+      }
+    },
+    "CredentialProviderName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\-_]+"
+    },
+    "CustomRequestKeyType":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9\\-_\\.]+"
+    },
+    "CustomRequestParametersType":{
+      "type":"map",
+      "key":{"shape":"CustomRequestKeyType"},
+      "value":{"shape":"CustomRequestValueType"}
+    },
+    "CustomRequestValueType":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "sensitive":true
+    },
+    "DateTimestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "DeleteEventInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "sessionId",
+        "eventId",
+        "actorId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource from which to delete the event.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the session containing the event to delete.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        },
+        "eventId":{
+          "shape":"EventId",
+          "documentation":"<p>The identifier of the event to delete.</p>",
+          "location":"uri",
+          "locationName":"eventId"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor associated with the event to delete.</p>",
+          "location":"uri",
+          "locationName":"actorId"
+        }
+      }
+    },
+    "DeleteEventOutput":{
+      "type":"structure",
+      "required":["eventId"],
+      "members":{
+        "eventId":{
+          "shape":"EventId",
+          "documentation":"<p>The identifier of the event that was deleted.</p>"
+        }
+      }
+    },
+    "DeleteMemoryRecordInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "memoryRecordId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource from which to delete the memory record.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "memoryRecordId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the memory record to delete.</p>",
+          "location":"uri",
+          "locationName":"memoryRecordId"
+        }
+      }
+    },
+    "DeleteMemoryRecordOutput":{
+      "type":"structure",
+      "required":["memoryRecordId"],
+      "members":{
+        "memoryRecordId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the memory record that was deleted.</p>"
+        }
+      }
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "Event":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "actorId",
+        "sessionId",
+        "eventId",
+        "eventTimestamp",
+        "payload"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource containing the event.</p>"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor associated with the event.</p>"
+        },
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the session containing the event.</p>"
+        },
+        "eventId":{
+          "shape":"EventId",
+          "documentation":"<p>The unique identifier of the event.</p>"
+        },
+        "eventTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the event occurred.</p>"
+        },
+        "payload":{
+          "shape":"PayloadTypeList",
+          "documentation":"<p>The content payload of the event.</p>"
+        },
+        "branch":{
+          "shape":"Branch",
+          "documentation":"<p>The branch information for the event.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an event in an AgentCore Memory resource.</p>"
+    },
+    "EventId":{
+      "type":"string",
+      "pattern":"[0-9]+#[a-fA-F0-9]+"
+    },
+    "EventList":{
+      "type":"list",
+      "member":{"shape":"Event"}
+    },
+    "FilterInput":{
+      "type":"structure",
+      "members":{
+        "branch":{
+          "shape":"BranchFilter",
+          "documentation":"<p>The branch filter criteria to apply when listing events.</p>"
+        }
+      },
+      "documentation":"<p>Contains filter criteria for listing events.</p>"
+    },
+    "GetBrowserSessionRequest":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the browser associated with the session.</p>",
+          "location":"uri",
+          "locationName":"browserIdentifier"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The unique identifier of the browser session to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "GetBrowserSessionResponse":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "createdAt"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the browser.</p>"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The identifier of the browser session.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the browser session.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the browser session was created.</p>"
+        },
+        "viewPort":{"shape":"ViewPort"},
+        "sessionTimeoutSeconds":{
+          "shape":"BrowserSessionTimeout",
+          "documentation":"<p>The timeout period for the browser session in seconds.</p>"
+        },
+        "status":{
+          "shape":"BrowserSessionStatus",
+          "documentation":"<p>The current status of the browser session. Possible values include ACTIVE, STOPPING, and STOPPED.</p>"
+        },
+        "streams":{
+          "shape":"BrowserSessionStream",
+          "documentation":"<p>The streams associated with this browser session. These include the automation stream and live view stream.</p>"
+        },
+        "sessionReplayArtifact":{
+          "shape":"String",
+          "documentation":"<p>The artifact containing the session replay information.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the browser session was last updated.</p>"
+        }
+      }
+    },
+    "GetCodeInterpreterSessionRequest":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter associated with the session.</p>",
+          "location":"uri",
+          "locationName":"codeInterpreterIdentifier"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The unique identifier of the code interpreter session to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "GetCodeInterpreterSessionResponse":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId",
+        "createdAt"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the code interpreter.</p>"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The identifier of the code interpreter session.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the code interpreter session.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the code interpreter session was created.</p>"
+        },
+        "sessionTimeoutSeconds":{
+          "shape":"CodeInterpreterSessionTimeout",
+          "documentation":"<p>The timeout period for the code interpreter session in seconds.</p>"
+        },
+        "status":{
+          "shape":"CodeInterpreterSessionStatus",
+          "documentation":"<p>The current status of the code interpreter session. Possible values include ACTIVE, STOPPING, and STOPPED.</p>"
+        }
+      }
+    },
+    "GetEventInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "sessionId",
+        "actorId",
+        "eventId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource containing the event.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the session containing the event.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor associated with the event.</p>",
+          "location":"uri",
+          "locationName":"actorId"
+        },
+        "eventId":{
+          "shape":"EventId",
+          "documentation":"<p>The identifier of the event to retrieve.</p>",
+          "location":"uri",
+          "locationName":"eventId"
+        }
+      }
+    },
+    "GetEventOutput":{
+      "type":"structure",
+      "required":["event"],
+      "members":{
+        "event":{
+          "shape":"Event",
+          "documentation":"<p>The requested event information.</p>"
+        }
+      }
+    },
+    "GetMemoryRecordInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "memoryRecordId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource containing the memory record.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "memoryRecordId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the memory record to retrieve.</p>",
+          "location":"uri",
+          "locationName":"memoryRecordId"
+        }
+      }
+    },
+    "GetMemoryRecordOutput":{
+      "type":"structure",
+      "required":["memoryRecord"],
+      "members":{
+        "memoryRecord":{
+          "shape":"MemoryRecord",
+          "documentation":"<p>The requested memory record.</p>"
+        }
+      }
+    },
+    "GetResourceApiKeyRequest":{
+      "type":"structure",
+      "required":[
+        "workloadIdentityToken",
+        "resourceCredentialProviderName"
+      ],
+      "members":{
+        "workloadIdentityToken":{
+          "shape":"WorkloadIdentityTokenType",
+          "documentation":"<p>The identity token of the workload you want to get the API Key of.</p>"
+        },
+        "resourceCredentialProviderName":{
+          "shape":"CredentialProviderName",
+          "documentation":"<p>The credential provider name of the resource you are retrieving the API Key of.</p>"
+        }
+      }
+    },
+    "GetResourceApiKeyResponse":{
+      "type":"structure",
+      "required":["apiKey"],
+      "members":{
+        "apiKey":{
+          "shape":"ApiKeyType",
+          "documentation":"<p>The API Key associated with the resource requested.</p>"
+        }
+      }
+    },
+    "GetResourceOauth2TokenRequest":{
+      "type":"structure",
+      "required":[
+        "workloadIdentityToken",
+        "resourceCredentialProviderName",
+        "scopes",
+        "oauth2Flow"
+      ],
+      "members":{
+        "workloadIdentityToken":{
+          "shape":"WorkloadIdentityTokenType",
+          "documentation":"<p>The identity token of the workload you want to retrive the Oauth2 Token of.</p>"
+        },
+        "resourceCredentialProviderName":{
+          "shape":"CredentialProviderName",
+          "documentation":"<p>Reference to the credential provider</p>"
+        },
+        "scopes":{
+          "shape":"ScopesListType",
+          "documentation":"<p>The OAuth scopes requested</p>"
+        },
+        "oauth2Flow":{
+          "shape":"Oauth2FlowType",
+          "documentation":"<p>The type of flow to be performed</p>"
+        },
+        "resourceOauth2ReturnUrl":{
+          "shape":"ResourceOauth2ReturnUrlType",
+          "documentation":"<p>Callback url to redirect after token retrieval completes. Should be one of the provideded urls during WorkloadIdentity creation</p>"
+        },
+        "forceAuthentication":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, always initiate a new 3LO flow</p>"
+        },
+        "customParameters":{
+          "shape":"CustomRequestParametersType",
+          "documentation":"<p>Gives the ability to send extra/custom parameters to the resource credentials provider during the authorization process. Standard OAuth2 flow parameters will not be overriden.</p>"
+        }
+      }
+    },
+    "GetResourceOauth2TokenResponse":{
+      "type":"structure",
+      "members":{
+        "authorizationUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL for the authorization process, provided if the Access token requires user Authorization.</p>"
+        },
+        "accessToken":{
+          "shape":"AccessTokenType",
+          "documentation":"<p>OAuth2 token ready for use</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenForJWTRequest":{
+      "type":"structure",
+      "required":[
+        "workloadName",
+        "userToken"
+      ],
+      "members":{
+        "workloadName":{
+          "shape":"WorkloadIdentityNameType",
+          "documentation":"<p>Unique identifier for the registered agent</p>"
+        },
+        "userToken":{
+          "shape":"UserTokenType",
+          "documentation":"<p>OAuth2 token issued by the user's identity provider</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenForJWTResponse":{
+      "type":"structure",
+      "required":["workloadAccessToken"],
+      "members":{
+        "workloadAccessToken":{
+          "shape":"WorkloadIdentityTokenType",
+          "documentation":"<p>Opaque token representing both agent and user identity</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenForUserIdRequest":{
+      "type":"structure",
+      "required":[
+        "workloadName",
+        "userId"
+      ],
+      "members":{
+        "workloadName":{
+          "shape":"WorkloadIdentityNameType",
+          "documentation":"<p>The name of the worklaod you want to get the access token of.</p>"
+        },
+        "userId":{
+          "shape":"UserIdType",
+          "documentation":"<p>The user id of the user you are retrieving the access token for.</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenForUserIdResponse":{
+      "type":"structure",
+      "required":["workloadAccessToken"],
+      "members":{
+        "workloadAccessToken":{
+          "shape":"WorkloadIdentityTokenType",
+          "documentation":"<p>The workload access token of the named workload.</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenRequest":{
+      "type":"structure",
+      "required":["workloadName"],
+      "members":{
+        "workloadName":{
+          "shape":"WorkloadIdentityNameType",
+          "documentation":"<p>Unique identifier for the registered agent</p>"
+        }
+      }
+    },
+    "GetWorkloadAccessTokenResponse":{
+      "type":"structure",
+      "required":["workloadAccessToken"],
+      "members":{
+        "workloadAccessToken":{
+          "shape":"WorkloadIdentityTokenType",
+          "documentation":"<p>Opaque token representing both agent and user identity</p>"
+        }
+      }
+    },
+    "HttpResponseCode":{
+      "type":"integer",
+      "box":true
+    },
+    "InputContentBlock":{
+      "type":"structure",
+      "required":["path"],
+      "members":{
+        "path":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The path to the input content.</p>"
+        },
+        "text":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The text input content.</p>"
+        },
+        "blob":{
+          "shape":"Body",
+          "documentation":"<p>The binary input content.</p>"
+        }
+      },
+      "documentation":"<p>A block of input content.</p>"
+    },
+    "InputContentBlockList":{
+      "type":"list",
+      "member":{"shape":"InputContentBlock"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when the service encounters an unexpected internal error. This is a temporary condition that will resolve itself with retries. We recommend implementing exponential backoff retry logic in your application.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidInputException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by AgentCore. Check your input values and try again.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "InvokeAgentRuntimeRequest":{
+      "type":"structure",
+      "required":[
+        "agentRuntimeArn",
+        "payload"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"MimeType",
+          "documentation":"<p>The MIME type of the input data in the payload. This tells the agent runtime how to interpret the payload data. Common values include application/json for JSON data.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "accept":{
+          "shape":"MimeType",
+          "documentation":"<p>The desired MIME type for the response from the agent runtime. This tells the agent runtime what format to use for the response data. Common values include application/json for JSON data.</p>",
+          "location":"header",
+          "locationName":"Accept"
+        },
+        "mcpSessionId":{
+          "shape":"StringType",
+          "documentation":"<p>The identifier of the MCP session.</p>",
+          "location":"header",
+          "locationName":"Mcp-Session-Id"
+        },
+        "runtimeSessionId":{
+          "shape":"SessionType",
+          "documentation":"<p>The identifier of the runtime session.</p>",
+          "idempotencyToken":true,
+          "location":"header",
+          "locationName":"X-Amzn-Bedrock-AgentCore-Runtime-Session-Id"
+        },
+        "mcpProtocolVersion":{
+          "shape":"StringType",
+          "documentation":"<p>The version of the MCP protocol being used.</p>",
+          "location":"header",
+          "locationName":"Mcp-Protocol-Version"
+        },
+        "runtimeUserId":{
+          "shape":"StringType",
+          "documentation":"<p>The identifier of the runtime user.</p>",
+          "location":"header",
+          "locationName":"X-Amzn-Bedrock-AgentCore-Runtime-User-Id"
+        },
+        "traceId":{
+          "shape":"InvokeAgentRuntimeRequestTraceIdString",
+          "documentation":"<p>The trace identifier for request tracking.</p>",
+          "location":"header",
+          "locationName":"X-Amzn-Trace-Id"
+        },
+        "traceParent":{
+          "shape":"InvokeAgentRuntimeRequestTraceParentString",
+          "documentation":"<p>The parent trace information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"traceparent"
+        },
+        "traceState":{
+          "shape":"InvokeAgentRuntimeRequestTraceStateString",
+          "documentation":"<p>The trace state information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"tracestate"
+        },
+        "baggage":{
+          "shape":"InvokeAgentRuntimeRequestBaggageString",
+          "documentation":"<p>Additional context information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"baggage"
+        },
+        "agentRuntimeArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Resource Name (ARN) of the agent runtime to invoke. The ARN uniquely identifies the agent runtime resource in Amazon Bedrock.</p>",
+          "location":"uri",
+          "locationName":"agentRuntimeArn"
+        },
+        "qualifier":{
+          "shape":"String",
+          "documentation":"<p>The qualifier to use for the agent runtime. This can be a version number or an endpoint name that points to a specific version. If not specified, Amazon Bedrock uses the default version of the agent runtime.</p>",
+          "location":"querystring",
+          "locationName":"qualifier"
+        },
+        "payload":{
+          "shape":"Body",
+          "documentation":"<p>The input data to send to the agent runtime. The format of this data depends on the specific agent configuration and must match the specified content type. For most agents, this is a JSON object containing the user's request.</p>"
+        }
+      },
+      "payload":"payload"
+    },
+    "InvokeAgentRuntimeRequestBaggageString":{
+      "type":"string",
+      "max":8192,
+      "min":0
+    },
+    "InvokeAgentRuntimeRequestTraceIdString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "InvokeAgentRuntimeRequestTraceParentString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "InvokeAgentRuntimeRequestTraceStateString":{
+      "type":"string",
+      "max":512,
+      "min":0
+    },
+    "InvokeAgentRuntimeResponse":{
+      "type":"structure",
+      "required":["contentType"],
+      "members":{
+        "runtimeSessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the runtime session.</p>",
+          "location":"header",
+          "locationName":"X-Amzn-Bedrock-AgentCore-Runtime-Session-Id"
+        },
+        "mcpSessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the MCP session.</p>",
+          "location":"header",
+          "locationName":"Mcp-Session-Id"
+        },
+        "mcpProtocolVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the MCP protocol being used.</p>",
+          "location":"header",
+          "locationName":"Mcp-Protocol-Version"
+        },
+        "traceId":{
+          "shape":"String",
+          "documentation":"<p>The trace identifier for request tracking.</p>",
+          "location":"header",
+          "locationName":"X-Amzn-Trace-Id"
+        },
+        "traceParent":{
+          "shape":"String",
+          "documentation":"<p>The parent trace information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"traceparent"
+        },
+        "traceState":{
+          "shape":"String",
+          "documentation":"<p>The trace state information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"tracestate"
+        },
+        "baggage":{
+          "shape":"String",
+          "documentation":"<p>Additional context information for distributed tracing.</p>",
+          "location":"header",
+          "locationName":"baggage"
+        },
+        "contentType":{
+          "shape":"String",
+          "documentation":"<p>The MIME type of the response data. This indicates how to interpret the response data. Common values include application/json for JSON data.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "response":{
+          "shape":"ResponseStream",
+          "documentation":"<p>The response data from the agent runtime. The format of this data depends on the specific agent configuration and the requested accept type. For most agents, this is a JSON object containing the agent's response to the user's request.</p>"
+        },
+        "statusCode":{
+          "shape":"HttpResponseCode",
+          "documentation":"<p>The HTTP status code of the response. A status code of 200 indicates a successful operation. Other status codes indicate various error conditions.</p>",
+          "location":"statusCode"
+        }
+      },
+      "payload":"response"
+    },
+    "InvokeCodeInterpreterRequest":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "name"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter associated with the session. This must match the identifier used when creating the session with <code>StartCodeInterpreterSession</code>.</p>",
+          "location":"uri",
+          "locationName":"codeInterpreterIdentifier"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The unique identifier of the code interpreter session to use. This must be an active session created with <code>StartCodeInterpreterSession</code>. If the session has expired or been stopped, the request will fail.</p>",
+          "location":"header",
+          "locationName":"x-amzn-code-interpreter-session-id"
+        },
+        "name":{
+          "shape":"ToolName",
+          "documentation":"<p>The name of the code interpreter to invoke.</p>"
+        },
+        "arguments":{
+          "shape":"ToolArguments",
+          "documentation":"<p>The arguments for the code interpreter. This includes the code to execute and any additional parameters such as the programming language, whether to clear the execution context, and other execution options. The structure of this parameter depends on the specific code interpreter being used.</p>"
+        }
+      }
+    },
+    "InvokeCodeInterpreterResponse":{
+      "type":"structure",
+      "required":["stream"],
+      "members":{
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The identifier of the code interpreter session.</p>",
+          "location":"header",
+          "locationName":"x-amzn-code-interpreter-session-id"
+        },
+        "stream":{
+          "shape":"CodeInterpreterStreamOutput",
+          "documentation":"<p>The stream containing the results of the code execution. This includes output, errors, and execution status.</p>"
+        }
+      },
+      "payload":"stream"
+    },
+    "ListActorsInput":{
+      "type":"structure",
+      "required":["memoryId"],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource for which to list actors.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Minimum value of 1, maximum value of 100. Default is 20.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListActorsOutput":{
+      "type":"structure",
+      "required":["actorSummaries"],
+      "members":{
+        "actorSummaries":{
+          "shape":"ActorSummaryList",
+          "documentation":"<p>The list of actor summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use in a subsequent request to get the next set of results. This value is null when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListBrowserSessionsRequest":{
+      "type":"structure",
+      "required":["browserIdentifier"],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the browser to list sessions for. If specified, only sessions for this browser are returned. If not specified, sessions for all browsers are returned.</p>",
+          "location":"uri",
+          "locationName":"browserIdentifier"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. The default value is 10. Valid values range from 1 to 100. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. If not specified, Amazon Bedrock returns the first page of results.</p>"
+        },
+        "status":{
+          "shape":"BrowserSessionStatus",
+          "documentation":"<p>The status of the browser sessions to list. Valid values include ACTIVE, STOPPING, and STOPPED. If not specified, sessions with any status are returned.</p>"
+        }
+      }
+    },
+    "ListBrowserSessionsResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "items":{
+          "shape":"BrowserSessionSummaries",
+          "documentation":"<p>The list of browser sessions that match the specified criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListBrowserSessions</code> request to get the next set of results.</p>"
+        }
+      }
+    },
+    "ListCodeInterpreterSessionsRequest":{
+      "type":"structure",
+      "required":["codeInterpreterIdentifier"],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter to list sessions for. If specified, only sessions for this code interpreter are returned. If not specified, sessions for all code interpreters are returned.</p>",
+          "location":"uri",
+          "locationName":"codeInterpreterIdentifier"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. The default value is 10. Valid values range from 1 to 100. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results. If not specified, Amazon Bedrock returns the first page of results.</p>"
+        },
+        "status":{
+          "shape":"CodeInterpreterSessionStatus",
+          "documentation":"<p>The status of the code interpreter sessions to list. Valid values include ACTIVE, STOPPING, and STOPPED. If not specified, sessions with any status are returned.</p>"
+        }
+      }
+    },
+    "ListCodeInterpreterSessionsResponse":{
+      "type":"structure",
+      "required":["items"],
+      "members":{
+        "items":{
+          "shape":"CodeInterpreterSessionSummaries",
+          "documentation":"<p>The list of code interpreter sessions that match the specified criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to use in a subsequent <code>ListCodeInterpreterSessions</code> request to get the next set of results.</p>"
+        }
+      }
+    },
+    "ListEventsInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "sessionId",
+        "actorId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource for which to list events.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The identifier of the session for which to list events. If specified, only events from this session are returned.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor for which to list events. If specified, only events from this actor are returned.</p>",
+          "location":"uri",
+          "locationName":"actorId"
+        },
+        "includePayloads":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to include event payloads in the response. Set to true to include payloads, or false to exclude them.</p>"
+        },
+        "filter":{
+          "shape":"FilterInput",
+          "documentation":"<p>Filter criteria to apply when listing events.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Minimum value of 1, maximum value of 100. Default is 20.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListEventsOutput":{
+      "type":"structure",
+      "required":["events"],
+      "members":{
+        "events":{
+          "shape":"EventList",
+          "documentation":"<p>The list of events that match the specified criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use in a subsequent request to get the next set of results. This value is null when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListMemoryRecordsInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "namespace"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource for which to list memory records.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The namespace to filter memory records by. If specified, only memory records in this namespace are returned.</p>"
+        },
+        "memoryStrategyId":{
+          "shape":"MemoryStrategyId",
+          "documentation":"<p>The memory strategy identifier to filter memory records by. If specified, only memory records with this strategy ID are returned.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Minimum value of 1, maximum value of 100. Default is 20.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListMemoryRecordsOutput":{
+      "type":"structure",
+      "required":["memoryRecordSummaries"],
+      "members":{
+        "memoryRecordSummaries":{
+          "shape":"MemoryRecordSummaryList",
+          "documentation":"<p>The list of memory record summaries that match the specified criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use in a subsequent request to get the next set of results. This value is null when there are no more results to return.</p>"
+        }
+      }
+    },
+    "ListSessionsInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "actorId"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource for which to list sessions.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor for which to list sessions. If specified, only sessions involving this actor are returned.</p>",
+          "location":"uri",
+          "locationName":"actorId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Minimum value of 1, maximum value of 100. Default is 20.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListSessionsOutput":{
+      "type":"structure",
+      "required":["sessionSummaries"],
+      "members":{
+        "sessionSummaries":{
+          "shape":"SessionSummaryList",
+          "documentation":"<p>The list of session summaries that match the specified criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use in a subsequent request to get the next set of results. This value is null when there are no more results to return.</p>"
+        }
+      }
+    },
+    "LiveViewStream":{
+      "type":"structure",
+      "members":{
+        "streamEndpoint":{
+          "shape":"BrowserStreamEndpoint",
+          "documentation":"<p>The endpoint URL for the live view stream. This URL is used to establish a connection to receive visual updates from the browser session.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for a stream that provides a visual representation of a browser session in Amazon Bedrock. This stream enables agents to observe the current state of the browser, including rendered web pages, visual elements, and the results of interactions.</p>"
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaxLenString":{
+      "type":"string",
+      "max":100000000,
+      "min":0
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MemoryContent":{
+      "type":"structure",
+      "members":{
+        "text":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The text content of the memory record.</p>"
+        }
+      },
+      "documentation":"<p>Contains the content of a memory record.</p>",
+      "union":true
+    },
+    "MemoryId":{
+      "type":"string",
+      "min":12,
+      "pattern":"[a-zA-Z][a-zA-Z0-9-_]{0,99}-[a-zA-Z0-9]{10}"
+    },
+    "MemoryRecord":{
+      "type":"structure",
+      "required":[
+        "memoryRecordId",
+        "content",
+        "memoryStrategyId",
+        "namespaces",
+        "createdAt"
+      ],
+      "members":{
+        "memoryRecordId":{
+          "shape":"MemoryRecordId",
+          "documentation":"<p>The unique identifier of the memory record.</p>"
+        },
+        "content":{
+          "shape":"MemoryContent",
+          "documentation":"<p>The content of the memory record.</p>"
+        },
+        "memoryStrategyId":{
+          "shape":"MemoryStrategyId",
+          "documentation":"<p>The identifier of the memory strategy associated with this record.</p>"
+        },
+        "namespaces":{
+          "shape":"NamespacesList",
+          "documentation":"<p>The namespaces associated with this memory record. Namespaces help organize and categorize memory records.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the memory record was created.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a memory record in an AgentCore Memory resource.</p>"
+    },
+    "MemoryRecordId":{
+      "type":"string",
+      "max":40,
+      "min":40,
+      "pattern":"mem-[a-zA-Z0-9-]*"
+    },
+    "MemoryRecordSummary":{
+      "type":"structure",
+      "required":[
+        "memoryRecordId",
+        "content",
+        "memoryStrategyId",
+        "namespaces",
+        "createdAt"
+      ],
+      "members":{
+        "memoryRecordId":{
+          "shape":"MemoryRecordId",
+          "documentation":"<p>The unique identifier of the memory record.</p>"
+        },
+        "content":{
+          "shape":"MemoryContent",
+          "documentation":"<p>The content of the memory record.</p>"
+        },
+        "memoryStrategyId":{
+          "shape":"MemoryStrategyId",
+          "documentation":"<p>The identifier of the memory strategy associated with this record.</p>"
+        },
+        "namespaces":{
+          "shape":"NamespacesList",
+          "documentation":"<p>The namespaces associated with this memory record.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the memory record was created.</p>"
+        },
+        "score":{
+          "shape":"Double",
+          "documentation":"<p>The relevance score of the memory record when returned as part of a search result. Higher values indicate greater relevance to the search query.</p>"
+        }
+      },
+      "documentation":"<p>Contains summary information about a memory record.</p>"
+    },
+    "MemoryRecordSummaryList":{
+      "type":"list",
+      "member":{"shape":"MemoryRecordSummary"}
+    },
+    "MemoryStrategyId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-_]*"
+    },
+    "MimeType":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Name":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "Namespace":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[a-zA-Z0-9/*][a-zA-Z0-9-_/*]*"
+    },
+    "NamespacesList":{
+      "type":"list",
+      "member":{"shape":"Namespace"},
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"\\S*"
+    },
+    "NonBlankString":{
+      "type":"string",
+      "pattern":"[\\s\\S]+"
+    },
+    "Oauth2FlowType":{
+      "type":"string",
+      "enum":[
+        "USER_FEDERATION",
+        "M2M"
+      ]
+    },
+    "PaginationToken":{"type":"string"},
+    "PayloadType":{
+      "type":"structure",
+      "members":{
+        "conversational":{
+          "shape":"Conversational",
+          "documentation":"<p>The conversational content of the payload.</p>"
+        },
+        "blob":{
+          "shape":"Document",
+          "documentation":"<p>The binary content of the payload.</p>"
+        }
+      },
+      "documentation":"<p>Contains the payload content for an event.</p>",
+      "union":true
+    },
+    "PayloadTypeList":{
+      "type":"list",
+      "member":{"shape":"PayloadType"},
+      "max":100,
+      "min":0
+    },
+    "ProgrammingLanguage":{
+      "type":"string",
+      "enum":[
+        "python",
+        "javascript",
+        "typescript"
+      ]
+    },
+    "ResourceContent":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"ResourceContentType",
+          "documentation":"<p>The type of resource content.</p>"
+        },
+        "uri":{
+          "shape":"String",
+          "documentation":"<p>The URI of the resource content.</p>"
+        },
+        "mimeType":{
+          "shape":"String",
+          "documentation":"<p>The MIME type of the resource content.</p>"
+        },
+        "text":{
+          "shape":"String",
+          "documentation":"<p>The text resource content.</p>"
+        },
+        "blob":{
+          "shape":"Blob",
+          "documentation":"<p>The binary resource content.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about resource content.</p>"
+    },
+    "ResourceContentType":{
+      "type":"string",
+      "enum":[
+        "text",
+        "blob"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when the specified resource does not exist. This can happen when using an invalid identifier or when trying to access a resource that has been deleted.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceOauth2ReturnUrlType":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"\\w+:(\\/?\\/?)[^\\s]+"
+    },
+    "ResponseStream":{
+      "type":"blob",
+      "sensitive":true,
+      "streaming":true
+    },
+    "RetrieveMemoryRecordsInput":{
+      "type":"structure",
+      "required":[
+        "memoryId",
+        "namespace",
+        "searchCriteria"
+      ],
+      "members":{
+        "memoryId":{
+          "shape":"MemoryId",
+          "documentation":"<p>The identifier of the AgentCore Memory resource from which to retrieve memory records.</p>",
+          "location":"uri",
+          "locationName":"memoryId"
+        },
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The namespace to filter memory records by. If specified, only memory records in this namespace are searched.</p>"
+        },
+        "searchCriteria":{
+          "shape":"SearchCriteria",
+          "documentation":"<p>The search criteria to use for finding relevant memory records. This includes the search query, memory strategy ID, and other search parameters.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Minimum value of 1, maximum value of 100. Default is 20.</p>"
+        }
+      }
+    },
+    "RetrieveMemoryRecordsOutput":{
+      "type":"structure",
+      "required":["memoryRecordSummaries"],
+      "members":{
+        "memoryRecordSummaries":{
+          "shape":"MemoryRecordSummaryList",
+          "documentation":"<p>The list of memory record summaries that match the search criteria, ordered by relevance.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use in a subsequent request to get the next set of results. This value is null when there are no more results to return.</p>"
+        }
+      }
+    },
+    "Role":{
+      "type":"string",
+      "enum":[
+        "ASSISTANT",
+        "USER",
+        "TOOL",
+        "OTHER"
+      ]
+    },
+    "RuntimeClientError":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when there is an error in the runtime client. This can happen due to network issues, invalid configuration, or other client-side problems. Check the error message for specific details about the error.</p>",
+      "error":{
+        "httpStatusCode":424,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScopeType":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ScopesListType":{
+      "type":"list",
+      "member":{"shape":"ScopeType"}
+    },
+    "SearchCriteria":{
+      "type":"structure",
+      "required":["searchQuery"],
+      "members":{
+        "searchQuery":{
+          "shape":"SearchCriteriaSearchQueryString",
+          "documentation":"<p>The search query to use for finding relevant memory records.</p>"
+        },
+        "memoryStrategyId":{
+          "shape":"MemoryStrategyId",
+          "documentation":"<p>The memory strategy identifier to filter memory records by.</p>"
+        },
+        "topK":{
+          "shape":"SearchCriteriaTopKInteger",
+          "documentation":"<p>The maximum number of top-scoring memory records to return. This value is used for semantic search ranking.</p>"
+        }
+      },
+      "documentation":"<p>Contains search criteria for retrieving memory records.</p>"
+    },
+    "SearchCriteriaSearchQueryString":{
+      "type":"string",
+      "max":10000,
+      "min":1,
+      "sensitive":true
+    },
+    "SearchCriteriaTopKInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The service encountered an internal error. Try your request again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when the request would cause a service quota to be exceeded. Review your service quotas and either reduce your request rate or request a quota increase.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SessionId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-_]*"
+    },
+    "SessionSummary":{
+      "type":"structure",
+      "required":[
+        "sessionId",
+        "actorId",
+        "createdAt"
+      ],
+      "members":{
+        "sessionId":{
+          "shape":"SessionId",
+          "documentation":"<p>The unique identifier of the session.</p>"
+        },
+        "actorId":{
+          "shape":"ActorId",
+          "documentation":"<p>The identifier of the actor associated with the session.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the session was created.</p>"
+        }
+      },
+      "documentation":"<p>Contains summary information about a session in an AgentCore Memory resource.</p>"
+    },
+    "SessionSummaryList":{
+      "type":"list",
+      "member":{"shape":"SessionSummary"}
+    },
+    "SessionType":{
+      "type":"string",
+      "max":256,
+      "min":33
+    },
+    "StartBrowserSessionRequest":{
+      "type":"structure",
+      "required":["browserIdentifier"],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the browser to use for this session. This identifier specifies which browser environment to initialize for the session.</p>",
+          "location":"uri",
+          "locationName":"browserIdentifier"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the browser session. This name helps you identify and manage the session. The name does not need to be unique.</p>"
+        },
+        "sessionTimeoutSeconds":{
+          "shape":"BrowserSessionTimeout",
+          "documentation":"<p>The time in seconds after which the session automatically terminates if there is no activity. The default value is 3600 seconds (1 hour). The minimum allowed value is 60 seconds, and the maximum allowed value is 28800 seconds (8 hours).</p>"
+        },
+        "viewPort":{
+          "shape":"ViewPort",
+          "documentation":"<p>The dimensions of the browser viewport for this session. This determines the visible area of the web content and affects how web pages are rendered. If not specified, Amazon Bedrock uses a default viewport size.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the API request completes no more than one time. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error. This parameter helps prevent the creation of duplicate sessions if there are temporary network issues.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartBrowserSessionResponse":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "createdAt"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the browser.</p>"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The unique identifier of the created browser session.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the browser session was created.</p>"
+        },
+        "streams":{
+          "shape":"BrowserSessionStream",
+          "documentation":"<p>The streams associated with this browser session. These include the automation stream and live view stream.</p>"
+        }
+      }
+    },
+    "StartCodeInterpreterSessionRequest":{
+      "type":"structure",
+      "required":["codeInterpreterIdentifier"],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter to use for this session. This identifier specifies which code interpreter environment to initialize for the session.</p>",
+          "location":"uri",
+          "locationName":"codeInterpreterIdentifier"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the code interpreter session. This name helps you identify and manage the session. The name does not need to be unique.</p>"
+        },
+        "sessionTimeoutSeconds":{
+          "shape":"CodeInterpreterSessionTimeout",
+          "documentation":"<p>The time in seconds after which the session automatically terminates if there is no activity. The default value is 3600 seconds (1 hour). The minimum allowed value is 60 seconds, and the maximum allowed value is 28800 seconds (8 hours).</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the API request completes no more than one time. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error. This parameter helps prevent the creation of duplicate sessions if there are temporary network issues.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartCodeInterpreterSessionResponse":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId",
+        "createdAt"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the code interpreter.</p>"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The unique identifier of the created code interpreter session.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the code interpreter session was created.</p>"
+        }
+      }
+    },
+    "StopBrowserSessionRequest":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the browser associated with the session.</p>",
+          "location":"uri",
+          "locationName":"browserIdentifier"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The unique identifier of the browser session to stop.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the API request completes no more than one time. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StopBrowserSessionResponse":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "lastUpdatedAt"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the browser.</p>"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The identifier of the browser session.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the browser session was last updated.</p>"
+        }
+      }
+    },
+    "StopCodeInterpreterSessionRequest":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the code interpreter associated with the session.</p>",
+          "location":"uri",
+          "locationName":"codeInterpreterIdentifier"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The unique identifier of the code interpreter session to stop.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the API request completes no more than one time. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StopCodeInterpreterSessionResponse":{
+      "type":"structure",
+      "required":[
+        "codeInterpreterIdentifier",
+        "sessionId",
+        "lastUpdatedAt"
+      ],
+      "members":{
+        "codeInterpreterIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the code interpreter.</p>"
+        },
+        "sessionId":{
+          "shape":"CodeInterpreterSessionId",
+          "documentation":"<p>The identifier of the code interpreter session.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The timestamp when the code interpreter session was last updated.</p>"
+        }
+      }
+    },
+    "StreamUpdate":{
+      "type":"structure",
+      "members":{
+        "automationStreamUpdate":{
+          "shape":"AutomationStreamUpdate",
+          "documentation":"<p>The update to an automation stream.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an update to a stream.</p>",
+      "union":true
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"MaxLenString"}
+    },
+    "StringType":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "TaskStatus":{
+      "type":"string",
+      "enum":[
+        "submitted",
+        "working",
+        "completed",
+        "canceled",
+        "failed"
+      ]
+    },
+    "ThrottledException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. Reduce the frequency of requests and try again.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>The exception that occurs when the request was denied due to request throttling. This happens when you exceed the allowed request rate for an operation. Reduce the frequency of requests or implement exponential backoff retry logic in your application.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "ToolArguments":{
+      "type":"structure",
+      "members":{
+        "code":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The code to execute in a code interpreter session. This is the source code in the specified programming language that will be executed by the code interpreter.</p>"
+        },
+        "language":{
+          "shape":"ProgrammingLanguage",
+          "documentation":"<p>The programming language of the code to execute. This tells the code interpreter which language runtime to use for execution. Common values include 'python', 'javascript', and 'r'.</p>"
+        },
+        "clearContext":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to clear the context for the tool.</p>"
+        },
+        "command":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The command to execute with the tool.</p>"
+        },
+        "path":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The path for the tool operation.</p>"
+        },
+        "paths":{
+          "shape":"StringList",
+          "documentation":"<p>The paths for the tool operation.</p>"
+        },
+        "content":{
+          "shape":"InputContentBlockList",
+          "documentation":"<p>The content for the tool operation.</p>"
+        },
+        "directoryPath":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The directory path for the tool operation.</p>"
+        },
+        "taskId":{
+          "shape":"MaxLenString",
+          "documentation":"<p>The identifier of the task for the tool operation.</p>"
+        }
+      },
+      "documentation":"<p>The collection of arguments that specify the operation to perform and its parameters when invoking a tool in Amazon Bedrock. Different tools require different arguments, and this structure provides a flexible way to pass the appropriate arguments to each tool type.</p>"
+    },
+    "ToolName":{
+      "type":"string",
+      "enum":[
+        "executeCode",
+        "executeCommand",
+        "readFiles",
+        "listFiles",
+        "removeFiles",
+        "writeFiles",
+        "startCommandExecution",
+        "getTask",
+        "stopTask"
+      ]
+    },
+    "ToolResultStructuredContent":{
+      "type":"structure",
+      "members":{
+        "taskId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the task that produced the result.</p>"
+        },
+        "taskStatus":{
+          "shape":"TaskStatus",
+          "documentation":"<p>The status of the task that produced the result.</p>"
+        },
+        "stdout":{
+          "shape":"String",
+          "documentation":"<p>The standard output from the tool execution.</p>"
+        },
+        "stderr":{
+          "shape":"String",
+          "documentation":"<p>The standard error output from the tool execution.</p>"
+        },
+        "exitCode":{
+          "shape":"Integer",
+          "documentation":"<p>The exit code from the tool execution.</p>"
+        },
+        "executionTime":{
+          "shape":"Double",
+          "documentation":"<p>The execution time of the tool operation in milliseconds.</p>"
+        }
+      },
+      "documentation":"<p>Contains structured content from a tool result.</p>"
+    },
+    "UnauthorizedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception is thrown when the JWT bearer token is invalid or not found for OAuth bearer token based access</p>",
+      "error":{
+        "httpStatusCode":401,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UpdateBrowserStreamRequest":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "streamUpdate"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the browser.</p>",
+          "location":"uri",
+          "locationName":"browserIdentifier"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The identifier of the browser session.</p>",
+          "location":"querystring",
+          "locationName":"sessionId"
+        },
+        "streamUpdate":{
+          "shape":"StreamUpdate",
+          "documentation":"<p>The update to apply to the browser stream.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier to ensure that the operation completes no more than one time. If this token matches a previous request, Amazon Bedrock ignores the request, but does not return an error.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateBrowserStreamResponse":{
+      "type":"structure",
+      "required":[
+        "browserIdentifier",
+        "sessionId",
+        "streams",
+        "updatedAt"
+      ],
+      "members":{
+        "browserIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the browser.</p>"
+        },
+        "sessionId":{
+          "shape":"BrowserSessionId",
+          "documentation":"<p>The identifier of the browser session.</p>"
+        },
+        "streams":{"shape":"BrowserSessionStream"},
+        "updatedAt":{
+          "shape":"DateTimestamp",
+          "documentation":"<p>The time at which the browser stream was updated.</p>"
+        }
+      }
+    },
+    "UserIdType":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "UserTokenType":{
+      "type":"string",
+      "max":131072,
+      "min":1,
+      "pattern":"[A-Za-z0-9-_=]+.[A-Za-z0-9-_=]+.[A-Za-z0-9-_=]+",
+      "sensitive":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{"shape":"ValidationExceptionReason"},
+        "fieldList":{"shape":"ValidationExceptionFieldList"}
+      },
+      "documentation":"<p>The exception that occurs when the input fails to satisfy the constraints specified by the service. Check the error message for details about which input parameter is invalid and correct your request.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the field.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing why this field failed validation.</p>"
+        }
+      },
+      "documentation":"<p>Stores information about a field passed inside a request that resulted in an exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "CannotParse",
+        "FieldValidationFailed",
+        "IdempotentParameterMismatchException",
+        "EventInOtherSession",
+        "ResourceConflict"
+      ]
+    },
+    "ViewPort":{
+      "type":"structure",
+      "required":[
+        "width",
+        "height"
+      ],
+      "members":{
+        "width":{
+          "shape":"ViewPortWidth",
+          "documentation":"<p>The width of the viewport in pixels. This value determines the horizontal dimension of the visible area. Valid values range from 800 to 1920 pixels.</p>"
+        },
+        "height":{
+          "shape":"ViewPortHeight",
+          "documentation":"<p>The height of the viewport in pixels. This value determines the vertical dimension of the visible area. Valid values range from 600 to 1080 pixels.</p>"
+        }
+      },
+      "documentation":"<p>The configuration that defines the dimensions of a browser viewport in a browser session. The viewport determines the visible area of web content and affects how web pages are rendered and displayed. Proper viewport configuration ensures that web content is displayed correctly for the agent's browsing tasks.</p>"
+    },
+    "ViewPortHeight":{
+      "type":"integer",
+      "box":true,
+      "max":2160,
+      "min":240
+    },
+    "ViewPortWidth":{
+      "type":"integer",
+      "box":true,
+      "max":3840,
+      "min":320
+    },
+    "WorkloadIdentityNameType":{
+      "type":"string",
+      "max":255,
+      "min":3,
+      "pattern":"[A-Za-z0-9_.-]+"
+    },
+    "WorkloadIdentityTokenType":{
+      "type":"string",
+      "max":131072,
+      "min":1,
+      "sensitive":true
+    }
+  },
+  "documentation":"<p><note> <p>Amazon Bedrock AgentCore is in preview release and is subject to change.</p> </note> <p>Welcome to the Amazon Bedrock AgentCore Data Plane API reference. Data Plane actions process and handle data or workloads within Amazon Web Services services. </p></p>"
+}

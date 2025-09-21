@@ -1,0 +1,1423 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-05-04",
+    "endpointPrefix":"managedblockchain-query",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "ripServiceName":"chainquery",
+    "serviceFullName":"Amazon Managed Blockchain Query",
+    "serviceId":"ManagedBlockchain Query",
+    "signatureVersion":"v4",
+    "signingName":"managedblockchain-query",
+    "uid":"managedblockchain-query-2023-05-04"
+  },
+  "operations":{
+    "BatchGetTokenBalance":{
+      "name":"BatchGetTokenBalance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/batch-get-token-balance",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchGetTokenBalanceInput"},
+      "output":{"shape":"BatchGetTokenBalanceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Gets the token balance for a batch of tokens by using the <code>BatchGetTokenBalance</code> action for every token in the request.</p> <note> <p>Only the native tokens BTC and ETH, and the ERC-20, ERC-721, and ERC 1155 token standards are supported.</p> </note>"
+    },
+    "GetAssetContract":{
+      "name":"GetAssetContract",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-asset-contract",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAssetContractInput"},
+      "output":{"shape":"GetAssetContractOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Gets the information about a specific contract deployed on the blockchain.</p> <note> <ul> <li> <p>The Bitcoin blockchain networks do not support this operation.</p> </li> <li> <p>Metadata is currently only available for some <code>ERC-20</code> contracts. Metadata will be available for additional contracts in the future.</p> </li> </ul> </note>"
+    },
+    "GetTokenBalance":{
+      "name":"GetTokenBalance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-token-balance",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTokenBalanceInput"},
+      "output":{"shape":"GetTokenBalanceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Gets the balance of a specific token, including native tokens, for a given address (wallet or contract) on the blockchain.</p> <note> <p>Only the native tokens BTC and ETH, and the ERC-20, ERC-721, and ERC 1155 token standards are supported.</p> </note>"
+    },
+    "GetTransaction":{
+      "name":"GetTransaction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-transaction",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTransactionInput"},
+      "output":{"shape":"GetTransactionOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Gets the details of a transaction.</p> <note> <p>This action will return transaction details for all transactions that are <i>confirmed</i> on the blockchain, even if they have not reached <a href=\"https://docs.aws.amazon.com/managed-blockchain/latest/ambq-dg/key-concepts.html#finality\">finality</a>. </p> </note>"
+    },
+    "ListAssetContracts":{
+      "name":"ListAssetContracts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-asset-contracts",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAssetContractsInput"},
+      "output":{"shape":"ListAssetContractsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists all the contracts for a given contract type deployed by an address (either a contract address or a wallet address).</p> <p>The Bitcoin blockchain networks do not support this operation.</p>"
+    },
+    "ListFilteredTransactionEvents":{
+      "name":"ListFilteredTransactionEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-filtered-transaction-events",
+        "responseCode":200
+      },
+      "input":{"shape":"ListFilteredTransactionEventsInput"},
+      "output":{"shape":"ListFilteredTransactionEventsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists all the transaction events for an address on the blockchain.</p> <note> <p>This operation is only supported on the Bitcoin networks.</p> </note>"
+    },
+    "ListTokenBalances":{
+      "name":"ListTokenBalances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-token-balances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTokenBalancesInput"},
+      "output":{"shape":"ListTokenBalancesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>This action returns the following for a given blockchain network:</p> <ul> <li> <p>Lists all token balances owned by an address (either a contract address or a wallet address).</p> </li> <li> <p>Lists all token balances for all tokens created by a contract.</p> </li> <li> <p>Lists all token balances for a given token.</p> </li> </ul> <note> <p>You must always specify the network property of the <code>tokenFilter</code> when using this operation.</p> </note>"
+    },
+    "ListTransactionEvents":{
+      "name":"ListTransactionEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-transaction-events",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTransactionEventsInput"},
+      "output":{"shape":"ListTransactionEventsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists all the transaction events for a transaction </p> <note> <p>This action will return transaction details for all transactions that are <i>confirmed</i> on the blockchain, even if they have not reached <a href=\"https://docs.aws.amazon.com/managed-blockchain/latest/ambq-dg/key-concepts.html#finality\">finality</a>. </p> </note>"
+    },
+    "ListTransactions":{
+      "name":"ListTransactions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-transactions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTransactionsInput"},
+      "output":{"shape":"ListTransactionsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists all the transaction events for a transaction.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Web Services account doesn’t have access to this resource. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AddressIdentifierFilter":{
+      "type":"structure",
+      "required":["transactionEventToAddress"],
+      "members":{
+        "transactionEventToAddress":{
+          "shape":"AddressIdentifierFilterTransactionEventToAddressList",
+          "documentation":"<p>The container for the recipient address of the transaction. </p>"
+        }
+      },
+      "documentation":"<p>This is the container for the unique public address on the blockchain.</p>"
+    },
+    "AddressIdentifierFilterTransactionEventToAddressList":{
+      "type":"list",
+      "member":{"shape":"ChainAddress"},
+      "max":1,
+      "min":1
+    },
+    "AssetContract":{
+      "type":"structure",
+      "required":[
+        "contractIdentifier",
+        "tokenStandard",
+        "deployerAddress"
+      ],
+      "members":{
+        "contractIdentifier":{
+          "shape":"ContractIdentifier",
+          "documentation":"<p>The container for the contract identifier containing its blockchain network and address.</p>"
+        },
+        "tokenStandard":{
+          "shape":"QueryTokenStandard",
+          "documentation":"<p>The token standard of the contract.</p>"
+        },
+        "deployerAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The address of the contract deployer.</p>"
+        }
+      },
+      "documentation":"<p>This container contains information about an contract.</p>"
+    },
+    "AssetContractList":{
+      "type":"list",
+      "member":{"shape":"AssetContract"},
+      "max":250,
+      "min":0
+    },
+    "BatchGetTokenBalanceErrorItem":{
+      "type":"structure",
+      "required":[
+        "errorCode",
+        "errorMessage",
+        "errorType"
+      ],
+      "members":{
+        "tokenIdentifier":{"shape":"TokenIdentifier"},
+        "ownerIdentifier":{"shape":"OwnerIdentifier"},
+        "atBlockchainInstant":{"shape":"BlockchainInstant"},
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code associated with the error.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>The message associated with the error.</p>"
+        },
+        "errorType":{
+          "shape":"ErrorType",
+          "documentation":"<p>The type of error.</p>"
+        }
+      },
+      "documentation":"<p>Error generated from a failed <code>BatchGetTokenBalance</code> request.</p>"
+    },
+    "BatchGetTokenBalanceErrors":{
+      "type":"list",
+      "member":{"shape":"BatchGetTokenBalanceErrorItem"},
+      "max":10,
+      "min":0
+    },
+    "BatchGetTokenBalanceInput":{
+      "type":"structure",
+      "members":{
+        "getTokenBalanceInputs":{
+          "shape":"GetTokenBalanceInputList",
+          "documentation":"<p>An array of <code>BatchGetTokenBalanceInputItem</code> objects whose balance is being requested.</p>"
+        }
+      }
+    },
+    "BatchGetTokenBalanceInputItem":{
+      "type":"structure",
+      "required":[
+        "tokenIdentifier",
+        "ownerIdentifier"
+      ],
+      "members":{
+        "tokenIdentifier":{"shape":"TokenIdentifier"},
+        "ownerIdentifier":{"shape":"OwnerIdentifier"},
+        "atBlockchainInstant":{"shape":"BlockchainInstant"}
+      },
+      "documentation":"<p>The container for the input for getting a token balance.</p>"
+    },
+    "BatchGetTokenBalanceOutput":{
+      "type":"structure",
+      "required":[
+        "tokenBalances",
+        "errors"
+      ],
+      "members":{
+        "tokenBalances":{
+          "shape":"BatchGetTokenBalanceOutputList",
+          "documentation":"<p>An array of <code>BatchGetTokenBalanceOutputItem</code> objects returned by the response.</p>"
+        },
+        "errors":{
+          "shape":"BatchGetTokenBalanceErrors",
+          "documentation":"<p>An array of <code>BatchGetTokenBalanceErrorItem</code> objects returned from the request.</p>"
+        }
+      }
+    },
+    "BatchGetTokenBalanceOutputItem":{
+      "type":"structure",
+      "required":[
+        "balance",
+        "atBlockchainInstant"
+      ],
+      "members":{
+        "ownerIdentifier":{"shape":"OwnerIdentifier"},
+        "tokenIdentifier":{"shape":"TokenIdentifier"},
+        "balance":{
+          "shape":"String",
+          "documentation":"<p>The container for the token balance.</p>"
+        },
+        "atBlockchainInstant":{"shape":"BlockchainInstant"},
+        "lastUpdatedTime":{"shape":"BlockchainInstant"}
+      },
+      "documentation":"<p>The container for the properties of a token balance output.</p>"
+    },
+    "BatchGetTokenBalanceOutputList":{
+      "type":"list",
+      "member":{"shape":"BatchGetTokenBalanceOutputItem"},
+      "max":10,
+      "min":0
+    },
+    "BlockHash":{
+      "type":"string",
+      "pattern":"(0x[A-Fa-f0-9]{64}|[A-Fa-f0-9]{64})"
+    },
+    "BlockchainInstant":{
+      "type":"structure",
+      "members":{
+        "time":{
+          "shape":"Timestamp",
+          "documentation":"<p>The container of the <code>Timestamp</code> of the blockchain instant.</p> <note> <p>This <code>timestamp</code> will only be recorded up to the second.</p> </note>"
+        }
+      },
+      "documentation":"<p>The container for time.</p>"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ChainAddress":{
+      "type":"string",
+      "pattern":"[-A-Za-z0-9]{13,74}"
+    },
+    "ConfirmationStatus":{
+      "type":"string",
+      "enum":[
+        "FINAL",
+        "NONFINAL"
+      ]
+    },
+    "ConfirmationStatusFilter":{
+      "type":"structure",
+      "required":["include"],
+      "members":{
+        "include":{
+          "shape":"ConfirmationStatusIncludeList",
+          "documentation":"<p>The container to determine whether to list results that have only reached <a href=\"https://docs.aws.amazon.com/managed-blockchain/latest/ambq-dg/key-concepts.html#finality\"> <i>finality</i> </a>. Transactions that have reached finality are always part of the response.</p>"
+        }
+      },
+      "documentation":"<p>The container for the <code>ConfirmationStatusFilter</code> that filters for the <a href=\"https://docs.aws.amazon.com/managed-blockchain/latest/ambq-dg/key-concepts.html#finality\"> <i>finality</i> </a> of the results.</p>"
+    },
+    "ConfirmationStatusIncludeList":{
+      "type":"list",
+      "member":{"shape":"ConfirmationStatus"},
+      "min":1
+    },
+    "ContractFilter":{
+      "type":"structure",
+      "required":[
+        "network",
+        "tokenStandard",
+        "deployerAddress"
+      ],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network of the contract.</p>"
+        },
+        "tokenStandard":{
+          "shape":"QueryTokenStandard",
+          "documentation":"<p>The container for the token standard.</p>"
+        },
+        "deployerAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The network address of the deployer.</p>"
+        }
+      },
+      "documentation":"<p>The contract or wallet address by which to filter the request.</p>"
+    },
+    "ContractIdentifier":{
+      "type":"structure",
+      "required":[
+        "network",
+        "contractAddress"
+      ],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network of the contract.</p>"
+        },
+        "contractAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>Container for the blockchain address about a contract.</p>"
+        }
+      },
+      "documentation":"<p>Container for the blockchain address and network information about a contract.</p>"
+    },
+    "ContractMetadata":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the token contract.</p>"
+        },
+        "symbol":{
+          "shape":"String",
+          "documentation":"<p>The symbol of the token contract.</p>"
+        },
+        "decimals":{
+          "shape":"Integer",
+          "documentation":"<p>The decimals used by the token contract.</p>"
+        }
+      },
+      "documentation":"<p>The metadata of the contract.</p>"
+    },
+    "ErrorType":{
+      "type":"string",
+      "enum":[
+        "VALIDATION_EXCEPTION",
+        "RESOURCE_NOT_FOUND_EXCEPTION"
+      ]
+    },
+    "ExceptionMessage":{
+      "type":"string",
+      "min":1
+    },
+    "ExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "FAILED",
+        "SUCCEEDED"
+      ]
+    },
+    "GetAssetContractInput":{
+      "type":"structure",
+      "required":["contractIdentifier"],
+      "members":{
+        "contractIdentifier":{
+          "shape":"ContractIdentifier",
+          "documentation":"<p>Contains the blockchain address and network information about the contract.</p>"
+        }
+      }
+    },
+    "GetAssetContractOutput":{
+      "type":"structure",
+      "required":[
+        "contractIdentifier",
+        "tokenStandard",
+        "deployerAddress"
+      ],
+      "members":{
+        "contractIdentifier":{
+          "shape":"ContractIdentifier",
+          "documentation":"<p>Contains the blockchain address and network information about the contract.</p>"
+        },
+        "tokenStandard":{
+          "shape":"QueryTokenStandard",
+          "documentation":"<p>The token standard of the contract requested.</p>"
+        },
+        "deployerAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The address of the deployer of contract.</p>"
+        },
+        "metadata":{"shape":"ContractMetadata"}
+      }
+    },
+    "GetTokenBalanceInput":{
+      "type":"structure",
+      "required":[
+        "tokenIdentifier",
+        "ownerIdentifier"
+      ],
+      "members":{
+        "tokenIdentifier":{
+          "shape":"TokenIdentifier",
+          "documentation":"<p>The container for the identifier for the token, including the unique token ID and its blockchain network.</p>"
+        },
+        "ownerIdentifier":{
+          "shape":"OwnerIdentifier",
+          "documentation":"<p>The container for the identifier for the owner.</p>"
+        },
+        "atBlockchainInstant":{
+          "shape":"BlockchainInstant",
+          "documentation":"<p>The time for when the TokenBalance is requested or the current time if a time is not provided in the request.</p> <note> <p>This time will only be recorded up to the second.</p> </note>"
+        }
+      }
+    },
+    "GetTokenBalanceInputList":{
+      "type":"list",
+      "member":{"shape":"BatchGetTokenBalanceInputItem"},
+      "max":10,
+      "min":1
+    },
+    "GetTokenBalanceOutput":{
+      "type":"structure",
+      "required":[
+        "balance",
+        "atBlockchainInstant"
+      ],
+      "members":{
+        "ownerIdentifier":{"shape":"OwnerIdentifier"},
+        "tokenIdentifier":{"shape":"TokenIdentifier"},
+        "balance":{
+          "shape":"String",
+          "documentation":"<p>The container for the token balance.</p>"
+        },
+        "atBlockchainInstant":{"shape":"BlockchainInstant"},
+        "lastUpdatedTime":{"shape":"BlockchainInstant"}
+      }
+    },
+    "GetTransactionInput":{
+      "type":"structure",
+      "required":["network"],
+      "members":{
+        "transactionHash":{
+          "shape":"QueryTransactionHash",
+          "documentation":"<p>The hash of a transaction. It is generated when a transaction is created.</p>"
+        },
+        "transactionId":{
+          "shape":"QueryTransactionId",
+          "documentation":"<p>The identifier of a Bitcoin transaction. It is generated when a transaction is created.</p> <note> <p> <code>transactionId</code> is only supported on the Bitcoin networks.</p> </note>"
+        },
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transaction occurred.</p>"
+        }
+      }
+    },
+    "GetTransactionOutput":{
+      "type":"structure",
+      "required":["transaction"],
+      "members":{
+        "transaction":{
+          "shape":"Transaction",
+          "documentation":"<p>Contains the details of the transaction.</p>"
+        }
+      }
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Specifies the <code>retryAfterSeconds</code> value.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an internal error in the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ListAssetContractsInput":{
+      "type":"structure",
+      "required":["contractFilter"],
+      "members":{
+        "contractFilter":{
+          "shape":"ContractFilter",
+          "documentation":"<p>Contains the filter parameter for the request.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> The pagination token that indicates the next set of results to retrieve.</p>"
+        },
+        "maxResults":{
+          "shape":"ListAssetContractsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of contracts to list.</p> <p>Default: <code>100</code> </p> <note> <p>Even if additional results can be retrieved, the request can return less results than <code>maxResults</code> or an empty array of results.</p> <p>To retrieve the next set of results, make another request with the returned <code>nextToken</code> value. The value of <code>nextToken</code> is <code>null</code> when there are no more results to return</p> </note>"
+        }
+      }
+    },
+    "ListAssetContractsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListAssetContractsOutput":{
+      "type":"structure",
+      "required":["contracts"],
+      "members":{
+        "contracts":{
+          "shape":"AssetContractList",
+          "documentation":"<p>An array of contract objects that contain the properties for each contract.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve. </p>"
+        }
+      }
+    },
+    "ListFilteredTransactionEventsInput":{
+      "type":"structure",
+      "required":[
+        "network",
+        "addressIdentifierFilter"
+      ],
+      "members":{
+        "network":{
+          "shape":"String",
+          "documentation":"<p>The blockchain network where the transaction occurred.</p> <p>Valid Values: <code>BITCOIN_MAINNET</code> | <code>BITCOIN_TESTNET</code> </p>"
+        },
+        "addressIdentifierFilter":{
+          "shape":"AddressIdentifierFilter",
+          "documentation":"<p>This is the unique public address on the blockchain for which the transaction events are being requested.</p>"
+        },
+        "timeFilter":{
+          "shape":"TimeFilter",
+          "documentation":"<p>This container specifies the time frame for the transaction events returned in the response.</p>"
+        },
+        "voutFilter":{
+          "shape":"VoutFilter",
+          "documentation":"<p>This container specifies filtering attributes related to BITCOIN_VOUT event types</p>"
+        },
+        "confirmationStatusFilter":{"shape":"ConfirmationStatusFilter"},
+        "sort":{
+          "shape":"ListFilteredTransactionEventsSort",
+          "documentation":"<p>The order by which the results will be sorted.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        },
+        "maxResults":{
+          "shape":"ListFilteredTransactionEventsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of transaction events to list.</p> <p>Default: <code>100</code> </p> <note> <p>Even if additional results can be retrieved, the request can return less results than <code>maxResults</code> or an empty array of results.</p> <p>To retrieve the next set of results, make another request with the returned <code>nextToken</code> value. The value of <code>nextToken</code> is <code>null</code> when there are no more results to return</p> </note>"
+        }
+      }
+    },
+    "ListFilteredTransactionEventsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListFilteredTransactionEventsOutput":{
+      "type":"structure",
+      "required":["events"],
+      "members":{
+        "events":{
+          "shape":"TransactionEventList",
+          "documentation":"<p>The transaction events returned by the request.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "ListFilteredTransactionEventsSort":{
+      "type":"structure",
+      "members":{
+        "sortBy":{
+          "shape":"ListFilteredTransactionEventsSortBy",
+          "documentation":"<p>Container on how the results will be sorted by?</p>"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The container for the <i>sort order</i> for <code>ListFilteredTransactionEvents</code>. The <code>SortOrder</code> field only accepts the values <code>ASCENDING</code> and <code>DESCENDING</code>. Not providing <code>SortOrder</code> will default to <code>ASCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>Lists all the transaction events for an address on the blockchain.</p> <note> <p>This operation is only supported on the Bitcoin blockchain networks.</p> </note>"
+    },
+    "ListFilteredTransactionEventsSortBy":{
+      "type":"string",
+      "enum":["blockchainInstant"]
+    },
+    "ListTokenBalancesInput":{
+      "type":"structure",
+      "required":["tokenFilter"],
+      "members":{
+        "ownerFilter":{
+          "shape":"OwnerFilter",
+          "documentation":"<p>The contract or wallet address on the blockchain network by which to filter the request. You must specify the <code>address</code> property of the <code>ownerFilter</code> when listing balances of tokens owned by the address.</p>"
+        },
+        "tokenFilter":{
+          "shape":"TokenFilter",
+          "documentation":"<p>The contract address or a token identifier on the blockchain network by which to filter the request. You must specify the <code>contractAddress</code> property of this container when listing tokens minted by a contract.</p> <note> <p>You must always specify the network property of this container when using this operation.</p> </note>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        },
+        "maxResults":{
+          "shape":"ListTokenBalancesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of token balances to return.</p> <p>Default: <code>100</code> </p> <note> <p>Even if additional results can be retrieved, the request can return less results than <code>maxResults</code> or an empty array of results.</p> <p>To retrieve the next set of results, make another request with the returned <code>nextToken</code> value. The value of <code>nextToken</code> is <code>null</code> when there are no more results to return</p> </note>"
+        }
+      }
+    },
+    "ListTokenBalancesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListTokenBalancesOutput":{
+      "type":"structure",
+      "required":["tokenBalances"],
+      "members":{
+        "tokenBalances":{
+          "shape":"TokenBalanceList",
+          "documentation":"<p>An array of <code>TokenBalance</code> objects. Each object contains details about the token balance.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "ListTransactionEventsInput":{
+      "type":"structure",
+      "required":["network"],
+      "members":{
+        "transactionHash":{
+          "shape":"QueryTransactionHash",
+          "documentation":"<p>The hash of a transaction. It is generated when a transaction is created.</p>"
+        },
+        "transactionId":{
+          "shape":"QueryTransactionId",
+          "documentation":"<p>The identifier of a Bitcoin transaction. It is generated when a transaction is created.</p> <note> <p> <code>transactionId</code> is only supported on the Bitcoin networks.</p> </note>"
+        },
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transaction events occurred.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        },
+        "maxResults":{
+          "shape":"ListTransactionEventsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of transaction events to list.</p> <p>Default: <code>100</code> </p> <note> <p>Even if additional results can be retrieved, the request can return less results than <code>maxResults</code> or an empty array of results.</p> <p>To retrieve the next set of results, make another request with the returned <code>nextToken</code> value. The value of <code>nextToken</code> is <code>null</code> when there are no more results to return</p> </note>"
+        }
+      }
+    },
+    "ListTransactionEventsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListTransactionEventsOutput":{
+      "type":"structure",
+      "required":["events"],
+      "members":{
+        "events":{
+          "shape":"TransactionEventList",
+          "documentation":"<p>An array of <code>TransactionEvent</code> objects. Each object contains details about the transaction events.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "ListTransactionsInput":{
+      "type":"structure",
+      "required":[
+        "address",
+        "network"
+      ],
+      "members":{
+        "address":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The address (either a contract or wallet), whose transactions are being requested.</p>"
+        },
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transactions occurred.</p>"
+        },
+        "fromBlockchainInstant":{"shape":"BlockchainInstant"},
+        "toBlockchainInstant":{"shape":"BlockchainInstant"},
+        "sort":{
+          "shape":"ListTransactionsSort",
+          "documentation":"<p>The order by which the results will be sorted. </p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        },
+        "maxResults":{
+          "shape":"ListTransactionsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of transactions to list.</p> <p>Default: <code>100</code> </p> <note> <p>Even if additional results can be retrieved, the request can return less results than <code>maxResults</code> or an empty array of results.</p> <p>To retrieve the next set of results, make another request with the returned <code>nextToken</code> value. The value of <code>nextToken</code> is <code>null</code> when there are no more results to return</p> </note>"
+        },
+        "confirmationStatusFilter":{
+          "shape":"ConfirmationStatusFilter",
+          "documentation":"<p>This filter is used to include transactions in the response that haven't reached <a href=\"https://docs.aws.amazon.com/managed-blockchain/latest/ambq-dg/key-concepts.html#finality\"> <i>finality</i> </a>. Transactions that have reached finality are always part of the response.</p>"
+        }
+      }
+    },
+    "ListTransactionsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":250,
+      "min":1
+    },
+    "ListTransactionsOutput":{
+      "type":"structure",
+      "required":["transactions"],
+      "members":{
+        "transactions":{
+          "shape":"TransactionOutputList",
+          "documentation":"<p>The array of transactions returned by the request.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results to retrieve.</p>"
+        }
+      }
+    },
+    "ListTransactionsSort":{
+      "type":"structure",
+      "members":{
+        "sortBy":{
+          "shape":"ListTransactionsSortBy",
+          "documentation":"<p>Defaults to the value <code>TRANSACTION_TIMESTAMP</code>.</p>"
+        },
+        "sortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>The container for the <i>sort order</i> for <code>ListTransactions</code>. The <code>SortOrder</code> field only accepts the values <code>ASCENDING</code> and <code>DESCENDING</code>. Not providing <code>SortOrder</code> will default to <code>ASCENDING</code>.</p>"
+        }
+      },
+      "documentation":"<p>The container for determining how the list transaction result will be sorted.</p>"
+    },
+    "ListTransactionsSortBy":{
+      "type":"string",
+      "enum":["TRANSACTION_TIMESTAMP"]
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "NextToken":{
+      "type":"string",
+      "max":131070,
+      "min":0
+    },
+    "OwnerFilter":{
+      "type":"structure",
+      "required":["address"],
+      "members":{
+        "address":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The contract or wallet address.</p>"
+        }
+      },
+      "documentation":"<p>The container for the owner information to filter by.</p>"
+    },
+    "OwnerIdentifier":{
+      "type":"structure",
+      "required":["address"],
+      "members":{
+        "address":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The contract or wallet address for the owner.</p>"
+        }
+      },
+      "documentation":"<p>The container for the owner identifier.</p>"
+    },
+    "QueryNetwork":{
+      "type":"string",
+      "enum":[
+        "ETHEREUM_MAINNET",
+        "ETHEREUM_SEPOLIA_TESTNET",
+        "BITCOIN_MAINNET",
+        "BITCOIN_TESTNET"
+      ]
+    },
+    "QueryTokenId":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9]{1,66}"
+    },
+    "QueryTokenStandard":{
+      "type":"string",
+      "enum":[
+        "ERC20",
+        "ERC721",
+        "ERC1155"
+      ]
+    },
+    "QueryTransactionEventType":{
+      "type":"string",
+      "enum":[
+        "ERC20_TRANSFER",
+        "ERC20_MINT",
+        "ERC20_BURN",
+        "ERC20_DEPOSIT",
+        "ERC20_WITHDRAWAL",
+        "ERC721_TRANSFER",
+        "ERC1155_TRANSFER",
+        "BITCOIN_VIN",
+        "BITCOIN_VOUT",
+        "INTERNAL_ETH_TRANSFER",
+        "ETH_TRANSFER"
+      ]
+    },
+    "QueryTransactionHash":{
+      "type":"string",
+      "pattern":"(0x[A-Fa-f0-9]{64}|[A-Fa-f0-9]{64})"
+    },
+    "QueryTransactionId":{
+      "type":"string",
+      "pattern":"(0x[A-Fa-f0-9]{64}|[A-Fa-f0-9]{64})"
+    },
+    "QuotaCode":{"type":"string"},
+    "ResourceId":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        },
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The <code>resourceId</code> of the resource that caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The <code>resourceType</code> of the resource that caused the exception.</p>"
+        }
+      },
+      "documentation":"<p>The resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":["collection"]
+    },
+    "ServiceCode":{"type":"string"},
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        },
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The <code>resourceId</code> of the resource that caused the exception.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The <code>resourceType</code> of the resource that caused the exception.</p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>The container for the <code>serviceCode</code>.</p>"
+        },
+        "quotaCode":{
+          "shape":"QuotaCode",
+          "documentation":"<p>The container for the <code>quotaCode</code>.</p>"
+        }
+      },
+      "documentation":"<p>The service quota has been exceeded for this resource.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "String":{"type":"string"},
+    "ThrottlingException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>The container for the <code>serviceCode</code>.</p>"
+        },
+        "quotaCode":{
+          "shape":"QuotaCode",
+          "documentation":"<p>The container for the <code>quotaCode</code>.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The container of the <code>retryAfterSeconds</code> value.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request or operation couldn't be performed because a service is throttling requests. The most common source of throttling errors is when you create resources that exceed your service limit for this resource type. Request a limit increase or delete unused resources, if possible.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "TimeFilter":{
+      "type":"structure",
+      "members":{
+        "from":{"shape":"BlockchainInstant"},
+        "to":{"shape":"BlockchainInstant"}
+      },
+      "documentation":"<p>This container is used to specify a time frame.</p>"
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TokenBalance":{
+      "type":"structure",
+      "required":[
+        "balance",
+        "atBlockchainInstant"
+      ],
+      "members":{
+        "ownerIdentifier":{
+          "shape":"OwnerIdentifier",
+          "documentation":"<p>The container for the identifier of the owner.</p>"
+        },
+        "tokenIdentifier":{
+          "shape":"TokenIdentifier",
+          "documentation":"<p>The identifier for the token, including the unique token ID and its blockchain network.</p>"
+        },
+        "balance":{
+          "shape":"String",
+          "documentation":"<p>The container of the token balance.</p>"
+        },
+        "atBlockchainInstant":{
+          "shape":"BlockchainInstant",
+          "documentation":"<p>The time for when the TokenBalance is requested or the current time if a time is not provided in the request.</p> <note> <p>This time will only be recorded up to the second.</p> </note>"
+        },
+        "lastUpdatedTime":{
+          "shape":"BlockchainInstant",
+          "documentation":"<p>The <code>Timestamp</code> of the last transaction at which the balance for the token in the wallet was updated.</p>"
+        }
+      },
+      "documentation":"<p>The balance of the token.</p>"
+    },
+    "TokenBalanceList":{
+      "type":"list",
+      "member":{"shape":"TokenBalance"},
+      "max":250,
+      "min":0
+    },
+    "TokenFilter":{
+      "type":"structure",
+      "required":["network"],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network of the token.</p>"
+        },
+        "contractAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>This is the address of the contract.</p>"
+        },
+        "tokenId":{
+          "shape":"QueryTokenId",
+          "documentation":"<p>The unique identifier of the token.</p>"
+        }
+      },
+      "documentation":"<p>The container of the token filter like the contract address on a given blockchain network or a unique token identifier on a given blockchain network.</p> <note> <p>You must always specify the network property of this container when using this operation.</p> </note>"
+    },
+    "TokenIdentifier":{
+      "type":"structure",
+      "required":["network"],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network of the token.</p>"
+        },
+        "contractAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>This is the token's contract address.</p>"
+        },
+        "tokenId":{
+          "shape":"QueryTokenId",
+          "documentation":"<p>The unique identifier of the token.</p> <note> <p>For native tokens, use the 3 character abbreviation that best matches your token. For example, btc for Bitcoin, eth for Ether, etc. For all other token types you must specify the <code>tokenId</code> in the 64 character hexadecimal <code>tokenid</code> format.</p> </note>"
+        }
+      },
+      "documentation":"<p>The container for the identifier for the token including the unique token ID and its blockchain network.</p> <note> <p>Only the native tokens BTC and ETH, and the ERC-20, ERC-721, and ERC 1155 token standards are supported.</p> </note>"
+    },
+    "Transaction":{
+      "type":"structure",
+      "required":[
+        "network",
+        "transactionHash",
+        "transactionTimestamp",
+        "transactionIndex",
+        "numberOfTransactions",
+        "to"
+      ],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transaction occurred.</p>"
+        },
+        "blockHash":{
+          "shape":"BlockHash",
+          "documentation":"<p>The block hash is a unique identifier for a block. It is a fixed-size string that is calculated by using the information in the block. The block hash is used to verify the integrity of the data in the block.</p>"
+        },
+        "transactionHash":{
+          "shape":"QueryTransactionHash",
+          "documentation":"<p>The hash of a transaction. It is generated when a transaction is created.</p>"
+        },
+        "blockNumber":{
+          "shape":"String",
+          "documentation":"<p>The block number in which the transaction is recorded.</p>"
+        },
+        "transactionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The <code>Timestamp</code> of the transaction. </p>"
+        },
+        "transactionIndex":{
+          "shape":"Long",
+          "documentation":"<p>The index of the transaction within a blockchain.</p>"
+        },
+        "numberOfTransactions":{
+          "shape":"Long",
+          "documentation":"<p>The number of transactions in the block.</p>"
+        },
+        "to":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The identifier of the transaction. It is generated whenever a transaction is verified and added to the blockchain.</p>"
+        },
+        "from":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The initiator of the transaction. It is either in the form a public key or a contract address.</p>"
+        },
+        "contractAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The blockchain address for the contract.</p>"
+        },
+        "gasUsed":{
+          "shape":"String",
+          "documentation":"<p>The amount of gas used for the transaction.</p>"
+        },
+        "cumulativeGasUsed":{
+          "shape":"String",
+          "documentation":"<p>The amount of gas used up to the specified point in the block.</p>"
+        },
+        "effectiveGasPrice":{
+          "shape":"String",
+          "documentation":"<p>The effective gas price.</p>"
+        },
+        "signatureV":{
+          "shape":"Integer",
+          "documentation":"<p>The signature of the transaction. The Z coordinate of a point V.</p>"
+        },
+        "signatureR":{
+          "shape":"String",
+          "documentation":"<p>The signature of the transaction. The X coordinate of a point R.</p>"
+        },
+        "signatureS":{
+          "shape":"String",
+          "documentation":"<p>The signature of the transaction. The Y coordinate of a point S.</p>"
+        },
+        "transactionFee":{
+          "shape":"String",
+          "documentation":"<p>The transaction fee.</p>"
+        },
+        "transactionId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a Bitcoin transaction. It is generated when a transaction is created.</p>"
+        },
+        "confirmationStatus":{
+          "shape":"ConfirmationStatus",
+          "documentation":"<p>Specifies whether the transaction has reached Finality.</p>"
+        },
+        "executionStatus":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>Identifies whether the transaction has succeeded or failed.</p>"
+        }
+      },
+      "documentation":"<p>There are two possible types of transactions used for this data type:</p> <ul> <li> <p>A Bitcoin transaction is a movement of BTC from one address to another.</p> </li> <li> <p>An Ethereum transaction refers to an action initiated by an externally owned account, which is an account managed by a human, not a contract. For example, if Bob sends Alice 1 ETH, Bob's account must be debited and Alice's must be credited. This state-changing action occurs within a transaction.</p> </li> </ul>"
+    },
+    "TransactionEvent":{
+      "type":"structure",
+      "required":[
+        "network",
+        "transactionHash",
+        "eventType"
+      ],
+      "members":{
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transaction occurred.</p>"
+        },
+        "transactionHash":{
+          "shape":"QueryTransactionHash",
+          "documentation":"<p>The hash of a transaction. It is generated when a transaction is created.</p>"
+        },
+        "eventType":{
+          "shape":"QueryTransactionEventType",
+          "documentation":"<p>The type of transaction event.</p>"
+        },
+        "from":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The wallet address initiating the transaction. It can either be a public key or a contract.</p>"
+        },
+        "to":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The wallet address receiving the transaction. It can either be a public key or a contract.</p>"
+        },
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value that was transacted.</p>"
+        },
+        "contractAddress":{
+          "shape":"ChainAddress",
+          "documentation":"<p>The blockchain address for the contract</p>"
+        },
+        "tokenId":{
+          "shape":"QueryTokenId",
+          "documentation":"<p>The unique identifier for the token involved in the transaction.</p>"
+        },
+        "transactionId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a Bitcoin transaction. It is generated when a transaction is created.</p>"
+        },
+        "voutIndex":{
+          "shape":"Integer",
+          "documentation":"<p>The position of the transaction output in the transaction output list.</p>"
+        },
+        "voutSpent":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies if the transaction output is spent or unspent. This is only returned for BITCOIN_VOUT event types.</p> <note> <p>This is only returned for <code>BITCOIN_VOUT</code> event types.</p> </note>"
+        },
+        "spentVoutTransactionId":{
+          "shape":"String",
+          "documentation":"<p>The transactionId that <i>created</i> the spent transaction output.</p> <note> <p>This is only returned for <code>BITCOIN_VIN</code> event types.</p> </note>"
+        },
+        "spentVoutTransactionHash":{
+          "shape":"String",
+          "documentation":"<p>The transactionHash that <i>created</i> the spent transaction output.</p> <note> <p>This is only returned for <code>BITCOIN_VIN</code> event types.</p> </note>"
+        },
+        "spentVoutIndex":{
+          "shape":"Integer",
+          "documentation":"<p>The position of the spent transaction output in the output list of the <i>creating transaction</i>.</p> <note> <p>This is only returned for <code>BITCOIN_VIN</code> event types.</p> </note>"
+        },
+        "blockchainInstant":{"shape":"BlockchainInstant"},
+        "confirmationStatus":{
+          "shape":"ConfirmationStatus",
+          "documentation":"<p>This container specifies whether the transaction has reached Finality.</p>"
+        }
+      },
+      "documentation":"<p>The container for the properties of a transaction event.</p>"
+    },
+    "TransactionEventList":{
+      "type":"list",
+      "member":{"shape":"TransactionEvent"},
+      "max":250,
+      "min":0
+    },
+    "TransactionOutputItem":{
+      "type":"structure",
+      "required":[
+        "transactionHash",
+        "network",
+        "transactionTimestamp"
+      ],
+      "members":{
+        "transactionHash":{
+          "shape":"QueryTransactionHash",
+          "documentation":"<p>The hash of a transaction. It is generated when a transaction is created.</p>"
+        },
+        "transactionId":{
+          "shape":"QueryTransactionId",
+          "documentation":"<p>The identifier of a Bitcoin transaction. It is generated when a transaction is created.</p>"
+        },
+        "network":{
+          "shape":"QueryNetwork",
+          "documentation":"<p>The blockchain network where the transaction occurred.</p>"
+        },
+        "transactionTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the transaction occurred.</p>"
+        },
+        "confirmationStatus":{
+          "shape":"ConfirmationStatus",
+          "documentation":"<p>Specifies whether to list transactions that have not reached Finality.</p>"
+        }
+      },
+      "documentation":"<p>The container of the transaction output.</p>"
+    },
+    "TransactionOutputList":{
+      "type":"list",
+      "member":{"shape":"TransactionOutputItem"},
+      "max":250,
+      "min":0
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>The container for the exception message.</p>"
+        },
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The container for the reason for the exception</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The container for the <code>fieldList</code> of the exception.</p>"
+        }
+      },
+      "documentation":"<p>The resource passed is invalid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the field that triggered the <code>ValidationException</code>.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The <code>ValidationException</code> message.</p>"
+        }
+      },
+      "documentation":"<p>The resource passed is invalid.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "VoutFilter":{
+      "type":"structure",
+      "required":["voutSpent"],
+      "members":{
+        "voutSpent":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies if the transaction output is spent or unspent.</p>"
+        }
+      },
+      "documentation":"<p>This container specifies filtering attributes related to <code>BITCOIN_VOUT</code> event types</p>"
+    }
+  },
+  "documentation":"<p>Amazon Managed Blockchain (AMB) Query provides you with convenient access to multi-blockchain network data, which makes it easier for you to extract contextual data related to blockchain activity. You can use AMB Query to read data from public blockchain networks, such as Bitcoin Mainnet and Ethereum Mainnet. You can also get information such as the current and historical balances of addresses, or you can get a list of blockchain transactions for a given time period. Additionally, you can get details of a given transaction, such as transaction events, which you can further analyze or use in business logic for your applications.</p>"
+}

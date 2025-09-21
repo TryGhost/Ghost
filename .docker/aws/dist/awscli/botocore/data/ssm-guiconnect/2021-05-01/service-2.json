@@ -1,0 +1,303 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-05-01",
+    "endpointPrefix":"ssm-guiconnect",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS SSM-GUIConnect",
+    "serviceId":"SSM GuiConnect",
+    "signatureVersion":"v4",
+    "signingName":"ssm-guiconnect",
+    "uid":"ssm-guiconnect-2021-05-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "DeleteConnectionRecordingPreferences":{
+      "name":"DeleteConnectionRecordingPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteConnectionRecordingPreferences",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteConnectionRecordingPreferencesRequest"},
+      "output":{"shape":"DeleteConnectionRecordingPreferencesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the preferences for recording RDP connections.</p>",
+      "idempotent":true
+    },
+    "GetConnectionRecordingPreferences":{
+      "name":"GetConnectionRecordingPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetConnectionRecordingPreferences",
+        "responseCode":200
+      },
+      "output":{"shape":"GetConnectionRecordingPreferencesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns the preferences specified for recording RDP connections in the requesting Amazon Web Services account and Amazon Web Services Region.</p>"
+    },
+    "UpdateConnectionRecordingPreferences":{
+      "name":"UpdateConnectionRecordingPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateConnectionRecordingPreferences",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateConnectionRecordingPreferencesRequest"},
+      "output":{"shape":"UpdateConnectionRecordingPreferencesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the preferences for recording RDP connections.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "pattern":"^[0-9]{12}$"
+    },
+    "BucketName":{
+      "type":"string",
+      "pattern":"(?=^.{3,63}$)(?!^(\\d+\\.)+\\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])$)"
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An error occurred due to a conflict.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConnectionRecordingPreferences":{
+      "type":"structure",
+      "required":[
+        "KMSKeyArn",
+        "RecordingDestinations"
+      ],
+      "members":{
+        "KMSKeyArn":{
+          "shape":"ConnectionRecordingPreferencesKMSKeyArnString",
+          "documentation":"<p>The ARN of a KMS key that is used to encrypt data while it is being processed by the service. This key must exist in the same Amazon Web Services Region as the node you start an RDP connection to.</p>"
+        },
+        "RecordingDestinations":{
+          "shape":"RecordingDestinations",
+          "documentation":"<p>Determines where recordings of RDP connections are stored.</p>"
+        }
+      },
+      "documentation":"<p>The set of preferences used for recording RDP connections in the requesting Amazon Web Services account and Amazon Web Services Region. This includes details such as which S3 bucket recordings are stored in.</p>"
+    },
+    "ConnectionRecordingPreferencesKMSKeyArnString":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "DeleteConnectionRecordingPreferencesRequest":{
+      "type":"structure",
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>User-provided idempotency token.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeleteConnectionRecordingPreferencesResponse":{
+      "type":"structure",
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Service-provided idempotency token.</p>"
+        }
+      }
+    },
+    "ErrorMessage":{"type":"string"},
+    "GetConnectionRecordingPreferencesResponse":{
+      "type":"structure",
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Service-provided idempotency token.</p>"
+        },
+        "ConnectionRecordingPreferences":{
+          "shape":"ConnectionRecordingPreferences",
+          "documentation":"<p>The set of preferences used for recording RDP connections in the requesting Amazon Web Services account and Amazon Web Services Region. This includes details such as which S3 bucket recordings are stored in.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "RecordingDestinations":{
+      "type":"structure",
+      "required":["S3Buckets"],
+      "members":{
+        "S3Buckets":{
+          "shape":"S3Buckets",
+          "documentation":"<p>The S3 bucket where RDP connection recordings are stored.</p>"
+        }
+      },
+      "documentation":"<p>Determines where recordings of RDP connections are stored.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource could not be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "S3Bucket":{
+      "type":"structure",
+      "required":[
+        "BucketName",
+        "BucketOwner"
+      ],
+      "members":{
+        "BucketName":{
+          "shape":"BucketName",
+          "documentation":"<p>The name of the S3 bucket where RDP connection recordings are stored.</p>"
+        },
+        "BucketOwner":{
+          "shape":"AccountId",
+          "documentation":"<p>The Amazon Web Services account number that owns the S3 bucket.</p>"
+        }
+      },
+      "documentation":"<p>The S3 bucket where RDP connection recordings are stored.</p>"
+    },
+    "S3Buckets":{
+      "type":"list",
+      "member":{"shape":"S3Bucket"},
+      "max":1,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Your request exceeds a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UpdateConnectionRecordingPreferencesRequest":{
+      "type":"structure",
+      "required":["ConnectionRecordingPreferences"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>User-provided idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "ConnectionRecordingPreferences":{
+          "shape":"ConnectionRecordingPreferences",
+          "documentation":"<p>The set of preferences used for recording RDP connections in the requesting Amazon Web Services account and Amazon Web Services Region. This includes details such as which S3 bucket recordings are stored in.</p>"
+        }
+      }
+    },
+    "UpdateConnectionRecordingPreferencesResponse":{
+      "type":"structure",
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Service-provided idempotency token.</p>"
+        },
+        "ConnectionRecordingPreferences":{
+          "shape":"ConnectionRecordingPreferences",
+          "documentation":"<p>The set of preferences used for recording RDP connections in the requesting Amazon Web Services account and Amazon Web Services Region. This includes details such as which S3 bucket recordings are stored in.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p><fullname>AWS Systems Manager GUI Connect</fullname> <p>Systems Manager GUI Connect, a component of Fleet Manager, lets you connect to your Window Server-type Amazon Elastic Compute Cloud (Amazon EC2) instances using the Remote Desktop Protocol (RDP). GUI Connect, which is powered by <a href=\"https://docs.aws.amazon.com/dcv/latest/adminguide/what-is-dcv.html\">Amazon DCV</a>, provides you with secure connectivity to your Windows Server instances directly from the Systems Manager console. You can have up to four simultaneous connections in a single browser window. In the console, GUI Connect is also referred to as Fleet Manager Remote Desktop.</p> <p>This reference is intended to be used with the <a href=\"https://docs.aws.amazon.com/systems-manager/latest/userguide/\"> <i>Amazon Web Services Systems Manager User Guide</i> </a>. To get started, see the following user guide topics:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up.html\">Setting up Amazon Web Services Systems Manager</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-rdp.html\">Connect to a Windows Server managed instance using Remote Desktop</a> </p> </li> </ul></p>"
+}

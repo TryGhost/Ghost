@@ -1,0 +1,5116 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-11-29",
+    "endpointPrefix":"iottwinmaker",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS IoT TwinMaker",
+    "serviceId":"IoTTwinMaker",
+    "signatureVersion":"v4",
+    "signingName":"iottwinmaker",
+    "uid":"iottwinmaker-2021-11-29"
+  },
+  "operations":{
+    "BatchPutPropertyValues":{
+      "name":"BatchPutPropertyValues",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entity-properties",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchPutPropertyValuesRequest"},
+      "output":{"shape":"BatchPutPropertyValuesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Sets values for multiple time series properties.</p>",
+      "endpoint":{"hostPrefix":"data."}
+    },
+    "CancelMetadataTransferJob":{
+      "name":"CancelMetadataTransferJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/metadata-transfer-jobs/{metadataTransferJobId}/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelMetadataTransferJobRequest"},
+      "output":{"shape":"CancelMetadataTransferJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Cancels the metadata transfer job.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateComponentType":{
+      "name":"CreateComponentType",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/component-types/{componentTypeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateComponentTypeRequest"},
+      "output":{"shape":"CreateComponentTypeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a component type.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateEntity":{
+      "name":"CreateEntity",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entities",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateEntityRequest"},
+      "output":{"shape":"CreateEntityResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates an entity.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateMetadataTransferJob":{
+      "name":"CreateMetadataTransferJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/metadata-transfer-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateMetadataTransferJobRequest"},
+      "output":{"shape":"CreateMetadataTransferJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a new metadata transfer job.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateScene":{
+      "name":"CreateScene",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/scenes",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSceneRequest"},
+      "output":{"shape":"CreateSceneResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a scene.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateSyncJob":{
+      "name":"CreateSyncJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/sync-jobs/{syncSource}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSyncJobRequest"},
+      "output":{"shape":"CreateSyncJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>This action creates a SyncJob.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "CreateWorkspace":{
+      "name":"CreateWorkspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateWorkspaceRequest"},
+      "output":{"shape":"CreateWorkspaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a workplace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteComponentType":{
+      "name":"DeleteComponentType",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/component-types/{componentTypeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteComponentTypeRequest"},
+      "output":{"shape":"DeleteComponentTypeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a component type.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteEntity":{
+      "name":"DeleteEntity",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/entities/{entityId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteEntityRequest"},
+      "output":{"shape":"DeleteEntityResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Deletes an entity.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteScene":{
+      "name":"DeleteScene",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/scenes/{sceneId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSceneRequest"},
+      "output":{"shape":"DeleteSceneResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a scene.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteSyncJob":{
+      "name":"DeleteSyncJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}/sync-jobs/{syncSource}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSyncJobRequest"},
+      "output":{"shape":"DeleteSyncJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Delete the SyncJob.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteWorkspace":{
+      "name":"DeleteWorkspace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteWorkspaceRequest"},
+      "output":{"shape":"DeleteWorkspaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ExecuteQuery":{
+      "name":"ExecuteQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/queries/execution",
+        "responseCode":200
+      },
+      "input":{"shape":"ExecuteQueryRequest"},
+      "output":{"shape":"ExecuteQueryResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"QueryTimeoutException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Run queries to access information from your knowledge graph of entities within individual workspaces.</p> <note> <p>The ExecuteQuery action only works with <a href=\"https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/home.html\">Amazon Web Services Java SDK2</a>. ExecuteQuery will not work with any Amazon Web Services Java SDK version &lt; 2.x.</p> </note>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetComponentType":{
+      "name":"GetComponentType",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/component-types/{componentTypeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetComponentTypeRequest"},
+      "output":{"shape":"GetComponentTypeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves information about a component type.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetEntity":{
+      "name":"GetEntity",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/entities/{entityId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEntityRequest"},
+      "output":{"shape":"GetEntityResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Retrieves information about an entity.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetMetadataTransferJob":{
+      "name":"GetMetadataTransferJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/metadata-transfer-jobs/{metadataTransferJobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMetadataTransferJobRequest"},
+      "output":{"shape":"GetMetadataTransferJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets a nmetadata transfer job.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetPricingPlan":{
+      "name":"GetPricingPlan",
+      "http":{
+        "method":"GET",
+        "requestUri":"/pricingplan",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPricingPlanRequest"},
+      "output":{"shape":"GetPricingPlanResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Gets the pricing plan.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetPropertyValue":{
+      "name":"GetPropertyValue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entity-properties/value",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPropertyValueRequest"},
+      "output":{"shape":"GetPropertyValueResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConnectorFailureException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConnectorTimeoutException"}
+      ],
+      "documentation":"<p>Gets the property values for a component, component type, entity, or workspace.</p> <p>You must specify a value for either <code>componentName</code>, <code>componentTypeId</code>, <code>entityId</code>, or <code>workspaceId</code>.</p>",
+      "endpoint":{"hostPrefix":"data."}
+    },
+    "GetPropertyValueHistory":{
+      "name":"GetPropertyValueHistory",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entity-properties/history",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPropertyValueHistoryRequest"},
+      "output":{"shape":"GetPropertyValueHistoryResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConnectorFailureException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConnectorTimeoutException"}
+      ],
+      "documentation":"<p>Retrieves information about the history of a time series property value for a component, component type, entity, or workspace.</p> <p>You must specify a value for <code>workspaceId</code>. For entity-specific queries, specify values for <code>componentName</code> and <code>entityId</code>. For cross-entity quries, specify a value for <code>componentTypeId</code>.</p>",
+      "endpoint":{"hostPrefix":"data."}
+    },
+    "GetScene":{
+      "name":"GetScene",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}/scenes/{sceneId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSceneRequest"},
+      "output":{"shape":"GetSceneResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves information about a scene.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetSyncJob":{
+      "name":"GetSyncJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/sync-jobs/{syncSource}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSyncJobRequest"},
+      "output":{"shape":"GetSyncJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Gets the SyncJob.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetWorkspace":{
+      "name":"GetWorkspace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkspaceRequest"},
+      "output":{"shape":"GetWorkspaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Retrieves information about a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListComponentTypes":{
+      "name":"ListComponentTypes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/component-types-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListComponentTypesRequest"},
+      "output":{"shape":"ListComponentTypesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all component types in a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListComponents":{
+      "name":"ListComponents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entities/{entityId}/components-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListComponentsRequest"},
+      "output":{"shape":"ListComponentsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>This API lists the components of an entity.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListEntities":{
+      "name":"ListEntities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/entities-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEntitiesRequest"},
+      "output":{"shape":"ListEntitiesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists all entities in a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListMetadataTransferJobs":{
+      "name":"ListMetadataTransferJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/metadata-transfer-jobs-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMetadataTransferJobsRequest"},
+      "output":{"shape":"ListMetadataTransferJobsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the metadata transfer jobs.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListProperties":{
+      "name":"ListProperties",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/properties-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPropertiesRequest"},
+      "output":{"shape":"ListPropertiesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>This API lists the properties of a component.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListScenes":{
+      "name":"ListScenes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/scenes-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListScenesRequest"},
+      "output":{"shape":"ListScenesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all scenes in a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListSyncJobs":{
+      "name":"ListSyncJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/sync-jobs-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSyncJobsRequest"},
+      "output":{"shape":"ListSyncJobsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>List all SyncJobs.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListSyncResources":{
+      "name":"ListSyncResources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces/{workspaceId}/sync-jobs/{syncSource}/resources-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSyncResourcesRequest"},
+      "output":{"shape":"ListSyncResourcesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Lists the sync resources.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists all tags associated with a resource.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListWorkspaces":{
+      "name":"ListWorkspaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workspaces-list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkspacesRequest"},
+      "output":{"shape":"ListWorkspacesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Retrieves information about workspaces in the current account.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"TooManyTagsException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds tags to a resource.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from a resource.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UpdateComponentType":{
+      "name":"UpdateComponentType",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/component-types/{componentTypeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateComponentTypeRequest"},
+      "output":{"shape":"UpdateComponentTypeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates information in a component type.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UpdateEntity":{
+      "name":"UpdateEntity",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/entities/{entityId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateEntityRequest"},
+      "output":{"shape":"UpdateEntityResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates an entity.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UpdatePricingPlan":{
+      "name":"UpdatePricingPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/pricingplan",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdatePricingPlanRequest"},
+      "output":{"shape":"UpdatePricingPlanResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Update the pricing plan.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UpdateScene":{
+      "name":"UpdateScene",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}/scenes/{sceneId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSceneRequest"},
+      "output":{"shape":"UpdateSceneResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a scene.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UpdateWorkspace":{
+      "name":"UpdateWorkspace",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/workspaces/{workspaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateWorkspaceRequest"},
+      "output":{"shape":"UpdateWorkspaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Updates a workspace.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Access is denied.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BatchPutPropertyError":{
+      "type":"structure",
+      "required":[
+        "errorCode",
+        "errorMessage",
+        "entry"
+      ],
+      "members":{
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The error code.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>"
+        },
+        "entry":{
+          "shape":"PropertyValueEntry",
+          "documentation":"<p>An object that contains information about errors returned by the <code>BatchPutProperty</code> action.</p>"
+        }
+      },
+      "documentation":"<p>An error returned by the <code>BatchPutProperty</code> action.</p>"
+    },
+    "BatchPutPropertyErrorEntry":{
+      "type":"structure",
+      "required":["errors"],
+      "members":{
+        "errors":{
+          "shape":"Errors",
+          "documentation":"<p>A list of objects that contain information about errors returned by the <code>BatchPutProperty</code> action.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about errors returned by the <code>BatchPutProperty</code> action.</p>"
+    },
+    "BatchPutPropertyValuesRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entries"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the properties to set.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entries":{
+          "shape":"Entries",
+          "documentation":"<p>An object that maps strings to the property value entries to set. Each string in the mapping must be unique to this object.</p>"
+        }
+      }
+    },
+    "BatchPutPropertyValuesResponse":{
+      "type":"structure",
+      "required":["errorEntries"],
+      "members":{
+        "errorEntries":{
+          "shape":"ErrorEntries",
+          "documentation":"<p>Entries that caused errors in the batch put operation.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BundleInformation":{
+      "type":"structure",
+      "required":["bundleNames"],
+      "members":{
+        "bundleNames":{
+          "shape":"PricingBundles",
+          "documentation":"<p>The bundle names.</p>"
+        },
+        "pricingTier":{
+          "shape":"PricingTier",
+          "documentation":"<p>The pricing tier.</p>"
+        }
+      },
+      "documentation":"<p>Information about the pricing bundle.</p>"
+    },
+    "BundleName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*"
+    },
+    "CancelMetadataTransferJobRequest":{
+      "type":"structure",
+      "required":["metadataTransferJobId"],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>",
+          "location":"uri",
+          "locationName":"metadataTransferJobId"
+        }
+      }
+    },
+    "CancelMetadataTransferJobResponse":{
+      "type":"structure",
+      "required":[
+        "metadataTransferJobId",
+        "arn",
+        "updateDateTime",
+        "status"
+      ],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The metadata transfer job ARN.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Used to update the DateTime property.</p>"
+        },
+        "status":{
+          "shape":"MetadataTransferJobStatus",
+          "documentation":"<p>The metadata transfer job's status.</p>"
+        },
+        "progress":{
+          "shape":"MetadataTransferJobProgress",
+          "documentation":"<p>The metadata transfer job's progress.</p>"
+        }
+      }
+    },
+    "ColumnDescription":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"ColumnName",
+          "documentation":"<p>The name of the column description.</p>"
+        },
+        "type":{
+          "shape":"ColumnType",
+          "documentation":"<p>The type of the column description.</p>"
+        }
+      },
+      "documentation":"<p>A description of the column in the query results.</p>"
+    },
+    "ColumnDescriptions":{
+      "type":"list",
+      "member":{"shape":"ColumnDescription"}
+    },
+    "ColumnName":{
+      "type":"string",
+      "pattern":".*"
+    },
+    "ColumnType":{
+      "type":"string",
+      "enum":[
+        "NODE",
+        "EDGE",
+        "VALUE"
+      ]
+    },
+    "ComponentPath":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[a-zA-Z_\\-0-9/]+"
+    },
+    "ComponentPropertyGroupRequest":{
+      "type":"structure",
+      "members":{
+        "groupType":{
+          "shape":"GroupType",
+          "documentation":"<p>The group type.</p>"
+        },
+        "propertyNames":{
+          "shape":"PropertyNames",
+          "documentation":"<p>The property names.</p>"
+        },
+        "updateType":{
+          "shape":"PropertyGroupUpdateType",
+          "documentation":"<p>The update type.</p>"
+        }
+      },
+      "documentation":"<p>The component property group request.</p>"
+    },
+    "ComponentPropertyGroupRequests":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentPropertyGroupRequest"}
+    },
+    "ComponentPropertyGroupResponse":{
+      "type":"structure",
+      "required":[
+        "groupType",
+        "propertyNames",
+        "isInherited"
+      ],
+      "members":{
+        "groupType":{
+          "shape":"GroupType",
+          "documentation":"<p>The group type.</p>"
+        },
+        "propertyNames":{
+          "shape":"PropertyNames",
+          "documentation":"<p>The names of properties</p>"
+        },
+        "isInherited":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property group is inherited from a parent entity</p>"
+        }
+      },
+      "documentation":"<p>The component property group response.</p>"
+    },
+    "ComponentPropertyGroupResponses":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentPropertyGroupResponse"}
+    },
+    "ComponentRequest":{
+      "type":"structure",
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component request.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "properties":{
+          "shape":"PropertyRequests",
+          "documentation":"<p>An object that maps strings to the properties to set in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroups":{
+          "shape":"ComponentPropertyGroupRequests",
+          "documentation":"<p>The property groups.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about a component type create or update request.</p>"
+    },
+    "ComponentResponse":{
+      "type":"structure",
+      "members":{
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The status of the component type.</p>"
+        },
+        "definedIn":{
+          "shape":"String",
+          "documentation":"<p>The name of the property definition set in the request.</p>"
+        },
+        "properties":{
+          "shape":"PropertyResponses",
+          "documentation":"<p>An object that maps strings to the properties to set in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroups":{
+          "shape":"ComponentPropertyGroupResponses",
+          "documentation":"<p>The property groups.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The syncSource of the sync job, if this entity was created by a sync job.</p>"
+        },
+        "areAllPropertiesReturned":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag notes whether all properties of the component are returned in the API response. The maximum number of properties returned is 800.</p>"
+        },
+        "compositeComponents":{
+          "shape":"CompositeComponentResponse",
+          "documentation":"<p>This lists objects that contain information about the <code>compositeComponents</code>.</p>"
+        },
+        "areAllCompositeComponentsReturned":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag notes whether all <code>compositeComponents</code> are returned in the API response.</p>"
+        }
+      },
+      "documentation":"<p>An object that returns information about a component type create or update request.</p>"
+    },
+    "ComponentSummaries":{
+      "type":"list",
+      "member":{"shape":"ComponentSummary"}
+    },
+    "ComponentSummary":{
+      "type":"structure",
+      "required":[
+        "componentName",
+        "componentTypeId",
+        "status"
+      ],
+      "members":{
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "definedIn":{
+          "shape":"String",
+          "documentation":"<p>The name of the property definition set in the request.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component request.</p>"
+        },
+        "propertyGroups":{
+          "shape":"ComponentPropertyGroupResponses",
+          "documentation":"<p>The property groups.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The status of the component type.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The <code>syncSource</code> of the sync job, if this entity was created by a sync job.</p>"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        }
+      },
+      "documentation":"<p>An object that returns information about a component summary.</p>"
+    },
+    "ComponentTypeId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z_\\.\\-0-9:]+"
+    },
+    "ComponentTypeName":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*[^\\u0000-\\u001F\\u007F]*.*"
+    },
+    "ComponentTypeSummaries":{
+      "type":"list",
+      "member":{"shape":"ComponentTypeSummary"}
+    },
+    "ComponentTypeSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "componentTypeId",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the component type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the component type was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the component type was last updated.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The current status of the component type.</p>"
+        },
+        "componentTypeName":{
+          "shape":"ComponentTypeName",
+          "documentation":"<p>The component type name.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about a component type.</p>"
+    },
+    "ComponentUpdateRequest":{
+      "type":"structure",
+      "members":{
+        "updateType":{
+          "shape":"ComponentUpdateType",
+          "documentation":"<p>The update type of the component update request.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "propertyUpdates":{
+          "shape":"PropertyRequests",
+          "documentation":"<p>An object that maps strings to the properties to set in the component type update. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroupUpdates":{
+          "shape":"ComponentPropertyGroupRequests",
+          "documentation":"<p>The property group updates.</p>"
+        }
+      },
+      "documentation":"<p>The component update request.</p>"
+    },
+    "ComponentUpdateType":{
+      "type":"string",
+      "enum":[
+        "CREATE",
+        "UPDATE",
+        "DELETE"
+      ]
+    },
+    "ComponentUpdatesMapRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentUpdateRequest"}
+    },
+    "ComponentsMap":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentResponse"}
+    },
+    "ComponentsMapRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentRequest"}
+    },
+    "CompositeComponentRequest":{
+      "type":"structure",
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "properties":{
+          "shape":"PropertyRequests",
+          "documentation":"<p>This is an object that maps strings to the properties to set in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroups":{
+          "shape":"ComponentPropertyGroupRequests",
+          "documentation":"<p>The property groups.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about the composite component update request.</p>"
+    },
+    "CompositeComponentResponse":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"ComponentSummary"}
+    },
+    "CompositeComponentTypeRequest":{
+      "type":"structure",
+      "members":{
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>This is the <code>componentTypeId</code> that the <code>compositeComponentType</code> refers to.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about the composite component types of a component type.</p>"
+    },
+    "CompositeComponentTypeResponse":{
+      "type":"structure",
+      "members":{
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>This is the <code>componentTypeId</code> that this <code>compositeComponentType</code> refers to.</p>"
+        },
+        "isInherited":{
+          "shape":"Boolean",
+          "documentation":"<p>This boolean indicates whether this <code>compositeComponentType</code> is inherited from its parent.</p>"
+        }
+      },
+      "documentation":"<p>An object that returns information about the composite component types of a component type.</p>"
+    },
+    "CompositeComponentTypesRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"CompositeComponentTypeRequest"}
+    },
+    "CompositeComponentTypesResponse":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"CompositeComponentTypeResponse"}
+    },
+    "CompositeComponentUpdateRequest":{
+      "type":"structure",
+      "members":{
+        "updateType":{
+          "shape":"ComponentUpdateType",
+          "documentation":"<p>The update type of the component update request.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "propertyUpdates":{
+          "shape":"PropertyRequests",
+          "documentation":"<p>An object that maps strings to the properties to set in the component type update. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroupUpdates":{
+          "shape":"ComponentPropertyGroupRequests",
+          "documentation":"<p>The property group updates.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about the composite component update request.</p>"
+    },
+    "CompositeComponentUpdatesMapRequest":{
+      "type":"map",
+      "key":{"shape":"ComponentPath"},
+      "value":{"shape":"CompositeComponentUpdateRequest"}
+    },
+    "CompositeComponentsMapRequest":{
+      "type":"map",
+      "key":{"shape":"ComponentPath"},
+      "value":{"shape":"CompositeComponentRequest"}
+    },
+    "Configuration":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"Value"}
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A conflict occurred.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConnectorFailureException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The connector failed.</p>",
+      "error":{
+        "httpStatusCode":424,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConnectorTimeoutException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The connector timed out.</p>",
+      "error":{
+        "httpStatusCode":424,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateComponentTypeRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the component type.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "isSingleton":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether an entity can have more than one component of this type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>",
+          "location":"uri",
+          "locationName":"componentTypeId"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "propertyDefinitions":{
+          "shape":"PropertyDefinitionsRequest",
+          "documentation":"<p>An object that maps strings to the property definitions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "extendsFrom":{
+          "shape":"ExtendsFrom",
+          "documentation":"<p>Specifies the parent component type to extend.</p>"
+        },
+        "functions":{
+          "shape":"FunctionsRequest",
+          "documentation":"<p>An object that maps strings to the functions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata that you can use to manage the component type.</p>"
+        },
+        "propertyGroups":{
+          "shape":"PropertyGroupsRequest",
+          "documentation":"<p/>"
+        },
+        "componentTypeName":{
+          "shape":"ComponentTypeName",
+          "documentation":"<p>A friendly name for the component type.</p>"
+        },
+        "compositeComponentTypes":{
+          "shape":"CompositeComponentTypesRequest",
+          "documentation":"<p>This is an object that maps strings to <code>compositeComponentTypes</code> of the <code>componentType</code>. <code>CompositeComponentType</code> is referenced by <code>componentTypeId</code>.</p>"
+        }
+      }
+    },
+    "CreateComponentTypeResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationDateTime",
+        "state"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the component type.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was created.</p>"
+        },
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the component type.</p>"
+        }
+      }
+    },
+    "CreateEntityRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityName"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the entity.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "entityName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the entity.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the entity.</p>"
+        },
+        "components":{
+          "shape":"ComponentsMapRequest",
+          "documentation":"<p>An object that maps strings to the components in the entity. Each string in the mapping must be unique to this object.</p>"
+        },
+        "compositeComponents":{
+          "shape":"CompositeComponentsMapRequest",
+          "documentation":"<p>This is an object that maps strings to <code>compositeComponent</code> updates in the request. Each key of the map represents the <code>componentPath</code> of the <code>compositeComponent</code>.</p>"
+        },
+        "parentEntityId":{
+          "shape":"ParentEntityId",
+          "documentation":"<p>The ID of the entity's parent entity.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata that you can use to manage the entity.</p>"
+        }
+      }
+    },
+    "CreateEntityResponse":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "arn",
+        "creationDateTime",
+        "state"
+      ],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the entity.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was created.</p>"
+        },
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the entity.</p>"
+        }
+      }
+    },
+    "CreateMetadataTransferJobRequest":{
+      "type":"structure",
+      "required":[
+        "sources",
+        "destination"
+      ],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The metadata transfer job description.</p>"
+        },
+        "sources":{
+          "shape":"SourceConfigurations",
+          "documentation":"<p>The metadata transfer job sources.</p>"
+        },
+        "destination":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>The metadata transfer job destination.</p>"
+        }
+      }
+    },
+    "CreateMetadataTransferJobResponse":{
+      "type":"structure",
+      "required":[
+        "metadataTransferJobId",
+        "arn",
+        "creationDateTime",
+        "status"
+      ],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The metadata transfer job ARN.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The The metadata transfer job creation DateTime property.</p>"
+        },
+        "status":{
+          "shape":"MetadataTransferJobStatus",
+          "documentation":"<p>The metadata transfer job response status.</p>"
+        }
+      }
+    },
+    "CreateSceneRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "sceneId",
+        "contentLocation"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the scene.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene.</p>"
+        },
+        "contentLocation":{
+          "shape":"S3Url",
+          "documentation":"<p>The relative path that specifies the location of the content definition file.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description for this scene.</p>"
+        },
+        "capabilities":{
+          "shape":"SceneCapabilities",
+          "documentation":"<p>A list of capabilities that the scene uses to render itself.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata that you can use to manage the scene.</p>"
+        },
+        "sceneMetadata":{
+          "shape":"SceneMetadataMap",
+          "documentation":"<p>The request metadata.</p>"
+        }
+      }
+    },
+    "CreateSceneResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationDateTime"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the scene.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was created.</p>"
+        }
+      }
+    },
+    "CreateSyncJobRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "syncSource",
+        "syncRole"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace ID.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync source.</p> <note> <p>Currently the only supported syncSoource is <code>SITEWISE </code>.</p> </note>",
+          "location":"uri",
+          "locationName":"syncSource"
+        },
+        "syncRole":{
+          "shape":"RoleArn",
+          "documentation":"<p>The SyncJob IAM role. This IAM role is used by the SyncJob to read from the syncSource, and create, update, or delete the corresponding resources.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The SyncJob tags.</p>"
+        }
+      }
+    },
+    "CreateSyncJobResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationDateTime",
+        "state"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The SyncJob ARN.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time for the SyncJob creation.</p>"
+        },
+        "state":{
+          "shape":"SyncJobState",
+          "documentation":"<p>The SyncJob response state.</p>"
+        }
+      }
+    },
+    "CreateWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the workspace.</p>"
+        },
+        "s3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The ARN of the S3 bucket where resources associated with the workspace are stored.</p>"
+        },
+        "role":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the execution role associated with the workspace.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata that you can use to manage the workspace</p>"
+        }
+      }
+    },
+    "CreateWorkspaceResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "creationDateTime"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the workspace.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the workspace was created.</p>"
+        }
+      }
+    },
+    "DataConnector":{
+      "type":"structure",
+      "members":{
+        "lambda":{
+          "shape":"LambdaFunction",
+          "documentation":"<p>The Lambda function associated with this data connector.</p>"
+        },
+        "isNative":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the data connector is native to IoT TwinMaker.</p>"
+        }
+      },
+      "documentation":"<p>The data connector.</p>"
+    },
+    "DataType":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"Type",
+          "documentation":"<p>The underlying type of the data type.</p>"
+        },
+        "nestedType":{
+          "shape":"DataType",
+          "documentation":"<p>The nested type in the data type.</p>"
+        },
+        "allowedValues":{
+          "shape":"DataValueList",
+          "documentation":"<p>The allowed values for this data type.</p>"
+        },
+        "unitOfMeasure":{
+          "shape":"String",
+          "documentation":"<p>The unit of measure used in this data type.</p>"
+        },
+        "relationship":{
+          "shape":"Relationship",
+          "documentation":"<p>A relationship that associates a component with another component.</p>"
+        }
+      },
+      "documentation":"<p>An object that specifies the data type of a property.</p>"
+    },
+    "DataValue":{
+      "type":"structure",
+      "members":{
+        "booleanValue":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value.</p>"
+        },
+        "doubleValue":{
+          "shape":"Double",
+          "documentation":"<p>A double value.</p>"
+        },
+        "integerValue":{
+          "shape":"Integer",
+          "documentation":"<p>An integer value.</p>"
+        },
+        "longValue":{
+          "shape":"Long",
+          "documentation":"<p>A long value.</p>"
+        },
+        "stringValue":{
+          "shape":"String",
+          "documentation":"<p>A string value.</p>"
+        },
+        "listValue":{
+          "shape":"DataValueList",
+          "documentation":"<p>A list of multiple values.</p>"
+        },
+        "mapValue":{
+          "shape":"DataValueMap",
+          "documentation":"<p>An object that maps strings to multiple <code>DataValue</code> objects.</p>"
+        },
+        "relationshipValue":{
+          "shape":"RelationshipValue",
+          "documentation":"<p>A value that relates a component to another component.</p>"
+        },
+        "expression":{
+          "shape":"Expression",
+          "documentation":"<p>An expression that produces the value.</p>"
+        }
+      },
+      "documentation":"<p>An object that specifies a value for a property.</p>"
+    },
+    "DataValueList":{
+      "type":"list",
+      "member":{"shape":"DataValue"},
+      "max":50,
+      "min":0
+    },
+    "DataValueMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"DataValue"},
+      "max":50,
+      "min":0
+    },
+    "DeleteComponentTypeRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the component type.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type to delete.</p>",
+          "location":"uri",
+          "locationName":"componentTypeId"
+        }
+      }
+    },
+    "DeleteComponentTypeResponse":{
+      "type":"structure",
+      "required":["state"],
+      "members":{
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the component type to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteEntityRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the entity to delete.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity to delete.</p>",
+          "location":"uri",
+          "locationName":"entityId"
+        },
+        "isRecursive":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the operation deletes child entities.</p>",
+          "location":"querystring",
+          "locationName":"isRecursive"
+        }
+      }
+    },
+    "DeleteEntityResponse":{
+      "type":"structure",
+      "required":["state"],
+      "members":{
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the deleted entity.</p>"
+        }
+      }
+    },
+    "DeleteSceneRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "sceneId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene to delete.</p>",
+          "location":"uri",
+          "locationName":"sceneId"
+        }
+      }
+    },
+    "DeleteSceneResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSyncJobRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "syncSource"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace ID.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync source.</p> <note> <p>Currently the only supported syncSource is <code>SITEWISE </code>.</p> </note>",
+          "location":"uri",
+          "locationName":"syncSource"
+        }
+      }
+    },
+    "DeleteSyncJobResponse":{
+      "type":"structure",
+      "required":["state"],
+      "members":{
+        "state":{
+          "shape":"SyncJobState",
+          "documentation":"<p>The SyncJob response state.</p>"
+        }
+      }
+    },
+    "DeleteWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace to delete.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      }
+    },
+    "DeleteWorkspaceResponse":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"WorkspaceDeleteMessage",
+          "documentation":"<p>The string that specifies the delete result for the workspace.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":".*"
+    },
+    "DestinationConfiguration":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"DestinationType",
+          "documentation":"<p>The destination type.</p>"
+        },
+        "s3Configuration":{
+          "shape":"S3DestinationConfiguration",
+          "documentation":"<p>The metadata transfer job S3 configuration. [need to add S3 entity]</p>"
+        },
+        "iotTwinMakerConfiguration":{
+          "shape":"IotTwinMakerDestinationConfiguration",
+          "documentation":"<p>The metadata transfer job Amazon Web Services IoT TwinMaker configuration.</p>"
+        }
+      },
+      "documentation":"<p>The [link to action] metadata transfer job destination configuration.</p>"
+    },
+    "DestinationType":{
+      "type":"string",
+      "enum":[
+        "s3",
+        "iotsitewise",
+        "iottwinmaker"
+      ]
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "EntityId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|^[a-zA-Z0-9][a-zA-Z_\\-0-9.:]*[a-zA-Z0-9]+"
+    },
+    "EntityName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[^\\u0000-\\u001F\\u007F]+"
+    },
+    "EntityPropertyReference":{
+      "type":"structure",
+      "required":["propertyName"],
+      "members":{
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        },
+        "externalIdProperty":{
+          "shape":"ExternalIdProperty",
+          "documentation":"<p>A mapping of external IDs to property names. External IDs uniquely identify properties from external data stores.</p>"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "propertyName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the property.</p>"
+        }
+      },
+      "documentation":"<p>An object that uniquely identifies an entity property.</p>"
+    },
+    "EntitySummaries":{
+      "type":"list",
+      "member":{"shape":"EntitySummary"}
+    },
+    "EntitySummary":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "entityName",
+        "arn",
+        "status",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "entityName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the entity.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the entity.</p>"
+        },
+        "parentEntityId":{
+          "shape":"ParentEntityId",
+          "documentation":"<p>The ID of the parent entity.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The current status of the entity.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the entity.</p>"
+        },
+        "hasChildEntities":{
+          "shape":"Boolean",
+          "documentation":"<p>An <b>eventual</b> Boolean value that specifies whether the entity has child entities or not.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last date and time when the entity was updated.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about an entity.</p>"
+    },
+    "Entries":{
+      "type":"list",
+      "member":{"shape":"PropertyValueEntry"},
+      "max":10,
+      "min":1
+    },
+    "ErrorCode":{
+      "type":"string",
+      "enum":[
+        "VALIDATION_ERROR",
+        "INTERNAL_FAILURE",
+        "SYNC_INITIALIZING_ERROR",
+        "SYNC_CREATING_ERROR",
+        "SYNC_PROCESSING_ERROR",
+        "SYNC_DELETING_ERROR",
+        "PROCESSING_ERROR",
+        "COMPOSITE_COMPONENT_FAILURE"
+      ]
+    },
+    "ErrorDetails":{
+      "type":"structure",
+      "members":{
+        "code":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code.</p>"
+        },
+        "message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The error message.</p>"
+        }
+      },
+      "documentation":"<p>The error details.</p>"
+    },
+    "ErrorEntries":{
+      "type":"list",
+      "member":{"shape":"BatchPutPropertyErrorEntry"},
+      "max":10,
+      "min":1
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "Errors":{
+      "type":"list",
+      "member":{"shape":"BatchPutPropertyError"},
+      "max":10,
+      "min":1
+    },
+    "ExceptionMessage":{"type":"string"},
+    "ExecuteQueryRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "queryStatement"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>"
+        },
+        "queryStatement":{
+          "shape":"QueryStatement",
+          "documentation":"<p>The query statement.</p>"
+        },
+        "maxResults":{
+          "shape":"QueryServiceMaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 50.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ExecuteQueryResponse":{
+      "type":"structure",
+      "members":{
+        "columnDescriptions":{
+          "shape":"ColumnDescriptions",
+          "documentation":"<p>A list of ColumnDescription objects.</p>"
+        },
+        "rows":{
+          "shape":"Rows",
+          "documentation":"<p>Represents a single row in the query results.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "Expression":{
+      "type":"string",
+      "max":316,
+      "min":1,
+      "pattern":"(^\\$\\{Parameters\\.[a-zA-z]+([a-zA-z_0-9]*)}$)"
+    },
+    "ExtendsFrom":{
+      "type":"list",
+      "member":{"shape":"ComponentTypeId"}
+    },
+    "ExternalIdProperty":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "FilterByAsset":{
+      "type":"structure",
+      "members":{
+        "assetId":{
+          "shape":"Uuid",
+          "documentation":"<p>Filter by asset Id.</p>"
+        },
+        "assetExternalId":{
+          "shape":"SiteWiseExternalId",
+          "documentation":"<p>The external-Id property of an asset. </p>"
+        },
+        "includeOffspring":{
+          "shape":"Boolean",
+          "documentation":"<p>Includes sub-assets.[need description hekp for this]</p>"
+        },
+        "includeAssetModel":{
+          "shape":"Boolean",
+          "documentation":"<p>Boolean to include the asset model.</p>"
+        }
+      },
+      "documentation":"<p>Filter by asset. [TwinMaker asset]</p>"
+    },
+    "FilterByAssetModel":{
+      "type":"structure",
+      "members":{
+        "assetModelId":{
+          "shape":"Uuid",
+          "documentation":"<p>The asset model Id.</p>"
+        },
+        "assetModelExternalId":{
+          "shape":"SiteWiseExternalId",
+          "documentation":"<p>The external-Id property of an asset model.</p>"
+        },
+        "includeOffspring":{
+          "shape":"Boolean",
+          "documentation":"<p>Include asset offspring. [need desc.]</p>"
+        },
+        "includeAssets":{
+          "shape":"Boolean",
+          "documentation":"<p>Bolean to include assets.</p>"
+        }
+      },
+      "documentation":"<p>Filter by asset model.</p>"
+    },
+    "FilterByComponentType":{
+      "type":"structure",
+      "required":["componentTypeId"],
+      "members":{
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The component type Id.</p>"
+        }
+      },
+      "documentation":"<p>Filter by component type.</p>"
+    },
+    "FilterByEntity":{
+      "type":"structure",
+      "required":["entityId"],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The entity Id.</p>"
+        }
+      },
+      "documentation":"<p>Vilter by entity.</p>"
+    },
+    "FunctionRequest":{
+      "type":"structure",
+      "members":{
+        "requiredProperties":{
+          "shape":"RequiredProperties",
+          "documentation":"<p>The required properties of the function.</p>"
+        },
+        "scope":{
+          "shape":"Scope",
+          "documentation":"<p>The scope of the function.</p>"
+        },
+        "implementedBy":{
+          "shape":"DataConnector",
+          "documentation":"<p>The data connector.</p>"
+        }
+      },
+      "documentation":"<p>The function request body.</p>"
+    },
+    "FunctionResponse":{
+      "type":"structure",
+      "members":{
+        "requiredProperties":{
+          "shape":"RequiredProperties",
+          "documentation":"<p>The required properties of the function.</p>"
+        },
+        "scope":{
+          "shape":"Scope",
+          "documentation":"<p>The scope of the function.</p>"
+        },
+        "implementedBy":{
+          "shape":"DataConnector",
+          "documentation":"<p>The data connector.</p>"
+        },
+        "isInherited":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether this function is inherited.</p>"
+        }
+      },
+      "documentation":"<p>The function response.</p>"
+    },
+    "FunctionsRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"FunctionRequest"}
+    },
+    "FunctionsResponse":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"FunctionResponse"}
+    },
+    "GeneratedSceneMetadataMap":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"SceneMetadataValue"},
+      "max":50,
+      "min":0
+    },
+    "GetComponentTypeRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the component type.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>",
+          "location":"uri",
+          "locationName":"componentTypeId"
+        }
+      }
+    },
+    "GetComponentTypeResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeId",
+        "creationDateTime",
+        "updateDateTime",
+        "arn"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the component type.</p>"
+        },
+        "isSingleton":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether an entity can have more than one component of this type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "propertyDefinitions":{
+          "shape":"PropertyDefinitionsResponse",
+          "documentation":"<p>An object that maps strings to the property definitions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "extendsFrom":{
+          "shape":"ExtendsFrom",
+          "documentation":"<p>The name of the parent component type that this component type extends.</p>"
+        },
+        "functions":{
+          "shape":"FunctionsResponse",
+          "documentation":"<p>An object that maps strings to the functions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the component type was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the component was last updated.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the component type.</p>"
+        },
+        "isAbstract":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the component type is abstract.</p>"
+        },
+        "isSchemaInitialized":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the component type has a schema initializer and that the schema initializer has run.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The current status of the component type.</p>"
+        },
+        "propertyGroups":{
+          "shape":"PropertyGroupsResponse",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The syncSource of the SyncJob, if this entity was created by a SyncJob.</p>"
+        },
+        "componentTypeName":{
+          "shape":"ComponentTypeName",
+          "documentation":"<p>The component type name.</p>"
+        },
+        "compositeComponentTypes":{
+          "shape":"CompositeComponentTypesResponse",
+          "documentation":"<p>This is an object that maps strings to <code>compositeComponentTypes</code> of the <code>componentType</code>. <code>CompositeComponentType</code> is referenced by <code>componentTypeId</code>.</p>"
+        }
+      }
+    },
+    "GetEntityRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>",
+          "location":"uri",
+          "locationName":"entityId"
+        }
+      }
+    },
+    "GetEntityResponse":{
+      "type":"structure",
+      "required":[
+        "entityId",
+        "entityName",
+        "arn",
+        "status",
+        "workspaceId",
+        "parentEntityId",
+        "hasChildEntities",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "entityName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the entity.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the entity.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The current status of the entity.</p>"
+        },
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the entity.</p>"
+        },
+        "components":{
+          "shape":"ComponentsMap",
+          "documentation":"<p>An object that maps strings to the components in the entity. Each string in the mapping must be unique to this object.</p>"
+        },
+        "parentEntityId":{
+          "shape":"ParentEntityId",
+          "documentation":"<p>The ID of the parent entity for this entity.</p>"
+        },
+        "hasChildEntities":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the entity has associated child entities.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was last updated.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The syncSource of the sync job, if this entity was created by a sync job.</p>"
+        },
+        "areAllComponentsReturned":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag notes whether all components are returned in the API response. The maximum number of components returned is 30.</p>"
+        }
+      }
+    },
+    "GetMetadataTransferJobRequest":{
+      "type":"structure",
+      "required":["metadataTransferJobId"],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>",
+          "location":"uri",
+          "locationName":"metadataTransferJobId"
+        }
+      }
+    },
+    "GetMetadataTransferJobResponse":{
+      "type":"structure",
+      "required":[
+        "metadataTransferJobId",
+        "arn",
+        "sources",
+        "destination",
+        "metadataTransferJobRole",
+        "creationDateTime",
+        "updateDateTime",
+        "status"
+      ],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job Id.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The metadata transfer job ARN.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The metadata transfer job description.</p>"
+        },
+        "sources":{
+          "shape":"SourceConfigurations",
+          "documentation":"<p>The metadata transfer job's sources.</p>"
+        },
+        "destination":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>The metadata transfer job's destination.</p>"
+        },
+        "metadataTransferJobRole":{
+          "shape":"RoleArn",
+          "documentation":"<p>The metadata transfer job's role.</p>"
+        },
+        "reportUrl":{
+          "shape":"String",
+          "documentation":"<p>The metadata transfer job's report URL.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The metadata transfer job's creation DateTime property.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The metadata transfer job's update DateTime property.</p>"
+        },
+        "status":{
+          "shape":"MetadataTransferJobStatus",
+          "documentation":"<p>The metadata transfer job's status.</p>"
+        },
+        "progress":{
+          "shape":"MetadataTransferJobProgress",
+          "documentation":"<p>The metadata transfer job's progress.</p>"
+        }
+      }
+    },
+    "GetPricingPlanRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetPricingPlanResponse":{
+      "type":"structure",
+      "required":["currentPricingPlan"],
+      "members":{
+        "currentPricingPlan":{
+          "shape":"PricingPlan",
+          "documentation":"<p>The chosen pricing plan for the current billing cycle.</p>"
+        },
+        "pendingPricingPlan":{
+          "shape":"PricingPlan",
+          "documentation":"<p>The pending pricing plan.</p>"
+        }
+      }
+    },
+    "GetPropertyValueHistoryRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "selectedProperties"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>"
+        },
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "selectedProperties":{
+          "shape":"SelectedPropertyList",
+          "documentation":"<p>A list of properties whose value histories the request retrieves.</p>"
+        },
+        "propertyFilters":{
+          "shape":"PropertyFilters",
+          "documentation":"<p>A list of objects that filter the property value history request.</p>"
+        },
+        "startDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time of the earliest property value to return.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This field is deprecated and will throw an error in the future. Use startTime instead."
+        },
+        "endDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time of the latest property value to return.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This field is deprecated and will throw an error in the future. Use endTime instead."
+        },
+        "interpolation":{
+          "shape":"InterpolationParameters",
+          "documentation":"<p>An object that specifies the interpolation type and the interval over which to interpolate data.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "orderByTime":{
+          "shape":"OrderByTime",
+          "documentation":"<p>The time direction to use in the result order.</p>"
+        },
+        "startTime":{
+          "shape":"Time",
+          "documentation":"<p>The ISO8601 DateTime of the earliest property value to return.</p> <p>For more information about the ISO8601 DateTime format, see the data type <a href=\"https://docs.aws.amazon.com/iot-twinmaker/latest/apireference/API_PropertyValue.html\">PropertyValue</a>.</p>"
+        },
+        "endTime":{
+          "shape":"Time",
+          "documentation":"<p>The ISO8601 DateTime of the latest property value to return.</p> <p>For more information about the ISO8601 DateTime format, see the data type <a href=\"https://docs.aws.amazon.com/iot-twinmaker/latest/apireference/API_PropertyValue.html\">PropertyValue</a>.</p>"
+        }
+      }
+    },
+    "GetPropertyValueHistoryResponse":{
+      "type":"structure",
+      "required":["propertyValues"],
+      "members":{
+        "propertyValues":{
+          "shape":"PropertyValueList",
+          "documentation":"<p>An object that maps strings to the property definitions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "GetPropertyValueRequest":{
+      "type":"structure",
+      "required":[
+        "selectedProperties",
+        "workspaceId"
+      ],
+      "members":{
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component whose property values the operation returns.</p>"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type whose property values the operation returns.</p>"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity whose property values the operation returns.</p>"
+        },
+        "selectedProperties":{
+          "shape":"SelectedPropertyList",
+          "documentation":"<p>The properties whose values the operation returns.</p>"
+        },
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace whose values the operation returns.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "propertyGroupName":{
+          "shape":"Name",
+          "documentation":"<p>The property group name.</p>"
+        },
+        "tabularConditions":{
+          "shape":"TabularConditions",
+          "documentation":"<p>The tabular conditions.</p>"
+        }
+      }
+    },
+    "GetPropertyValueResponse":{
+      "type":"structure",
+      "members":{
+        "propertyValues":{
+          "shape":"PropertyLatestValueMap",
+          "documentation":"<p>An object that maps strings to the properties and latest property values in the response. Each string in the mapping must be unique to this object.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "tabularPropertyValues":{
+          "shape":"TabularPropertyValues",
+          "documentation":"<p>A table of property values.</p>"
+        }
+      }
+    },
+    "GetSceneRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "sceneId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the scene.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene.</p>",
+          "location":"uri",
+          "locationName":"sceneId"
+        }
+      }
+    },
+    "GetSceneResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "sceneId",
+        "contentLocation",
+        "arn",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the scene.</p>"
+        },
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene.</p>"
+        },
+        "contentLocation":{
+          "shape":"S3Url",
+          "documentation":"<p>The relative path that specifies the location of the content definition file.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the scene.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was last updated.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the scene.</p>"
+        },
+        "capabilities":{
+          "shape":"SceneCapabilities",
+          "documentation":"<p>A list of capabilities that the scene uses to render.</p>"
+        },
+        "sceneMetadata":{
+          "shape":"SceneMetadataMap",
+          "documentation":"<p>The response metadata.</p>"
+        },
+        "generatedSceneMetadata":{
+          "shape":"GeneratedSceneMetadataMap",
+          "documentation":"<p>The generated scene metadata.</p>"
+        },
+        "error":{
+          "shape":"SceneError",
+          "documentation":"<p>The SceneResponse error.</p>"
+        }
+      }
+    },
+    "GetSyncJobRequest":{
+      "type":"structure",
+      "required":["syncSource"],
+      "members":{
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync source.</p> <note> <p>Currently the only supported syncSource is <code>SITEWISE </code>.</p> </note>",
+          "location":"uri",
+          "locationName":"syncSource"
+        },
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace ID.</p>",
+          "location":"querystring",
+          "locationName":"workspace"
+        }
+      }
+    },
+    "GetSyncJobResponse":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "workspaceId",
+        "syncSource",
+        "syncRole",
+        "status",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The sync job ARN.</p>"
+        },
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the sync job.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync soucre.</p> <note> <p>Currently the only supported syncSource is <code>SITEWISE </code>.</p> </note>"
+        },
+        "syncRole":{
+          "shape":"RoleArn",
+          "documentation":"<p>The sync IAM role.</p>"
+        },
+        "status":{
+          "shape":"SyncJobStatus",
+          "documentation":"<p>The SyncJob response status.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation date and time.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The update date and time.</p>"
+        }
+      }
+    },
+    "GetWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"IdOrArn",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        }
+      }
+    },
+    "GetWorkspaceResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the workspace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the workspace.</p>"
+        },
+        "linkedServices":{
+          "shape":"LinkedServices",
+          "documentation":"<p>A list of services that are linked to the workspace.</p>"
+        },
+        "s3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The ARN of the S3 bucket where resources associated with the workspace are stored.</p>"
+        },
+        "role":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the execution role associated with the workspace.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the workspace was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the workspace was last updated.</p>"
+        }
+      }
+    },
+    "GroupType":{
+      "type":"string",
+      "enum":["TABULAR"]
+    },
+    "Id":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z_0-9][a-zA-Z_\\-0-9]*[a-zA-Z0-9]+"
+    },
+    "IdOrArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[a-zA-Z_0-9][a-zA-Z_\\-0-9]*[a-zA-Z0-9]+$|^arn:((aws)|(aws-cn)|(aws-us-gov)):iottwinmaker:[a-z0-9-]+:[0-9]{12}:[\\/a-zA-Z0-9_-]+"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An unexpected error has occurred.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InterpolationParameters":{
+      "type":"structure",
+      "members":{
+        "interpolationType":{
+          "shape":"InterpolationType",
+          "documentation":"<p>The interpolation type.</p>"
+        },
+        "intervalInSeconds":{
+          "shape":"IntervalInSeconds",
+          "documentation":"<p>The interpolation time interval in seconds.</p>"
+        }
+      },
+      "documentation":"<p>An object that specifies how to interpolate data in a list.</p>"
+    },
+    "InterpolationType":{
+      "type":"string",
+      "enum":["LINEAR"]
+    },
+    "IntervalInSeconds":{
+      "type":"long",
+      "box":true
+    },
+    "IotSiteWiseSourceConfiguration":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"IotSiteWiseSourceConfigurationFilters",
+          "documentation":"<p>The AWS IoT SiteWise soucre configuration filters.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job AWS IoT SiteWise source configuration.</p>"
+    },
+    "IotSiteWiseSourceConfigurationFilter":{
+      "type":"structure",
+      "members":{
+        "filterByAssetModel":{
+          "shape":"FilterByAssetModel",
+          "documentation":"<p>Filter by asset model.</p>"
+        },
+        "filterByAsset":{
+          "shape":"FilterByAsset",
+          "documentation":"<p>Filter by asset.</p>"
+        }
+      },
+      "documentation":"<p>The AWS IoT SiteWise soucre configuration filter.[need held with desc here]</p>",
+      "union":true
+    },
+    "IotSiteWiseSourceConfigurationFilters":{
+      "type":"list",
+      "member":{"shape":"IotSiteWiseSourceConfigurationFilter"}
+    },
+    "IotTwinMakerDestinationConfiguration":{
+      "type":"structure",
+      "required":["workspace"],
+      "members":{
+        "workspace":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The IoT TwinMaker workspace.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job AWS IoT TwinMaker destination configuration.</p>"
+    },
+    "IotTwinMakerSourceConfiguration":{
+      "type":"structure",
+      "required":["workspace"],
+      "members":{
+        "workspace":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The IoT TwinMaker workspace.</p>"
+        },
+        "filters":{
+          "shape":"IotTwinMakerSourceConfigurationFilters",
+          "documentation":"<p>The metadata transfer job AWS IoT TwinMaker source configuration filters.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job AWS IoT TwinMaker source configuration.</p>"
+    },
+    "IotTwinMakerSourceConfigurationFilter":{
+      "type":"structure",
+      "members":{
+        "filterByComponentType":{
+          "shape":"FilterByComponentType",
+          "documentation":"<p>Filter by component type.</p>"
+        },
+        "filterByEntity":{
+          "shape":"FilterByEntity",
+          "documentation":"<p>Filter by entity.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job AWS IoT TwinMaker source configuration filter.</p>",
+      "union":true
+    },
+    "IotTwinMakerSourceConfigurationFilters":{
+      "type":"list",
+      "member":{"shape":"IotTwinMakerSourceConfigurationFilter"}
+    },
+    "LambdaArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:((aws)|(aws-cn)|(aws-us-gov)):lambda:[a-z0-9-]+:[0-9]{12}:function:[\\/a-zA-Z0-9_-]+"
+    },
+    "LambdaFunction":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The ARN of the Lambda function.</p>"
+        }
+      },
+      "documentation":"<p>The Lambda function.</p>"
+    },
+    "LinkedService":{
+      "type":"string",
+      "pattern":"[a-zA-Z_0-9]+"
+    },
+    "LinkedServices":{
+      "type":"list",
+      "member":{"shape":"LinkedService"}
+    },
+    "ListComponentTypesFilter":{
+      "type":"structure",
+      "members":{
+        "extendsFrom":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The component type that the component types in the list extend.</p>"
+        },
+        "namespace":{
+          "shape":"String",
+          "documentation":"<p>The namespace to which the component types in the list belong.</p>"
+        },
+        "isAbstract":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the component types in the list are abstract.</p>"
+        }
+      },
+      "documentation":"<p>An object that filters items in a list of component types.</p> <note> <p>Only one object is accepted as a valid input.</p> </note>",
+      "union":true
+    },
+    "ListComponentTypesFilters":{
+      "type":"list",
+      "member":{"shape":"ListComponentTypesFilter"}
+    },
+    "ListComponentTypesRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "filters":{
+          "shape":"ListComponentTypesFilters",
+          "documentation":"<p>A list of objects that filter the request.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        }
+      }
+    },
+    "ListComponentTypesResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeSummaries"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>"
+        },
+        "componentTypeSummaries":{
+          "shape":"ComponentTypeSummaries",
+          "documentation":"<p>A list of objects that contain information about the component types.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of results to display.</p>"
+        }
+      }
+    },
+    "ListComponentsRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace ID.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID for the entity whose metadata (component/properties) is returned by the operation.</p>",
+          "location":"uri",
+          "locationName":"entityId"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned at one time. The default is 25.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListComponentsResponse":{
+      "type":"structure",
+      "required":["componentSummaries"],
+      "members":{
+        "componentSummaries":{
+          "shape":"ComponentSummaries",
+          "documentation":"<p>A list of objects that contain information about the components.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of component results.</p>"
+        }
+      }
+    },
+    "ListEntitiesFilter":{
+      "type":"structure",
+      "members":{
+        "parentEntityId":{
+          "shape":"ParentEntityId",
+          "documentation":"<p>The parent of the entities in the list.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type in the entities in the list.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external-Id property of a component. The external-Id property is the primary key of an external storage system.</p>"
+        }
+      },
+      "documentation":"<p>An object that filters items in a list of entities.</p>",
+      "union":true
+    },
+    "ListEntitiesFilters":{
+      "type":"list",
+      "member":{"shape":"ListEntitiesFilter"}
+    },
+    "ListEntitiesRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "filters":{
+          "shape":"ListEntitiesFilters",
+          "documentation":"<p>A list of objects that filter the request.</p> <note> <p>Only one object is accepted as a valid input.</p> </note>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListEntitiesResponse":{
+      "type":"structure",
+      "members":{
+        "entitySummaries":{
+          "shape":"EntitySummaries",
+          "documentation":"<p>A list of objects that contain information about the entities.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListMetadataTransferJobsFilter":{
+      "type":"structure",
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace Id.</p>"
+        },
+        "state":{
+          "shape":"MetadataTransferJobState",
+          "documentation":"<p>The filter state.</p>"
+        }
+      },
+      "documentation":"<p>The ListMetadataTransferJobs filter.</p>",
+      "union":true
+    },
+    "ListMetadataTransferJobsFilters":{
+      "type":"list",
+      "member":{"shape":"ListMetadataTransferJobsFilter"}
+    },
+    "ListMetadataTransferJobsRequest":{
+      "type":"structure",
+      "required":[
+        "sourceType",
+        "destinationType"
+      ],
+      "members":{
+        "sourceType":{
+          "shape":"SourceType",
+          "documentation":"<p>The metadata transfer job's source type.</p>"
+        },
+        "destinationType":{
+          "shape":"DestinationType",
+          "documentation":"<p>The metadata transfer job's destination type.</p>"
+        },
+        "filters":{
+          "shape":"ListMetadataTransferJobsFilters",
+          "documentation":"<p>An object that filters metadata transfer jobs.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time.</p>"
+        }
+      }
+    },
+    "ListMetadataTransferJobsResponse":{
+      "type":"structure",
+      "required":["metadataTransferJobSummaries"],
+      "members":{
+        "metadataTransferJobSummaries":{
+          "shape":"MetadataTransferJobSummaries",
+          "documentation":"<p>The metadata transfer job summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListPropertiesRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The workspace ID.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "componentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the component whose properties are returned by the operation.</p>"
+        },
+        "componentPath":{
+          "shape":"ComponentPath",
+          "documentation":"<p>This string specifies the path to the composite component, starting from the top-level component.</p>"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID for the entity whose metadata (component/properties) is returned by the operation.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results returned at one time. The default is 25.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListPropertiesResponse":{
+      "type":"structure",
+      "required":["propertySummaries"],
+      "members":{
+        "propertySummaries":{
+          "shape":"PropertySummaries",
+          "documentation":"<p>A list of objects that contain information about the properties.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of property results.</p>"
+        }
+      }
+    },
+    "ListScenesRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the scenes.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>Specifies the maximum number of results to display.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListScenesResponse":{
+      "type":"structure",
+      "members":{
+        "sceneSummaries":{
+          "shape":"SceneSummaries",
+          "documentation":"<p>A list of objects that contain information about the scenes.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListSyncJobsRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the sync job.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 50.</p> <p>Valid Range: Minimum value of 0. Maximum value of 200.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListSyncJobsResponse":{
+      "type":"structure",
+      "members":{
+        "syncJobSummaries":{
+          "shape":"SyncJobSummaries",
+          "documentation":"<p>The listed SyncJob summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListSyncResourcesRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "syncSource"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the sync job.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync source.</p> <note> <p>Currently the only supported syncSource is <code>SITEWISE </code>.</p> </note>",
+          "location":"uri",
+          "locationName":"syncSource"
+        },
+        "filters":{
+          "shape":"SyncResourceFilters",
+          "documentation":"<p>A list of objects that filter the request.</p> <p>The following filter combinations are supported:</p> <ul> <li> <p>Filter with state</p> </li> <li> <p>Filter with ResourceType and ResourceId</p> </li> <li> <p>Filter with ResourceType and ExternalId</p> </li> </ul>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 50.</p> <p>Valid Range: Minimum value of 0. Maximum value of 200.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListSyncResourcesResponse":{
+      "type":"structure",
+      "members":{
+        "syncResources":{
+          "shape":"SyncResourceSummaries",
+          "documentation":"<p>The sync resources.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceARN"],
+      "members":{
+        "resourceARN":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the resource.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata that you can use to manage a resource.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListWorkspacesRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return at one time. The default is 25.</p> <p>Valid Range: Minimum value of 1. Maximum value of 250.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "ListWorkspacesResponse":{
+      "type":"structure",
+      "members":{
+        "workspaceSummaries":{
+          "shape":"WorkspaceSummaries",
+          "documentation":"<p>A list of objects that contain information about the workspaces.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The string that specifies the next page of results.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":0
+    },
+    "MetadataTransferJobProgress":{
+      "type":"structure",
+      "members":{
+        "totalCount":{
+          "shape":"Integer",
+          "documentation":"<p>The total count. [of what]</p>"
+        },
+        "succeededCount":{
+          "shape":"Integer",
+          "documentation":"<p>The succeeded count.</p>"
+        },
+        "skippedCount":{
+          "shape":"Integer",
+          "documentation":"<p>The skipped count.</p>"
+        },
+        "failedCount":{
+          "shape":"Integer",
+          "documentation":"<p>The failed count.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job's progress.</p>"
+    },
+    "MetadataTransferJobState":{
+      "type":"string",
+      "enum":[
+        "VALIDATING",
+        "PENDING",
+        "RUNNING",
+        "CANCELLING",
+        "ERROR",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "MetadataTransferJobStatus":{
+      "type":"structure",
+      "members":{
+        "state":{
+          "shape":"MetadataTransferJobState",
+          "documentation":"<p>The metadata transfer job state.</p>"
+        },
+        "error":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>The metadata transfer job error.</p>"
+        },
+        "queuedPosition":{
+          "shape":"Integer",
+          "documentation":"<p>The queued position.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job status.</p>"
+    },
+    "MetadataTransferJobSummaries":{
+      "type":"list",
+      "member":{"shape":"MetadataTransferJobSummary"}
+    },
+    "MetadataTransferJobSummary":{
+      "type":"structure",
+      "required":[
+        "metadataTransferJobId",
+        "arn",
+        "creationDateTime",
+        "updateDateTime",
+        "status"
+      ],
+      "members":{
+        "metadataTransferJobId":{
+          "shape":"Id",
+          "documentation":"<p>The metadata transfer job summary Id.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The metadata transfer job summary ARN.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The metadata transfer job summary creation DateTime object.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The metadata transfer job summary update DateTime object</p>"
+        },
+        "status":{
+          "shape":"MetadataTransferJobStatus",
+          "documentation":"<p>The metadata transfer job summary status.</p>"
+        },
+        "progress":{
+          "shape":"MetadataTransferJobProgress",
+          "documentation":"<p>The metadata transfer job summary progess.</p>"
+        }
+      },
+      "documentation":"<p>The metadata transfer job summary.</p>"
+    },
+    "Name":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z_\\-0-9]+"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":17880,
+      "min":0,
+      "pattern":".*"
+    },
+    "Order":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "OrderBy":{
+      "type":"structure",
+      "required":["propertyName"],
+      "members":{
+        "order":{
+          "shape":"Order",
+          "documentation":"<p>The set order that filters results.</p>"
+        },
+        "propertyName":{
+          "shape":"String",
+          "documentation":"<p>The property name.</p>"
+        }
+      },
+      "documentation":"<p>Filter criteria that orders the return output. It can be sorted in ascending or descending order.</p>"
+    },
+    "OrderByList":{
+      "type":"list",
+      "member":{"shape":"OrderBy"},
+      "max":10,
+      "min":1
+    },
+    "OrderByTime":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "ParentEntityId":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"\\$ROOT|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|^[a-zA-Z0-9][a-zA-Z_\\-0-9.:]*[a-zA-Z0-9]+"
+    },
+    "ParentEntityUpdateRequest":{
+      "type":"structure",
+      "required":["updateType"],
+      "members":{
+        "updateType":{
+          "shape":"ParentEntityUpdateType",
+          "documentation":"<p>The type of the update.</p>"
+        },
+        "parentEntityId":{
+          "shape":"ParentEntityId",
+          "documentation":"<p>The ID of the parent entity.</p>"
+        }
+      },
+      "documentation":"<p>The parent entity update request.</p>"
+    },
+    "ParentEntityUpdateType":{
+      "type":"string",
+      "enum":[
+        "UPDATE",
+        "DELETE"
+      ]
+    },
+    "PricingBundles":{
+      "type":"list",
+      "member":{"shape":"BundleName"},
+      "max":10,
+      "min":1
+    },
+    "PricingMode":{
+      "type":"string",
+      "enum":[
+        "BASIC",
+        "STANDARD",
+        "TIERED_BUNDLE"
+      ]
+    },
+    "PricingPlan":{
+      "type":"structure",
+      "required":[
+        "effectiveDateTime",
+        "pricingMode",
+        "updateDateTime",
+        "updateReason"
+      ],
+      "members":{
+        "billableEntityCount":{
+          "shape":"Long",
+          "documentation":"<p>The billable entity count.</p>"
+        },
+        "bundleInformation":{
+          "shape":"BundleInformation",
+          "documentation":"<p>The pricing plan's bundle information.</p>"
+        },
+        "effectiveDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The effective date and time of the pricing plan.</p>"
+        },
+        "pricingMode":{
+          "shape":"PricingMode",
+          "documentation":"<p>The pricing mode.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The set date and time for updating a pricing plan.</p>"
+        },
+        "updateReason":{
+          "shape":"UpdateReason",
+          "documentation":"<p>The update reason for changing a pricing plan.</p>"
+        }
+      },
+      "documentation":"<p>The pricing plan.</p>"
+    },
+    "PricingTier":{
+      "type":"string",
+      "enum":[
+        "TIER_1",
+        "TIER_2",
+        "TIER_3",
+        "TIER_4"
+      ]
+    },
+    "PropertyDefinitionRequest":{
+      "type":"structure",
+      "members":{
+        "dataType":{
+          "shape":"DataType",
+          "documentation":"<p>An object that contains information about the data type.</p>"
+        },
+        "isRequiredInEntity":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property is required.</p>"
+        },
+        "isExternalId":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property ID comes from an external data store.</p>"
+        },
+        "isStoredExternally":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property is stored externally.</p>"
+        },
+        "isTimeSeries":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property consists of time series data.</p>"
+        },
+        "defaultValue":{
+          "shape":"DataValue",
+          "documentation":"<p>An object that contains the default value.</p>"
+        },
+        "configuration":{
+          "shape":"Configuration",
+          "documentation":"<p>A mapping that specifies configuration information about the property. Use this field to specify information that you read from and write to an external source.</p>"
+        },
+        "displayName":{
+          "shape":"PropertyDisplayName",
+          "documentation":"<p>A friendly name for the property.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about a property.</p>"
+    },
+    "PropertyDefinitionResponse":{
+      "type":"structure",
+      "required":[
+        "dataType",
+        "isTimeSeries",
+        "isRequiredInEntity",
+        "isExternalId",
+        "isStoredExternally",
+        "isImported",
+        "isFinal",
+        "isInherited"
+      ],
+      "members":{
+        "dataType":{
+          "shape":"DataType",
+          "documentation":"<p>An object that contains information about the data type.</p>"
+        },
+        "isTimeSeries":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property consists of time series data.</p>"
+        },
+        "isRequiredInEntity":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property is required in an entity.</p>"
+        },
+        "isExternalId":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property ID comes from an external data store.</p>"
+        },
+        "isStoredExternally":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property is stored externally.</p>"
+        },
+        "isImported":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property definition is imported from an external data store.</p>"
+        },
+        "isFinal":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property definition can be updated.</p>"
+        },
+        "isInherited":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property definition is inherited from a parent entity.</p>"
+        },
+        "defaultValue":{
+          "shape":"DataValue",
+          "documentation":"<p>An object that contains the default value.</p>"
+        },
+        "configuration":{
+          "shape":"Configuration",
+          "documentation":"<p>A mapping that specifies configuration information about the property.</p>"
+        },
+        "displayName":{
+          "shape":"PropertyDisplayName",
+          "documentation":"<p>A friendly name for the property.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains response data from a property definition request.</p>"
+    },
+    "PropertyDefinitionsRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyDefinitionRequest"}
+    },
+    "PropertyDefinitionsResponse":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyDefinitionResponse"}
+    },
+    "PropertyDisplayName":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*[^\\u0000-\\u001F\\u007F]*.*"
+    },
+    "PropertyFilter":{
+      "type":"structure",
+      "members":{
+        "propertyName":{
+          "shape":"String",
+          "documentation":"<p>The property name associated with this property filter.</p>"
+        },
+        "operator":{
+          "shape":"String",
+          "documentation":"<p>The operator associated with this property filter.</p>"
+        },
+        "value":{
+          "shape":"DataValue",
+          "documentation":"<p>The value associated with this property filter.</p>"
+        }
+      },
+      "documentation":"<p>An object that filters items returned by a property request.</p>"
+    },
+    "PropertyFilters":{
+      "type":"list",
+      "member":{"shape":"PropertyFilter"},
+      "max":10,
+      "min":1
+    },
+    "PropertyGroupRequest":{
+      "type":"structure",
+      "members":{
+        "groupType":{
+          "shape":"GroupType",
+          "documentation":"<p>The group type.</p>"
+        },
+        "propertyNames":{
+          "shape":"PropertyNames",
+          "documentation":"<p>The names of properties.</p>"
+        }
+      },
+      "documentation":"<p/>"
+    },
+    "PropertyGroupResponse":{
+      "type":"structure",
+      "required":[
+        "groupType",
+        "propertyNames",
+        "isInherited"
+      ],
+      "members":{
+        "groupType":{
+          "shape":"GroupType",
+          "documentation":"<p>The group types.</p>"
+        },
+        "propertyNames":{
+          "shape":"PropertyNames",
+          "documentation":"<p>The names of properties.</p>"
+        },
+        "isInherited":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether the property group is inherited from a parent entity</p>"
+        }
+      },
+      "documentation":"<p>The property group response</p>"
+    },
+    "PropertyGroupUpdateType":{
+      "type":"string",
+      "enum":[
+        "UPDATE",
+        "DELETE",
+        "CREATE"
+      ]
+    },
+    "PropertyGroupsRequest":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyGroupRequest"}
+    },
+    "PropertyGroupsResponse":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyGroupResponse"}
+    },
+    "PropertyLatestValue":{
+      "type":"structure",
+      "required":["propertyReference"],
+      "members":{
+        "propertyReference":{
+          "shape":"EntityPropertyReference",
+          "documentation":"<p>An object that specifies information about a property.</p>"
+        },
+        "propertyValue":{
+          "shape":"DataValue",
+          "documentation":"<p>The value of the property.</p>"
+        }
+      },
+      "documentation":"<p>The latest value of the property.</p>"
+    },
+    "PropertyLatestValueMap":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyLatestValue"}
+    },
+    "PropertyNames":{
+      "type":"list",
+      "member":{"shape":"Name"}
+    },
+    "PropertyRequest":{
+      "type":"structure",
+      "members":{
+        "definition":{
+          "shape":"PropertyDefinitionRequest",
+          "documentation":"<p>An object that specifies information about a property.</p>"
+        },
+        "value":{
+          "shape":"DataValue",
+          "documentation":"<p>The value of the property.</p>"
+        },
+        "updateType":{
+          "shape":"PropertyUpdateType",
+          "documentation":"<p>The update type of the update property request.</p>"
+        }
+      },
+      "documentation":"<p>An object that sets information about a property.</p>"
+    },
+    "PropertyRequests":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyRequest"}
+    },
+    "PropertyResponse":{
+      "type":"structure",
+      "members":{
+        "definition":{
+          "shape":"PropertyDefinitionResponse",
+          "documentation":"<p>An object that specifies information about a property.</p>"
+        },
+        "value":{
+          "shape":"DataValue",
+          "documentation":"<p>The value of the property.</p>"
+        },
+        "areAllPropertyValuesReturned":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag notes whether all values of a list or map type property are returned in the API response. The maximum number of values per property returned is 50.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about a property response.</p>"
+    },
+    "PropertyResponses":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"PropertyResponse"}
+    },
+    "PropertySummaries":{
+      "type":"list",
+      "member":{"shape":"PropertySummary"}
+    },
+    "PropertySummary":{
+      "type":"structure",
+      "required":["propertyName"],
+      "members":{
+        "definition":{
+          "shape":"PropertyDefinitionResponse",
+          "documentation":"<p>This is the schema for the property.</p>"
+        },
+        "propertyName":{
+          "shape":"Name",
+          "documentation":"<p>This is the name of the property.</p>"
+        },
+        "value":{
+          "shape":"DataValue",
+          "documentation":"<p>This is the value for the property.</p>"
+        },
+        "areAllPropertyValuesReturned":{
+          "shape":"Boolean",
+          "documentation":"<p>This flag notes whether all values of a list or map type property are returned in the API response. The maximum number of values per property returned is 50.</p>"
+        }
+      },
+      "documentation":"<p>This is an object that contains the information of a property.</p>"
+    },
+    "PropertyTableValue":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"DataValue"}
+    },
+    "PropertyUpdateType":{
+      "type":"string",
+      "enum":[
+        "UPDATE",
+        "DELETE",
+        "CREATE",
+        "RESET_VALUE"
+      ]
+    },
+    "PropertyValue":{
+      "type":"structure",
+      "required":["value"],
+      "members":{
+        "timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of a value for a time series property.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This field is deprecated and will throw an error in the future. Use time instead."
+        },
+        "value":{
+          "shape":"DataValue",
+          "documentation":"<p>An object that specifies a value for a time series property.</p>"
+        },
+        "time":{
+          "shape":"Time",
+          "documentation":"<p>ISO8601 DateTime of a value for a time series property.</p> <p>The time for when the property value was recorded in ISO 8601 format: <i>YYYY-MM-DDThh:mm:ss[.SSSSSSSSS][Z/±HH:mm]</i>.</p> <ul> <li> <p> <i>[YYYY]</i>: year</p> </li> <li> <p> <i>[MM]</i>: month</p> </li> <li> <p> <i>[DD]</i>: day</p> </li> <li> <p> <i>[hh]</i>: hour</p> </li> <li> <p> <i>[mm]</i>: minute</p> </li> <li> <p> <i>[ss]</i>: seconds</p> </li> <li> <p> <i>[.SSSSSSSSS]</i>: additional precision, where precedence is maintained. For example: [.573123] is equal to 573123000 nanoseconds.</p> </li> <li> <p> <i>Z</i>: default timezone UTC</p> </li> <li> <p> <i>± HH:mm</i>: time zone offset in Hours and Minutes.</p> </li> </ul> <p> <i>Required sub-fields</i>: YYYY-MM-DDThh:mm:ss and [Z/±HH:mm]</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about a value for a time series property.</p>"
+    },
+    "PropertyValueEntry":{
+      "type":"structure",
+      "required":["entityPropertyReference"],
+      "members":{
+        "entityPropertyReference":{
+          "shape":"EntityPropertyReference",
+          "documentation":"<p>An object that contains information about the entity that has the property.</p>"
+        },
+        "propertyValues":{
+          "shape":"PropertyValues",
+          "documentation":"<p>A list of objects that specify time series property values.</p>"
+        }
+      },
+      "documentation":"<p>An object that specifies information about time series property values. This object is used and consumed by the <a href=\"https://docs.aws.amazon.com/iot-twinmaker/latest/apireference/API_BatchPutPropertyValues.html\">BatchPutPropertyValues</a> action.</p>"
+    },
+    "PropertyValueHistory":{
+      "type":"structure",
+      "required":["entityPropertyReference"],
+      "members":{
+        "entityPropertyReference":{
+          "shape":"EntityPropertyReference",
+          "documentation":"<p>An object that uniquely identifies an entity property.</p>"
+        },
+        "values":{
+          "shape":"Values",
+          "documentation":"<p>A list of objects that contain information about the values in the history of a time series property.</p>"
+        }
+      },
+      "documentation":"<p>The history of values for a time series property.</p>"
+    },
+    "PropertyValueList":{
+      "type":"list",
+      "member":{"shape":"PropertyValueHistory"}
+    },
+    "PropertyValues":{
+      "type":"list",
+      "member":{"shape":"PropertyValue"},
+      "max":10,
+      "min":1
+    },
+    "QueryResultValue":{
+      "type":"structure",
+      "members":{
+      },
+      "document":true
+    },
+    "QueryServiceMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "QueryStatement":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"[\\s\\S]+"
+    },
+    "QueryTimeoutException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The query timeout exception.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "Relationship":{
+      "type":"structure",
+      "members":{
+        "targetComponentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the target component type associated with this relationship.</p>"
+        },
+        "relationshipType":{
+          "shape":"String",
+          "documentation":"<p>The type of the relationship.</p>"
+        }
+      },
+      "documentation":"<p>An object that specifies a relationship with another component type.</p>"
+    },
+    "RelationshipValue":{
+      "type":"structure",
+      "members":{
+        "targetEntityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the target entity associated with this relationship value.</p>"
+        },
+        "targetComponentName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the target component associated with the relationship value.</p>"
+        }
+      },
+      "documentation":"<p>A value that associates a component and an entity.</p>"
+    },
+    "RequiredProperties":{
+      "type":"list",
+      "member":{"shape":"Name"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource wasn't found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:((aws)|(aws-cn)|(aws-us-gov)):iam::[0-9]{12}:role/.*"
+    },
+    "Row":{
+      "type":"structure",
+      "members":{
+        "rowData":{
+          "shape":"RowData",
+          "documentation":"<p>The data in a row of query results.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single row in the query results.</p>"
+    },
+    "RowData":{
+      "type":"list",
+      "member":{"shape":"QueryResultValue"}
+    },
+    "Rows":{
+      "type":"list",
+      "member":{"shape":"Row"}
+    },
+    "S3DestinationConfiguration":{
+      "type":"structure",
+      "required":["location"],
+      "members":{
+        "location":{
+          "shape":"S3DestinationLocation",
+          "documentation":"<p>The S3 destination configuration location.</p>"
+        }
+      },
+      "documentation":"<p>The S3 destination configuration.</p>"
+    },
+    "S3DestinationLocation":{
+      "type":"string",
+      "pattern":".*(^arn:((aws)|(aws-cn)|(aws-us-gov)):s3:::)([/a-zA-Z0-9_-]+$).*"
+    },
+    "S3Location":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":".*(^arn:((aws)|(aws-cn)|(aws-us-gov)):s3:::)([a-zA-Z0-9_-]+$).*"
+    },
+    "S3SourceConfiguration":{
+      "type":"structure",
+      "required":["location"],
+      "members":{
+        "location":{
+          "shape":"S3SourceLocation",
+          "documentation":"<p>The S3 destination source configuration location.</p>"
+        }
+      },
+      "documentation":"<p>The S3 destination source configuration.</p>"
+    },
+    "S3SourceLocation":{
+      "type":"string",
+      "pattern":".*(^arn:((aws)|(aws-cn)|(aws-us-gov)):s3:::)([a-zA-Z0-9_-]+)\\/([/.a-zA-Z0-9_-]+$).*"
+    },
+    "S3Url":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[sS]3://[A-Za-z0-9._/-]+"
+    },
+    "SceneCapabilities":{
+      "type":"list",
+      "member":{"shape":"SceneCapability"},
+      "max":50,
+      "min":0
+    },
+    "SceneCapability":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*"
+    },
+    "SceneError":{
+      "type":"structure",
+      "members":{
+        "code":{
+          "shape":"SceneErrorCode",
+          "documentation":"<p>The SceneError code.</p>"
+        },
+        "message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The SceneError message.</p>"
+        }
+      },
+      "documentation":"<p>The scene error.</p>"
+    },
+    "SceneErrorCode":{
+      "type":"string",
+      "enum":["MATTERPORT_ERROR"]
+    },
+    "SceneMetadataMap":{
+      "type":"map",
+      "key":{"shape":"Name"},
+      "value":{"shape":"SceneMetadataValue"},
+      "max":50,
+      "min":0
+    },
+    "SceneMetadataValue":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":".*"
+    },
+    "SceneSummaries":{
+      "type":"list",
+      "member":{"shape":"SceneSummary"}
+    },
+    "SceneSummary":{
+      "type":"structure",
+      "required":[
+        "sceneId",
+        "contentLocation",
+        "arn",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene.</p>"
+        },
+        "contentLocation":{
+          "shape":"S3Url",
+          "documentation":"<p>The relative path that specifies the location of the content definition file.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the scene.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was last updated.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The scene description.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about a scene.</p>"
+    },
+    "Scope":{
+      "type":"string",
+      "enum":[
+        "ENTITY",
+        "WORKSPACE"
+      ]
+    },
+    "SelectedPropertyList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":10,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The service quota was exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SiteWiseExternalId":{
+      "type":"string",
+      "max":128,
+      "min":2,
+      "pattern":".*[a-zA-Z0-9_][a-zA-Z_\\-0-9.:]*[a-zA-Z0-9_]+.*"
+    },
+    "SourceConfiguration":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"SourceType",
+          "documentation":"<p>The source configuration type.</p>"
+        },
+        "s3Configuration":{
+          "shape":"S3SourceConfiguration",
+          "documentation":"<p>The source configuration S3 configuration.</p>"
+        },
+        "iotSiteWiseConfiguration":{
+          "shape":"IotSiteWiseSourceConfiguration",
+          "documentation":"<p>The source configuration IoT SiteWise configuration.</p>"
+        },
+        "iotTwinMakerConfiguration":{
+          "shape":"IotTwinMakerSourceConfiguration",
+          "documentation":"<p>The source configuration IoT TwinMaker configuration.</p>"
+        }
+      },
+      "documentation":"<p>The source configuration.</p>"
+    },
+    "SourceConfigurations":{
+      "type":"list",
+      "member":{"shape":"SourceConfiguration"},
+      "max":1,
+      "min":1
+    },
+    "SourceType":{
+      "type":"string",
+      "enum":[
+        "s3",
+        "iotsitewise",
+        "iottwinmaker"
+      ]
+    },
+    "State":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "UPDATING",
+        "DELETING",
+        "ACTIVE",
+        "ERROR"
+      ]
+    },
+    "Status":{
+      "type":"structure",
+      "members":{
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the entity, component, component type, or workspace.</p>"
+        },
+        "error":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>The error message.</p>"
+        }
+      },
+      "documentation":"<p>An object that represents the status of an entity, component, component type, or workspace.</p>"
+    },
+    "String":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*"
+    },
+    "SyncJobState":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "INITIALIZING",
+        "ACTIVE",
+        "DELETING",
+        "ERROR"
+      ]
+    },
+    "SyncJobStatus":{
+      "type":"structure",
+      "members":{
+        "state":{
+          "shape":"SyncJobState",
+          "documentation":"<p>The SyncJob status state.</p>"
+        },
+        "error":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>The SyncJob error.</p>"
+        }
+      },
+      "documentation":"<p>The SyncJob status.</p>"
+    },
+    "SyncJobSummaries":{
+      "type":"list",
+      "member":{"shape":"SyncJobSummary"}
+    },
+    "SyncJobSummary":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The SyncJob summary ARN.</p>"
+        },
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the sync job.</p>"
+        },
+        "syncSource":{
+          "shape":"SyncSource",
+          "documentation":"<p>The sync source.</p>"
+        },
+        "status":{
+          "shape":"SyncJobStatus",
+          "documentation":"<p>The SyncJob summaries status.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation date and time.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The update date and time.</p>"
+        }
+      },
+      "documentation":"<p>The SyncJob summary.</p>"
+    },
+    "SyncResourceFilter":{
+      "type":"structure",
+      "members":{
+        "state":{
+          "shape":"SyncResourceState",
+          "documentation":"<p>The sync resource filter's state.</p>"
+        },
+        "resourceType":{
+          "shape":"SyncResourceType",
+          "documentation":"<p>The sync resource filter resource type</p>"
+        },
+        "resourceId":{
+          "shape":"Id",
+          "documentation":"<p>The sync resource filter resource ID.</p>"
+        },
+        "externalId":{
+          "shape":"Id",
+          "documentation":"<p>The external ID.</p>"
+        }
+      },
+      "documentation":"<p>The sync resource filter.</p>",
+      "union":true
+    },
+    "SyncResourceFilters":{
+      "type":"list",
+      "member":{"shape":"SyncResourceFilter"}
+    },
+    "SyncResourceState":{
+      "type":"string",
+      "enum":[
+        "INITIALIZING",
+        "PROCESSING",
+        "DELETED",
+        "IN_SYNC",
+        "ERROR"
+      ]
+    },
+    "SyncResourceStatus":{
+      "type":"structure",
+      "members":{
+        "state":{
+          "shape":"SyncResourceState",
+          "documentation":"<p>The sync resource status state.</p>"
+        },
+        "error":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>The status error.</p>"
+        }
+      },
+      "documentation":"<p>The sync resource status.</p>"
+    },
+    "SyncResourceSummaries":{
+      "type":"list",
+      "member":{"shape":"SyncResourceSummary"}
+    },
+    "SyncResourceSummary":{
+      "type":"structure",
+      "members":{
+        "resourceType":{
+          "shape":"SyncResourceType",
+          "documentation":"<p>The resource type.</p>"
+        },
+        "externalId":{
+          "shape":"Id",
+          "documentation":"<p>The external ID.</p>"
+        },
+        "resourceId":{
+          "shape":"Id",
+          "documentation":"<p>The resource ID.</p>"
+        },
+        "status":{
+          "shape":"SyncResourceStatus",
+          "documentation":"<p>The sync resource summary status.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The update date and time.</p>"
+        }
+      },
+      "documentation":"<p>The sync resource summary.</p>"
+    },
+    "SyncResourceType":{
+      "type":"string",
+      "enum":[
+        "ENTITY",
+        "COMPONENT_TYPE"
+      ]
+    },
+    "SyncSource":{
+      "type":"string",
+      "pattern":"[a-zA-Z_0-9]+"
+    },
+    "TabularConditions":{
+      "type":"structure",
+      "members":{
+        "orderBy":{
+          "shape":"OrderByList",
+          "documentation":"<p>Filter criteria that orders the output. It can be sorted in ascending or descending order.</p>"
+        },
+        "propertyFilters":{
+          "shape":"PropertyFilters",
+          "documentation":"<p>You can filter the request using various logical operators and a key-value format. For example:</p> <p> <code>{\"key\": \"serverType\", \"value\": \"webServer\"}</code> </p>"
+        }
+      },
+      "documentation":"<p>The tabular conditions.</p>"
+    },
+    "TabularPropertyValue":{
+      "type":"list",
+      "member":{"shape":"PropertyTableValue"}
+    },
+    "TabularPropertyValues":{
+      "type":"list",
+      "member":{"shape":"TabularPropertyValue"}
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tags"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the resource.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata to add to this resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The rate exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Time":{
+      "type":"string",
+      "documentation":"<p>Timestamp represented in ISO 8601 format</p>",
+      "max":35,
+      "min":20
+    },
+    "Timestamp":{
+      "type":"timestamp",
+      "documentation":"<p>supports epoch seconds value</p>"
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>The number of tags exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "TwinMakerArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:((aws)|(aws-cn)|(aws-us-gov)):iottwinmaker:[a-z0-9-]+:[0-9]{12}:[\\/a-zA-Z0-9_\\-\\.:]+"
+    },
+    "Type":{
+      "type":"string",
+      "enum":[
+        "RELATIONSHIP",
+        "STRING",
+        "LONG",
+        "BOOLEAN",
+        "INTEGER",
+        "DOUBLE",
+        "LIST",
+        "MAP"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceARN":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the resource.</p>",
+          "location":"querystring",
+          "locationName":"resourceARN"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of tag key names to remove from the resource. You don't specify the value. Both the key and its associated value are removed.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateComponentTypeRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "componentTypeId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "isSingleton":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value that specifies whether an entity can have more than one component of this type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>",
+          "location":"uri",
+          "locationName":"componentTypeId"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the component type.</p>"
+        },
+        "propertyDefinitions":{
+          "shape":"PropertyDefinitionsRequest",
+          "documentation":"<p>An object that maps strings to the property definitions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "extendsFrom":{
+          "shape":"ExtendsFrom",
+          "documentation":"<p>Specifies the component type that this component type extends.</p>"
+        },
+        "functions":{
+          "shape":"FunctionsRequest",
+          "documentation":"<p>An object that maps strings to the functions in the component type. Each string in the mapping must be unique to this object.</p>"
+        },
+        "propertyGroups":{
+          "shape":"PropertyGroupsRequest",
+          "documentation":"<p>The property groups.</p>"
+        },
+        "componentTypeName":{
+          "shape":"ComponentTypeName",
+          "documentation":"<p>The component type name.</p>"
+        },
+        "compositeComponentTypes":{
+          "shape":"CompositeComponentTypesRequest",
+          "documentation":"<p>This is an object that maps strings to <code>compositeComponentTypes</code> of the <code>componentType</code>. <code>CompositeComponentType</code> is referenced by <code>componentTypeId</code>.</p>"
+        }
+      }
+    },
+    "UpdateComponentTypeResponse":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "componentTypeId",
+        "state"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the component type.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the component type.</p>"
+        },
+        "componentTypeId":{
+          "shape":"ComponentTypeId",
+          "documentation":"<p>The ID of the component type.</p>"
+        },
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the component type.</p>"
+        }
+      }
+    },
+    "UpdateEntityRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "entityId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the entity.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "entityId":{
+          "shape":"EntityId",
+          "documentation":"<p>The ID of the entity.</p>",
+          "location":"uri",
+          "locationName":"entityId"
+        },
+        "entityName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the entity.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the entity.</p>"
+        },
+        "componentUpdates":{
+          "shape":"ComponentUpdatesMapRequest",
+          "documentation":"<p>An object that maps strings to the component updates in the request. Each string in the mapping must be unique to this object.</p>"
+        },
+        "compositeComponentUpdates":{
+          "shape":"CompositeComponentUpdatesMapRequest",
+          "documentation":"<p>This is an object that maps strings to <code>compositeComponent</code> updates in the request. Each key of the map represents the <code>componentPath</code> of the <code>compositeComponent</code>.</p>"
+        },
+        "parentEntityUpdate":{
+          "shape":"ParentEntityUpdateRequest",
+          "documentation":"<p>An object that describes the update request for a parent entity.</p>"
+        }
+      }
+    },
+    "UpdateEntityResponse":{
+      "type":"structure",
+      "required":[
+        "updateDateTime",
+        "state"
+      ],
+      "members":{
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the entity was last updated.</p>"
+        },
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The current state of the entity update.</p>"
+        }
+      }
+    },
+    "UpdatePricingPlanRequest":{
+      "type":"structure",
+      "required":["pricingMode"],
+      "members":{
+        "pricingMode":{
+          "shape":"PricingMode",
+          "documentation":"<p>The pricing mode.</p>"
+        },
+        "bundleNames":{
+          "shape":"PricingBundles",
+          "documentation":"<p>The bundle names.</p>"
+        }
+      }
+    },
+    "UpdatePricingPlanResponse":{
+      "type":"structure",
+      "required":["currentPricingPlan"],
+      "members":{
+        "currentPricingPlan":{
+          "shape":"PricingPlan",
+          "documentation":"<p>Update the current pricing plan.</p>"
+        },
+        "pendingPricingPlan":{
+          "shape":"PricingPlan",
+          "documentation":"<p>Update the pending pricing plan.</p>"
+        }
+      }
+    },
+    "UpdateReason":{
+      "type":"string",
+      "enum":[
+        "DEFAULT",
+        "PRICING_TIER_UPDATE",
+        "ENTITY_COUNT_UPDATE",
+        "PRICING_MODE_UPDATE",
+        "OVERWRITTEN"
+      ]
+    },
+    "UpdateSceneRequest":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "sceneId"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace that contains the scene.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "sceneId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the scene.</p>",
+          "location":"uri",
+          "locationName":"sceneId"
+        },
+        "contentLocation":{
+          "shape":"S3Url",
+          "documentation":"<p>The relative path that specifies the location of the content definition file.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of this scene.</p>"
+        },
+        "capabilities":{
+          "shape":"SceneCapabilities",
+          "documentation":"<p>A list of capabilities that the scene uses to render.</p>"
+        },
+        "sceneMetadata":{
+          "shape":"SceneMetadataMap",
+          "documentation":"<p>The scene metadata.</p>"
+        }
+      }
+    },
+    "UpdateSceneResponse":{
+      "type":"structure",
+      "required":["updateDateTime"],
+      "members":{
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the scene was last updated.</p>"
+        }
+      }
+    },
+    "UpdateWorkspaceRequest":{
+      "type":"structure",
+      "required":["workspaceId"],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>",
+          "location":"uri",
+          "locationName":"workspaceId"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the workspace.</p>"
+        },
+        "role":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the execution role associated with the workspace.</p>"
+        },
+        "s3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The ARN of the S3 bucket where resources associated with the workspace are stored.</p>"
+        }
+      }
+    },
+    "UpdateWorkspaceResponse":{
+      "type":"structure",
+      "required":["updateDateTime"],
+      "members":{
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time of the current update.</p>"
+        }
+      }
+    },
+    "Uuid":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Failed</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Value":{
+      "type":"string",
+      "pattern":".*"
+    },
+    "Values":{
+      "type":"list",
+      "member":{"shape":"PropertyValue"}
+    },
+    "WorkspaceDeleteMessage":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":".*"
+    },
+    "WorkspaceSummaries":{
+      "type":"list",
+      "member":{"shape":"WorkspaceSummary"}
+    },
+    "WorkspaceSummary":{
+      "type":"structure",
+      "required":[
+        "workspaceId",
+        "arn",
+        "creationDateTime",
+        "updateDateTime"
+      ],
+      "members":{
+        "workspaceId":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the workspace.</p>"
+        },
+        "arn":{
+          "shape":"TwinMakerArn",
+          "documentation":"<p>The ARN of the workspace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the workspace.</p>"
+        },
+        "linkedServices":{
+          "shape":"LinkedServices",
+          "documentation":"<p>A list of services that are linked to the workspace.</p>"
+        },
+        "creationDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the workspace was created.</p>"
+        },
+        "updateDateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time when the workspace was last updated.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about a workspace.</p>"
+    }
+  },
+  "documentation":"<p>IoT TwinMaker is a service with which you can build operational digital twins of physical systems. IoT TwinMaker overlays measurements and analysis from real-world sensors, cameras, and enterprise applications so you can create data visualizations to monitor your physical factory, building, or industrial plant. You can use this real-world data to monitor operations and diagnose and repair errors.</p>"
+}

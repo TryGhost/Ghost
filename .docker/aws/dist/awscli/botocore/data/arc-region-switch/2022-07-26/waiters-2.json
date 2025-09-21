@@ -1,0 +1,57 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "PlanEvaluationStatusPassed" : {
+      "delay" : 30,
+      "maxAttempts" : 5,
+      "operation" : "GetPlanEvaluationStatus",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "evaluationState",
+        "state" : "success",
+        "expected" : "passed"
+      }, {
+        "matcher" : "path",
+        "argument" : "evaluationState",
+        "state" : "failure",
+        "expected" : "actionRequired"
+      }, {
+        "matcher" : "path",
+        "argument" : "evaluationState",
+        "state" : "retry",
+        "expected" : "pendingEvaluation"
+      } ]
+    },
+    "PlanExecutionCompleted" : {
+      "delay" : 30,
+      "maxAttempts" : 5,
+      "operation" : "GetPlanExecution",
+      "acceptors" : [ {
+        "matcher" : "path",
+        "argument" : "executionState",
+        "state" : "success",
+        "expected" : "completed"
+      }, {
+        "matcher" : "path",
+        "argument" : "executionState",
+        "state" : "success",
+        "expected" : "completedWithExceptions"
+      }, {
+        "matcher" : "path",
+        "argument" : "executionState",
+        "state" : "failure",
+        "expected" : "failed"
+      }, {
+        "matcher" : "path",
+        "argument" : "executionState",
+        "state" : "failure",
+        "expected" : "canceled"
+      }, {
+        "matcher" : "path",
+        "argument" : "executionState",
+        "state" : "failure",
+        "expected" : "planExecutionTimedOut"
+      } ]
+    }
+  }
+}

@@ -1,0 +1,993 @@
+{
+  "version": "1.0",
+  "resources": {
+    "EC2InstanceLimit": {
+      "operation": "DescribeEC2InstanceLimits",
+      "resourceIdentifier": {
+        "EC2InstanceType": "EC2InstanceLimits[].EC2InstanceType"
+      }
+    },
+    "FleetAttribute": {
+      "operation": "DescribeFleetAttributes",
+      "resourceIdentifier": {
+        "NewGameSessionProtectionPolicy": "FleetAttributes[].NewGameSessionProtectionPolicy",
+        "ResourceCreationLimitPolicy": "FleetAttributes[].ResourceCreationLimitPolicy",
+        "MetricGroups": "FleetAttributes[].MetricGroups"
+      }
+    },
+    "GameSessionDetail": {
+      "operation": "DescribeGameSessionDetails",
+      "resourceIdentifier": {
+        "ProtectionPolicy": "GameSessionDetails[].ProtectionPolicy"
+      }
+    },
+    "GameSessionQueue": {
+      "operation": "DescribeGameSessionQueues",
+      "resourceIdentifier": {
+        "TimeoutInSeconds": "GameSessionQueues[].TimeoutInSeconds",
+        "PlayerLatencyPolicies": "GameSessionQueues[].PlayerLatencyPolicies",
+        "Destinations": "GameSessionQueues[].Destinations"
+      }
+    },
+    "GameSession": {
+      "operation": "DescribeGameSessions",
+      "resourceIdentifier": {
+        "MaximumPlayerSessionCount": "GameSessions[].MaximumPlayerSessionCount",
+        "PlayerSessionCreationPolicy": "GameSessions[].PlayerSessionCreationPolicy"
+      }
+    },
+    "MatchmakingConfiguration": {
+      "operation": "DescribeMatchmakingConfigurations",
+      "resourceIdentifier": {
+        "GameSessionQueueArns": "Configurations[].GameSessionQueueArns",
+        "RequestTimeoutSeconds": "Configurations[].RequestTimeoutSeconds",
+        "AcceptanceTimeoutSeconds": "Configurations[].AcceptanceTimeoutSeconds",
+        "AcceptanceRequired": "Configurations[].AcceptanceRequired",
+        "NotificationTarget": "Configurations[].NotificationTarget",
+        "AdditionalPlayerCount": "Configurations[].AdditionalPlayerCount",
+        "CustomEventData": "Configurations[].CustomEventData",
+        "GameProperties": "Configurations[].GameProperties",
+        "GameSessionData": "Configurations[].GameSessionData"
+      }
+    },
+    "MatchmakingRuleSet": {
+      "operation": "DescribeMatchmakingRuleSets",
+      "resourceIdentifier": {
+        "RuleSetName": "RuleSets[].RuleSetName",
+        "RuleSetBody": "RuleSets[].RuleSetBody"
+      }
+    },
+    "PlayerSession": {
+      "operation": "DescribePlayerSessions",
+      "resourceIdentifier": {
+        "PlayerSessionId": "PlayerSessions[].PlayerSessionId",
+        "PlayerId": "PlayerSessions[].PlayerId",
+        "GameSessionId": "PlayerSessions[].GameSessionId"
+      }
+    },
+    "VpcPeeringAuthorization": {
+      "operation": "DescribeVpcPeeringAuthorizations",
+      "resourceIdentifier": {
+        "GameLiftAwsAccountId": "VpcPeeringAuthorizations[].GameLiftAwsAccountId"
+      }
+    },
+    "VpcPeeringConnection": {
+      "operation": "DescribeVpcPeeringConnections",
+      "resourceIdentifier": {
+        "VpcPeeringConnectionId": "VpcPeeringConnections[].VpcPeeringConnectionId",
+        "PeerVpcId": "VpcPeeringConnections[].PeerVpcId"
+      }
+    },
+    "Aliase": {
+      "operation": "ListAliases",
+      "resourceIdentifier": {
+        "AliasId": "Aliases[].AliasId",
+        "Description": "Aliases[].Description",
+        "RoutingStrategy": "Aliases[].RoutingStrategy"
+      }
+    },
+    "Build": {
+      "operation": "ListBuilds",
+      "resourceIdentifier": {
+        "BuildId": "Builds[].BuildId",
+        "Name": "Builds[].Name",
+        "Version": "Builds[].Version",
+        "Status": "Builds[].Status"
+      }
+    },
+    "Fleet": {
+      "operation": "ListFleets",
+      "resourceIdentifier": {
+        "FleetId": "FleetIds[]"
+      }
+    }
+  },
+  "operations": {
+    "AcceptMatch": {
+      "PlayerIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "PlayerId"
+          }
+        ]
+      }
+    },
+    "DeleteAlias": {
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "DeleteBuild": {
+      "BuildId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "BuildId"
+          }
+        ]
+      }
+    },
+    "DeleteFleet": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DeleteGameSessionQueue": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteMatchmakingConfiguration": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteScalingPolicy": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcPeeringAuthorization": {
+      "GameLiftAwsAccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringAuthorization",
+            "resourceIdentifier": "GameLiftAwsAccountId"
+          }
+        ]
+      },
+      "PeerVpcId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "PeerVpcId"
+          }
+        ]
+      }
+    },
+    "DeleteVpcPeeringConnection": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "VpcPeeringConnectionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "VpcPeeringConnection",
+            "resourceIdentifier": "VpcPeeringConnectionId"
+          }
+        ]
+      }
+    },
+    "DescribeAlias": {
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "DescribeBuild": {
+      "BuildId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "BuildId"
+          }
+        ]
+      }
+    },
+    "DescribeEC2InstanceLimits": {
+      "EC2InstanceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EC2InstanceLimit",
+            "resourceIdentifier": "EC2InstanceType"
+          }
+        ]
+      }
+    },
+    "DescribeFleetAttributes": {
+      "FleetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFleetCapacity": {
+      "FleetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFleetEvents": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFleetPortSettings": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeFleetUtilization": {
+      "FleetIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeGameSessionDetails": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "GameSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "GameSessionId"
+          }
+        ]
+      },
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "DescribeGameSessions": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "GameSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "GameSessionId"
+          }
+        ]
+      },
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "DescribeInstances": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeMatchmakingConfigurations": {
+      "RuleSetName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingRuleSet",
+            "resourceIdentifier": "RuleSetName"
+          }
+        ]
+      }
+    },
+    "DescribePlayerSessions": {
+      "GameSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "GameSessionId"
+          }
+        ]
+      },
+      "PlayerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "PlayerId"
+          }
+        ]
+      },
+      "PlayerSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "PlayerSessionId"
+          }
+        ]
+      }
+    },
+    "DescribeRuntimeConfiguration": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeScalingPolicies": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "DescribeVpcPeeringConnections": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "GetGameSessionLogUrl": {
+      "GameSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "GameSessionId"
+          }
+        ]
+      }
+    },
+    "GetInstanceAccess": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "ListAliases": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListBuilds": {
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    },
+    "ListFleets": {
+      "BuildId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "BuildId"
+          }
+        ]
+      }
+    },
+    "PutScalingPolicy": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "RequestUploadCredentials": {
+      "BuildId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "BuildId"
+          }
+        ]
+      }
+    },
+    "ResolveAlias": {
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "SearchGameSessions": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      }
+    },
+    "StartFleetActions": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "StartGameSessionPlacement": {
+      "GameProperties": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "GameProperties"
+          }
+        ]
+      },
+      "MaximumPlayerSessionCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSession",
+            "resourceIdentifier": "MaximumPlayerSessionCount"
+          }
+        ]
+      },
+      "GameSessionData": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "GameSessionData"
+          }
+        ]
+      }
+    },
+    "StopFleetActions": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "UpdateAlias": {
+      "AliasId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "AliasId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "RoutingStrategy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "RoutingStrategy"
+          }
+        ]
+      }
+    },
+    "UpdateBuild": {
+      "BuildId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "BuildId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Version": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Version"
+          }
+        ]
+      }
+    },
+    "UpdateFleetAttributes": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "NewGameSessionProtectionPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FleetAttribute",
+            "resourceIdentifier": "NewGameSessionProtectionPolicy"
+          }
+        ]
+      },
+      "ResourceCreationLimitPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FleetAttribute",
+            "resourceIdentifier": "ResourceCreationLimitPolicy"
+          }
+        ]
+      },
+      "MetricGroups": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FleetAttribute",
+            "resourceIdentifier": "MetricGroups"
+          }
+        ]
+      }
+    },
+    "UpdateFleetCapacity": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "UpdateFleetPortSettings": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "UpdateGameSession": {
+      "GameSessionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlayerSession",
+            "resourceIdentifier": "GameSessionId"
+          }
+        ]
+      },
+      "MaximumPlayerSessionCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSession",
+            "resourceIdentifier": "MaximumPlayerSessionCount"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "PlayerSessionCreationPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSession",
+            "resourceIdentifier": "PlayerSessionCreationPolicy"
+          }
+        ]
+      },
+      "ProtectionPolicy": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSessionDetail",
+            "resourceIdentifier": "ProtectionPolicy"
+          }
+        ]
+      }
+    },
+    "UpdateGameSessionQueue": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "TimeoutInSeconds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSessionQueue",
+            "resourceIdentifier": "TimeoutInSeconds"
+          }
+        ]
+      },
+      "PlayerLatencyPolicies": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSessionQueue",
+            "resourceIdentifier": "PlayerLatencyPolicies"
+          }
+        ]
+      },
+      "Destinations": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GameSessionQueue",
+            "resourceIdentifier": "Destinations"
+          }
+        ]
+      }
+    },
+    "UpdateMatchmakingConfiguration": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Build",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Aliase",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "GameSessionQueueArns": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "GameSessionQueueArns"
+          }
+        ]
+      },
+      "RequestTimeoutSeconds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "RequestTimeoutSeconds"
+          }
+        ]
+      },
+      "AcceptanceTimeoutSeconds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "AcceptanceTimeoutSeconds"
+          }
+        ]
+      },
+      "AcceptanceRequired": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "AcceptanceRequired"
+          }
+        ]
+      },
+      "RuleSetName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingRuleSet",
+            "resourceIdentifier": "RuleSetName"
+          }
+        ]
+      },
+      "NotificationTarget": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "NotificationTarget"
+          }
+        ]
+      },
+      "AdditionalPlayerCount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "AdditionalPlayerCount"
+          }
+        ]
+      },
+      "CustomEventData": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "CustomEventData"
+          }
+        ]
+      },
+      "GameProperties": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "GameProperties"
+          }
+        ]
+      },
+      "GameSessionData": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingConfiguration",
+            "resourceIdentifier": "GameSessionData"
+          }
+        ]
+      }
+    },
+    "UpdateRuntimeConfiguration": {
+      "FleetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Fleet",
+            "resourceIdentifier": "FleetId"
+          }
+        ]
+      }
+    },
+    "ValidateMatchmakingRuleSet": {
+      "RuleSetBody": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MatchmakingRuleSet",
+            "resourceIdentifier": "RuleSetBody"
+          }
+        ]
+      }
+    }
+  }
+}

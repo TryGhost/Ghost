@@ -1,0 +1,16 @@
+{
+  "pagination": {
+    "GetFreeTierUsage": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "freeTierUsages"
+    },
+    "ListAccountActivities": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "activities"
+    }
+  }
+}

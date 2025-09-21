@@ -1,0 +1,268 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Cluster": {
+      "operation": "DescribeClusters",
+      "resourceIdentifier": {
+        "ClusterName": "Clusters[].ClusterName",
+        "NodeIdsToRemove": "Clusters[].NodeIdsToRemove",
+        "PreferredMaintenanceWindow": "Clusters[].PreferredMaintenanceWindow",
+        "SecurityGroups": "Clusters[].SecurityGroups"
+      }
+    },
+    "DefaultParameter": {
+      "operation": "DescribeDefaultParameters",
+      "resourceIdentifier": {
+        "Source": "Parameters[].Source"
+      }
+    },
+    "Event": {
+      "operation": "DescribeEvents",
+      "resourceIdentifier": {
+        "SourceName": "Events[].SourceName",
+        "SourceType": "Events[].SourceType"
+      }
+    },
+    "ParameterGroup": {
+      "operation": "DescribeParameterGroups",
+      "resourceIdentifier": {
+        "ParameterGroupName": "ParameterGroups[].ParameterGroupName"
+      }
+    },
+    "SubnetGroup": {
+      "operation": "DescribeSubnetGroups",
+      "resourceIdentifier": {
+        "SubnetGroupName": "SubnetGroups[].SubnetGroupName",
+        "Description": "SubnetGroups[].Description"
+      }
+    }
+  },
+  "operations": {
+    "DecreaseReplicationFactor": {
+      "ClusterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      },
+      "NodeIdsToRemove": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "NodeIdsToRemove"
+          }
+        ]
+      }
+    },
+    "DeleteCluster": {
+      "ClusterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      }
+    },
+    "DeleteParameterGroup": {
+      "ParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ParameterGroup",
+            "resourceIdentifier": "ParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DeleteSubnetGroup": {
+      "SubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubnetGroup",
+            "resourceIdentifier": "SubnetGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeClusters": {
+      "ClusterNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      }
+    },
+    "DescribeEvents": {
+      "SourceName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceName"
+          }
+        ]
+      },
+      "SourceType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Event",
+            "resourceIdentifier": "SourceType"
+          }
+        ]
+      }
+    },
+    "DescribeParameterGroups": {
+      "ParameterGroupNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ParameterGroup",
+            "resourceIdentifier": "ParameterGroupName"
+          }
+        ]
+      }
+    },
+    "DescribeParameters": {
+      "ParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ParameterGroup",
+            "resourceIdentifier": "ParameterGroupName"
+          }
+        ]
+      },
+      "Source": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DefaultParameter",
+            "resourceIdentifier": "Source"
+          }
+        ]
+      }
+    },
+    "DescribeSubnetGroups": {
+      "SubnetGroupNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubnetGroup",
+            "resourceIdentifier": "SubnetGroupName"
+          }
+        ]
+      }
+    },
+    "IncreaseReplicationFactor": {
+      "ClusterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      }
+    },
+    "RebootNode": {
+      "ClusterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      }
+    },
+    "UpdateCluster": {
+      "ClusterName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubnetGroup",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "PreferredMaintenanceWindow": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "PreferredMaintenanceWindow"
+          }
+        ]
+      },
+      "ParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ParameterGroup",
+            "resourceIdentifier": "ParameterGroupName"
+          }
+        ]
+      },
+      "SecurityGroupIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "SecurityGroups"
+          }
+        ]
+      }
+    },
+    "UpdateParameterGroup": {
+      "ParameterGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ParameterGroup",
+            "resourceIdentifier": "ParameterGroupName"
+          }
+        ]
+      }
+    },
+    "UpdateSubnetGroup": {
+      "SubnetGroupName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubnetGroup",
+            "resourceIdentifier": "SubnetGroupName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubnetGroup",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      }
+    }
+  }
+}

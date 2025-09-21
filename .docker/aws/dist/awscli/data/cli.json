@@ -1,0 +1,90 @@
+{
+    "description": "The AWS Command Line Interface is a unified tool to manage your AWS services.",
+    "synopsis": "aws [options] <command> <subcommand> [parameters]",
+    "help_usage": "Use *aws command help* for information on a specific command. Use *aws help topics* to view a list of available help topics. The synopsis for each command shows its parameters and their usage. Optional parameters are shown in square brackets.",
+    "options": {
+        "debug": {
+            "action": "store_true",
+            "help": "<p>Turn on debug logging.</p>"
+        },
+        "endpoint-url": {
+            "help": "<p>Override command's default URL with the given URL.</p>"
+        },
+        "no-verify-ssl": {
+            "action": "store_false",
+            "dest": "verify_ssl",
+            "help": "<p>By default, the AWS CLI uses SSL when communicating with AWS services.  For each SSL connection, the AWS CLI will verify SSL certificates.  This option overrides the default behavior of verifying SSL certificates.</p>"
+        },
+        "no-paginate": {
+            "action": "store_false",
+            "help": "<p>Disable automatic pagination. If automatic pagination is disabled, the AWS CLI will only make one call, for the first page of results.</p>",
+            "dest": "paginate"
+        },
+        "output": {
+            "choices": [
+                "json",
+                "text",
+                "table",
+                "yaml",
+                "yaml-stream"
+            ],
+	        "help": "<p>The formatting style for command output.</p>"
+        },
+        "query": {
+            "help": "<p>A JMESPath query to use in filtering the response data.</p>"
+        },
+        "profile": {
+            "help": "<p>Use a specific profile from your credential file.</p>"
+        },
+        "region": {
+	        "help": "<p>The region to use.  Overrides config/env settings.</p>"
+        },
+        "version": {
+            "action": "version",
+            "help": "<p>Display the version of this tool.</p>"
+        },
+        "color": {
+            "choices": ["on", "off", "auto"],
+            "default": "auto",
+            "help": "<p>Turn on/off color output.</p>"
+        },
+        "no-sign-request": {
+            "action": "store_false",
+            "dest": "sign_request",
+            "help": "<p>Do not sign requests.  Credentials will not be loaded if this argument is provided.</p>"
+        },
+        "ca-bundle": {
+            "dest": "ca_bundle",
+            "help": "<p>The CA certificate bundle to use when verifying SSL certificates. Overrides config/env settings.</p>"
+        },
+        "cli-read-timeout": {
+            "dest": "read_timeout",
+            "type": "int",
+            "help": "<p>The maximum socket read time in seconds. If the value is set to 0, the socket read will be blocking and not timeout. The default value is 60 seconds.</p>"
+        },
+        "cli-connect-timeout": {
+            "dest": "connect_timeout",
+            "type": "int",
+            "help": "<p>The maximum socket connect time in seconds. If the value is set to 0, the socket connect will be blocking and not timeout. The default value is 60 seconds.</p>"
+        },
+        "cli-binary-format": {
+            "choices": [
+                "base64",
+                "raw-in-base64-out"
+            ],
+            "help": "<p>The formatting style to be used for binary blobs. The default format is base64. The base64 format expects binary blobs to be provided as a base64 encoded string. The raw-in-base64-out format preserves compatibility with AWS CLI V1 behavior and binary values must be passed literally. When providing contents from a file that map to a binary blob ``fileb://`` will always be treated as binary and use the file contents directly regardless of the ``cli-binary-format`` setting. When using ``file://`` the file contents will need to properly formatted for the configured ``cli-binary-format``.</p>"
+        },
+        "no-cli-pager": {
+            "action": "store_true",
+            "help": "<p>Disable cli pager for output.</p>"
+        },
+        "cli-auto-prompt": {
+            "action": "store_true",
+            "help": "<p>Automatically prompt for CLI input parameters.</p>"
+        },
+        "no-cli-auto-prompt": {
+            "action": "store_true",
+            "help": "<p>Disable automatically prompt for CLI input parameters.</p>"
+        }
+    }
+}

@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Application": {
+      "operation": "ListApplications",
+      "resourceIdentifier": {
+        "ApplicationId": "Applications[].ApplicationId",
+        "Author": "Applications[].Author",
+        "Description": "Applications[].Description",
+        "HomePageUrl": "Applications[].HomePageUrl",
+        "Labels": "Applications[].Labels"
+      }
+    }
+  },
+  "operations": {
+    "DeleteApplication": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      }
+    },
+    "GetApplication": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      }
+    },
+    "GetApplicationPolicy": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      }
+    },
+    "ListApplicationVersions": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      }
+    },
+    "PutApplicationPolicy": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      }
+    },
+    "UpdateApplication": {
+      "ApplicationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "ApplicationId"
+          }
+        ]
+      },
+      "Author": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "Author"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "HomePageUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "HomePageUrl"
+          }
+        ]
+      },
+      "Labels": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Application",
+            "resourceIdentifier": "Labels"
+          }
+        ]
+      }
+    }
+  }
+}

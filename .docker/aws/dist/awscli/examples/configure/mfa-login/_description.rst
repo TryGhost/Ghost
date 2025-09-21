@@ -1,0 +1,3 @@
+This command gets temporary AWS security credentials for use with the AWS CLI and SDK, and places them in an AWS profile. It will use a long-lived IAM user access key, and the MFA code from either a virtual TOTP MFA device, or a hardware OTP authenticator to call STS get-session-token to get the temporary credentials. If no default profile exists, the command will prompt you to provide your AWS credentials first.
+
+Note: This command currently supports only hardware or software based one-time password (OTP) authenticators. Passkeys and U2F devices are not currently supported.

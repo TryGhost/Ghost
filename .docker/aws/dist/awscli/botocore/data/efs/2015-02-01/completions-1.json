@@ -1,0 +1,157 @@
+{
+  "version": "1.0",
+  "resources": {
+    "FileSystem": {
+      "operation": "DescribeFileSystems",
+      "resourceIdentifier": {
+        "CreationToken": "FileSystems[].CreationToken",
+        "ThroughputMode": "FileSystems[].ThroughputMode",
+        "ProvisionedThroughputInMibps": "FileSystems[].ProvisionedThroughputInMibps"
+      }
+    },
+    "MountTarget": {
+      "operation": "DescribeMountTargets",
+      "resourceIdentifier": {
+        "MountTargetId": "MountTargets[].MountTargetId",
+        "FileSystemId": "MountTargets[].FileSystemId"
+      }
+    }
+  },
+  "operations": {
+    "DeleteFileSystem": {
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      }
+    },
+    "DeleteMountTarget": {
+      "MountTargetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "MountTargetId"
+          }
+        ]
+      }
+    },
+    "DeleteTags": {
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      }
+    },
+    "DescribeFileSystems": {
+      "CreationToken": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileSystem",
+            "resourceIdentifier": "CreationToken"
+          }
+        ]
+      },
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      }
+    },
+    "DescribeMountTargetSecurityGroups": {
+      "MountTargetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "MountTargetId"
+          }
+        ]
+      }
+    },
+    "DescribeMountTargets": {
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      },
+      "MountTargetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "MountTargetId"
+          }
+        ]
+      }
+    },
+    "DescribeTags": {
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      }
+    },
+    "ModifyMountTargetSecurityGroups": {
+      "MountTargetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "MountTargetId"
+          }
+        ]
+      }
+    },
+    "UpdateFileSystem": {
+      "FileSystemId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MountTarget",
+            "resourceIdentifier": "FileSystemId"
+          }
+        ]
+      },
+      "ThroughputMode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileSystem",
+            "resourceIdentifier": "ThroughputMode"
+          }
+        ]
+      },
+      "ProvisionedThroughputInMibps": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileSystem",
+            "resourceIdentifier": "ProvisionedThroughputInMibps"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Case": {
+      "operation": "DescribeCases",
+      "resourceIdentifier": {
+        "caseId": "cases[].caseId",
+        "displayId": "cases[].displayId",
+        "ccEmailAddresses": "cases[].ccEmailAddresses",
+        "language": "cases[].language"
+      }
+    }
+  },
+  "operations": {
+    "AddCommunicationToCase": {
+      "caseId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "caseId"
+          }
+        ]
+      },
+      "ccEmailAddresses": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "ccEmailAddresses"
+          }
+        ]
+      }
+    },
+    "DescribeCases": {
+      "displayId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "displayId"
+          }
+        ]
+      },
+      "language": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "language"
+          }
+        ]
+      }
+    },
+    "DescribeCommunications": {
+      "caseId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "caseId"
+          }
+        ]
+      }
+    },
+    "DescribeServices": {
+      "language": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "language"
+          }
+        ]
+      }
+    },
+    "DescribeSeverityLevels": {
+      "language": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "language"
+          }
+        ]
+      }
+    },
+    "DescribeTrustedAdvisorCheckResult": {
+      "language": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "language"
+          }
+        ]
+      }
+    },
+    "DescribeTrustedAdvisorChecks": {
+      "language": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "language"
+          }
+        ]
+      }
+    },
+    "ResolveCase": {
+      "caseId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Case",
+            "resourceIdentifier": "caseId"
+          }
+        ]
+      }
+    }
+  }
+}

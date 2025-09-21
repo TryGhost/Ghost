@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "resources": {
+    "AWSServiceAccessForOrganization": {
+      "operation": "ListAWSServiceAccessForOrganization",
+      "resourceIdentifier": {
+        "ServicePrincipal": "EnabledServicePrincipals[].ServicePrincipal"
+      }
+    },
+    "CreateAccountStatu": {
+      "operation": "ListCreateAccountStatus",
+      "resourceIdentifier": {
+        "AccountId": "CreateAccountStatuses[].AccountId"
+      }
+    },
+    "HandshakesForOrganization": {
+      "operation": "ListHandshakesForOrganization",
+      "resourceIdentifier": {
+        "State": "Handshakes[].State"
+      }
+    },
+    "Root": {
+      "operation": "ListRoots",
+      "resourceIdentifier": {
+        "Name": "Roots[].Name",
+        "PolicyTypes": "Roots[].PolicyTypes"
+      }
+    }
+  },
+  "operations": {
+    "DescribeAccount": {
+      "AccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CreateAccountStatu",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      }
+    },
+    "DisableAWSServiceAccess": {
+      "ServicePrincipal": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AWSServiceAccessForOrganization",
+            "resourceIdentifier": "ServicePrincipal"
+          }
+        ]
+      }
+    },
+    "DisablePolicyType": {
+      "PolicyType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Root",
+            "resourceIdentifier": "PolicyTypes"
+          }
+        ]
+      }
+    },
+    "EnableAWSServiceAccess": {
+      "ServicePrincipal": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "AWSServiceAccessForOrganization",
+            "resourceIdentifier": "ServicePrincipal"
+          }
+        ]
+      }
+    },
+    "EnablePolicyType": {
+      "PolicyType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Root",
+            "resourceIdentifier": "PolicyTypes"
+          }
+        ]
+      }
+    },
+    "ListCreateAccountStatus": {
+      "States": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HandshakesForOrganization",
+            "resourceIdentifier": "State"
+          }
+        ]
+      }
+    },
+    "MoveAccount": {
+      "AccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CreateAccountStatu",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      }
+    },
+    "RemoveAccountFromOrganization": {
+      "AccountId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CreateAccountStatu",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      }
+    },
+    "UpdateOrganizationalUnit": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Root",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdatePolicy": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Root",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    }
+  }
+}

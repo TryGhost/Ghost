@@ -1,0 +1,3845 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-01-01",
+    "endpointPrefix":"memory-db",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"Amazon MemoryDB",
+    "serviceFullName":"Amazon MemoryDB",
+    "serviceId":"MemoryDB",
+    "signatureVersion":"v4",
+    "signingName":"memorydb",
+    "targetPrefix":"AmazonMemoryDB",
+    "uid":"memorydb-2021-01-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "BatchUpdateCluster":{
+      "name":"BatchUpdateCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchUpdateClusterRequest"},
+      "output":{"shape":"BatchUpdateClusterResponse"},
+      "errors":[
+        {"shape":"ServiceUpdateNotFoundFault"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Apply the service update to a list of clusters supplied. For more information on service updates and applying them, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/managing-updates.html#applying-updates\">Applying the service updates</a>.</p>"
+    },
+    "CopySnapshot":{
+      "name":"CopySnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CopySnapshotRequest"},
+      "output":{"shape":"CopySnapshotResponse"},
+      "errors":[
+        {"shape":"SnapshotAlreadyExistsFault"},
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"SnapshotQuotaExceededFault"},
+        {"shape":"InvalidSnapshotStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Makes a copy of an existing snapshot.</p>"
+    },
+    "CreateACL":{
+      "name":"CreateACL",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateACLRequest"},
+      "output":{"shape":"CreateACLResponse"},
+      "errors":[
+        {"shape":"UserNotFoundFault"},
+        {"shape":"DuplicateUserNameFault"},
+        {"shape":"ACLAlreadyExistsFault"},
+        {"shape":"DefaultUserRequired"},
+        {"shape":"ACLQuotaExceededFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Creates an Access Control List. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/clusters.acls.html\">Authenticating users with Access Contol Lists (ACLs)</a>.</p>"
+    },
+    "CreateCluster":{
+      "name":"CreateCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateClusterRequest"},
+      "output":{"shape":"CreateClusterResponse"},
+      "errors":[
+        {"shape":"ClusterAlreadyExistsFault"},
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"ClusterQuotaForCustomerExceededFault"},
+        {"shape":"NodeQuotaForClusterExceededFault"},
+        {"shape":"NodeQuotaForCustomerExceededFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"InsufficientClusterCapacityFault"},
+        {"shape":"InvalidVPCNetworkStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"ShardsPerClusterQuotaExceededFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidCredentialsException"},
+        {"shape":"TagQuotaPerResourceExceeded"},
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"InvalidACLStateFault"},
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"InvalidMultiRegionClusterStateFault"}
+      ],
+      "documentation":"<p>Creates a cluster. All nodes in the cluster run the same protocol-compliant engine software.</p>"
+    },
+    "CreateMultiRegionCluster":{
+      "name":"CreateMultiRegionCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateMultiRegionClusterRequest"},
+      "output":{"shape":"CreateMultiRegionClusterResponse"},
+      "errors":[
+        {"shape":"MultiRegionClusterAlreadyExistsFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"MultiRegionParameterGroupNotFoundFault"},
+        {"shape":"ClusterQuotaForCustomerExceededFault"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Creates a new multi-Region cluster.</p>"
+    },
+    "CreateParameterGroup":{
+      "name":"CreateParameterGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateParameterGroupRequest"},
+      "output":{"shape":"CreateParameterGroupResponse"},
+      "errors":[
+        {"shape":"ParameterGroupQuotaExceededFault"},
+        {"shape":"ParameterGroupAlreadyExistsFault"},
+        {"shape":"InvalidParameterGroupStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"TagQuotaPerResourceExceeded"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Creates a new MemoryDB parameter group. A parameter group is a collection of parameters and their values that are applied to all of the nodes in any cluster. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/parametergroups.html\">Configuring engine parameters using parameter groups</a>. </p>"
+    },
+    "CreateSnapshot":{
+      "name":"CreateSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSnapshotRequest"},
+      "output":{"shape":"CreateSnapshotResponse"},
+      "errors":[
+        {"shape":"SnapshotAlreadyExistsFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"SnapshotQuotaExceededFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Creates a copy of an entire cluster at a specific moment in time.</p>"
+    },
+    "CreateSubnetGroup":{
+      "name":"CreateSubnetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSubnetGroupRequest"},
+      "output":{"shape":"CreateSubnetGroupResponse"},
+      "errors":[
+        {"shape":"SubnetGroupAlreadyExistsFault"},
+        {"shape":"SubnetGroupQuotaExceededFault"},
+        {"shape":"SubnetQuotaExceededFault"},
+        {"shape":"InvalidSubnet"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"SubnetNotAllowedFault"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Creates a subnet group. A subnet group is a collection of subnets (typically private) that you can designate for your clusters running in an Amazon Virtual Private Cloud (VPC) environment. When you create a cluster in an Amazon VPC, you must specify a subnet group. MemoryDB uses that subnet group to choose a subnet and IP addresses within that subnet to associate with your nodes. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/subnetgroups.html\">Subnets and subnet groups</a>.</p>"
+    },
+    "CreateUser":{
+      "name":"CreateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUserRequest"},
+      "output":{"shape":"CreateUserResponse"},
+      "errors":[
+        {"shape":"UserAlreadyExistsFault"},
+        {"shape":"UserQuotaExceededFault"},
+        {"shape":"DuplicateUserNameFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"TagQuotaPerResourceExceeded"}
+      ],
+      "documentation":"<p>Creates a MemoryDB user. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/clusters.acls.html\">Authenticating users with Access Contol Lists (ACLs)</a>.</p>"
+    },
+    "DeleteACL":{
+      "name":"DeleteACL",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteACLRequest"},
+      "output":{"shape":"DeleteACLResponse"},
+      "errors":[
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"InvalidACLStateFault"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Deletes an Access Control List. The ACL must first be disassociated from the cluster before it can be deleted. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/clusters.acls.html\">Authenticating users with Access Contol Lists (ACLs)</a>.</p>"
+    },
+    "DeleteCluster":{
+      "name":"DeleteCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteClusterRequest"},
+      "output":{"shape":"DeleteClusterResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"SnapshotAlreadyExistsFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Deletes a cluster. It also deletes all associated nodes and node endpoints.</p> <note> <p> <code>CreateSnapshot</code> permission is required to create a final snapshot. Without this permission, the API call will fail with an <code>Access Denied</code> exception.</p> </note>"
+    },
+    "DeleteMultiRegionCluster":{
+      "name":"DeleteMultiRegionCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteMultiRegionClusterRequest"},
+      "output":{"shape":"DeleteMultiRegionClusterResponse"},
+      "errors":[
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"InvalidMultiRegionClusterStateFault"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Deletes an existing multi-Region cluster.</p>"
+    },
+    "DeleteParameterGroup":{
+      "name":"DeleteParameterGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteParameterGroupRequest"},
+      "output":{"shape":"DeleteParameterGroupResponse"},
+      "errors":[
+        {"shape":"InvalidParameterGroupStateFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Deletes the specified parameter group. You cannot delete a parameter group if it is associated with any clusters. You cannot delete the default parameter groups in your account.</p>"
+    },
+    "DeleteSnapshot":{
+      "name":"DeleteSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSnapshotRequest"},
+      "output":{"shape":"DeleteSnapshotResponse"},
+      "errors":[
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"InvalidSnapshotStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Deletes an existing snapshot. When you receive a successful response from this operation, MemoryDB immediately begins deleting the snapshot; you cannot cancel or revert this operation.</p>"
+    },
+    "DeleteSubnetGroup":{
+      "name":"DeleteSubnetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSubnetGroupRequest"},
+      "output":{"shape":"DeleteSubnetGroupResponse"},
+      "errors":[
+        {"shape":"SubnetGroupInUseFault"},
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"}
+      ],
+      "documentation":"<p>Deletes a subnet group. You cannot delete a default subnet group or one that is associated with any clusters.</p>"
+    },
+    "DeleteUser":{
+      "name":"DeleteUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUserRequest"},
+      "output":{"shape":"DeleteUserResponse"},
+      "errors":[
+        {"shape":"InvalidUserStateFault"},
+        {"shape":"UserNotFoundFault"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Deletes a user. The user will be removed from all ACLs and in turn removed from all clusters.</p>"
+    },
+    "DescribeACLs":{
+      "name":"DescribeACLs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeACLsRequest"},
+      "output":{"shape":"DescribeACLsResponse"},
+      "errors":[
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns a list of ACLs.</p>"
+    },
+    "DescribeClusters":{
+      "name":"DescribeClusters",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeClustersRequest"},
+      "output":{"shape":"DescribeClustersResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns information about all provisioned clusters if no cluster identifier is specified, or about a specific cluster if a cluster name is supplied.</p>"
+    },
+    "DescribeEngineVersions":{
+      "name":"DescribeEngineVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEngineVersionsRequest"},
+      "output":{"shape":"DescribeEngineVersionsResponse"},
+      "errors":[
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns a list of the available Redis OSS engine versions.</p>"
+    },
+    "DescribeEvents":{
+      "name":"DescribeEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEventsRequest"},
+      "output":{"shape":"DescribeEventsResponse"},
+      "errors":[
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns events related to clusters, security groups, and parameter groups. You can obtain events specific to a particular cluster, security group, or parameter group by providing the name as a parameter. By default, only the events occurring within the last hour are returned; however, you can retrieve up to 14 days' worth of events if necessary.</p>"
+    },
+    "DescribeMultiRegionClusters":{
+      "name":"DescribeMultiRegionClusters",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeMultiRegionClustersRequest"},
+      "output":{"shape":"DescribeMultiRegionClustersResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"MultiRegionClusterNotFoundFault"}
+      ],
+      "documentation":"<p>Returns details about one or more multi-Region clusters.</p>"
+    },
+    "DescribeParameterGroups":{
+      "name":"DescribeParameterGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeParameterGroupsRequest"},
+      "output":{"shape":"DescribeParameterGroupsResponse"},
+      "errors":[
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns a list of parameter group descriptions. If a parameter group name is specified, the list contains only the descriptions for that group.</p>"
+    },
+    "DescribeParameters":{
+      "name":"DescribeParameters",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeParametersRequest"},
+      "output":{"shape":"DescribeParametersResponse"},
+      "errors":[
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns the detailed parameter list for a particular parameter group.</p>"
+    },
+    "DescribeReservedNodes":{
+      "name":"DescribeReservedNodes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeReservedNodesRequest"},
+      "output":{"shape":"DescribeReservedNodesResponse"},
+      "errors":[
+        {"shape":"ReservedNodeNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns information about reserved nodes for this account, or about a specified reserved node.</p>"
+    },
+    "DescribeReservedNodesOfferings":{
+      "name":"DescribeReservedNodesOfferings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeReservedNodesOfferingsRequest"},
+      "output":{"shape":"DescribeReservedNodesOfferingsResponse"},
+      "errors":[
+        {"shape":"ReservedNodesOfferingNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Lists available reserved node offerings.</p>"
+    },
+    "DescribeServiceUpdates":{
+      "name":"DescribeServiceUpdates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeServiceUpdatesRequest"},
+      "output":{"shape":"DescribeServiceUpdatesResponse"},
+      "errors":[
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns details of the service updates.</p>"
+    },
+    "DescribeSnapshots":{
+      "name":"DescribeSnapshots",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSnapshotsRequest"},
+      "output":{"shape":"DescribeSnapshotsResponse"},
+      "errors":[
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns information about cluster snapshots. By default, DescribeSnapshots lists all of your snapshots; it can optionally describe a single snapshot, or just the snapshots associated with a particular cluster.</p>"
+    },
+    "DescribeSubnetGroups":{
+      "name":"DescribeSubnetGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSubnetGroupsRequest"},
+      "output":{"shape":"DescribeSubnetGroupsResponse"},
+      "errors":[
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"}
+      ],
+      "documentation":"<p>Returns a list of subnet group descriptions. If a subnet group name is specified, the list contains only the description of that group.</p>"
+    },
+    "DescribeUsers":{
+      "name":"DescribeUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeUsersRequest"},
+      "output":{"shape":"DescribeUsersResponse"},
+      "errors":[
+        {"shape":"UserNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Returns a list of users.</p>"
+    },
+    "FailoverShard":{
+      "name":"FailoverShard",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"FailoverShardRequest"},
+      "output":{"shape":"FailoverShardResponse"},
+      "errors":[
+        {"shape":"APICallRateForCustomerExceededFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"ShardNotFoundFault"},
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"TestFailoverNotAvailableFault"},
+        {"shape":"InvalidKMSKeyFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Used to failover a shard. This API is designed for testing the behavior of your application in case of MemoryDB failover. It is not designed to be used as a production-level tool for initiating a failover to overcome a problem you may have with the cluster. Moreover, in certain conditions such as large scale operational events, Amazon may block this API. </p>"
+    },
+    "ListAllowedMultiRegionClusterUpdates":{
+      "name":"ListAllowedMultiRegionClusterUpdates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAllowedMultiRegionClusterUpdatesRequest"},
+      "output":{"shape":"ListAllowedMultiRegionClusterUpdatesResponse"},
+      "errors":[
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Lists the allowed updates for a multi-Region cluster.</p>"
+    },
+    "ListAllowedNodeTypeUpdates":{
+      "name":"ListAllowedNodeTypeUpdates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListAllowedNodeTypeUpdatesRequest"},
+      "output":{"shape":"ListAllowedNodeTypeUpdatesResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Lists all available node types that you can scale to from your cluster's current node type. When you use the UpdateCluster operation to scale your cluster, the value of the NodeType parameter must be one of the node types returned by this operation.</p>"
+    },
+    "ListTags":{
+      "name":"ListTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsRequest"},
+      "output":{"shape":"ListTagsResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"InvalidARNFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"UserNotFoundFault"},
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"MultiRegionParameterGroupNotFoundFault"}
+      ],
+      "documentation":"<p>Lists all tags currently on a named resource. A tag is a key-value pair where the key and value are case-sensitive. You can use tags to categorize and track your MemoryDB resources. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p>When you add or remove tags from multi region clusters, you might not immediately see the latest effective tags in the ListTags API response due to it being eventually consistent specifically for multi region clusters. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p/>"
+    },
+    "PurchaseReservedNodesOffering":{
+      "name":"PurchaseReservedNodesOffering",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PurchaseReservedNodesOfferingRequest"},
+      "output":{"shape":"PurchaseReservedNodesOfferingResponse"},
+      "errors":[
+        {"shape":"ReservedNodesOfferingNotFoundFault"},
+        {"shape":"ReservedNodeAlreadyExistsFault"},
+        {"shape":"ReservedNodeQuotaExceededFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"TagQuotaPerResourceExceeded"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Allows you to purchase a reserved node offering. Reserved nodes are not eligible for cancellation and are non-refundable.</p>"
+    },
+    "ResetParameterGroup":{
+      "name":"ResetParameterGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ResetParameterGroupRequest"},
+      "output":{"shape":"ResetParameterGroupResponse"},
+      "errors":[
+        {"shape":"InvalidParameterGroupStateFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Modifies the parameters of a parameter group to the engine or system default value. You can reset specific parameters by submitting a list of parameter names. To reset the entire parameter group, specify the AllParameters and ParameterGroupName parameters.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"UserNotFoundFault"},
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"MultiRegionParameterGroupNotFoundFault"},
+        {"shape":"TagQuotaPerResourceExceeded"},
+        {"shape":"InvalidARNFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p> Use this operation to add tags to a resource. A tag is a key-value pair where the key and value are case-sensitive. You can use tags to categorize and track all your MemoryDB resources. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p>When you add tags to multi region clusters, you might not immediately see the latest effective tags in the ListTags API response due to it being eventually consistent specifically for multi region clusters. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p>You can specify cost-allocation tags for your MemoryDB resources, Amazon generates a cost allocation report as a comma-separated value (CSV) file with your usage and costs aggregated by your tags. You can apply tags that represent business categories (such as cost centers, application names, or owners) to organize your costs across multiple services. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/tagging.html\">Using Cost Allocation Tags</a>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"SnapshotNotFoundFault"},
+        {"shape":"InvalidARNFault"},
+        {"shape":"TagNotFoundFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"UserNotFoundFault"},
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"MultiRegionParameterGroupNotFoundFault"}
+      ],
+      "documentation":"<p>Use this operation to remove tags on a resource. A tag is a key-value pair where the key and value are case-sensitive. You can use tags to categorize and track all your MemoryDB resources. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p>When you remove tags from multi region clusters, you might not immediately see the latest effective tags in the ListTags API response due to it being eventually consistent specifically for multi region clusters. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/Tagging-Resources.html\">Tagging your MemoryDB resources</a>.</p> <p>You can specify cost-allocation tags for your MemoryDB resources, Amazon generates a cost allocation report as a comma-separated value (CSV) file with your usage and costs aggregated by your tags. You can apply tags that represent business categories (such as cost centers, application names, or owners) to organize your costs across multiple services. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/tagging.html\">Using Cost Allocation Tags</a>.</p>"
+    },
+    "UpdateACL":{
+      "name":"UpdateACL",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateACLRequest"},
+      "output":{"shape":"UpdateACLResponse"},
+      "errors":[
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"UserNotFoundFault"},
+        {"shape":"DuplicateUserNameFault"},
+        {"shape":"DefaultUserRequired"},
+        {"shape":"InvalidACLStateFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Changes the list of users that belong to the Access Control List.</p>"
+    },
+    "UpdateCluster":{
+      "name":"UpdateCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateClusterRequest"},
+      "output":{"shape":"UpdateClusterResponse"},
+      "errors":[
+        {"shape":"ClusterNotFoundFault"},
+        {"shape":"InvalidClusterStateFault"},
+        {"shape":"InvalidNodeStateFault"},
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"InvalidVPCNetworkStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidKMSKeyFault"},
+        {"shape":"NodeQuotaForClusterExceededFault"},
+        {"shape":"ClusterQuotaForCustomerExceededFault"},
+        {"shape":"ShardsPerClusterQuotaExceededFault"},
+        {"shape":"NodeQuotaForCustomerExceededFault"},
+        {"shape":"NoOperationFault"},
+        {"shape":"InvalidACLStateFault"},
+        {"shape":"ACLNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Modifies the settings for a cluster. You can use this operation to change one or more cluster configuration settings by specifying the settings and the new values.</p>"
+    },
+    "UpdateMultiRegionCluster":{
+      "name":"UpdateMultiRegionCluster",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateMultiRegionClusterRequest"},
+      "output":{"shape":"UpdateMultiRegionClusterResponse"},
+      "errors":[
+        {"shape":"MultiRegionClusterNotFoundFault"},
+        {"shape":"MultiRegionParameterGroupNotFoundFault"},
+        {"shape":"InvalidMultiRegionClusterStateFault"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"InvalidParameterValueException"}
+      ],
+      "documentation":"<p>Updates the configuration of an existing multi-Region cluster.</p>"
+    },
+    "UpdateParameterGroup":{
+      "name":"UpdateParameterGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateParameterGroupRequest"},
+      "output":{"shape":"UpdateParameterGroupResponse"},
+      "errors":[
+        {"shape":"ParameterGroupNotFoundFault"},
+        {"shape":"InvalidParameterGroupStateFault"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Updates the parameters of a parameter group. You can modify up to 20 parameters in a single request by submitting a list parameter name and value pairs.</p>"
+    },
+    "UpdateSubnetGroup":{
+      "name":"UpdateSubnetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSubnetGroupRequest"},
+      "output":{"shape":"UpdateSubnetGroupResponse"},
+      "errors":[
+        {"shape":"SubnetGroupNotFoundFault"},
+        {"shape":"SubnetQuotaExceededFault"},
+        {"shape":"SubnetInUse"},
+        {"shape":"InvalidSubnet"},
+        {"shape":"ServiceLinkedRoleNotFoundFault"},
+        {"shape":"SubnetNotAllowedFault"}
+      ],
+      "documentation":"<p>Updates a subnet group. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/ubnetGroups.Modifying.html\">Updating a subnet group</a> </p>"
+    },
+    "UpdateUser":{
+      "name":"UpdateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateUserRequest"},
+      "output":{"shape":"UpdateUserResponse"},
+      "errors":[
+        {"shape":"UserNotFoundFault"},
+        {"shape":"InvalidUserStateFault"},
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidParameterCombinationException"}
+      ],
+      "documentation":"<p>Changes user password(s) and/or access string.</p>"
+    }
+  },
+  "shapes":{
+    "ACL":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Access Control List</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>Indicates ACL status. Can be \"creating\", \"active\", \"modifying\", \"deleting\".</p>"
+        },
+        "UserNames":{
+          "shape":"UserNameList",
+          "documentation":"<p>The list of user names that belong to the ACL.</p>"
+        },
+        "MinimumEngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The minimum engine version supported for the ACL</p>"
+        },
+        "PendingChanges":{
+          "shape":"ACLPendingChanges",
+          "documentation":"<p>A list of updates being applied to the ACL.</p>"
+        },
+        "Clusters":{
+          "shape":"ACLClusterNameList",
+          "documentation":"<p>A list of clusters associated with the ACL.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ACL</p>"
+        }
+      },
+      "documentation":"<p>An Access Control List. You can authenticate users with Access Contol Lists. ACLs enable you to control cluster access by grouping users. These Access control lists are designed as a way to organize access to clusters.</p>"
+    },
+    "ACLAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ACLClusterNameList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ACLList":{
+      "type":"list",
+      "member":{"shape":"ACL"}
+    },
+    "ACLName":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z][a-zA-Z0-9\\-]*"
+    },
+    "ACLNameList":{
+      "type":"list",
+      "member":{"shape":"ACLName"}
+    },
+    "ACLNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ACLPendingChanges":{
+      "type":"structure",
+      "members":{
+        "UserNamesToRemove":{
+          "shape":"UserNameList",
+          "documentation":"<p>A list of user names being removed from the ACL</p>"
+        },
+        "UserNamesToAdd":{
+          "shape":"UserNameList",
+          "documentation":"<p>A list of users being added to the ACL</p>"
+        }
+      },
+      "documentation":"<p>Returns the updates being applied to the ACL.</p>"
+    },
+    "ACLQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ACLsUpdateStatus":{
+      "type":"structure",
+      "members":{
+        "ACLToApply":{
+          "shape":"ACLName",
+          "documentation":"<p>A list of ACLs pending to be applied.</p>"
+        }
+      },
+      "documentation":"<p>The status of the ACL update</p>"
+    },
+    "APICallRateForCustomerExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "AZStatus":{
+      "type":"string",
+      "enum":[
+        "singleaz",
+        "multiaz"
+      ]
+    },
+    "AccessString":{
+      "type":"string",
+      "pattern":".*\\S.*"
+    },
+    "Authentication":{
+      "type":"structure",
+      "members":{
+        "Type":{
+          "shape":"AuthenticationType",
+          "documentation":"<p>Indicates whether the user requires a password to authenticate.</p>"
+        },
+        "PasswordCount":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of passwords belonging to the user. The maximum is two.</p>"
+        }
+      },
+      "documentation":"<p>Denotes the user's authentication properties, such as whether it requires a password to authenticate. Used in output responses.</p>"
+    },
+    "AuthenticationMode":{
+      "type":"structure",
+      "members":{
+        "Type":{
+          "shape":"InputAuthenticationType",
+          "documentation":"<p>Indicates whether the user requires a password to authenticate. All newly-created users require a password.</p>"
+        },
+        "Passwords":{
+          "shape":"PasswordListInput",
+          "documentation":"<p>The password(s) used for authentication</p>"
+        }
+      },
+      "documentation":"<p>Denotes the user's authentication properties, such as whether it requires a password to authenticate. Used in output responses.</p>"
+    },
+    "AuthenticationType":{
+      "type":"string",
+      "enum":[
+        "password",
+        "no-password",
+        "iam"
+      ]
+    },
+    "AvailabilityZone":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Availability Zone.</p>"
+        }
+      },
+      "documentation":"<p>Indicates if the cluster has a Multi-AZ configuration (multiaz) or not (singleaz).</p>"
+    },
+    "AwsQueryErrorMessage":{"type":"string"},
+    "BatchUpdateClusterRequest":{
+      "type":"structure",
+      "required":["ClusterNames"],
+      "members":{
+        "ClusterNames":{
+          "shape":"ClusterNameList",
+          "documentation":"<p>The cluster names to apply the updates.</p>"
+        },
+        "ServiceUpdate":{
+          "shape":"ServiceUpdateRequest",
+          "documentation":"<p>The unique ID of the service update</p>"
+        }
+      }
+    },
+    "BatchUpdateClusterResponse":{
+      "type":"structure",
+      "members":{
+        "ProcessedClusters":{
+          "shape":"ClusterList",
+          "documentation":"<p>The list of clusters that have been updated.</p>"
+        },
+        "UnprocessedClusters":{
+          "shape":"UnprocessedClusterList",
+          "documentation":"<p>The list of clusters where updates have not been applied.</p>"
+        }
+      }
+    },
+    "Boolean":{"type":"boolean"},
+    "BooleanOptional":{"type":"boolean"},
+    "Cluster":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The user-supplied name of the cluster. This identifier is a unique key that identifies a cluster.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the cluster</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the cluster. For example, Available, Updating, Creating.</p>"
+        },
+        "PendingUpdates":{
+          "shape":"ClusterPendingUpdates",
+          "documentation":"<p>A group of settings that are currently being applied.</p>"
+        },
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster that this cluster belongs to.</p>"
+        },
+        "NumberOfShards":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of shards in the cluster</p>"
+        },
+        "Shards":{
+          "shape":"ShardList",
+          "documentation":"<p>A list of shards that are members of the cluster.</p>"
+        },
+        "AvailabilityMode":{
+          "shape":"AZStatus",
+          "documentation":"<p>Indicates if the cluster has a Multi-AZ configuration (multiaz) or not (singleaz).</p>"
+        },
+        "ClusterEndpoint":{
+          "shape":"Endpoint",
+          "documentation":"<p>The cluster's configuration endpoint</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The cluster's node type</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine used by the cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The Redis OSS engine version used by the cluster</p>"
+        },
+        "EnginePatchVersion":{
+          "shape":"String",
+          "documentation":"<p>The Redis OSS engine patch version used by the cluster</p>"
+        },
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group used by the cluster</p>"
+        },
+        "ParameterGroupStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the parameter group used by the cluster, for example 'active' or 'applying'.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroupMembershipList",
+          "documentation":"<p>A list of security groups used by the cluster</p>"
+        },
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group used by the cluster</p>"
+        },
+        "TLSEnabled":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>A flag to indicate if In-transit encryption is enabled</p>"
+        },
+        "KmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the KMS key used to encrypt the cluster</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the cluster.</p>"
+        },
+        "SnsTopicArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SNS notification topic</p>"
+        },
+        "SnsTopicStatus":{
+          "shape":"String",
+          "documentation":"<p>The SNS topic must be in Active status to receive notifications</p>"
+        },
+        "SnapshotRetentionLimit":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of days for which MemoryDB retains automatic snapshots before deleting them. For example, if you set SnapshotRetentionLimit to 5, a snapshot that was taken today is retained for 5 days before being deleted.</p>"
+        },
+        "MaintenanceWindow":{
+          "shape":"String",
+          "documentation":"<p>Specifies the weekly time range during which maintenance on the cluster is performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi (24H Clock UTC). The minimum maintenance window is a 60 minute period. </p>"
+        },
+        "SnapshotWindow":{
+          "shape":"String",
+          "documentation":"<p>The daily time range (in UTC) during which MemoryDB begins taking a daily snapshot of your shard. Example: 05:00-09:00 If you do not specify this parameter, MemoryDB automatically chooses an appropriate time range.</p>"
+        },
+        "ACLName":{
+          "shape":"ACLName",
+          "documentation":"<p>The name of the Access Control List associated with this cluster.</p>"
+        },
+        "AutoMinorVersionUpgrade":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>When set to true, the cluster will automatically receive minor engine version upgrades after launch.</p>"
+        },
+        "DataTiering":{
+          "shape":"DataTieringStatus",
+          "documentation":"<p>Enables data tiering. Data tiering is only supported for clusters using the r6gd node type. This parameter must be set when using r6gd nodes. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html\">Data tiering</a>.</p>"
+        },
+        "NetworkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The IP address type for the cluster. Returns 'ipv4' for IPv4 only, 'ipv6' for IPv6 only, or 'dual-stack' if the cluster supports both IPv4 and IPv6 addressing.</p>"
+        },
+        "IpDiscovery":{
+          "shape":"IpDiscovery",
+          "documentation":"<p>The mechanism that the cluster uses to discover IP addresses. Returns 'ipv4' when DNS endpoints resolve to IPv4 addresses, or 'ipv6' when DNS endpoints resolve to IPv6 addresses.</p>"
+        }
+      },
+      "documentation":"<p>Contains all of the attributes of a specific cluster.</p>"
+    },
+    "ClusterAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ClusterConfiguration":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>The description of the cluster configuration</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type used for the cluster</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine used by the cluster configuration.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The Redis OSS engine version used by the cluster</p>"
+        },
+        "MaintenanceWindow":{
+          "shape":"String",
+          "documentation":"<p>The specified maintenance window for the cluster</p>"
+        },
+        "TopicArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SNS notification topic for the cluster</p>"
+        },
+        "Port":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The port used by the cluster</p>"
+        },
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of parameter group used by the cluster</p>"
+        },
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group used by the cluster</p>"
+        },
+        "VpcId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the VPC the cluster belongs to</p>"
+        },
+        "SnapshotRetentionLimit":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The snapshot retention limit set by the cluster</p>"
+        },
+        "SnapshotWindow":{
+          "shape":"String",
+          "documentation":"<p>The snapshot window set by the cluster</p>"
+        },
+        "NumShards":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of shards in the cluster</p>"
+        },
+        "Shards":{
+          "shape":"ShardDetails",
+          "documentation":"<p>The list of shards in the cluster</p>"
+        },
+        "MultiRegionParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region parameter group associated with the cluster configuration.</p>"
+        },
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name for the multi-Region cluster associated with the cluster configuration.</p>"
+        }
+      },
+      "documentation":"<p>A list of cluster configuration options. </p>"
+    },
+    "ClusterList":{
+      "type":"list",
+      "member":{"shape":"Cluster"}
+    },
+    "ClusterNameList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":20
+    },
+    "ClusterNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ClusterPendingUpdates":{
+      "type":"structure",
+      "members":{
+        "Resharding":{
+          "shape":"ReshardingStatus",
+          "documentation":"<p>The status of an online resharding operation.</p>"
+        },
+        "ACLs":{
+          "shape":"ACLsUpdateStatus",
+          "documentation":"<p>A list of ACLs associated with the cluster that are being updated</p>"
+        },
+        "ServiceUpdates":{
+          "shape":"PendingModifiedServiceUpdateList",
+          "documentation":"<p>A list of service updates being applied to the cluster</p>"
+        }
+      },
+      "documentation":"<p>A list of updates being applied to the cluster</p>"
+    },
+    "ClusterQuotaForCustomerExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "CopySnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "SourceSnapshotName",
+        "TargetSnapshotName"
+      ],
+      "members":{
+        "SourceSnapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of an existing snapshot from which to make a copy.</p>"
+        },
+        "TargetSnapshotName":{
+          "shape":"String",
+          "documentation":"<p>A name for the snapshot copy. MemoryDB does not permit overwriting a snapshot, therefore this name must be unique within its context - MemoryDB or an Amazon S3 bucket if exporting.</p>"
+        },
+        "TargetBucket":{
+          "shape":"TargetBucket",
+          "documentation":"<p>The Amazon S3 bucket to which the snapshot is exported. This parameter is used only when exporting a snapshot for external access. When using this parameter to export a snapshot, be sure MemoryDB has the needed permissions to this S3 bucket. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/snapshots-exporting.html\">Step 2: Grant MemoryDB Access to Your Amazon S3 Bucket</a>. </p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the KMS key used to encrypt the target snapshot.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CopySnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "Snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>Represents a copy of an entire cluster as of the time when the snapshot was taken.</p>"
+        }
+      }
+    },
+    "CreateACLRequest":{
+      "type":"structure",
+      "required":["ACLName"],
+      "members":{
+        "ACLName":{
+          "shape":"String",
+          "documentation":"<p>The name of the Access Control List.</p>"
+        },
+        "UserNames":{
+          "shape":"UserNameListInput",
+          "documentation":"<p>The list of users that belong to the Access Control List.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CreateACLResponse":{
+      "type":"structure",
+      "members":{
+        "ACL":{
+          "shape":"ACL",
+          "documentation":"<p>The newly-created Access Control List.</p>"
+        }
+      }
+    },
+    "CreateClusterRequest":{
+      "type":"structure",
+      "required":[
+        "ClusterName",
+        "NodeType",
+        "ACLName"
+      ],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster. This value must be unique as it also serves as the cluster identifier.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The compute and memory capacity of the nodes in the cluster.</p>"
+        },
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster to be created.</p>"
+        },
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group associated with the cluster.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>An optional description of the cluster.</p>"
+        },
+        "NumShards":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of shards the cluster will contain. The default value is 1. </p>"
+        },
+        "NumReplicasPerShard":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of replicas to apply to each shard. The default value is 1. The maximum is 5. </p>"
+        },
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group to be used for the cluster.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIdsList",
+          "documentation":"<p>A list of security group names to associate with this cluster.</p>"
+        },
+        "MaintenanceWindow":{
+          "shape":"String",
+          "documentation":"<p>Specifies the weekly time range during which maintenance on the cluster is performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi (24H Clock UTC). The minimum maintenance window is a 60 minute period.</p> <p>Valid values for <code>ddd</code> are:</p> <ul> <li> <p> <code>sun</code> </p> </li> <li> <p> <code>mon</code> </p> </li> <li> <p> <code>tue</code> </p> </li> <li> <p> <code>wed</code> </p> </li> <li> <p> <code>thu</code> </p> </li> <li> <p> <code>fri</code> </p> </li> <li> <p> <code>sat</code> </p> </li> </ul> <p>Example: <code>sun:23:00-mon:01:30</code> </p>"
+        },
+        "Port":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The port number on which each of the nodes accepts connections.</p>"
+        },
+        "SnsTopicArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Simple Notification Service (SNS) topic to which notifications are sent.</p>"
+        },
+        "TLSEnabled":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>A flag to enable in-transit encryption on the cluster.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the KMS key used to encrypt the cluster.</p>"
+        },
+        "SnapshotArns":{
+          "shape":"SnapshotArnsList",
+          "documentation":"<p>A list of Amazon Resource Names (ARN) that uniquely identify the RDB snapshot files stored in Amazon S3. The snapshot files are used to populate the new cluster. The Amazon S3 object name in the ARN cannot contain any commas.</p>"
+        },
+        "SnapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of a snapshot from which to restore data into the new cluster. The snapshot status changes to restoring while the new cluster is being created.</p>"
+        },
+        "SnapshotRetentionLimit":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of days for which MemoryDB retains automatic snapshots before deleting them. For example, if you set SnapshotRetentionLimit to 5, a snapshot that was taken today is retained for 5 days before being deleted.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. Tags are comma-separated key,value pairs (e.g. Key=myKey, Value=myKeyValue. You can include multiple tags as shown following: Key=myKey, Value=myKeyValue Key=mySecondKey, Value=mySecondKeyValue.</p>"
+        },
+        "SnapshotWindow":{
+          "shape":"String",
+          "documentation":"<p>The daily time range (in UTC) during which MemoryDB begins taking a daily snapshot of your shard.</p> <p> Example: 05:00-09:00</p> <p> If you do not specify this parameter, MemoryDB automatically chooses an appropriate time range.</p>"
+        },
+        "ACLName":{
+          "shape":"ACLName",
+          "documentation":"<p>The name of the Access Control List to associate with the cluster.</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine to be used for the cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The version number of the Redis OSS engine to be used for the cluster.</p>"
+        },
+        "AutoMinorVersionUpgrade":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>When set to true, the cluster will automatically receive minor engine version upgrades after launch.</p>"
+        },
+        "DataTiering":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>Enables data tiering. Data tiering is only supported for clusters using the r6gd node type. This parameter must be set when using r6gd nodes. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html\">Data tiering</a>.</p>"
+        },
+        "NetworkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>Specifies the IP address type for the cluster. Valid values are 'ipv4', 'ipv6', or 'dual_stack'. When set to 'ipv4', the cluster will only be accessible via IPv4 addresses. When set to 'ipv6', the cluster will only be accessible via IPv6 addresses. When set to 'dual_stack', the cluster will be accessible via both IPv4 and IPv6 addresses. If not specified, the default is 'ipv4'.</p>"
+        },
+        "IpDiscovery":{
+          "shape":"IpDiscovery",
+          "documentation":"<p>The mechanism for discovering IP addresses for the cluster discovery protocol. Valid values are 'ipv4' or 'ipv6'. When set to 'ipv4', cluster discovery functions such as cluster slots, cluster shards, and cluster nodes return IPv4 addresses for cluster nodes. When set to 'ipv6', the cluster discovery functions return IPv6 addresses for cluster nodes. The value must be compatible with the NetworkType parameter. If not specified, the default is 'ipv4'.</p>"
+        }
+      }
+    },
+    "CreateClusterResponse":{
+      "type":"structure",
+      "members":{
+        "Cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The newly-created cluster.</p>"
+        }
+      }
+    },
+    "CreateMultiRegionClusterRequest":{
+      "type":"structure",
+      "required":[
+        "MultiRegionClusterNameSuffix",
+        "NodeType"
+      ],
+      "members":{
+        "MultiRegionClusterNameSuffix":{
+          "shape":"String",
+          "documentation":"<p>A suffix to be added to the Multi-Region cluster name. Amazon MemoryDB automatically applies a prefix to the Multi-Region cluster Name when it is created. Each Amazon Region has its own prefix. For instance, a Multi-Region cluster Name created in the US-West-1 region will begin with \"virxk\", along with the suffix name you provide. The suffix guarantees uniqueness of the Multi-Region cluster name across multiple regions.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description for the multi-Region cluster.</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine to be used for the multi-Region cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the engine to be used for the multi-Region cluster.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type to be used for the multi-Region cluster.</p>"
+        },
+        "MultiRegionParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region parameter group to be associated with the cluster.</p>"
+        },
+        "NumShards":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of shards for the multi-Region cluster.</p>"
+        },
+        "TLSEnabled":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>Whether to enable TLS encryption for the multi-Region cluster.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be applied to the multi-Region cluster.</p>"
+        }
+      }
+    },
+    "CreateMultiRegionClusterResponse":{
+      "type":"structure",
+      "members":{
+        "MultiRegionCluster":{
+          "shape":"MultiRegionCluster",
+          "documentation":"<p>Details about the newly created multi-Region cluster.</p>"
+        }
+      }
+    },
+    "CreateParameterGroupRequest":{
+      "type":"structure",
+      "required":[
+        "ParameterGroupName",
+        "Family"
+      ],
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group.</p>"
+        },
+        "Family":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group family that the parameter group can be used with.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>An optional description of the parameter group.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CreateParameterGroupResponse":{
+      "type":"structure",
+      "members":{
+        "ParameterGroup":{
+          "shape":"ParameterGroup",
+          "documentation":"<p>The newly-created parameter group.</p>"
+        }
+      }
+    },
+    "CreateSnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "ClusterName",
+        "SnapshotName"
+      ],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The snapshot is created from this cluster.</p>"
+        },
+        "SnapshotName":{
+          "shape":"String",
+          "documentation":"<p>A name for the snapshot being created.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the KMS key used to encrypt the snapshot.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CreateSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "Snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The newly-created snapshot.</p>"
+        }
+      }
+    },
+    "CreateSubnetGroupRequest":{
+      "type":"structure",
+      "required":[
+        "SubnetGroupName",
+        "SubnetIds"
+      ],
+      "members":{
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description for the subnet group.</p>"
+        },
+        "SubnetIds":{
+          "shape":"SubnetIdentifierList",
+          "documentation":"<p>A list of VPC subnet IDs for the subnet group.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CreateSubnetGroupResponse":{
+      "type":"structure",
+      "members":{
+        "SubnetGroup":{
+          "shape":"SubnetGroup",
+          "documentation":"<p>The newly-created subnet group.</p>"
+        }
+      }
+    },
+    "CreateUserRequest":{
+      "type":"structure",
+      "required":[
+        "UserName",
+        "AuthenticationMode",
+        "AccessString"
+      ],
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>The name of the user. This value must be unique as it also serves as the user identifier.</p>"
+        },
+        "AuthenticationMode":{
+          "shape":"AuthenticationMode",
+          "documentation":"<p>Denotes the user's authentication properties, such as whether it requires a password to authenticate.</p>"
+        },
+        "AccessString":{
+          "shape":"AccessString",
+          "documentation":"<p>Access permissions string used for this user.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "CreateUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The newly-created user.</p>"
+        }
+      }
+    },
+    "DataTieringStatus":{
+      "type":"string",
+      "enum":[
+        "true",
+        "false"
+      ]
+    },
+    "DefaultUserRequired":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "DeleteACLRequest":{
+      "type":"structure",
+      "required":["ACLName"],
+      "members":{
+        "ACLName":{
+          "shape":"String",
+          "documentation":"<p>The name of the Access Control List to delete.</p>"
+        }
+      }
+    },
+    "DeleteACLResponse":{
+      "type":"structure",
+      "members":{
+        "ACL":{
+          "shape":"ACL",
+          "documentation":"<p>The Access Control List object that has been deleted.</p>"
+        }
+      }
+    },
+    "DeleteClusterRequest":{
+      "type":"structure",
+      "required":["ClusterName"],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster to be deleted</p>"
+        },
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster to be deleted.</p>"
+        },
+        "FinalSnapshotName":{
+          "shape":"String",
+          "documentation":"<p>The user-supplied name of a final cluster snapshot. This is the unique name that identifies the snapshot. MemoryDB creates the snapshot, and then deletes the cluster immediately afterward.</p>"
+        }
+      }
+    },
+    "DeleteClusterResponse":{
+      "type":"structure",
+      "members":{
+        "Cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The cluster object that has been deleted.</p>"
+        }
+      }
+    },
+    "DeleteMultiRegionClusterRequest":{
+      "type":"structure",
+      "required":["MultiRegionClusterName"],
+      "members":{
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteMultiRegionClusterResponse":{
+      "type":"structure",
+      "members":{
+        "MultiRegionCluster":{
+          "shape":"MultiRegionCluster",
+          "documentation":"<p>Details about the deleted multi-Region cluster.</p>"
+        }
+      }
+    },
+    "DeleteParameterGroupRequest":{
+      "type":"structure",
+      "required":["ParameterGroupName"],
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group to delete.</p>"
+        }
+      }
+    },
+    "DeleteParameterGroupResponse":{
+      "type":"structure",
+      "members":{
+        "ParameterGroup":{
+          "shape":"ParameterGroup",
+          "documentation":"<p>The parameter group that has been deleted.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotRequest":{
+      "type":"structure",
+      "required":["SnapshotName"],
+      "members":{
+        "SnapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to delete.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "Snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The snapshot object that has been deleted.</p>"
+        }
+      }
+    },
+    "DeleteSubnetGroupRequest":{
+      "type":"structure",
+      "required":["SubnetGroupName"],
+      "members":{
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group to delete.</p>"
+        }
+      }
+    },
+    "DeleteSubnetGroupResponse":{
+      "type":"structure",
+      "members":{
+        "SubnetGroup":{
+          "shape":"SubnetGroup",
+          "documentation":"<p>The subnet group object that has been deleted.</p>"
+        }
+      }
+    },
+    "DeleteUserRequest":{
+      "type":"structure",
+      "required":["UserName"],
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>The name of the user to delete</p>"
+        }
+      }
+    },
+    "DeleteUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The user object that has been deleted.</p>"
+        }
+      }
+    },
+    "DescribeACLsRequest":{
+      "type":"structure",
+      "members":{
+        "ACLName":{
+          "shape":"String",
+          "documentation":"<p>The name of the ACL.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeACLsResponse":{
+      "type":"structure",
+      "members":{
+        "ACLs":{
+          "shape":"ACLList",
+          "documentation":"<p>The list of ACLs.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeClustersRequest":{
+      "type":"structure",
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "ShowShardDetails":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>An optional flag that can be included in the request to retrieve information about the individual shard(s).</p>"
+        }
+      }
+    },
+    "DescribeClustersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "Clusters":{
+          "shape":"ClusterList",
+          "documentation":"<p>A list of clusters</p>"
+        }
+      }
+    },
+    "DescribeEngineVersionsRequest":{
+      "type":"structure",
+      "members":{
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine for which to list available versions.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The Redis OSS engine version</p>"
+        },
+        "ParameterGroupFamily":{
+          "shape":"String",
+          "documentation":"<p>The name of a specific parameter group family to return details for.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "DefaultOnly":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, specifies that only the default version of the specified engine or engine and major version combination is to be returned.</p>"
+        }
+      }
+    },
+    "DescribeEngineVersionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "EngineVersions":{
+          "shape":"EngineVersionInfoList",
+          "documentation":"<p>A list of engine version details. Each element in the list contains detailed information about one engine version.</p>"
+        }
+      }
+    },
+    "DescribeEventsRequest":{
+      "type":"structure",
+      "members":{
+        "SourceName":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the event source for which events are returned. If not specified, all sources are included in the response.</p>"
+        },
+        "SourceType":{
+          "shape":"SourceType",
+          "documentation":"<p>The event source to retrieve events for. If no value is specified, all events are returned.</p>"
+        },
+        "StartTime":{
+          "shape":"TStamp",
+          "documentation":"<p>The beginning of the time interval to retrieve events for, specified in ISO 8601 format. Example: 2017-03-30T07:03:49.555Z</p>"
+        },
+        "EndTime":{
+          "shape":"TStamp",
+          "documentation":"<p>The end of the time interval for which to retrieve events, specified in ISO 8601 format. Example: 2017-03-30T07:03:49.555Z</p>"
+        },
+        "Duration":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of minutes worth of events to retrieve.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeEventsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "Events":{
+          "shape":"EventList",
+          "documentation":"<p>A list of events. Each element in the list contains detailed information about one event.</p>"
+        }
+      }
+    },
+    "DescribeMultiRegionClustersRequest":{
+      "type":"structure",
+      "members":{
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of a specific multi-Region cluster to describe.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of results to return.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating.</p>"
+        },
+        "ShowClusterDetails":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>Details about the multi-Region cluster.</p>"
+        }
+      }
+    },
+    "DescribeMultiRegionClustersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to use to retrieve the next page of results.</p>"
+        },
+        "MultiRegionClusters":{
+          "shape":"MultiRegionClusterList",
+          "documentation":"<p>A list of multi-Region clusters.</p>"
+        }
+      }
+    },
+    "DescribeParameterGroupsRequest":{
+      "type":"structure",
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of a specific parameter group to return details for.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeParameterGroupsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "ParameterGroups":{
+          "shape":"ParameterGroupList",
+          "documentation":"<p>A list of parameter groups. Each element in the list contains detailed information about one parameter group.</p>"
+        }
+      }
+    },
+    "DescribeParametersRequest":{
+      "type":"structure",
+      "required":["ParameterGroupName"],
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>he name of a specific parameter group to return details for.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeParametersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "Parameters":{
+          "shape":"ParametersList",
+          "documentation":"<p>A list of parameters specific to a particular parameter group. Each element in the list contains detailed information about one parameter.</p>"
+        }
+      }
+    },
+    "DescribeReservedNodesOfferingsRequest":{
+      "type":"structure",
+      "members":{
+        "ReservedNodesOfferingId":{
+          "shape":"String",
+          "documentation":"<p>The offering identifier filter value. Use this parameter to show only the available offering that matches the specified reservation identifier.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type for the reserved nodes. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported\">Supported node types</a>.</p>"
+        },
+        "Duration":{
+          "shape":"String",
+          "documentation":"<p>Duration filter value, specified in years or seconds. Use this parameter to show only reservations for a given duration.</p>"
+        },
+        "OfferingType":{
+          "shape":"String",
+          "documentation":"<p>The offering type filter value. Use this parameter to show only the available offerings matching the specified offering type. Valid values: \"All Upfront\"|\"Partial Upfront\"| \"No Upfront\"</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxRecords value, a marker is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional marker returned from a prior request. Use this marker for pagination of results from this operation. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords.</p>"
+        }
+      }
+    },
+    "DescribeReservedNodesOfferingsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional marker returned from a prior request. Use this marker for pagination of results from this operation. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords.</p>"
+        },
+        "ReservedNodesOfferings":{
+          "shape":"ReservedNodesOfferingList",
+          "documentation":"<p>Lists available reserved node offerings.</p>"
+        }
+      }
+    },
+    "DescribeReservedNodesRequest":{
+      "type":"structure",
+      "members":{
+        "ReservationId":{
+          "shape":"String",
+          "documentation":"<p>The reserved node identifier filter value. Use this parameter to show only the reservation that matches the specified reservation ID.</p>"
+        },
+        "ReservedNodesOfferingId":{
+          "shape":"String",
+          "documentation":"<p>The offering identifier filter value. Use this parameter to show only purchased reservations matching the specified offering identifier.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type filter value. Use this parameter to show only those reservations matching the specified node type. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported\">Supported node types</a>.</p>"
+        },
+        "Duration":{
+          "shape":"String",
+          "documentation":"<p>The duration filter value, specified in years or seconds. Use this parameter to show only reservations for this duration.</p>"
+        },
+        "OfferingType":{
+          "shape":"String",
+          "documentation":"<p>The offering type filter value. Use this parameter to show only the available offerings matching the specified offering type. Valid values: \"All Upfront\"|\"Partial Upfront\"| \"No Upfront\"</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxRecords value, a marker is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional marker returned from a prior request. Use this marker for pagination of results from this operation. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords.</p>"
+        }
+      }
+    },
+    "DescribeReservedNodesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional marker returned from a prior request. Use this marker for pagination of results from this operation. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords.</p>"
+        },
+        "ReservedNodes":{
+          "shape":"ReservedNodeList",
+          "documentation":"<p>Returns information about reserved nodes for this account, or about a specified reserved node.</p>"
+        }
+      }
+    },
+    "DescribeServiceUpdatesRequest":{
+      "type":"structure",
+      "members":{
+        "ServiceUpdateName":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the service update to describe.</p>"
+        },
+        "ClusterNames":{
+          "shape":"ClusterNameList",
+          "documentation":"<p>The list of cluster names to identify service updates to apply.</p>"
+        },
+        "Status":{
+          "shape":"ServiceUpdateStatusList",
+          "documentation":"<p>The status(es) of the service updates to filter on.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeServiceUpdatesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "ServiceUpdates":{
+          "shape":"ServiceUpdateList",
+          "documentation":"<p>A list of service updates</p>"
+        }
+      }
+    },
+    "DescribeSnapshotsRequest":{
+      "type":"structure",
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>A user-supplied cluster identifier. If this parameter is specified, only snapshots associated with that specific cluster are described.</p>"
+        },
+        "SnapshotName":{
+          "shape":"String",
+          "documentation":"<p>A user-supplied name of the snapshot. If this parameter is specified, only this named snapshot is described.</p>"
+        },
+        "Source":{
+          "shape":"String",
+          "documentation":"<p>If set to system, the output shows snapshots that were automatically created by MemoryDB. If set to user the output shows snapshots that were manually created. If omitted, the output shows both automatically and manually created snapshots.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "ShowDetail":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>A Boolean value which if true, the shard configuration is included in the snapshot description.</p>"
+        }
+      }
+    },
+    "DescribeSnapshotsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "Snapshots":{
+          "shape":"SnapshotList",
+          "documentation":"<p>A list of snapshots. Each item in the list contains detailed information about one snapshot.</p>"
+        }
+      }
+    },
+    "DescribeSubnetGroupsRequest":{
+      "type":"structure",
+      "members":{
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group to return details for.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeSubnetGroupsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        },
+        "SubnetGroups":{
+          "shape":"SubnetGroupList",
+          "documentation":"<p>A list of subnet groups. Each element in the list contains detailed information about one group.</p>"
+        }
+      }
+    },
+    "DescribeUsersRequest":{
+      "type":"structure",
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>The name of the user.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>Filter to determine the list of users to return.</p>"
+        },
+        "MaxResults":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The maximum number of records to include in the response. If more records exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "DescribeUsersResponse":{
+      "type":"structure",
+      "members":{
+        "Users":{
+          "shape":"UserList",
+          "documentation":"<p>A list of users.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>An optional argument to pass in case the total number of records exceeds the value of MaxResults. If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. </p>"
+        }
+      }
+    },
+    "Double":{"type":"double"},
+    "DuplicateUserNameFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "Endpoint":{
+      "type":"structure",
+      "members":{
+        "Address":{
+          "shape":"String",
+          "documentation":"<p>The DNS hostname of the node.</p>"
+        },
+        "Port":{
+          "shape":"Integer",
+          "documentation":"<p>The port number that the engine is listening on.</p>"
+        }
+      },
+      "documentation":"<p>Represents the information required for client programs to connect to the cluster and its nodes.</p>"
+    },
+    "EngineVersionInfo":{
+      "type":"structure",
+      "members":{
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine for which version information is provided.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The engine version</p>"
+        },
+        "EnginePatchVersion":{
+          "shape":"String",
+          "documentation":"<p>The patched engine version</p>"
+        },
+        "ParameterGroupFamily":{
+          "shape":"String",
+          "documentation":"<p>Specifies the name of the parameter group family to which the engine default parameters apply.</p>"
+        }
+      },
+      "documentation":"<p>Provides details of the Redis OSS engine version</p>"
+    },
+    "EngineVersionInfoList":{
+      "type":"list",
+      "member":{"shape":"EngineVersionInfo"}
+    },
+    "Event":{
+      "type":"structure",
+      "members":{
+        "SourceName":{
+          "shape":"String",
+          "documentation":"<p>The name for the source of the event. For example, if the event occurred at the cluster level, the identifier would be the name of the cluster.</p>"
+        },
+        "SourceType":{
+          "shape":"SourceType",
+          "documentation":"<p>Specifies the origin of this event - a cluster, a parameter group, a security group, etc.</p>"
+        },
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>The text of the event.</p>"
+        },
+        "Date":{
+          "shape":"TStamp",
+          "documentation":"<p>The date and time when the event occurred.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single occurrence of something interesting within the system. Some examples of events are creating a cluster or adding or removing a node.</p>"
+    },
+    "EventList":{
+      "type":"list",
+      "member":{"shape":"Event"}
+    },
+    "FailoverShardRequest":{
+      "type":"structure",
+      "required":[
+        "ClusterName",
+        "ShardName"
+      ],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The cluster being failed over.</p>"
+        },
+        "ShardName":{
+          "shape":"String",
+          "documentation":"<p>The name of the shard.</p>"
+        }
+      }
+    },
+    "FailoverShardResponse":{
+      "type":"structure",
+      "members":{
+        "Cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The cluster being failed over.</p>"
+        }
+      }
+    },
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Values"
+      ],
+      "members":{
+        "Name":{
+          "shape":"FilterName",
+          "documentation":"<p>The property being filtered. For example, UserName.</p>"
+        },
+        "Values":{
+          "shape":"FilterValueList",
+          "documentation":"<p>The property values to filter on. For example, \"user-123\".</p>"
+        }
+      },
+      "documentation":"<p>Used to streamline results of a search based on the property being filtered.</p>"
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "FilterName":{
+      "type":"string",
+      "pattern":".*\\S.*"
+    },
+    "FilterValue":{
+      "type":"string",
+      "pattern":".*\\S.*"
+    },
+    "FilterValueList":{
+      "type":"list",
+      "member":{"shape":"FilterValue"},
+      "min":1
+    },
+    "InputAuthenticationType":{
+      "type":"string",
+      "enum":[
+        "password",
+        "iam"
+      ]
+    },
+    "InsufficientClusterCapacityFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "Integer":{"type":"integer"},
+    "IntegerOptional":{"type":"integer"},
+    "InvalidACLStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidARNFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidClusterStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidCredentialsException":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidKMSKeyFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidMultiRegionClusterStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The requested operation cannot be performed on the multi-Region cluster in its current state.</p>",
+      "exception":true
+    },
+    "InvalidNodeStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidParameterCombinationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"AwsQueryErrorMessage"}
+      },
+      "documentation":"<p/>",
+      "exception":true,
+      "synthetic":true
+    },
+    "InvalidParameterGroupStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidParameterValueException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"AwsQueryErrorMessage"}
+      },
+      "documentation":"<p/>",
+      "exception":true,
+      "synthetic":true
+    },
+    "InvalidSnapshotStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidSubnet":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidUserStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "InvalidVPCNetworkStateFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "IpDiscovery":{
+      "type":"string",
+      "enum":[
+        "ipv4",
+        "ipv6"
+      ]
+    },
+    "KeyList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "KmsKeyId":{
+      "type":"string",
+      "max":2048
+    },
+    "ListAllowedMultiRegionClusterUpdatesRequest":{
+      "type":"structure",
+      "required":["MultiRegionClusterName"],
+      "members":{
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster.</p>"
+        }
+      }
+    },
+    "ListAllowedMultiRegionClusterUpdatesResponse":{
+      "type":"structure",
+      "members":{
+        "ScaleUpNodeTypes":{
+          "shape":"NodeTypeList",
+          "documentation":"<p>The node types that the cluster can be scaled up to.</p>"
+        },
+        "ScaleDownNodeTypes":{
+          "shape":"NodeTypeList",
+          "documentation":"<p>The node types that the cluster can be scaled down to.</p>"
+        }
+      }
+    },
+    "ListAllowedNodeTypeUpdatesRequest":{
+      "type":"structure",
+      "required":["ClusterName"],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster you want to scale. MemoryDB uses the cluster name to identify the current node type being used by this cluster, and from that to create a list of node types you can scale up to.</p>"
+        }
+      }
+    },
+    "ListAllowedNodeTypeUpdatesResponse":{
+      "type":"structure",
+      "members":{
+        "ScaleUpNodeTypes":{
+          "shape":"NodeTypeList",
+          "documentation":"<p>A list node types which you can use to scale up your cluster.</p>"
+        },
+        "ScaleDownNodeTypes":{
+          "shape":"NodeTypeList",
+          "documentation":"<p>A list node types which you can use to scale down your cluster.</p>"
+        }
+      }
+    },
+    "ListTagsRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which you want the list of tags.</p>"
+        }
+      }
+    },
+    "ListTagsResponse":{
+      "type":"structure",
+      "members":{
+        "TagList":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags as key-value pairs.</p>"
+        }
+      }
+    },
+    "MultiRegionCluster":{
+      "type":"structure",
+      "members":{
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>The description of the multi-Region cluster.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The current status of the multi-Region cluster.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type used by the multi-Region cluster.</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine used by the multi-Region cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the engine used by the multi-Region cluster.</p>"
+        },
+        "NumberOfShards":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of shards in the multi-Region cluster.</p>"
+        },
+        "Clusters":{
+          "shape":"RegionalClusterList",
+          "documentation":"<p>The clusters in this multi-Region cluster.</p>"
+        },
+        "MultiRegionParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region parameter group associated with the cluster.</p>"
+        },
+        "TLSEnabled":{
+          "shape":"BooleanOptional",
+          "documentation":"<p>Indiciates if the multi-Region cluster is TLS enabled.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the multi-Region cluster.</p>"
+        }
+      },
+      "documentation":"<p>Represents a multi-Region cluster.</p>"
+    },
+    "MultiRegionClusterAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>A multi-Region cluster with the specified name already exists.</p>",
+      "exception":true
+    },
+    "MultiRegionClusterList":{
+      "type":"list",
+      "member":{"shape":"MultiRegionCluster"}
+    },
+    "MultiRegionClusterNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The specified multi-Region cluster does not exist.</p>",
+      "exception":true
+    },
+    "MultiRegionParameterGroupNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The specified multi-Region parameter group does not exist.</p>",
+      "exception":true
+    },
+    "NetworkType":{
+      "type":"string",
+      "enum":[
+        "ipv4",
+        "ipv6",
+        "dual_stack"
+      ]
+    },
+    "NetworkTypeList":{
+      "type":"list",
+      "member":{"shape":"NetworkType"}
+    },
+    "NoOperationFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "Node":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The node identifier. A node name is a numeric identifier (0001, 0002, etc.). The combination of cluster name, shard name and node name uniquely identifies every node used in a customer's Amazon account.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the service update on the node</p>"
+        },
+        "AvailabilityZone":{
+          "shape":"String",
+          "documentation":"<p>The Availability Zone in which the node resides</p>"
+        },
+        "CreateTime":{
+          "shape":"TStamp",
+          "documentation":"<p>The date and time when the node was created.</p>"
+        },
+        "Endpoint":{
+          "shape":"Endpoint",
+          "documentation":"<p>The hostname for connecting to this node.</p>"
+        }
+      },
+      "documentation":"<p>Represents an individual node within a cluster. Each node runs its own instance of the cluster's protocol-compliant caching software.</p>"
+    },
+    "NodeList":{
+      "type":"list",
+      "member":{"shape":"Node"}
+    },
+    "NodeQuotaForClusterExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "NodeQuotaForCustomerExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "NodeTypeList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Parameter":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The value of the parameter</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the parameter</p>"
+        },
+        "DataType":{
+          "shape":"String",
+          "documentation":"<p>The parameter's data type</p>"
+        },
+        "AllowedValues":{
+          "shape":"String",
+          "documentation":"<p>The valid range of values for the parameter.</p>"
+        },
+        "MinimumEngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The earliest engine version to which the parameter can apply.</p>"
+        }
+      },
+      "documentation":"<p>Describes an individual setting that controls some aspect of MemoryDB behavior.</p>"
+    },
+    "ParameterGroup":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group</p>"
+        },
+        "Family":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group family that this parameter group is compatible with.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the parameter group</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the parameter group</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a CreateParameterGroup operation. A parameter group represents a combination of specific values for the parameters that are passed to the engine software during startup.</p>"
+    },
+    "ParameterGroupAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ParameterGroupList":{
+      "type":"list",
+      "member":{"shape":"ParameterGroup"}
+    },
+    "ParameterGroupNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ParameterGroupQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ParameterNameList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ParameterNameValue":{
+      "type":"structure",
+      "members":{
+        "ParameterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter</p>"
+        },
+        "ParameterValue":{
+          "shape":"String",
+          "documentation":"<p>The value of the parameter</p>"
+        }
+      },
+      "documentation":"<p>Describes a name-value pair that is used to update the value of a parameter.</p>"
+    },
+    "ParameterNameValueList":{
+      "type":"list",
+      "member":{"shape":"ParameterNameValue"}
+    },
+    "ParametersList":{
+      "type":"list",
+      "member":{"shape":"Parameter"}
+    },
+    "PasswordListInput":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "min":1
+    },
+    "PendingModifiedServiceUpdate":{
+      "type":"structure",
+      "members":{
+        "ServiceUpdateName":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the service update</p>"
+        },
+        "Status":{
+          "shape":"ServiceUpdateStatus",
+          "documentation":"<p>The status of the service update</p>"
+        }
+      },
+      "documentation":"<p>Update action that has yet to be processed for the corresponding apply/stop request</p>"
+    },
+    "PendingModifiedServiceUpdateList":{
+      "type":"list",
+      "member":{"shape":"PendingModifiedServiceUpdate"}
+    },
+    "PurchaseReservedNodesOfferingRequest":{
+      "type":"structure",
+      "required":["ReservedNodesOfferingId"],
+      "members":{
+        "ReservedNodesOfferingId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the reserved node offering to purchase.</p>"
+        },
+        "ReservationId":{
+          "shape":"String",
+          "documentation":"<p>A customer-specified identifier to track this reservation.</p>"
+        },
+        "NodeCount":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of node instances to reserve.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "PurchaseReservedNodesOfferingResponse":{
+      "type":"structure",
+      "members":{
+        "ReservedNode":{
+          "shape":"ReservedNode",
+          "documentation":"<p>Represents the output of a <code>PurchaseReservedNodesOffering</code> operation.</p>"
+        }
+      }
+    },
+    "RecurringCharge":{
+      "type":"structure",
+      "members":{
+        "RecurringChargeAmount":{
+          "shape":"Double",
+          "documentation":"<p>The amount of the recurring charge to run this reserved node.</p>"
+        },
+        "RecurringChargeFrequency":{
+          "shape":"String",
+          "documentation":"<p>The frequency of the recurring price charged to run this reserved node.</p>"
+        }
+      },
+      "documentation":"<p>The recurring charge to run this reserved node.</p>"
+    },
+    "RecurringChargeList":{
+      "type":"list",
+      "member":{"shape":"RecurringCharge"}
+    },
+    "RegionalCluster":{
+      "type":"structure",
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the Regional cluster</p>"
+        },
+        "Region":{
+          "shape":"String",
+          "documentation":"<p>The Region the current Regional cluster is assigned to.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the Regional cluster.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) the Regional cluster</p>"
+        }
+      },
+      "documentation":"<p>Represents a Regional cluster</p>",
+      "wrapper":true
+    },
+    "RegionalClusterList":{
+      "type":"list",
+      "member":{"shape":"RegionalCluster"}
+    },
+    "ReplicaConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "ReplicaCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of replicas to scale up or down to</p>"
+        }
+      },
+      "documentation":"<p>A request to configure the number of replicas in a shard</p>"
+    },
+    "ReservedNode":{
+      "type":"structure",
+      "members":{
+        "ReservationId":{
+          "shape":"String",
+          "documentation":"<p>A customer-specified identifier to track this reservation.</p>"
+        },
+        "ReservedNodesOfferingId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the reserved node offering to purchase.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type for the reserved nodes.</p>"
+        },
+        "StartTime":{
+          "shape":"TStamp",
+          "documentation":"<p>The time the reservation started.</p>"
+        },
+        "Duration":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the reservation in seconds.</p>"
+        },
+        "FixedPrice":{
+          "shape":"Double",
+          "documentation":"<p>The fixed price charged for this reserved node.</p>"
+        },
+        "NodeCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of nodes that have been reserved.</p>"
+        },
+        "OfferingType":{
+          "shape":"String",
+          "documentation":"<p>The offering type of this reserved node.</p>"
+        },
+        "State":{
+          "shape":"String",
+          "documentation":"<p>The state of the reserved node.</p>"
+        },
+        "RecurringCharges":{
+          "shape":"RecurringChargeList",
+          "documentation":"<p>The recurring price charged to run this reserved node.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the reserved node.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of a <code>PurchaseReservedNodesOffering</code> operation.</p>"
+    },
+    "ReservedNodeAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>You already have a reservation with the given identifier.</p>",
+      "exception":true
+    },
+    "ReservedNodeList":{
+      "type":"list",
+      "member":{"shape":"ReservedNode"}
+    },
+    "ReservedNodeNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The requested node does not exist.</p>",
+      "exception":true
+    },
+    "ReservedNodeQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The request cannot be processed because it would exceed the user's node quota.</p>",
+      "exception":true
+    },
+    "ReservedNodesOffering":{
+      "type":"structure",
+      "members":{
+        "ReservedNodesOfferingId":{
+          "shape":"String",
+          "documentation":"<p>The offering identifier.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The node type for the reserved nodes. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported\">Supported node types</a>.</p>"
+        },
+        "Duration":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the reservation in seconds.</p>"
+        },
+        "FixedPrice":{
+          "shape":"Double",
+          "documentation":"<p>The fixed price charged for this reserved node.</p>"
+        },
+        "OfferingType":{
+          "shape":"String",
+          "documentation":"<p>The offering type of this reserved node.</p>"
+        },
+        "RecurringCharges":{
+          "shape":"RecurringChargeList",
+          "documentation":"<p>The recurring price charged to run this reserved node.</p>"
+        }
+      },
+      "documentation":"<p>The offering type of this node.</p>"
+    },
+    "ReservedNodesOfferingList":{
+      "type":"list",
+      "member":{"shape":"ReservedNodesOffering"}
+    },
+    "ReservedNodesOfferingNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>The requested node offering does not exist. </p>",
+      "exception":true
+    },
+    "ResetParameterGroupRequest":{
+      "type":"structure",
+      "required":["ParameterGroupName"],
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group to reset.</p>"
+        },
+        "AllParameters":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, all parameters in the parameter group are reset to their default values. If false, only the parameters listed by ParameterNames are reset to their default values.</p>"
+        },
+        "ParameterNames":{
+          "shape":"ParameterNameList",
+          "documentation":"<p>An array of parameter names to reset to their default values. If AllParameters is true, do not use ParameterNames. If AllParameters is false, you must specify the name of at least one parameter to reset.</p>"
+        }
+      }
+    },
+    "ResetParameterGroupResponse":{
+      "type":"structure",
+      "members":{
+        "ParameterGroup":{
+          "shape":"ParameterGroup",
+          "documentation":"<p>The parameter group being reset.</p>"
+        }
+      }
+    },
+    "ReshardingStatus":{
+      "type":"structure",
+      "members":{
+        "SlotMigration":{
+          "shape":"SlotMigration",
+          "documentation":"<p>The status of the online resharding slot migration</p>"
+        }
+      },
+      "documentation":"<p>The status of the online resharding</p>"
+    },
+    "SecurityGroupIdsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SecurityGroupMembership":{
+      "type":"structure",
+      "members":{
+        "SecurityGroupId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the security group.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the security group membership. The status changes whenever a security group is modified, or when the security groups assigned to a cluster are modified.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single security group and its status.</p>"
+    },
+    "SecurityGroupMembershipList":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupMembership"}
+    },
+    "ServiceLinkedRoleNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ServiceUpdate":{
+      "type":"structure",
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster to which the service update applies</p>"
+        },
+        "ServiceUpdateName":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the service update</p>"
+        },
+        "ReleaseDate":{
+          "shape":"TStamp",
+          "documentation":"<p>The date when the service update is initially available</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>Provides details of the service update</p>"
+        },
+        "Status":{
+          "shape":"ServiceUpdateStatus",
+          "documentation":"<p>The status of the service update</p>"
+        },
+        "Type":{
+          "shape":"ServiceUpdateType",
+          "documentation":"<p>Reflects the nature of the service update</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine for which a service update is available.</p>"
+        },
+        "NodesUpdated":{
+          "shape":"String",
+          "documentation":"<p>A list of nodes updated by the service update</p>"
+        },
+        "AutoUpdateStartDate":{
+          "shape":"TStamp",
+          "documentation":"<p>The date at which the service update will be automatically applied</p>"
+        }
+      },
+      "documentation":"<p>An update that you can apply to your MemoryDB clusters.</p>"
+    },
+    "ServiceUpdateList":{
+      "type":"list",
+      "member":{"shape":"ServiceUpdate"}
+    },
+    "ServiceUpdateNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ServiceUpdateRequest":{
+      "type":"structure",
+      "members":{
+        "ServiceUpdateNameToApply":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the service update</p>"
+        }
+      },
+      "documentation":"<p>A request to apply a service update</p>"
+    },
+    "ServiceUpdateStatus":{
+      "type":"string",
+      "enum":[
+        "available",
+        "in-progress",
+        "complete",
+        "scheduled"
+      ]
+    },
+    "ServiceUpdateStatusList":{
+      "type":"list",
+      "member":{"shape":"ServiceUpdateStatus"},
+      "max":4
+    },
+    "ServiceUpdateType":{
+      "type":"string",
+      "enum":["security-update"]
+    },
+    "Shard":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the shard</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The current state of this replication group - creating, available, modifying, deleting.</p>"
+        },
+        "Slots":{
+          "shape":"String",
+          "documentation":"<p>The keyspace for this shard.</p>"
+        },
+        "Nodes":{
+          "shape":"NodeList",
+          "documentation":"<p>A list containing information about individual nodes within the shard</p>"
+        },
+        "NumberOfNodes":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of nodes in the shard</p>"
+        }
+      },
+      "documentation":"<p>Represents a collection of nodes in a cluster. One node in the node group is the read/write primary node. All the other nodes are read-only Replica nodes.</p>"
+    },
+    "ShardConfiguration":{
+      "type":"structure",
+      "members":{
+        "Slots":{
+          "shape":"String",
+          "documentation":"<p>A string that specifies the keyspace for a particular node group. Keyspaces range from 0 to 16,383. The string is in the format startkey-endkey.</p>"
+        },
+        "ReplicaCount":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of read replica nodes in this shard.</p>"
+        }
+      },
+      "documentation":"<p>Shard configuration options. Each shard configuration has the following: Slots and ReplicaCount.</p>"
+    },
+    "ShardConfigurationRequest":{
+      "type":"structure",
+      "members":{
+        "ShardCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of shards in the cluster</p>"
+        }
+      },
+      "documentation":"<p>A request to configure the sharding properties of a cluster</p>"
+    },
+    "ShardDetail":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the shard</p>"
+        },
+        "Configuration":{
+          "shape":"ShardConfiguration",
+          "documentation":"<p>The configuration details of the shard</p>"
+        },
+        "Size":{
+          "shape":"String",
+          "documentation":"<p>The size of the shard's snapshot</p>"
+        },
+        "SnapshotCreationTime":{
+          "shape":"TStamp",
+          "documentation":"<p>The date and time that the shard's snapshot was created</p>"
+        }
+      },
+      "documentation":"<p>Provides details of a shard in a snapshot</p>"
+    },
+    "ShardDetails":{
+      "type":"list",
+      "member":{"shape":"ShardDetail"}
+    },
+    "ShardList":{
+      "type":"list",
+      "member":{"shape":"Shard"}
+    },
+    "ShardNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "ShardsPerClusterQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SlotMigration":{
+      "type":"structure",
+      "members":{
+        "ProgressPercentage":{
+          "shape":"Double",
+          "documentation":"<p>The percentage of the slot migration that is complete.</p>"
+        }
+      },
+      "documentation":"<p>Represents the progress of an online resharding operation.</p>"
+    },
+    "Snapshot":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the snapshot. Valid values: creating | available | restoring | copying | deleting.</p>"
+        },
+        "Source":{
+          "shape":"String",
+          "documentation":"<p>Indicates whether the snapshot is from an automatic backup (automated) or was created manually (manual).</p>"
+        },
+        "KmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the KMS key used to encrypt the snapshot.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the snapshot.</p>"
+        },
+        "ClusterConfiguration":{
+          "shape":"ClusterConfiguration",
+          "documentation":"<p>The configuration of the cluster from which the snapshot was taken</p>"
+        },
+        "DataTiering":{
+          "shape":"DataTieringStatus",
+          "documentation":"<p>Enables data tiering. Data tiering is only supported for clusters using the r6gd node type. This parameter must be set when using r6gd nodes. For more information, see <a href=\"https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html\">Data tiering</a>.</p>"
+        }
+      },
+      "documentation":"<p>Represents a copy of an entire cluster as of the time when the snapshot was taken.</p>"
+    },
+    "SnapshotAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SnapshotArnsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SnapshotList":{
+      "type":"list",
+      "member":{"shape":"Snapshot"}
+    },
+    "SnapshotNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SnapshotQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SourceType":{
+      "type":"string",
+      "enum":[
+        "node",
+        "parameter-group",
+        "subnet-group",
+        "cluster",
+        "user",
+        "acl"
+      ]
+    },
+    "String":{"type":"string"},
+    "Subnet":{
+      "type":"structure",
+      "members":{
+        "Identifier":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier for the subnet.</p>"
+        },
+        "AvailabilityZone":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p>The Availability Zone where the subnet resides</p>"
+        },
+        "SupportedNetworkTypes":{
+          "shape":"NetworkTypeList",
+          "documentation":"<p>The network types supported by this subnet. Returns an array of strings that can include 'ipv4', 'ipv6', or both, indicating whether the subnet supports IPv4 only, IPv6 only, or dual-stack deployments.</p>"
+        }
+      },
+      "documentation":"<p>Represents the subnet associated with a cluster. This parameter refers to subnets defined in Amazon Virtual Private Cloud (Amazon VPC) and used with MemoryDB.</p>"
+    },
+    "SubnetGroup":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the subnet group</p>"
+        },
+        "VpcId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Virtual Private Cloud identifier (VPC ID) of the subnet group.</p>"
+        },
+        "Subnets":{
+          "shape":"SubnetList",
+          "documentation":"<p>A list of subnets associated with the subnet group.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the subnet group.</p>"
+        },
+        "SupportedNetworkTypes":{
+          "shape":"NetworkTypeList",
+          "documentation":"<p>The network types supported by this subnet group. Returns an array of strings that can include 'ipv4', 'ipv6', or both, indicating the IP address types that can be used for clusters deployed in this subnet group.</p>"
+        }
+      },
+      "documentation":"<p>Represents the output of one of the following operations:</p> <ul> <li> <p>CreateSubnetGroup</p> </li> <li> <p>UpdateSubnetGroup</p> </li> </ul> <p>A subnet group is a collection of subnets (typically private) that you can designate for your clusters running in an Amazon Virtual Private Cloud (VPC) environment.</p>"
+    },
+    "SubnetGroupAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetGroupInUseFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetGroupList":{
+      "type":"list",
+      "member":{"shape":"SubnetGroup"}
+    },
+    "SubnetGroupNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetGroupQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetIdentifierList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SubnetInUse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetList":{
+      "type":"list",
+      "member":{"shape":"Subnet"}
+    },
+    "SubnetNotAllowedFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "SubnetQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "TStamp":{"type":"timestamp"},
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"String",
+          "documentation":"<p>The key for the tag. May not be null.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The tag's value. May be null.</p>"
+        }
+      },
+      "documentation":"<p>A tag that can be added to an MemoryDB resource. Tags are composed of a Key/Value pair. You can use tags to categorize and track all your MemoryDB resources. When you add or remove tags on clusters, those actions will be replicated to all nodes in the cluster. A tag with a null Value is permitted. For more information, see <a href=\"https://docs.aws.amazon.com/MemoryDB/latest/devguide/tagging-resources.html\">Tagging your MemoryDB resources</a> </p>"
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200
+    },
+    "TagNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "TagQuotaPerResourceExceeded":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to which the tags are to be added.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to be added to this resource. A tag is a key-value pair. A tag key must be accompanied by a tag value, although null is accepted.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+        "TagList":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags as key-value pairs.</p>"
+        }
+      }
+    },
+    "TargetBucket":{
+      "type":"string",
+      "max":255,
+      "pattern":"^[A-Za-z0-9._-]+$"
+    },
+    "TestFailoverNotAvailableFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "UnprocessedCluster":{
+      "type":"structure",
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster</p>"
+        },
+        "ErrorType":{
+          "shape":"String",
+          "documentation":"<p>The error type associated with the update failure</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message associated with the update failure</p>"
+        }
+      },
+      "documentation":"<p>A cluster whose updates have failed</p>"
+    },
+    "UnprocessedClusterList":{
+      "type":"list",
+      "member":{"shape":"UnprocessedCluster"}
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to which the tags are to be removed.</p>"
+        },
+        "TagKeys":{
+          "shape":"KeyList",
+          "documentation":"<p>The list of keys of the tags that are to be removed.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+        "TagList":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags removed.</p>"
+        }
+      }
+    },
+    "UpdateACLRequest":{
+      "type":"structure",
+      "required":["ACLName"],
+      "members":{
+        "ACLName":{
+          "shape":"String",
+          "documentation":"<p>The name of the Access Control List.</p>"
+        },
+        "UserNamesToAdd":{
+          "shape":"UserNameListInput",
+          "documentation":"<p>The list of users to add to the Access Control List.</p>"
+        },
+        "UserNamesToRemove":{
+          "shape":"UserNameListInput",
+          "documentation":"<p>The list of users to remove from the Access Control List.</p>"
+        }
+      }
+    },
+    "UpdateACLResponse":{
+      "type":"structure",
+      "members":{
+        "ACL":{
+          "shape":"ACL",
+          "documentation":"<p>The updated Access Control List.</p>"
+        }
+      }
+    },
+    "UpdateClusterRequest":{
+      "type":"structure",
+      "required":["ClusterName"],
+      "members":{
+        "ClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the cluster to update.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>The description of the cluster to update.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIdsList",
+          "documentation":"<p>The SecurityGroupIds to update.</p>"
+        },
+        "MaintenanceWindow":{
+          "shape":"String",
+          "documentation":"<p>Specifies the weekly time range during which maintenance on the cluster is performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi (24H Clock UTC). The minimum maintenance window is a 60 minute period.</p> <p>Valid values for <code>ddd</code> are:</p> <ul> <li> <p> <code>sun</code> </p> </li> <li> <p> <code>mon</code> </p> </li> <li> <p> <code>tue</code> </p> </li> <li> <p> <code>wed</code> </p> </li> <li> <p> <code>thu</code> </p> </li> <li> <p> <code>fri</code> </p> </li> <li> <p> <code>sat</code> </p> </li> </ul> <p>Example: <code>sun:23:00-mon:01:30</code> </p>"
+        },
+        "SnsTopicArn":{
+          "shape":"String",
+          "documentation":"<p>The SNS topic ARN to update.</p>"
+        },
+        "SnsTopicStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the Amazon SNS notification topic. Notifications are sent only if the status is active.</p>"
+        },
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group to update.</p>"
+        },
+        "SnapshotWindow":{
+          "shape":"String",
+          "documentation":"<p>The daily time range (in UTC) during which MemoryDB begins taking a daily snapshot of your cluster.</p>"
+        },
+        "SnapshotRetentionLimit":{
+          "shape":"IntegerOptional",
+          "documentation":"<p>The number of days for which MemoryDB retains automatic cluster snapshots before deleting them. For example, if you set SnapshotRetentionLimit to 5, a snapshot that was taken today is retained for 5 days before being deleted.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>A valid node type that you want to scale this cluster up or down to.</p>"
+        },
+        "Engine":{
+          "shape":"String",
+          "documentation":"<p>The name of the engine to be used for the cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The upgraded version of the engine to be run on the nodes. You can upgrade to a newer engine version, but you cannot downgrade to an earlier engine version. If you want to use an earlier engine version, you must delete the existing cluster and create it anew with the earlier engine version.</p>"
+        },
+        "ReplicaConfiguration":{
+          "shape":"ReplicaConfigurationRequest",
+          "documentation":"<p>The number of replicas that will reside in each shard.</p>"
+        },
+        "ShardConfiguration":{
+          "shape":"ShardConfigurationRequest",
+          "documentation":"<p>The number of shards in the cluster.</p>"
+        },
+        "ACLName":{
+          "shape":"ACLName",
+          "documentation":"<p>The Access Control List that is associated with the cluster.</p>"
+        },
+        "IpDiscovery":{
+          "shape":"IpDiscovery",
+          "documentation":"<p>The mechanism for discovering IP addresses for the cluster discovery protocol. Valid values are 'ipv4' or 'ipv6'. When set to 'ipv4', cluster discovery functions such as cluster slots, cluster shards, and cluster nodes will return IPv4 addresses for cluster nodes. When set to 'ipv6', the cluster discovery functions return IPv6 addresses for cluster nodes. The value must be compatible with the NetworkType parameter. If not specified, the default is 'ipv4'.</p>"
+        }
+      }
+    },
+    "UpdateClusterResponse":{
+      "type":"structure",
+      "members":{
+        "Cluster":{
+          "shape":"Cluster",
+          "documentation":"<p>The updated cluster.</p>"
+        }
+      }
+    },
+    "UpdateMultiRegionClusterRequest":{
+      "type":"structure",
+      "required":["MultiRegionClusterName"],
+      "members":{
+        "MultiRegionClusterName":{
+          "shape":"String",
+          "documentation":"<p>The name of the multi-Region cluster to be updated.</p>"
+        },
+        "NodeType":{
+          "shape":"String",
+          "documentation":"<p>The new node type to be used for the multi-Region cluster.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A new description for the multi-Region cluster.</p>"
+        },
+        "EngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The new engine version to be used for the multi-Region cluster.</p>"
+        },
+        "ShardConfiguration":{"shape":"ShardConfigurationRequest"},
+        "MultiRegionParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The new multi-Region parameter group to be associated with the cluster.</p>"
+        },
+        "UpdateStrategy":{
+          "shape":"UpdateStrategy",
+          "documentation":"<p>The strategy to use for the update operation. Supported values are \"coordinated\" or \"uncoordinated\".</p>"
+        }
+      }
+    },
+    "UpdateMultiRegionClusterResponse":{
+      "type":"structure",
+      "members":{
+        "MultiRegionCluster":{
+          "shape":"MultiRegionCluster",
+          "documentation":"<p>The status of updating the multi-Region cluster.</p>"
+        }
+      }
+    },
+    "UpdateParameterGroupRequest":{
+      "type":"structure",
+      "required":[
+        "ParameterGroupName",
+        "ParameterNameValues"
+      ],
+      "members":{
+        "ParameterGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the parameter group to update.</p>"
+        },
+        "ParameterNameValues":{
+          "shape":"ParameterNameValueList",
+          "documentation":"<p>An array of parameter names and values for the parameter update. You must supply at least one parameter name and value; subsequent arguments are optional. A maximum of 20 parameters may be updated per request.</p>"
+        }
+      }
+    },
+    "UpdateParameterGroupResponse":{
+      "type":"structure",
+      "members":{
+        "ParameterGroup":{
+          "shape":"ParameterGroup",
+          "documentation":"<p>The updated parameter group</p>"
+        }
+      }
+    },
+    "UpdateStrategy":{
+      "type":"string",
+      "enum":[
+        "coordinated",
+        "uncoordinated"
+      ]
+    },
+    "UpdateSubnetGroupRequest":{
+      "type":"structure",
+      "required":["SubnetGroupName"],
+      "members":{
+        "SubnetGroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the subnet group</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the subnet group</p>"
+        },
+        "SubnetIds":{
+          "shape":"SubnetIdentifierList",
+          "documentation":"<p>The EC2 subnet IDs for the subnet group.</p>"
+        }
+      }
+    },
+    "UpdateSubnetGroupResponse":{
+      "type":"structure",
+      "members":{
+        "SubnetGroup":{
+          "shape":"SubnetGroup",
+          "documentation":"<p>The updated subnet group</p>"
+        }
+      }
+    },
+    "UpdateUserRequest":{
+      "type":"structure",
+      "required":["UserName"],
+      "members":{
+        "UserName":{
+          "shape":"UserName",
+          "documentation":"<p>The name of the user</p>"
+        },
+        "AuthenticationMode":{
+          "shape":"AuthenticationMode",
+          "documentation":"<p>Denotes the user's authentication properties, such as whether it requires a password to authenticate.</p>"
+        },
+        "AccessString":{
+          "shape":"AccessString",
+          "documentation":"<p>Access permissions string used for this user.</p>"
+        }
+      }
+    },
+    "UpdateUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The updated user</p>"
+        }
+      }
+    },
+    "User":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the user</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>Indicates the user status. Can be \"active\", \"modifying\" or \"deleting\".</p>"
+        },
+        "AccessString":{
+          "shape":"String",
+          "documentation":"<p>Access permissions string used for this user.</p>"
+        },
+        "ACLNames":{
+          "shape":"ACLNameList",
+          "documentation":"<p>The names of the Access Control Lists to which the user belongs</p>"
+        },
+        "MinimumEngineVersion":{
+          "shape":"String",
+          "documentation":"<p>The minimum engine version supported for the user</p>"
+        },
+        "Authentication":{
+          "shape":"Authentication",
+          "documentation":"<p>Denotes whether the user requires a password to authenticate.</p>"
+        },
+        "ARN":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user. </p>"
+        }
+      },
+      "documentation":"<p>You create users and assign them specific permissions by using an access string. You assign the users to Access Control Lists aligned with a specific role (administrators, human resources) that are then deployed to one or more MemoryDB clusters.</p>"
+    },
+    "UserAlreadyExistsFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "UserList":{
+      "type":"list",
+      "member":{"shape":"User"}
+    },
+    "UserName":{
+      "type":"string",
+      "min":1,
+      "pattern":"[a-zA-Z][a-zA-Z0-9\\-]*"
+    },
+    "UserNameList":{
+      "type":"list",
+      "member":{"shape":"UserName"}
+    },
+    "UserNameListInput":{
+      "type":"list",
+      "member":{"shape":"UserName"},
+      "min":1
+    },
+    "UserNotFoundFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    },
+    "UserQuotaExceededFault":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p/>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>MemoryDB is a fully managed, Redis OSS-compatible, in-memory database that delivers ultra-fast performance and Multi-AZ durability for modern applications built using microservices architectures. MemoryDB stores the entire database in-memory, enabling low latency and high throughput data access. It is compatible with Redis OSS, a popular open source data store, enabling you to leverage Redis OSS’ flexible and friendly data structures, APIs, and commands.</p>"
+}

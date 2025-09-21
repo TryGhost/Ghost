@@ -1,0 +1,195 @@
+{
+  "version": "1.0",
+  "resources": {
+    "BatchPrediction": {
+      "operation": "DescribeBatchPredictions",
+      "resourceIdentifier": {
+        "BatchPredictionId": "Results[].BatchPredictionId"
+      }
+    },
+    "DataSource": {
+      "operation": "DescribeDataSources",
+      "resourceIdentifier": {
+        "DataSourceId": "Results[].DataSourceId"
+      }
+    },
+    "Evaluation": {
+      "operation": "DescribeEvaluations",
+      "resourceIdentifier": {
+        "EvaluationId": "Results[].EvaluationId"
+      }
+    },
+    "MLModel": {
+      "operation": "DescribeMLModels",
+      "resourceIdentifier": {
+        "MLModelId": "Results[].MLModelId",
+        "ScoreThreshold": "Results[].ScoreThreshold"
+      }
+    }
+  },
+  "operations": {
+    "DeleteBatchPrediction": {
+      "BatchPredictionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BatchPrediction",
+            "resourceIdentifier": "BatchPredictionId"
+          }
+        ]
+      }
+    },
+    "DeleteDataSource": {
+      "DataSourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DataSource",
+            "resourceIdentifier": "DataSourceId"
+          }
+        ]
+      }
+    },
+    "DeleteEvaluation": {
+      "EvaluationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Evaluation",
+            "resourceIdentifier": "EvaluationId"
+          }
+        ]
+      }
+    },
+    "DeleteMLModel": {
+      "MLModelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "MLModelId"
+          }
+        ]
+      }
+    },
+    "DeleteRealtimeEndpoint": {
+      "MLModelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "MLModelId"
+          }
+        ]
+      }
+    },
+    "GetBatchPrediction": {
+      "BatchPredictionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BatchPrediction",
+            "resourceIdentifier": "BatchPredictionId"
+          }
+        ]
+      }
+    },
+    "GetDataSource": {
+      "DataSourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DataSource",
+            "resourceIdentifier": "DataSourceId"
+          }
+        ]
+      }
+    },
+    "GetEvaluation": {
+      "EvaluationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Evaluation",
+            "resourceIdentifier": "EvaluationId"
+          }
+        ]
+      }
+    },
+    "GetMLModel": {
+      "MLModelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "MLModelId"
+          }
+        ]
+      }
+    },
+    "Predict": {
+      "MLModelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "MLModelId"
+          }
+        ]
+      }
+    },
+    "UpdateBatchPrediction": {
+      "BatchPredictionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BatchPrediction",
+            "resourceIdentifier": "BatchPredictionId"
+          }
+        ]
+      }
+    },
+    "UpdateDataSource": {
+      "DataSourceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "DataSource",
+            "resourceIdentifier": "DataSourceId"
+          }
+        ]
+      }
+    },
+    "UpdateEvaluation": {
+      "EvaluationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Evaluation",
+            "resourceIdentifier": "EvaluationId"
+          }
+        ]
+      }
+    },
+    "UpdateMLModel": {
+      "MLModelId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "MLModelId"
+          }
+        ]
+      },
+      "ScoreThreshold": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "MLModel",
+            "resourceIdentifier": "ScoreThreshold"
+          }
+        ]
+      }
+    }
+  }
+}

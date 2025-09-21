@@ -1,0 +1,1940 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-02-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"cassandra",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"Amazon Keyspaces",
+    "serviceId":"Keyspaces",
+    "signatureVersion":"v4",
+    "signingName":"cassandra",
+    "targetPrefix":"KeyspacesService",
+    "uid":"keyspaces-2022-02-10"
+  },
+  "operations":{
+    "CreateKeyspace":{
+      "name":"CreateKeyspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateKeyspaceRequest"},
+      "output":{"shape":"CreateKeyspaceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>The <code>CreateKeyspace</code> operation adds a new keyspace to your account. In an Amazon Web Services account, keyspace names must be unique within each Region.</p> <p> <code>CreateKeyspace</code> is an asynchronous operation. You can monitor the creation status of the new keyspace by using the <code>GetKeyspace</code> operation.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/getting-started.keyspaces.html\">Create a keyspace</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CreateTable":{
+      "name":"CreateTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateTableRequest"},
+      "output":{"shape":"CreateTableResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The <code>CreateTable</code> operation adds a new table to the specified keyspace. Within a keyspace, table names must be unique.</p> <p> <code>CreateTable</code> is an asynchronous operation. When the request is received, the status of the table is set to <code>CREATING</code>. You can monitor the creation status of the new table by using the <code>GetTable</code> operation, which returns the current <code>status</code> of the table. You can start using a table when the status is <code>ACTIVE</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/getting-started.tables.html\">Create a table</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CreateType":{
+      "name":"CreateType",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateTypeRequest"},
+      "output":{"shape":"CreateTypeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> The <code>CreateType</code> operation creates a new user-defined type in the specified keyspace. </p> <p>To configure the required permissions, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/configure-udt-permissions.html#udt-permissions-create\">Permissions to create a UDT</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/udts.html\">User-defined types (UDTs)</a> in the <i>Amazon Keyspaces Developer Guide</i>. </p>"
+    },
+    "DeleteKeyspace":{
+      "name":"DeleteKeyspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteKeyspaceRequest"},
+      "output":{"shape":"DeleteKeyspaceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The <code>DeleteKeyspace</code> operation deletes a keyspace and all of its tables. </p>"
+    },
+    "DeleteTable":{
+      "name":"DeleteTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteTableRequest"},
+      "output":{"shape":"DeleteTableResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The <code>DeleteTable</code> operation deletes a table and all of its data. After a <code>DeleteTable</code> request is received, the specified table is in the <code>DELETING</code> state until Amazon Keyspaces completes the deletion. If the table is in the <code>ACTIVE</code> state, you can delete it. If a table is either in the <code>CREATING</code> or <code>UPDATING</code> states, then Amazon Keyspaces returns a <code>ResourceInUseException</code>. If the specified table does not exist, Amazon Keyspaces returns a <code>ResourceNotFoundException</code>. If the table is already in the <code>DELETING</code> state, no error is returned.</p>"
+    },
+    "DeleteType":{
+      "name":"DeleteType",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteTypeRequest"},
+      "output":{"shape":"DeleteTypeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> The <code>DeleteType</code> operation deletes a user-defined type (UDT). You can only delete a type that is not used in a table or another UDT. </p> <p>To configure the required permissions, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/configure-udt-permissions.html#udt-permissions-drop\">Permissions to delete a UDT</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "GetKeyspace":{
+      "name":"GetKeyspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetKeyspaceRequest"},
+      "output":{"shape":"GetKeyspaceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the name of the specified keyspace, the Amazon Resource Name (ARN), the replication strategy, the Amazon Web Services Regions of a multi-Region keyspace, and the status of newly added Regions after an <code>UpdateKeyspace</code> operation.</p>"
+    },
+    "GetTable":{
+      "name":"GetTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTableRequest"},
+      "output":{"shape":"GetTableResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns information about the table, including the table's name and current status, the keyspace name, configuration settings, and metadata.</p> <p>To read table metadata using <code>GetTable</code>, the IAM principal needs <code>Select</code> action permissions for the table and the system keyspace.</p>"
+    },
+    "GetTableAutoScalingSettings":{
+      "name":"GetTableAutoScalingSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTableAutoScalingSettingsRequest"},
+      "output":{"shape":"GetTableAutoScalingSettingsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns auto scaling related settings of the specified table in JSON format. If the table is a multi-Region table, the Amazon Web Services Region specific auto scaling settings of the table are included.</p> <p>Amazon Keyspaces auto scaling helps you provision throughput capacity for variable workloads efficiently by increasing and decreasing your table's read and write capacity automatically in response to application traffic. For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/autoscaling.html\">Managing throughput capacity automatically with Amazon Keyspaces auto scaling</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <important> <p> <code>GetTableAutoScalingSettings</code> can't be used as an action in an IAM policy.</p> </important> <p>To define permissions for <code>GetTableAutoScalingSettings</code>, you must allow the following two actions in the IAM policy statement's <code>Action</code> element:</p> <ul> <li> <p> <code>application-autoscaling:DescribeScalableTargets</code> </p> </li> <li> <p> <code>application-autoscaling:DescribeScalingPolicies</code> </p> </li> </ul>"
+    },
+    "GetType":{
+      "name":"GetType",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTypeRequest"},
+      "output":{"shape":"GetTypeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> The <code>GetType</code> operation returns information about the type, for example the field definitions, the timestamp when the type was last modified, the level of nesting, the status, and details about if the type is used in other types and tables. </p> <p>To read keyspace metadata using <code>GetType</code>, the IAM principal needs <code>Select</code> action permissions for the system keyspace. To configure the required permissions, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/configure-udt-permissions.html#udt-permissions-view\">Permissions to view a UDT</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "ListKeyspaces":{
+      "name":"ListKeyspaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListKeyspacesRequest"},
+      "output":{"shape":"ListKeyspacesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The <code>ListKeyspaces</code> operation returns a list of keyspaces.</p>"
+    },
+    "ListTables":{
+      "name":"ListTables",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTablesRequest"},
+      "output":{"shape":"ListTablesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The <code>ListTables</code> operation returns a list of tables for a specified keyspace.</p> <p>To read keyspace metadata using <code>ListTables</code>, the IAM principal needs <code>Select</code> action permissions for the system keyspace.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of all tags associated with the specified Amazon Keyspaces resource.</p> <p>To read keyspace metadata using <code>ListTagsForResource</code>, the IAM principal needs <code>Select</code> action permissions for the specified resource and the system keyspace.</p>"
+    },
+    "ListTypes":{
+      "name":"ListTypes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTypesRequest"},
+      "output":{"shape":"ListTypesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> The <code>ListTypes</code> operation returns a list of types for a specified keyspace. </p> <p>To read keyspace metadata using <code>ListTypes</code>, the IAM principal needs <code>Select</code> action permissions for the system keyspace. To configure the required permissions, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/configure-udt-permissions.html#udt-permissions-view\">Permissions to view a UDT</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "RestoreTable":{
+      "name":"RestoreTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RestoreTableRequest"},
+      "output":{"shape":"RestoreTableResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Restores the table to the specified point in time within the <code>earliest_restorable_timestamp</code> and the current time. For more information about restore points, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery_HowItWorks.html#howitworks_backup_window\"> Time window for PITR continuous backups</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>Any number of users can execute up to 4 concurrent restores (any type of restore) in a given account.</p> <p>When you restore using point in time recovery, Amazon Keyspaces restores your source table's schema and data to the state based on the selected timestamp <code>(day:hour:minute:second)</code> to a new table. The Time to Live (TTL) settings are also restored to the state based on the selected timestamp.</p> <p>In addition to the table's schema, data, and TTL settings, <code>RestoreTable</code> restores the capacity mode, auto scaling settings, encryption settings, and point-in-time recovery settings from the source table. Unlike the table's schema data and TTL settings, which are restored based on the selected timestamp, these settings are always restored based on the table's settings as of the current time or when the table was deleted.</p> <p>You can also overwrite these settings during restore:</p> <ul> <li> <p>Read/write capacity mode</p> </li> <li> <p>Provisioned throughput capacity units</p> </li> <li> <p>Auto scaling settings</p> </li> <li> <p>Point-in-time (PITR) settings</p> </li> <li> <p>Tags</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery_HowItWorks.html#howitworks_backup_settings\">PITR restore settings</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>Note that the following settings are not restored, and you must configure them manually for the new table:</p> <ul> <li> <p>Identity and Access Management (IAM) policies</p> </li> <li> <p>Amazon CloudWatch metrics and alarms</p> </li> </ul>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Associates a set of tags with a Amazon Keyspaces resource. You can then activate these user-defined tags so that they appear on the Cost Management Console for cost allocation tracking. For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/tagging-keyspaces.html\">Adding tags and labels to Amazon Keyspaces resources</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>For IAM policy examples that show how to control access to Amazon Keyspaces resources based on tags, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/security_iam_id-based-policy-examples.html#security_iam_id-based-policy-examples-tags\">Amazon Keyspaces resource access based on tags</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the association of tags from a Amazon Keyspaces resource.</p>"
+    },
+    "UpdateKeyspace":{
+      "name":"UpdateKeyspace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateKeyspaceRequest"},
+      "output":{"shape":"UpdateKeyspaceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p> Adds a new Amazon Web Services Region to the keyspace. You can add a new Region to a keyspace that is either a single or a multi-Region keyspace. Amazon Keyspaces is going to replicate all tables in the keyspace to the new Region. To successfully replicate all tables to the new Region, they must use client-side timestamps for conflict resolution. To enable client-side timestamps, specify <code>clientSideTimestamps.status = enabled</code> when invoking the API. For more information about client-side timestamps, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/client-side-timestamps.html\">Client-side timestamps in Amazon Keyspaces</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>To add a Region to a keyspace using the <code>UpdateKeyspace</code> API, the IAM principal needs permissions for the following IAM actions:</p> <ul> <li> <p> <code>cassandra:Alter</code> </p> </li> <li> <p> <code>cassandra:AlterMultiRegionResource</code> </p> </li> <li> <p> <code>cassandra:Create</code> </p> </li> <li> <p> <code>cassandra:CreateMultiRegionResource</code> </p> </li> <li> <p> <code>cassandra:Select</code> </p> </li> <li> <p> <code>cassandra:SelectMultiRegionResource</code> </p> </li> <li> <p> <code>cassandra:Modify</code> </p> </li> <li> <p> <code>cassandra:ModifyMultiRegionResource</code> </p> </li> </ul> <p>If the keyspace contains a table that is configured in provisioned mode with auto scaling enabled, the following additional IAM actions need to be allowed.</p> <ul> <li> <p> <code>application-autoscaling:RegisterScalableTarget</code> </p> </li> <li> <p> <code>application-autoscaling:DeregisterScalableTarget</code> </p> </li> <li> <p> <code>application-autoscaling:DescribeScalableTargets</code> </p> </li> <li> <p> <code>application-autoscaling:PutScalingPolicy</code> </p> </li> <li> <p> <code>application-autoscaling:DescribeScalingPolicies</code> </p> </li> </ul> <p>To use the <code>UpdateKeyspace</code> API, the IAM principal also needs permissions to create a service-linked role with the following elements:</p> <ul> <li> <p> <code>iam:CreateServiceLinkedRole</code> - The <b>action</b> the principal can perform.</p> </li> <li> <p> <code>arn:aws:iam::*:role/aws-service-role/replication.cassandra.amazonaws.com/AWSServiceRoleForKeyspacesReplication</code> - The <b>resource</b> that the action can be performed on. </p> </li> <li> <p> <code>iam:AWSServiceName: replication.cassandra.amazonaws.com</code> - The only Amazon Web Services service that this role can be attached to is Amazon Keyspaces.</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/howitworks_replication_permissions_addReplica.html\">Configure the IAM permissions required to add an Amazon Web Services Region to a keyspace</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "UpdateTable":{
+      "name":"UpdateTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTableRequest"},
+      "output":{"shape":"UpdateTableResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds new columns to the table or updates one of the table's settings, for example capacity mode, auto scaling, encryption, point-in-time recovery, or ttl settings. Note that you can only update one specific table setting per update operation.</p>"
+    }
+  },
+  "shapes":{
+    "ARN":{
+      "type":"string",
+      "max":1000,
+      "min":20,
+      "pattern":"arn:(aws[a-zA-Z0-9-]*):cassandra:.+.*"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>You don't have sufficient access permissions to perform this action. </p>",
+      "exception":true
+    },
+    "AutoScalingPolicy":{
+      "type":"structure",
+      "members":{
+        "targetTrackingScalingPolicyConfiguration":{
+          "shape":"TargetTrackingScalingPolicyConfiguration",
+          "documentation":"<p>Auto scaling scales up capacity automatically when traffic exceeds this target utilization rate, and then back down when it falls below the target. A <code>double</code> between 20 and 90.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Keyspaces supports the <code>target tracking</code> auto scaling policy. With this policy, Amazon Keyspaces auto scaling ensures that the table's ratio of consumed to provisioned capacity stays at or near the target value that you specify. You define the target value as a percentage between 20 and 90.</p>"
+    },
+    "AutoScalingSettings":{
+      "type":"structure",
+      "members":{
+        "autoScalingDisabled":{
+          "shape":"BooleanObject",
+          "documentation":"<p>This optional parameter enables auto scaling for the table if set to <code>false</code>.</p>"
+        },
+        "minimumUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The minimum level of throughput the table should always be ready to support. The value must be between 1 and the max throughput per second quota for your account (40,000 by default).</p>"
+        },
+        "maximumUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>Manage costs by specifying the maximum amount of throughput to provision. The value must be between 1 and the max throughput per second quota for your account (40,000 by default).</p>"
+        },
+        "scalingPolicy":{
+          "shape":"AutoScalingPolicy",
+          "documentation":"<p>Amazon Keyspaces supports the <code>target tracking</code> auto scaling policy. With this policy, Amazon Keyspaces auto scaling ensures that the table's ratio of consumed to provisioned capacity stays at or near the target value that you specify. You define the target value as a percentage between 20 and 90.</p>"
+        }
+      },
+      "documentation":"<p>The optional auto scaling settings for a table with provisioned throughput capacity.</p> <p>To turn on auto scaling for a table in <code>throughputMode:PROVISIONED</code>, you must specify the following parameters. </p> <p>Configure the minimum and maximum capacity units. The auto scaling policy ensures that capacity never goes below the minimum or above the maximum range.</p> <ul> <li> <p> <code>minimumUnits</code>: The minimum level of throughput the table should always be ready to support. The value must be between 1 and the max throughput per second quota for your account (40,000 by default).</p> </li> <li> <p> <code>maximumUnits</code>: The maximum level of throughput the table should always be ready to support. The value must be between 1 and the max throughput per second quota for your account (40,000 by default).</p> </li> <li> <p> <code>scalingPolicy</code>: Amazon Keyspaces supports the <code>target tracking</code> scaling policy. The auto scaling target is the provisioned capacity of the table. </p> <ul> <li> <p> <code>targetTrackingScalingPolicyConfiguration</code>: To define the target tracking policy, you must define the target value. </p> <ul> <li> <p> <code>targetValue</code>: The target utilization rate of the table. Amazon Keyspaces auto scaling ensures that the ratio of consumed capacity to provisioned capacity stays at or near this value. You define <code>targetValue</code> as a percentage. A <code>double</code> between 20 and 90. (Required)</p> </li> <li> <p> <code>disableScaleIn</code>: A <code>boolean</code> that specifies if <code>scale-in</code> is disabled or enabled for the table. This parameter is disabled by default. To turn on <code>scale-in</code>, set the <code>boolean</code> value to <code>FALSE</code>. This means that capacity for a table can be automatically scaled down on your behalf. (Optional) </p> </li> <li> <p> <code>scaleInCooldown</code>: A cooldown period in seconds between scaling activities that lets the table stabilize before another scale in activity starts. If no value is provided, the default is 0. (Optional) </p> </li> <li> <p> <code>scaleOutCooldown</code>: A cooldown period in seconds between scaling activities that lets the table stabilize before another scale out activity starts. If no value is provided, the default is 0. (Optional) </p> </li> </ul> </li> </ul> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/autoscaling.html\">Managing throughput capacity automatically with Amazon Keyspaces auto scaling</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "AutoScalingSpecification":{
+      "type":"structure",
+      "members":{
+        "writeCapacityAutoScaling":{
+          "shape":"AutoScalingSettings",
+          "documentation":"<p>The auto scaling settings for the table's write capacity.</p>"
+        },
+        "readCapacityAutoScaling":{
+          "shape":"AutoScalingSettings",
+          "documentation":"<p>The auto scaling settings for the table's read capacity.</p>"
+        }
+      },
+      "documentation":"<p>The optional auto scaling capacity settings for a table in provisioned capacity mode.</p>"
+    },
+    "BooleanObject":{"type":"boolean"},
+    "CapacitySpecification":{
+      "type":"structure",
+      "required":["throughputMode"],
+      "members":{
+        "throughputMode":{
+          "shape":"ThroughputMode",
+          "documentation":"<p>The read/write throughput capacity mode for a table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> and </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> - Provisioned capacity mode requires <code>readCapacityUnits</code> and <code>writeCapacityUnits</code> as input.</p> </li> </ul> <p>The default is <code>throughput_mode:PAY_PER_REQUEST</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "readCapacityUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The throughput capacity specified for <code>read</code> operations defined in <code>read capacity units</code> <code>(RCUs)</code>.</p>"
+        },
+        "writeCapacityUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The throughput capacity specified for <code>write</code> operations defined in <code>write capacity units</code> <code>(WCUs)</code>.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Keyspaces has two read/write capacity modes for processing reads and writes on your tables: </p> <ul> <li> <p>On-demand (default)</p> </li> <li> <p>Provisioned</p> </li> </ul> <p>The read/write capacity mode that you choose controls how you are charged for read and write throughput and how table throughput capacity is managed.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CapacitySpecificationSummary":{
+      "type":"structure",
+      "required":["throughputMode"],
+      "members":{
+        "throughputMode":{
+          "shape":"ThroughputMode",
+          "documentation":"<p>The read/write throughput capacity mode for a table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> and </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> - Provisioned capacity mode requires <code>readCapacityUnits</code> and <code>writeCapacityUnits</code> as input. </p> </li> </ul> <p>The default is <code>throughput_mode:PAY_PER_REQUEST</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "readCapacityUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The throughput capacity specified for <code>read</code> operations defined in <code>read capacity units</code> <code>(RCUs)</code>.</p>"
+        },
+        "writeCapacityUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The throughput capacity specified for <code>write</code> operations defined in <code>write capacity units</code> <code>(WCUs)</code>.</p>"
+        },
+        "lastUpdateToPayPerRequestTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the last operation that changed the provisioned throughput capacity of a table.</p>"
+        }
+      },
+      "documentation":"<p>The read/write throughput capacity mode for a table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> and </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code>.</p> </li> </ul> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CapacityUnits":{
+      "type":"long",
+      "box":true,
+      "min":1
+    },
+    "CdcPropagateTags":{
+      "type":"string",
+      "enum":[
+        "TABLE",
+        "NONE"
+      ]
+    },
+    "CdcSpecification":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"CdcStatus",
+          "documentation":"<p>The status of the CDC stream. You can enable or disable a stream for a table.</p>"
+        },
+        "viewType":{
+          "shape":"ViewType",
+          "documentation":"<p>The view type specifies the changes Amazon Keyspaces records for each changed row in the stream. After you create the stream, you can't make changes to this selection. </p> <p>The options are:</p> <ul> <li> <p> <code>NEW_AND_OLD_IMAGES</code> - both versions of the row, before and after the change. This is the default.</p> </li> <li> <p> <code>NEW_IMAGE</code> - the version of the row after the change.</p> </li> <li> <p> <code>OLD_IMAGE</code> - the version of the row before the change.</p> </li> <li> <p> <code>KEYS_ONLY</code> - the partition and clustering keys of the row that was changed.</p> </li> </ul>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags (key-value pairs) that you want to apply to the stream.</p>"
+        },
+        "propagateTags":{
+          "shape":"CdcPropagateTags",
+          "documentation":"<p>Specifies that the stream inherits the tags from the table.</p>"
+        }
+      },
+      "documentation":"<p>The settings for the CDC stream of a table. For more information about CDC streams, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cdc.html\">Working with change data capture (CDC) streams in Amazon Keyspaces</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CdcSpecificationSummary":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"CdcStatus",
+          "documentation":"<p>The status of the CDC stream. Specifies if the table has a CDC stream.</p>"
+        },
+        "viewType":{
+          "shape":"ViewType",
+          "documentation":"<p>The view type specifies the changes Amazon Keyspaces records for each changed row in the stream. This setting can't be changed, after the stream has been created. </p> <p>The options are:</p> <ul> <li> <p> <code>NEW_AND_OLD_IMAGES</code> - both versions of the row, before and after the change. This is the default.</p> </li> <li> <p> <code>NEW_IMAGE</code> - the version of the row after the change.</p> </li> <li> <p> <code>OLD_IMAGE</code> - the version of the row before the change.</p> </li> <li> <p> <code>KEYS_ONLY</code> - the partition and clustering keys of the row that was changed.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The settings of the CDC stream of the table. For more information about CDC streams, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cdc.html\">Working with change data capture (CDC) streams in Amazon Keyspaces</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "CdcStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "ENABLING",
+        "DISABLED",
+        "DISABLING"
+      ]
+    },
+    "ClientSideTimestamps":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"ClientSideTimestampsStatus",
+          "documentation":"<p>Shows how to enable client-side timestamps settings for the specified table.</p>"
+        }
+      },
+      "documentation":"<p>The client-side timestamp setting of the table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/client-side-timestamps-how-it-works.html\">How it works: Amazon Keyspaces client-side timestamps</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "ClientSideTimestampsStatus":{
+      "type":"string",
+      "enum":["ENABLED"]
+    },
+    "ClusteringKey":{
+      "type":"structure",
+      "required":[
+        "name",
+        "orderBy"
+      ],
+      "members":{
+        "name":{
+          "shape":"GenericString",
+          "documentation":"<p>The name(s) of the clustering column(s).</p>"
+        },
+        "orderBy":{
+          "shape":"SortOrder",
+          "documentation":"<p>Sets the ascendant (<code>ASC</code>) or descendant (<code>DESC</code>) order modifier.</p>"
+        }
+      },
+      "documentation":"<p>The optional clustering column portion of your primary key determines how the data is clustered and sorted within each partition.</p>"
+    },
+    "ClusteringKeyList":{
+      "type":"list",
+      "member":{"shape":"ClusteringKey"}
+    },
+    "ColumnDefinition":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type"
+      ],
+      "members":{
+        "name":{
+          "shape":"GenericString",
+          "documentation":"<p>The name of the column.</p>"
+        },
+        "type":{
+          "shape":"GenericString",
+          "documentation":"<p>The data type of the column. For a list of available data types, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types\">Data types</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>The names and data types of regular columns.</p>"
+    },
+    "ColumnDefinitionList":{
+      "type":"list",
+      "member":{"shape":"ColumnDefinition"},
+      "min":1
+    },
+    "Comment":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>An optional description of the table.</p>"
+        }
+      },
+      "documentation":"<p>An optional comment that describes the table.</p>"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Keyspaces couldn't complete the requested action. This error may occur if you try to perform an action and the same or a different action is already in progress, or if you try to create a resource that already exists. </p>",
+      "exception":true
+    },
+    "CreateKeyspaceRequest":{
+      "type":"structure",
+      "required":["keyspaceName"],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace to be created.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of key-value pair tags to be attached to the keyspace.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/tagging-keyspaces.html\">Adding tags and labels to Amazon Keyspaces resources</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "replicationSpecification":{
+          "shape":"ReplicationSpecification",
+          "documentation":"<p> The replication specification of the keyspace includes:</p> <ul> <li> <p> <code>replicationStrategy</code> - the required value is <code>SINGLE_REGION</code> or <code>MULTI_REGION</code>.</p> </li> <li> <p> <code>regionList</code> - if the <code>replicationStrategy</code> is <code>MULTI_REGION</code>, the <code>regionList</code> requires the current Region and at least one additional Amazon Web Services Region where the keyspace is going to be replicated in.</p> </li> </ul>"
+        }
+      }
+    },
+    "CreateKeyspaceResponse":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The unique identifier of the keyspace in the format of an Amazon Resource Name (ARN).</p>"
+        }
+      }
+    },
+    "CreateTableRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName",
+        "schemaDefinition"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace that the table is going to be created in.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "schemaDefinition":{
+          "shape":"SchemaDefinition",
+          "documentation":"<p>The <code>schemaDefinition</code> consists of the following parameters.</p> <p>For each column to be created:</p> <ul> <li> <p> <code>name</code> - The name of the column.</p> </li> <li> <p> <code>type</code> - An Amazon Keyspaces data type. For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types\">Data types</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> </li> </ul> <p>The primary key of the table consists of the following columns:</p> <ul> <li> <p> <code>partitionKeys</code> - The partition key can be a single column, or it can be a compound value composed of two or more columns. The partition key portion of the primary key is required and determines how Amazon Keyspaces stores your data.</p> </li> <li> <p> <code>name</code> - The name of each partition key column.</p> </li> <li> <p> <code>clusteringKeys</code> - The optional clustering column portion of your primary key determines how the data is clustered and sorted within each partition.</p> </li> <li> <p> <code>name</code> - The name of the clustering column. </p> </li> <li> <p> <code>orderBy</code> - Sets the ascendant (<code>ASC</code>) or descendant (<code>DESC</code>) order modifier.</p> <p>To define a column as static use <code>staticColumns</code> - Static columns store values that are shared by all rows in the same partition:</p> </li> <li> <p> <code>name</code> - The name of the column.</p> </li> <li> <p> <code>type</code> - An Amazon Keyspaces data type.</p> </li> </ul>"
+        },
+        "comment":{
+          "shape":"Comment",
+          "documentation":"<p>This parameter allows to enter a description of the table.</p>"
+        },
+        "capacitySpecification":{
+          "shape":"CapacitySpecification",
+          "documentation":"<p>Specifies the read/write throughput capacity mode for the table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> and </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> - Provisioned capacity mode requires <code>readCapacityUnits</code> and <code>writeCapacityUnits</code> as input.</p> </li> </ul> <p>The default is <code>throughput_mode:PAY_PER_REQUEST</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "encryptionSpecification":{
+          "shape":"EncryptionSpecification",
+          "documentation":"<p>Specifies how the encryption key for encryption at rest is managed for the table. You can choose one of the following KMS key (KMS key):</p> <ul> <li> <p> <code>type:AWS_OWNED_KMS_KEY</code> - This key is owned by Amazon Keyspaces. </p> </li> <li> <p> <code>type:CUSTOMER_MANAGED_KMS_KEY</code> - This key is stored in your account and is created, owned, and managed by you. This option requires the <code>kms_key_identifier</code> of the KMS key in Amazon Resource Name (ARN) format as input.</p> </li> </ul> <p>The default is <code>type:AWS_OWNED_KMS_KEY</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">Encryption at rest</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "pointInTimeRecovery":{
+          "shape":"PointInTimeRecovery",
+          "documentation":"<p>Specifies if <code>pointInTimeRecovery</code> is enabled or disabled for the table. The options are:</p> <ul> <li> <p> <code>status=ENABLED</code> </p> </li> <li> <p> <code>status=DISABLED</code> </p> </li> </ul> <p>If it's not specified, the default is <code>status=DISABLED</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html\">Point-in-time recovery</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "ttl":{
+          "shape":"TimeToLive",
+          "documentation":"<p>Enables Time to Live custom settings for the table. The options are:</p> <ul> <li> <p> <code>status:enabled</code> </p> </li> <li> <p> <code>status:disabled</code> </p> </li> </ul> <p>The default is <code>status:disabled</code>. After <code>ttl</code> is enabled, you can't disable it for the table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/TTL.html\">Expiring data by using Amazon Keyspaces Time to Live (TTL)</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "defaultTimeToLive":{
+          "shape":"DefaultTimeToLive",
+          "documentation":"<p>The default Time to Live setting in seconds for the table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/TTL-how-it-works.html#ttl-howitworks_default_ttl\">Setting the default TTL value for a table</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of key-value pair tags to be attached to the resource. </p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/tagging-keyspaces.html\">Adding tags and labels to Amazon Keyspaces resources</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "clientSideTimestamps":{
+          "shape":"ClientSideTimestamps",
+          "documentation":"<p> Enables client-side timestamps for the table. By default, the setting is disabled. You can enable client-side timestamps with the following option:</p> <ul> <li> <p> <code>status: \"enabled\"</code> </p> </li> </ul> <p>Once client-side timestamps are enabled for a table, this setting cannot be disabled.</p>"
+        },
+        "autoScalingSpecification":{
+          "shape":"AutoScalingSpecification",
+          "documentation":"<p>The optional auto scaling settings for a table in provisioned capacity mode. Specifies if the service can manage throughput capacity automatically on your behalf.</p> <p>Auto scaling helps you provision throughput capacity for variable workloads efficiently by increasing and decreasing your table's read and write capacity automatically in response to application traffic. For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/autoscaling.html\">Managing throughput capacity automatically with Amazon Keyspaces auto scaling</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>By default, auto scaling is disabled for a table. </p>"
+        },
+        "replicaSpecifications":{
+          "shape":"ReplicaSpecificationList",
+          "documentation":"<p>The optional Amazon Web Services Region specific settings of a multi-Region table. These settings overwrite the general settings of the table for the specified Region. </p> <p>For a multi-Region table in provisioned capacity mode, you can configure the table's read capacity differently for each Region's replica. The write capacity, however, remains synchronized between all replicas to ensure that there's enough capacity to replicate writes across all Regions. To define the read capacity for a table replica in a specific Region, you can do so by configuring the following parameters.</p> <ul> <li> <p> <code>region</code>: The Region where these settings are applied. (Required)</p> </li> <li> <p> <code>readCapacityUnits</code>: The provisioned read capacity units. (Optional)</p> </li> <li> <p> <code>readCapacityAutoScaling</code>: The read capacity auto scaling settings for the table. (Optional) </p> </li> </ul>"
+        },
+        "cdcSpecification":{
+          "shape":"CdcSpecification",
+          "documentation":"<p>The CDC stream settings of the table.</p>"
+        }
+      }
+    },
+    "CreateTableResponse":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The unique identifier of the table in the format of an Amazon Resource Name (ARN).</p>"
+        }
+      }
+    },
+    "CreateTypeRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "typeName",
+        "fieldDefinitions"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace. </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p> The name of the user-defined type. </p> <p>UDT names must contain 48 characters or less, must begin with an alphabetic character, and can only contain alpha-numeric characters and underscores. Amazon Keyspaces converts upper case characters automatically into lower case characters. </p> <p>Alternatively, you can declare a UDT name in double quotes. When declaring a UDT name inside double quotes, Amazon Keyspaces preserves upper casing and allows special characters.</p> <p>You can also use double quotes as part of the name when you create the UDT, but you must escape each double quote character with an additional double quote character.</p>"
+        },
+        "fieldDefinitions":{
+          "shape":"FieldList",
+          "documentation":"<p> The field definitions, consisting of names and types, that define this type. </p>"
+        }
+      }
+    },
+    "CreateTypeResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceArn",
+        "typeName"
+      ],
+      "members":{
+        "keyspaceArn":{
+          "shape":"ARN",
+          "documentation":"<p> The unique identifier of the keyspace that contains the new type in the format of an Amazon Resource Name (ARN). </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p> The formatted name of the user-defined type that was created. Note that Amazon Keyspaces requires the formatted name of the type for other operations, for example <code>GetType</code>. </p>"
+        }
+      }
+    },
+    "DefaultTimeToLive":{
+      "type":"integer",
+      "box":true,
+      "max":630720000,
+      "min":0
+    },
+    "DeleteKeyspaceRequest":{
+      "type":"structure",
+      "required":["keyspaceName"],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteKeyspaceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTableRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace of the to be deleted table.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteTableResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTypeRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "typeName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace of the to be deleted type. </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p> The name of the type to be deleted. </p>"
+        }
+      }
+    },
+    "DeleteTypeResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceArn",
+        "typeName"
+      ],
+      "members":{
+        "keyspaceArn":{
+          "shape":"ARN",
+          "documentation":"<p> The unique identifier of the keyspace from which the type was deleted in the format of an Amazon Resource Name (ARN). </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p> The name of the type that was deleted. </p>"
+        }
+      }
+    },
+    "Depth":{"type":"integer"},
+    "DoubleObject":{"type":"double"},
+    "EncryptionSpecification":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"EncryptionType",
+          "documentation":"<p>The encryption option specified for the table. You can choose one of the following KMS keys (KMS keys):</p> <ul> <li> <p> <code>type:AWS_OWNED_KMS_KEY</code> - This key is owned by Amazon Keyspaces. </p> </li> <li> <p> <code>type:CUSTOMER_MANAGED_KMS_KEY</code> - This key is stored in your account and is created, owned, and managed by you. This option requires the <code>kms_key_identifier</code> of the KMS key in Amazon Resource Name (ARN) format as input. </p> </li> </ul> <p>The default is <code>type:AWS_OWNED_KMS_KEY</code>. </p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">Encryption at rest</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"kmsKeyARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the customer managed KMS key, for example <code>kms_key_identifier:ARN</code>.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Keyspaces encrypts and decrypts the table data at rest transparently and integrates with Key Management Service for storing and managing the encryption key. You can choose one of the following KMS keys (KMS keys):</p> <ul> <li> <p>Amazon Web Services owned key - This is the default encryption type. The key is owned by Amazon Keyspaces (no additional charge). </p> </li> <li> <p>Customer managed key - This key is stored in your account and is created, owned, and managed by you. You have full control over the customer managed key (KMS charges apply).</p> </li> </ul> <p>For more information about encryption at rest in Amazon Keyspaces, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">Encryption at rest</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>For more information about KMS, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">KMS management service concepts</a> in the <i>Key Management Service Developer Guide</i>.</p>"
+    },
+    "EncryptionType":{
+      "type":"string",
+      "enum":[
+        "CUSTOMER_MANAGED_KMS_KEY",
+        "AWS_OWNED_KMS_KEY"
+      ]
+    },
+    "FieldDefinition":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type"
+      ],
+      "members":{
+        "name":{
+          "shape":"FieldDefinitionNameString",
+          "documentation":"<p> The identifier. </p>"
+        },
+        "type":{
+          "shape":"GenericString",
+          "documentation":"<p> Any supported Cassandra data type, including collections and other user-defined types that are contained in the same keyspace. </p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cassandra-apis.html#cassandra-data-type\">Cassandra data type support</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p> A field definition consists out of a name and a type. </p>"
+    },
+    "FieldDefinitionNameString":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "FieldList":{
+      "type":"list",
+      "member":{"shape":"FieldDefinition"},
+      "min":1
+    },
+    "GenericString":{"type":"string"},
+    "GetKeyspaceRequest":{
+      "type":"structure",
+      "required":["keyspaceName"],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        }
+      }
+    },
+    "GetKeyspaceResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "resourceArn",
+        "replicationStrategy"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>Returns the ARN of the keyspace.</p>"
+        },
+        "replicationStrategy":{
+          "shape":"rs",
+          "documentation":"<p> Returns the replication strategy of the keyspace. The options are <code>SINGLE_REGION</code> or <code>MULTI_REGION</code>. </p>"
+        },
+        "replicationRegions":{
+          "shape":"RegionList",
+          "documentation":"<p> If the <code>replicationStrategy</code> of the keyspace is <code>MULTI_REGION</code>, a list of replication Regions is returned. </p>"
+        },
+        "replicationGroupStatuses":{
+          "shape":"ReplicationGroupStatusList",
+          "documentation":"<p> A list of all Regions the keyspace is replicated in after the update keyspace operation and their status. </p>"
+        }
+      }
+    },
+    "GetTableAutoScalingSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        }
+      }
+    },
+    "GetTableAutoScalingSettingsResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName",
+        "resourceArn"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the table.</p>"
+        },
+        "autoScalingSpecification":{
+          "shape":"AutoScalingSpecification",
+          "documentation":"<p>The auto scaling settings of the table.</p>"
+        },
+        "replicaSpecifications":{
+          "shape":"ReplicaAutoScalingSpecificationList",
+          "documentation":"<p>The Amazon Web Services Region specific settings of a multi-Region table. Returns the settings for all Regions the table is replicated in.</p>"
+        }
+      }
+    },
+    "GetTableRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace that the table is stored in.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        }
+      }
+    },
+    "GetTableResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName",
+        "resourceArn"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace that the specified table is stored in.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the specified table.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the specified table.</p>"
+        },
+        "creationTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation timestamp of the specified table.</p>"
+        },
+        "status":{
+          "shape":"TableStatus",
+          "documentation":"<p>The current status of the specified table.</p>"
+        },
+        "schemaDefinition":{
+          "shape":"SchemaDefinition",
+          "documentation":"<p>The schema definition of the specified table.</p>"
+        },
+        "capacitySpecification":{
+          "shape":"CapacitySpecificationSummary",
+          "documentation":"<p>The read/write throughput capacity mode for a table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> </p> </li> </ul>"
+        },
+        "encryptionSpecification":{
+          "shape":"EncryptionSpecification",
+          "documentation":"<p>The encryption settings of the specified table.</p>"
+        },
+        "pointInTimeRecovery":{
+          "shape":"PointInTimeRecoverySummary",
+          "documentation":"<p>The point-in-time recovery status of the specified table.</p>"
+        },
+        "ttl":{
+          "shape":"TimeToLive",
+          "documentation":"<p>The custom Time to Live settings of the specified table.</p>"
+        },
+        "defaultTimeToLive":{
+          "shape":"DefaultTimeToLive",
+          "documentation":"<p>The default Time to Live settings in seconds of the specified table.</p>"
+        },
+        "comment":{
+          "shape":"Comment",
+          "documentation":"<p>The the description of the specified table.</p>"
+        },
+        "clientSideTimestamps":{
+          "shape":"ClientSideTimestamps",
+          "documentation":"<p> The client-side timestamps setting of the table.</p>"
+        },
+        "replicaSpecifications":{
+          "shape":"ReplicaSpecificationSummaryList",
+          "documentation":"<p>Returns the Amazon Web Services Region specific settings of all Regions a multi-Region table is replicated in.</p>"
+        },
+        "latestStreamArn":{
+          "shape":"StreamArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the stream.</p>"
+        },
+        "cdcSpecification":{
+          "shape":"CdcSpecificationSummary",
+          "documentation":"<p>The CDC stream settings of the table.</p>"
+        }
+      }
+    },
+    "GetTypeRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "typeName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace that contains this type. </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p>The formatted name of the type. For example, if the name of the type was created without double quotes, Amazon Keyspaces saved the name in lower-case characters. If the name was created in double quotes, you must use double quotes to specify the type name. </p>"
+        }
+      }
+    },
+    "GetTypeResponse":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "typeName",
+        "keyspaceArn"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace that contains this type. </p>"
+        },
+        "typeName":{
+          "shape":"TypeName",
+          "documentation":"<p> The name of the type. </p>"
+        },
+        "fieldDefinitions":{
+          "shape":"FieldList",
+          "documentation":"<p> The names and types that define this type. </p>"
+        },
+        "lastModifiedTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p> The timestamp that shows when this type was last modified. </p>"
+        },
+        "status":{
+          "shape":"TypeStatus",
+          "documentation":"<p> The status of this type. </p>"
+        },
+        "directReferringTables":{
+          "shape":"TableNameList",
+          "documentation":"<p> The tables that use this type. </p>"
+        },
+        "directParentTypes":{
+          "shape":"TypeNameList",
+          "documentation":"<p> The types that use this type. </p>"
+        },
+        "maxNestingDepth":{
+          "shape":"Depth",
+          "documentation":"<p> The level of nesting implemented for this type. </p>"
+        },
+        "keyspaceArn":{
+          "shape":"ARN",
+          "documentation":"<p> The unique identifier of the keyspace that contains this type in the format of an Amazon Resource Name (ARN). </p>"
+        }
+      }
+    },
+    "IntegerObject":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Keyspaces was unable to fully process this request because of an internal server error.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "KeyspaceName":{
+      "type":"string",
+      "max":48,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_]{0,47}"
+    },
+    "KeyspaceStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CREATING",
+        "UPDATING",
+        "DELETING"
+      ]
+    },
+    "KeyspaceSummary":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "resourceArn",
+        "replicationStrategy"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The unique identifier of the keyspace in the format of an Amazon Resource Name (ARN).</p>"
+        },
+        "replicationStrategy":{
+          "shape":"rs",
+          "documentation":"<p> This property specifies if a keyspace is a single Region keyspace or a multi-Region keyspace. The available values are <code>SINGLE_REGION</code> or <code>MULTI_REGION</code>. </p>"
+        },
+        "replicationRegions":{
+          "shape":"RegionList",
+          "documentation":"<p> If the <code>replicationStrategy</code> of the keyspace is <code>MULTI_REGION</code>, a list of replication Regions is returned. </p>"
+        }
+      },
+      "documentation":"<p>Represents the properties of a keyspace.</p>"
+    },
+    "KeyspaceSummaryList":{
+      "type":"list",
+      "member":{"shape":"KeyspaceSummary"}
+    },
+    "ListKeyspacesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token. To resume pagination, provide the <code>NextToken</code> value as argument of a subsequent API invocation.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of keyspaces to return in the output. If the total number of keyspaces available is more than the value specified, a <code>NextToken</code> is provided in the output. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation.</p>"
+        }
+      }
+    },
+    "ListKeyspacesResponse":{
+      "type":"structure",
+      "required":["keyspaces"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token to specify where to start paginating. This is the <code>NextToken</code> from a previously truncated response.</p>"
+        },
+        "keyspaces":{
+          "shape":"KeyspaceSummaryList",
+          "documentation":"<p>A list of keyspaces.</p>"
+        }
+      }
+    },
+    "ListTablesRequest":{
+      "type":"structure",
+      "required":["keyspaceName"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of tables to return in the output. If the total number of tables available is more than the value specified, a <code>NextToken</code> is provided in the output. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation.</p>"
+        },
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace.</p>"
+        }
+      }
+    },
+    "ListTablesResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token to specify where to start paginating. This is the <code>NextToken</code> from a previously truncated response.</p>"
+        },
+        "tables":{
+          "shape":"TableSummaryList",
+          "documentation":"<p>A list of tables.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Keyspaces resource.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token. To resume pagination, provide the <code>NextToken</code> value as argument of a subsequent API invocation.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of tags to return in the output. If the total number of tags available is more than the value specified, a <code>NextToken</code> is provided in the output. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token to specify where to start paginating. This is the <code>NextToken</code> from a previously truncated response.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags.</p>"
+        }
+      }
+    },
+    "ListTypesRequest":{
+      "type":"structure",
+      "required":["keyspaceName"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> The pagination token. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation. </p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> The total number of types to return in the output. If the total number of types available is more than the value specified, a <code>NextToken</code> is provided in the output. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation. </p>"
+        },
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace that contains the listed types. </p>"
+        }
+      }
+    },
+    "ListTypesResponse":{
+      "type":"structure",
+      "required":["types"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p> The pagination token. To resume pagination, provide the <code>NextToken</code> value as an argument of a subsequent API invocation. </p>"
+        },
+        "types":{
+          "shape":"TypeNameList",
+          "documentation":"<p> The list of types contained in the specified keyspace. </p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PartitionKey":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"GenericString",
+          "documentation":"<p>The name(s) of the partition key column(s).</p>"
+        }
+      },
+      "documentation":"<p>The partition key portion of the primary key is required and determines how Amazon Keyspaces stores the data. The partition key can be a single column, or it can be a compound value composed of two or more columns.</p>"
+    },
+    "PartitionKeyList":{
+      "type":"list",
+      "member":{"shape":"PartitionKey"},
+      "min":1
+    },
+    "PointInTimeRecovery":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"PointInTimeRecoveryStatus",
+          "documentation":"<p>The options are:</p> <ul> <li> <p> <code>status=ENABLED</code> </p> </li> <li> <p> <code>status=DISABLED</code> </p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Point-in-time recovery (PITR) helps protect your Amazon Keyspaces tables from accidental write or delete operations by providing you continuous backups of your table data.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html\">Point-in-time recovery</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "PointInTimeRecoveryStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "PointInTimeRecoverySummary":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"PointInTimeRecoveryStatus",
+          "documentation":"<p>Shows if point-in-time recovery is enabled or disabled for the specified table.</p>"
+        },
+        "earliestRestorableTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>Specifies the earliest possible restore point of the table in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The point-in-time recovery status of the specified table.</p>"
+    },
+    "RegionList":{
+      "type":"list",
+      "member":{"shape":"region"},
+      "min":2
+    },
+    "ReplicaAutoScalingSpecification":{
+      "type":"structure",
+      "members":{
+        "region":{
+          "shape":"region",
+          "documentation":"<p>The Amazon Web Services Region.</p>"
+        },
+        "autoScalingSpecification":{
+          "shape":"AutoScalingSpecification",
+          "documentation":"<p>The auto scaling settings for a multi-Region table in the specified Amazon Web Services Region.</p>"
+        }
+      },
+      "documentation":"<p>The auto scaling settings of a multi-Region table in the specified Amazon Web Services Region.</p>"
+    },
+    "ReplicaAutoScalingSpecificationList":{
+      "type":"list",
+      "member":{"shape":"ReplicaAutoScalingSpecification"},
+      "min":0
+    },
+    "ReplicaSpecification":{
+      "type":"structure",
+      "required":["region"],
+      "members":{
+        "region":{
+          "shape":"region",
+          "documentation":"<p>The Amazon Web Services Region.</p>"
+        },
+        "readCapacityUnits":{
+          "shape":"CapacityUnits",
+          "documentation":"<p>The provisioned read capacity units for the multi-Region table in the specified Amazon Web Services Region.</p>"
+        },
+        "readCapacityAutoScaling":{
+          "shape":"AutoScalingSettings",
+          "documentation":"<p>The read capacity auto scaling settings for the multi-Region table in the specified Amazon Web Services Region.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Web Services Region specific settings of a multi-Region table.</p> <p>For a multi-Region table, you can configure the table's read capacity differently per Amazon Web Services Region. You can do this by configuring the following parameters.</p> <ul> <li> <p> <code>region</code>: The Region where these settings are applied. (Required)</p> </li> <li> <p> <code>readCapacityUnits</code>: The provisioned read capacity units. (Optional)</p> </li> <li> <p> <code>readCapacityAutoScaling</code>: The read capacity auto scaling settings for the table. (Optional)</p> </li> </ul>"
+    },
+    "ReplicaSpecificationList":{
+      "type":"list",
+      "member":{"shape":"ReplicaSpecification"},
+      "min":1
+    },
+    "ReplicaSpecificationSummary":{
+      "type":"structure",
+      "members":{
+        "region":{
+          "shape":"region",
+          "documentation":"<p>The Amazon Web Services Region.</p>"
+        },
+        "status":{
+          "shape":"TableStatus",
+          "documentation":"<p>The status of the multi-Region table in the specified Amazon Web Services Region.</p>"
+        },
+        "capacitySpecification":{"shape":"CapacitySpecificationSummary"}
+      },
+      "documentation":"<p>The Region-specific settings of a multi-Region table in the specified Amazon Web Services Region.</p> <p>If the multi-Region table is using provisioned capacity and has optional auto scaling policies configured, note that the Region specific summary returns both read and write capacity settings. But only Region specific read capacity settings can be configured for a multi-Region table. In a multi-Region table, your write capacity units will be synced across all Amazon Web Services Regions to ensure that there is enough capacity to replicate write events across Regions.</p>"
+    },
+    "ReplicaSpecificationSummaryList":{
+      "type":"list",
+      "member":{"shape":"ReplicaSpecificationSummary"},
+      "min":0
+    },
+    "ReplicationGroupStatus":{
+      "type":"structure",
+      "required":[
+        "region",
+        "keyspaceStatus"
+      ],
+      "members":{
+        "region":{
+          "shape":"region",
+          "documentation":"<p> The name of the Region that was added to the keyspace. </p>"
+        },
+        "keyspaceStatus":{
+          "shape":"KeyspaceStatus",
+          "documentation":"<p> The status of the keyspace. </p>"
+        },
+        "tablesReplicationProgress":{
+          "shape":"TablesReplicationProgress",
+          "documentation":"<p> This shows the replication progress of tables in the keyspace. The value is expressed as a percentage of the newly replicated tables with status <code>Active</code> compared to the total number of tables in the keyspace. </p>"
+        }
+      },
+      "documentation":"<p> This shows the summary status of the keyspace after a new Amazon Web Services Region was added. </p>"
+    },
+    "ReplicationGroupStatusList":{
+      "type":"list",
+      "member":{"shape":"ReplicationGroupStatus"},
+      "min":2
+    },
+    "ReplicationSpecification":{
+      "type":"structure",
+      "required":["replicationStrategy"],
+      "members":{
+        "replicationStrategy":{
+          "shape":"rs",
+          "documentation":"<p> The <code>replicationStrategy</code> of a keyspace, the required value is <code>SINGLE_REGION</code> or <code>MULTI_REGION</code>. </p>"
+        },
+        "regionList":{
+          "shape":"RegionList",
+          "documentation":"<p> The <code>regionList</code> contains the Amazon Web Services Regions where the keyspace is replicated in. </p>"
+        }
+      },
+      "documentation":"<p> The replication specification of the keyspace includes:</p> <ul> <li> <p> <code>regionList</code> - the Amazon Web Services Regions where the keyspace is replicated in.</p> </li> <li> <p> <code>replicationStrategy</code> - the required value is <code>SINGLE_REGION</code> or <code>MULTI_REGION</code>.</p> </li> </ul>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The unique identifier in the format of Amazon Resource Name (ARN) for the resource couldn’t be found.</p>"
+        }
+      },
+      "documentation":"<p>The operation tried to access a keyspace, table, or type that doesn't exist. The resource might not be specified correctly, or its status might not be <code>ACTIVE</code>.</p>",
+      "exception":true
+    },
+    "RestoreTableRequest":{
+      "type":"structure",
+      "required":[
+        "sourceKeyspaceName",
+        "sourceTableName",
+        "targetKeyspaceName",
+        "targetTableName"
+      ],
+      "members":{
+        "sourceKeyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The keyspace name of the source table.</p>"
+        },
+        "sourceTableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the source table.</p>"
+        },
+        "targetKeyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the target keyspace.</p>"
+        },
+        "targetTableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the target table.</p>"
+        },
+        "restoreTimestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The restore timestamp in ISO 8601 format.</p>"
+        },
+        "capacitySpecificationOverride":{
+          "shape":"CapacitySpecification",
+          "documentation":"<p>Specifies the read/write throughput capacity mode for the target table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> - Provisioned capacity mode requires <code>readCapacityUnits</code> and <code>writeCapacityUnits</code> as input.</p> </li> </ul> <p>The default is <code>throughput_mode:PAY_PER_REQUEST</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "encryptionSpecificationOverride":{
+          "shape":"EncryptionSpecification",
+          "documentation":"<p>Specifies the encryption settings for the target table. You can choose one of the following KMS key (KMS key):</p> <ul> <li> <p> <code>type:AWS_OWNED_KMS_KEY</code> - This key is owned by Amazon Keyspaces. </p> </li> <li> <p> <code>type:CUSTOMER_MANAGED_KMS_KEY</code> - This key is stored in your account and is created, owned, and managed by you. This option requires the <code>kms_key_identifier</code> of the KMS key in Amazon Resource Name (ARN) format as input. </p> </li> </ul> <p>The default is <code>type:AWS_OWNED_KMS_KEY</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">Encryption at rest</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "pointInTimeRecoveryOverride":{
+          "shape":"PointInTimeRecovery",
+          "documentation":"<p>Specifies the <code>pointInTimeRecovery</code> settings for the target table. The options are:</p> <ul> <li> <p> <code>status=ENABLED</code> </p> </li> <li> <p> <code>status=DISABLED</code> </p> </li> </ul> <p>If it's not specified, the default is <code>status=DISABLED</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html\">Point-in-time recovery</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "tagsOverride":{
+          "shape":"TagList",
+          "documentation":"<p>A list of key-value pair tags to be attached to the restored table. </p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/tagging-keyspaces.html\">Adding tags and labels to Amazon Keyspaces resources</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "autoScalingSpecification":{
+          "shape":"AutoScalingSpecification",
+          "documentation":"<p>The optional auto scaling settings for the restored table in provisioned capacity mode. Specifies if the service can manage throughput capacity of a provisioned table automatically on your behalf. Amazon Keyspaces auto scaling helps you provision throughput capacity for variable workloads efficiently by increasing and decreasing your table's read and write capacity automatically in response to application traffic.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/autoscaling.html\">Managing throughput capacity automatically with Amazon Keyspaces auto scaling</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "replicaSpecifications":{
+          "shape":"ReplicaSpecificationList",
+          "documentation":"<p>The optional Region specific settings of a multi-Regional table.</p>"
+        }
+      }
+    },
+    "RestoreTableResponse":{
+      "type":"structure",
+      "required":["restoredTableARN"],
+      "members":{
+        "restoredTableARN":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the restored table.</p>"
+        }
+      }
+    },
+    "SchemaDefinition":{
+      "type":"structure",
+      "required":[
+        "allColumns",
+        "partitionKeys"
+      ],
+      "members":{
+        "allColumns":{
+          "shape":"ColumnDefinitionList",
+          "documentation":"<p>The regular columns of the table.</p>"
+        },
+        "partitionKeys":{
+          "shape":"PartitionKeyList",
+          "documentation":"<p>The columns that are part of the partition key of the table .</p>"
+        },
+        "clusteringKeys":{
+          "shape":"ClusteringKeyList",
+          "documentation":"<p>The columns that are part of the clustering key of the table.</p>"
+        },
+        "staticColumns":{
+          "shape":"StaticColumnList",
+          "documentation":"<p>The columns that have been defined as <code>STATIC</code>. Static columns store values that are shared by all rows in the same partition.</p>"
+        }
+      },
+      "documentation":"<p>Describes the schema of the table.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>The operation exceeded the service quota for this resource. For more information on service quotas, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/quotas.html\">Quotas</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>",
+      "exception":true
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "StaticColumn":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"GenericString",
+          "documentation":"<p>The name of the static column.</p>"
+        }
+      },
+      "documentation":"<p>The static columns of the table. Static columns store values that are shared by all rows in the same partition.</p>"
+    },
+    "StaticColumnList":{
+      "type":"list",
+      "member":{"shape":"StaticColumn"}
+    },
+    "StreamArn":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"arn:(aws[a-zA-Z0-9-]*):cassandra:.+.*"
+    },
+    "String":{"type":"string"},
+    "TableName":{
+      "type":"string",
+      "max":48,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_]{0,47}"
+    },
+    "TableNameList":{
+      "type":"list",
+      "member":{"shape":"TableName"}
+    },
+    "TableStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CREATING",
+        "UPDATING",
+        "DELETING",
+        "DELETED",
+        "RESTORING",
+        "INACCESSIBLE_ENCRYPTION_CREDENTIALS"
+      ]
+    },
+    "TableSummary":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName",
+        "resourceArn"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace that the table is stored in.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The unique identifier of the table in the format of an Amazon Resource Name (ARN).</p>"
+        }
+      },
+      "documentation":"<p>Returns the name of the specified table, the keyspace it is stored in, and the unique identifier in the format of an Amazon Resource Name (ARN).</p>"
+    },
+    "TableSummaryList":{
+      "type":"list",
+      "member":{"shape":"TableSummary"}
+    },
+    "TablesReplicationProgress":{
+      "type":"string",
+      "max":7,
+      "min":2,
+      "pattern":"[0-9]{1,3}(?:[.][0-9]{1,2})?%"
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag. Tag keys are case sensitive. Each Amazon Keyspaces resource can only have up to one tag with the same key. If you try to add an existing tag (same key), the existing tag value will be updated to the new value.</p>"
+        },
+        "value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag. Tag values are case-sensitive and can be null.</p>"
+        }
+      },
+      "documentation":"<p>Describes a tag. A tag is a key-value pair. You can add up to 50 tags to a single Amazon Keyspaces resource.</p> <p>Amazon Web Services-assigned tag names and values are automatically assigned the <code>aws:</code> prefix, which the user cannot assign. Amazon Web Services-assigned tag names do not count towards the tag limit of 50. User-assigned tag names have the prefix <code>user:</code> in the Cost Allocation Report. You cannot backdate the application of a tag.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/tagging-keyspaces.html\">Adding tags and labels to Amazon Keyspaces resources</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":60,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Keyspaces resource to which to add tags.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags to be assigned to the Amazon Keyspaces resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "TargetTrackingScalingPolicyConfiguration":{
+      "type":"structure",
+      "required":["targetValue"],
+      "members":{
+        "disableScaleIn":{
+          "shape":"BooleanObject",
+          "documentation":"<p>Specifies if <code>scale-in</code> is enabled.</p> <p>When auto scaling automatically decreases capacity for a table, the table <i>scales in</i>. When scaling policies are set, they can't scale in the table lower than its minimum capacity.</p>"
+        },
+        "scaleInCooldown":{
+          "shape":"IntegerObject",
+          "documentation":"<p>Specifies a <code>scale-in</code> cool down period.</p> <p>A cooldown period in seconds between scaling activities that lets the table stabilize before another scaling activity starts. </p>"
+        },
+        "scaleOutCooldown":{
+          "shape":"IntegerObject",
+          "documentation":"<p>Specifies a scale out cool down period.</p> <p>A cooldown period in seconds between scaling activities that lets the table stabilize before another scaling activity starts. </p>"
+        },
+        "targetValue":{
+          "shape":"DoubleObject",
+          "documentation":"<p>Specifies the target value for the target tracking auto scaling policy.</p> <p>Amazon Keyspaces auto scaling scales up capacity automatically when traffic exceeds this target utilization rate, and then back down when it falls below the target. This ensures that the ratio of consumed capacity to provisioned capacity stays at or near this value. You define <code>targetValue</code> as a percentage. A <code>double</code> between 20 and 90.</p>"
+        }
+      },
+      "documentation":"<p>The auto scaling policy that scales a table based on the ratio of consumed to provisioned capacity.</p>"
+    },
+    "ThroughputMode":{
+      "type":"string",
+      "enum":[
+        "PAY_PER_REQUEST",
+        "PROVISIONED"
+      ]
+    },
+    "TimeToLive":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"TimeToLiveStatus",
+          "documentation":"<p>Shows how to enable custom Time to Live (TTL) settings for the specified table.</p>"
+        }
+      },
+      "documentation":"<p>Enable custom Time to Live (TTL) settings for rows and columns without setting a TTL default for the specified table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/TTL-how-it-works.html#ttl-howitworks_enabling\">Enabling TTL on tables</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+    },
+    "TimeToLiveStatus":{
+      "type":"string",
+      "enum":["ENABLED"]
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TypeName":{
+      "type":"string",
+      "max":48,
+      "min":1
+    },
+    "TypeNameList":{
+      "type":"list",
+      "member":{"shape":"TypeName"}
+    },
+    "TypeStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "CREATING",
+        "DELETING",
+        "RESTORING"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Keyspaces resource that the tags will be removed from. This value is an Amazon Resource Name (ARN).</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of existing tags to be removed from the Amazon Keyspaces resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateKeyspaceRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "replicationSpecification"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace. </p>"
+        },
+        "replicationSpecification":{"shape":"ReplicationSpecification"},
+        "clientSideTimestamps":{"shape":"ClientSideTimestamps"}
+      }
+    },
+    "UpdateKeyspaceResponse":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p> The unique identifier of the keyspace in the format of an Amazon Resource Name (ARN). </p>"
+        }
+      }
+    },
+    "UpdateTableRequest":{
+      "type":"structure",
+      "required":[
+        "keyspaceName",
+        "tableName"
+      ],
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace the specified table is stored in.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "addColumns":{
+          "shape":"ColumnDefinitionList",
+          "documentation":"<p>For each column to be added to the specified table:</p> <ul> <li> <p> <code>name</code> - The name of the column.</p> </li> <li> <p> <code>type</code> - An Amazon Keyspaces data type. For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types\">Data types</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> </li> </ul>"
+        },
+        "capacitySpecification":{
+          "shape":"CapacitySpecification",
+          "documentation":"<p>Modifies the read/write throughput capacity mode for the table. The options are:</p> <ul> <li> <p> <code>throughputMode:PAY_PER_REQUEST</code> and </p> </li> <li> <p> <code>throughputMode:PROVISIONED</code> - Provisioned capacity mode requires <code>readCapacityUnits</code> and <code>writeCapacityUnits</code> as input.</p> </li> </ul> <p>The default is <code>throughput_mode:PAY_PER_REQUEST</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html\">Read/write capacity modes</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "encryptionSpecification":{
+          "shape":"EncryptionSpecification",
+          "documentation":"<p>Modifies the encryption settings of the table. You can choose one of the following KMS key (KMS key):</p> <ul> <li> <p> <code>type:AWS_OWNED_KMS_KEY</code> - This key is owned by Amazon Keyspaces. </p> </li> <li> <p> <code>type:CUSTOMER_MANAGED_KMS_KEY</code> - This key is stored in your account and is created, owned, and managed by you. This option requires the <code>kms_key_identifier</code> of the KMS key in Amazon Resource Name (ARN) format as input. </p> </li> </ul> <p>The default is <code>AWS_OWNED_KMS_KEY</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html\">Encryption at rest</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "pointInTimeRecovery":{
+          "shape":"PointInTimeRecovery",
+          "documentation":"<p>Modifies the <code>pointInTimeRecovery</code> settings of the table. The options are:</p> <ul> <li> <p> <code>status=ENABLED</code> </p> </li> <li> <p> <code>status=DISABLED</code> </p> </li> </ul> <p>If it's not specified, the default is <code>status=DISABLED</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html\">Point-in-time recovery</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "ttl":{
+          "shape":"TimeToLive",
+          "documentation":"<p>Modifies Time to Live custom settings for the table. The options are:</p> <ul> <li> <p> <code>status:enabled</code> </p> </li> <li> <p> <code>status:disabled</code> </p> </li> </ul> <p>The default is <code>status:disabled</code>. After <code>ttl</code> is enabled, you can't disable it for the table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/TTL.html\">Expiring data by using Amazon Keyspaces Time to Live (TTL)</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "defaultTimeToLive":{
+          "shape":"DefaultTimeToLive",
+          "documentation":"<p>The default Time to Live setting in seconds for the table.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/TTL-how-it-works.html#ttl-howitworks_default_ttl\">Setting the default TTL value for a table</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "clientSideTimestamps":{
+          "shape":"ClientSideTimestamps",
+          "documentation":"<p>Enables client-side timestamps for the table. By default, the setting is disabled. You can enable client-side timestamps with the following option:</p> <ul> <li> <p> <code>status: \"enabled\"</code> </p> </li> </ul> <p>Once client-side timestamps are enabled for a table, this setting cannot be disabled.</p>"
+        },
+        "autoScalingSpecification":{
+          "shape":"AutoScalingSpecification",
+          "documentation":"<p>The optional auto scaling settings to update for a table in provisioned capacity mode. Specifies if the service can manage throughput capacity of a provisioned table automatically on your behalf. Amazon Keyspaces auto scaling helps you provision throughput capacity for variable workloads efficiently by increasing and decreasing your table's read and write capacity automatically in response to application traffic.</p> <p>If auto scaling is already enabled for the table, you can use <code>UpdateTable</code> to update the minimum and maximum values or the auto scaling policy settings independently.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/autoscaling.html\">Managing throughput capacity automatically with Amazon Keyspaces auto scaling</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+        },
+        "replicaSpecifications":{
+          "shape":"ReplicaSpecificationList",
+          "documentation":"<p>The Region specific settings of a multi-Regional table.</p>"
+        },
+        "cdcSpecification":{
+          "shape":"CdcSpecification",
+          "documentation":"<p>The CDC stream settings of the table.</p>"
+        }
+      }
+    },
+    "UpdateTableResponse":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the modified table.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>The operation failed due to an invalid or malformed request.</p>",
+      "exception":true
+    },
+    "ViewType":{
+      "type":"string",
+      "enum":[
+        "NEW_IMAGE",
+        "OLD_IMAGE",
+        "KEYS_ONLY",
+        "NEW_AND_OLD_IMAGES"
+      ]
+    },
+    "kmsKeyARN":{
+      "type":"string",
+      "max":5096,
+      "min":1
+    },
+    "region":{
+      "type":"string",
+      "max":25,
+      "min":2
+    },
+    "rs":{
+      "type":"string",
+      "enum":[
+        "SINGLE_REGION",
+        "MULTI_REGION"
+      ],
+      "max":20,
+      "min":1
+    }
+  },
+  "documentation":"<p>Amazon Keyspaces (for Apache Cassandra) is a scalable, highly available, and managed Apache Cassandra-compatible database service. Amazon Keyspaces makes it easy to migrate, run, and scale Cassandra workloads in the Amazon Web Services Cloud. With just a few clicks on the Amazon Web Services Management Console or a few lines of code, you can create keyspaces and tables in Amazon Keyspaces, without deploying any infrastructure or installing software. </p> <p>In addition to supporting Cassandra Query Language (CQL) requests via open-source Cassandra drivers, Amazon Keyspaces supports data definition language (DDL) operations to manage keyspaces and tables using the Amazon Web Services SDK and CLI, as well as infrastructure as code (IaC) services and tools such as CloudFormation and Terraform. This API reference describes the supported DDL operations in detail.</p> <p>For the list of all supported CQL APIs, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cassandra-apis.html\">Supported Cassandra APIs, operations, and data types in Amazon Keyspaces</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>To learn how Amazon Keyspaces API actions are recorded with CloudTrail, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/logging-using-cloudtrail.html#service-name-info-in-cloudtrail\">Amazon Keyspaces information in CloudTrail</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>For more information about Amazon Web Services APIs, for example how to implement retry logic or how to sign Amazon Web Services API requests, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-apis.html\">Amazon Web Services APIs</a> in the <i>General Reference</i>.</p>"
+}

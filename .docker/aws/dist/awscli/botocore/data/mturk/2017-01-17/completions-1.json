@@ -1,0 +1,462 @@
+{
+  "version": "1.0",
+  "resources": {
+    "BonusPayment": {
+      "operation": "ListBonusPayments",
+      "resourceIdentifier": {
+        "BonusAmount": "BonusPayments[].BonusAmount",
+        "AssignmentId": "BonusPayments[].AssignmentId"
+      }
+    },
+    "QualificationRequest": {
+      "operation": "ListQualificationRequests",
+      "resourceIdentifier": {
+        "QualificationRequestId": "QualificationRequests[].QualificationRequestId",
+        "QualificationTypeId": "QualificationRequests[].QualificationTypeId",
+        "Test": "QualificationRequests[].Test"
+      }
+    },
+    "ReviewableHIT": {
+      "operation": "ListReviewableHITs",
+      "resourceIdentifier": {
+        "HITId": "HITs[].HITId",
+        "HITTypeId": "HITs[].HITTypeId",
+        "Description": "HITs[].Description"
+      }
+    },
+    "WorkerBlock": {
+      "operation": "ListWorkerBlocks",
+      "resourceIdentifier": {
+        "WorkerId": "WorkerBlocks[].WorkerId",
+        "Reason": "WorkerBlocks[].Reason"
+      }
+    }
+  },
+  "operations": {
+    "AcceptQualificationRequest": {
+      "QualificationRequestId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationRequestId"
+          }
+        ]
+      }
+    },
+    "ApproveAssignment": {
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      }
+    },
+    "AssociateQualificationWithWorker": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      },
+      "WorkerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      }
+    },
+    "DeleteHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "DeleteQualificationType": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      }
+    },
+    "DeleteWorkerBlock": {
+      "WorkerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      },
+      "Reason": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "Reason"
+          }
+        ]
+      }
+    },
+    "DisassociateQualificationFromWorker": {
+      "WorkerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      },
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      },
+      "Reason": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "Reason"
+          }
+        ]
+      }
+    },
+    "GetAssignment": {
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      }
+    },
+    "GetFileUploadURL": {
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      }
+    },
+    "GetHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "GetQualificationScore": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      },
+      "WorkerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      }
+    },
+    "GetQualificationType": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      }
+    },
+    "ListAssignmentsForHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "ListBonusPayments": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      },
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      }
+    },
+    "ListHITsForQualificationType": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      }
+    },
+    "ListQualificationRequests": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      }
+    },
+    "ListReviewPolicyResultsForHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "ListReviewableHITs": {
+      "HITTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITTypeId"
+          }
+        ]
+      }
+    },
+    "ListWorkersWithQualificationType": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      }
+    },
+    "NotifyWorkers": {
+      "WorkerIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      }
+    },
+    "RejectAssignment": {
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      }
+    },
+    "RejectQualificationRequest": {
+      "QualificationRequestId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationRequestId"
+          }
+        ]
+      },
+      "Reason": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "Reason"
+          }
+        ]
+      }
+    },
+    "SendBonus": {
+      "WorkerId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "WorkerId"
+          }
+        ]
+      },
+      "BonusAmount": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "BonusAmount"
+          }
+        ]
+      },
+      "AssignmentId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "BonusPayment",
+            "resourceIdentifier": "AssignmentId"
+          }
+        ]
+      },
+      "Reason": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkerBlock",
+            "resourceIdentifier": "Reason"
+          }
+        ]
+      }
+    },
+    "UpdateExpirationForHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "UpdateHITReviewStatus": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      }
+    },
+    "UpdateHITTypeOfHIT": {
+      "HITId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITId"
+          }
+        ]
+      },
+      "HITTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITTypeId"
+          }
+        ]
+      }
+    },
+    "UpdateNotificationSettings": {
+      "HITTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "HITTypeId"
+          }
+        ]
+      }
+    },
+    "UpdateQualificationType": {
+      "QualificationTypeId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "QualificationTypeId"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ReviewableHIT",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Test": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "QualificationRequest",
+            "resourceIdentifier": "Test"
+          }
+        ]
+      }
+    }
+  }
+}

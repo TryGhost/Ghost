@@ -1,0 +1,2166 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2019-12-01",
+    "endpointPrefix":"codestar-connections",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS CodeStar connections",
+    "serviceId":"CodeStar connections",
+    "signatureVersion":"v4",
+    "signingName":"codestar-connections",
+    "targetPrefix":"com.amazonaws.codestar.connections.CodeStar_connections_20191201",
+    "uid":"codestar-connections-2019-12-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateConnection":{
+      "name":"CreateConnection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateConnectionInput"},
+      "output":{"shape":"CreateConnectionOutput"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceUnavailableException"}
+      ],
+      "documentation":"<p>Creates a connection that can then be given to other Amazon Web Services services like CodePipeline so that it can access third-party code repositories. The connection is in pending status until the third-party connection handshake is completed from the console.</p>"
+    },
+    "CreateHost":{
+      "name":"CreateHost",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateHostInput"},
+      "output":{"shape":"CreateHostOutput"},
+      "errors":[
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Creates a resource that represents the infrastructure where a third-party provider is installed. The host is used when you create connections to an installed third-party provider type, such as GitHub Enterprise Server. You create one host for all connections to that provider.</p> <note> <p>A host created through the CLI or the SDK is in `PENDING` status by default. You can make its status `AVAILABLE` by setting up the host in the console.</p> </note>"
+    },
+    "CreateRepositoryLink":{
+      "name":"CreateRepositoryLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRepositoryLinkInput"},
+      "output":{"shape":"CreateRepositoryLinkOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a link to a specified external Git repository. A repository link allows Git sync to monitor and sync changes to files in a specified Git repository.</p>"
+    },
+    "CreateSyncConfiguration":{
+      "name":"CreateSyncConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSyncConfigurationInput"},
+      "output":{"shape":"CreateSyncConfigurationOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a sync configuration which allows Amazon Web Services to sync content from a Git repository to update a specified Amazon Web Services resource. Parameters for the sync configuration are determined by the sync type.</p>"
+    },
+    "DeleteConnection":{
+      "name":"DeleteConnection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteConnectionInput"},
+      "output":{"shape":"DeleteConnectionOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The connection to be deleted.</p>"
+    },
+    "DeleteHost":{
+      "name":"DeleteHost",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteHostInput"},
+      "output":{"shape":"DeleteHostOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceUnavailableException"}
+      ],
+      "documentation":"<p>The host to be deleted. Before you delete a host, all connections associated to the host must be deleted.</p> <note> <p>A host cannot be deleted if it is in the VPC_CONFIG_INITIALIZING or VPC_CONFIG_DELETING state.</p> </note>"
+    },
+    "DeleteRepositoryLink":{
+      "name":"DeleteRepositoryLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRepositoryLinkInput"},
+      "output":{"shape":"DeleteRepositoryLinkOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"SyncConfigurationStillExistsException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UnsupportedProviderTypeException"}
+      ],
+      "documentation":"<p>Deletes the association between your connection and a specified external Git repository.</p>"
+    },
+    "DeleteSyncConfiguration":{
+      "name":"DeleteSyncConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSyncConfigurationInput"},
+      "output":{"shape":"DeleteSyncConfigurationOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes the sync configuration for a specified repository and connection.</p>"
+    },
+    "GetConnection":{
+      "name":"GetConnection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetConnectionInput"},
+      "output":{"shape":"GetConnectionOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceUnavailableException"}
+      ],
+      "documentation":"<p>Returns the connection ARN and details such as status, owner, and provider type.</p>"
+    },
+    "GetHost":{
+      "name":"GetHost",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetHostInput"},
+      "output":{"shape":"GetHostOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceUnavailableException"}
+      ],
+      "documentation":"<p>Returns the host ARN and details such as status, provider type, endpoint, and, if applicable, the VPC configuration.</p>"
+    },
+    "GetRepositoryLink":{
+      "name":"GetRepositoryLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRepositoryLinkInput"},
+      "output":{"shape":"GetRepositoryLinkOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns details about a repository link. A repository link allows Git sync to monitor and sync changes from files in a specified Git repository.</p>"
+    },
+    "GetRepositorySyncStatus":{
+      "name":"GetRepositorySyncStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRepositorySyncStatusInput"},
+      "output":{"shape":"GetRepositorySyncStatusOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns details about the sync status for a repository. A repository sync uses Git sync to push and pull changes from your remote repository.</p>"
+    },
+    "GetResourceSyncStatus":{
+      "name":"GetResourceSyncStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourceSyncStatusInput"},
+      "output":{"shape":"GetResourceSyncStatusOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the status of the sync with the Git repository for a specific Amazon Web Services resource.</p>"
+    },
+    "GetSyncBlockerSummary":{
+      "name":"GetSyncBlockerSummary",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSyncBlockerSummaryInput"},
+      "output":{"shape":"GetSyncBlockerSummaryOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of the most recent sync blockers.</p>"
+    },
+    "GetSyncConfiguration":{
+      "name":"GetSyncConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSyncConfigurationInput"},
+      "output":{"shape":"GetSyncConfigurationOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns details about a sync configuration, including the sync type and resource name. A sync configuration allows the configuration to sync (push and pull) changes from the remote repository for a specified branch in a Git repository.</p>"
+    },
+    "ListConnections":{
+      "name":"ListConnections",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListConnectionsInput"},
+      "output":{"shape":"ListConnectionsOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the connections associated with your account.</p>"
+    },
+    "ListHosts":{
+      "name":"ListHosts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListHostsInput"},
+      "output":{"shape":"ListHostsOutput"},
+      "documentation":"<p>Lists the hosts associated with your account.</p>"
+    },
+    "ListRepositoryLinks":{
+      "name":"ListRepositoryLinks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRepositoryLinksInput"},
+      "output":{"shape":"ListRepositoryLinksOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the repository links created for connections in your account.</p>"
+    },
+    "ListRepositorySyncDefinitions":{
+      "name":"ListRepositorySyncDefinitions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRepositorySyncDefinitionsInput"},
+      "output":{"shape":"ListRepositorySyncDefinitionsOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the repository sync definitions for repository links in your account.</p>"
+    },
+    "ListSyncConfigurations":{
+      "name":"ListSyncConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSyncConfigurationsInput"},
+      "output":{"shape":"ListSyncConfigurationsOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of sync configurations for a specified repository.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets the set of key-value pairs (metadata) that are used to manage the resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"LimitExceededException"}
+      ],
+      "documentation":"<p>Adds to or modifies the tags of the given resource. Tags are metadata that can be used to manage a resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from an Amazon Web Services resource.</p>"
+    },
+    "UpdateHost":{
+      "name":"UpdateHost",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateHostInput"},
+      "output":{"shape":"UpdateHostOutput"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceUnavailableException"},
+        {"shape":"UnsupportedOperationException"}
+      ],
+      "documentation":"<p>Updates a specified host with the provided configurations.</p>"
+    },
+    "UpdateRepositoryLink":{
+      "name":"UpdateRepositoryLink",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRepositoryLinkInput"},
+      "output":{"shape":"UpdateRepositoryLinkOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConditionalCheckFailedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UpdateOutOfSyncException"}
+      ],
+      "documentation":"<p>Updates the association between your connection and a specified external Git repository. A repository link allows Git sync to monitor and sync changes to files in a specified Git repository.</p>"
+    },
+    "UpdateSyncBlocker":{
+      "name":"UpdateSyncBlocker",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSyncBlockerInput"},
+      "output":{"shape":"UpdateSyncBlockerOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"RetryLatestCommitFailedException"},
+        {"shape":"SyncBlockerDoesNotExistException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Allows you to update the status of a sync blocker, resolving the blocker and allowing syncing to continue.</p>"
+    },
+    "UpdateSyncConfiguration":{
+      "name":"UpdateSyncConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSyncConfigurationInput"},
+      "output":{"shape":"UpdateSyncConfigurationOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UpdateOutOfSyncException"}
+      ],
+      "documentation":"<p>Updates the sync configuration for your connection and a specified external Git repository.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[0-9]{12}"
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:aws(-[\\w]+)*:.+:.+:[0-9]{12}:.+"
+    },
+    "BlockerStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "RESOLVED"
+      ]
+    },
+    "BlockerType":{
+      "type":"string",
+      "enum":["AUTOMATED"]
+    },
+    "BranchName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "ConcurrentModificationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Exception thrown as a result of concurrent modification to an application. For example, two individuals attempting to edit the same application at the same time. </p>",
+      "exception":true
+    },
+    "ConditionalCheckFailedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The conditional check failed. Try again later.</p>",
+      "exception":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Two conflicting operations have been made on the same resource.</p>",
+      "exception":true
+    },
+    "Connection":{
+      "type":"structure",
+      "members":{
+        "ConnectionName":{
+          "shape":"ConnectionName",
+          "documentation":"<p>The name of the connection. Connection names must be unique in an Amazon Web Services account.</p>"
+        },
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection. The ARN is used as the connection reference when the connection is shared between Amazon Web Services services.</p> <note> <p>The ARN is never reused if the connection is deleted.</p> </note>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The name of the external provider where your third-party code repository is configured.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The identifier of the external provider where your third-party code repository is configured. For Bitbucket, this is the account ID of the owner of the Bitbucket repository.</p>"
+        },
+        "ConnectionStatus":{
+          "shape":"ConnectionStatus",
+          "documentation":"<p>The current status of the connection. </p>"
+        },
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host associated with the connection.</p>"
+        }
+      },
+      "documentation":"<p>A resource that is used to connect third-party source providers with services like CodePipeline.</p> <p>Note: A connection created through CloudFormation, the CLI, or the SDK is in `PENDING` status by default. You can make its status `AVAILABLE` by updating the connection in the console.</p>"
+    },
+    "ConnectionArn":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"arn:aws(-[\\w]+)*:.+:.+:[0-9]{12}:.+"
+    },
+    "ConnectionList":{
+      "type":"list",
+      "member":{"shape":"Connection"}
+    },
+    "ConnectionName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"[\\s\\S]*"
+    },
+    "ConnectionStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "AVAILABLE",
+        "ERROR"
+      ]
+    },
+    "CreateConnectionInput":{
+      "type":"structure",
+      "required":["ConnectionName"],
+      "members":{
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The name of the external provider where your third-party code repository is configured.</p>"
+        },
+        "ConnectionName":{
+          "shape":"ConnectionName",
+          "documentation":"<p>The name of the connection to be created.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The key-value pair to use when tagging the resource.</p>"
+        },
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host associated with the connection to be created.</p>"
+        }
+      }
+    },
+    "CreateConnectionOutput":{
+      "type":"structure",
+      "required":["ConnectionArn"],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection to be created. The ARN is used as the connection reference when the connection is shared between Amazon Web Services services.</p> <note> <p>The ARN is never reused if the connection is deleted.</p> </note>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Specifies the tags applied to the resource.</p>"
+        }
+      }
+    },
+    "CreateHostInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ProviderType",
+        "ProviderEndpoint"
+      ],
+      "members":{
+        "Name":{
+          "shape":"HostName",
+          "documentation":"<p>The name of the host to be created.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The name of the installed provider to be associated with your connection. The host resource represents the infrastructure where your provider type is installed. The valid provider type is GitHub Enterprise Server.</p>"
+        },
+        "ProviderEndpoint":{
+          "shape":"Url",
+          "documentation":"<p>The endpoint of the infrastructure to be represented by the host after it is created.</p>"
+        },
+        "VpcConfiguration":{
+          "shape":"VpcConfiguration",
+          "documentation":"<p>The VPC configuration to be provisioned for the host. A VPC must be configured and the infrastructure to be represented by the host must already be connected to the VPC.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags for the host to be created.</p>"
+        }
+      }
+    },
+    "CreateHostOutput":{
+      "type":"structure",
+      "members":{
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host to be created.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Tags for the created host.</p>"
+        }
+      }
+    },
+    "CreateRepositoryLinkInput":{
+      "type":"structure",
+      "required":[
+        "ConnectionArn",
+        "OwnerId",
+        "RepositoryName"
+      ],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection to be associated with the repository link.</p>"
+        },
+        "OwnerId":{
+          "shape":"OwnerId",
+          "documentation":"<p>The owner ID for the repository associated with a specific sync configuration, such as the owner ID in GitHub.</p>"
+        },
+        "RepositoryName":{
+          "shape":"RepositoryName",
+          "documentation":"<p>The name of the repository to be associated with the repository link.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) encryption key for the repository to be associated with the repository link.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags for the repository to be associated with the repository link.</p>"
+        }
+      }
+    },
+    "CreateRepositoryLinkOutput":{
+      "type":"structure",
+      "required":["RepositoryLinkInfo"],
+      "members":{
+        "RepositoryLinkInfo":{
+          "shape":"RepositoryLinkInfo",
+          "documentation":"<p>The returned information about the created repository link.</p>"
+        }
+      }
+    },
+    "CreateSyncConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "Branch",
+        "ConfigFile",
+        "RepositoryLinkId",
+        "ResourceName",
+        "RoleArn",
+        "SyncType"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch in the repository from which changes will be synced.</p>"
+        },
+        "ConfigFile":{
+          "shape":"DeploymentFilePath",
+          "documentation":"<p>The file name of the configuration file that manages syncing between the connection and the repository. This configuration file is stored in the repository.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link created for the connection. A repository link allows Git sync to monitor and sync changes to files in a specified Git repository.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource (for example, a CloudFormation stack in the case of CFN_STACK_SYNC) that will be synchronized from the linked repository.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the IAM role that grants permission for Amazon Web Services to use Git sync to update a given Amazon Web Services resource on your behalf.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The type of sync configuration.</p>"
+        },
+        "PublishDeploymentStatus":{
+          "shape":"PublishDeploymentStatus",
+          "documentation":"<p>Whether to enable or disable publishing of deployment status to source providers.</p>"
+        },
+        "TriggerResourceUpdateOn":{
+          "shape":"TriggerResourceUpdateOn",
+          "documentation":"<p>When to trigger Git sync to begin the stack update.</p>"
+        }
+      }
+    },
+    "CreateSyncConfigurationOutput":{
+      "type":"structure",
+      "required":["SyncConfiguration"],
+      "members":{
+        "SyncConfiguration":{
+          "shape":"SyncConfiguration",
+          "documentation":"<p>The created sync configuration for the connection. A sync configuration allows Amazon Web Services to sync content from a Git repository to update a specified Amazon Web Services resource. </p>"
+        }
+      }
+    },
+    "CreatedReason":{"type":"string"},
+    "DeleteConnectionInput":{
+      "type":"structure",
+      "required":["ConnectionArn"],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection to be deleted.</p> <note> <p>The ARN is never reused if the connection is deleted.</p> </note>"
+        }
+      }
+    },
+    "DeleteConnectionOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteHostInput":{
+      "type":"structure",
+      "required":["HostArn"],
+      "members":{
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteHostOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteRepositoryLinkInput":{
+      "type":"structure",
+      "required":["RepositoryLinkId"],
+      "members":{
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteRepositoryLinkOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteSyncConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "SyncType",
+        "ResourceName"
+      ],
+      "members":{
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The type of sync configuration to be deleted.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource associated with the sync configuration to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteSyncConfigurationOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeploymentFilePath":{"type":"string"},
+    "Directory":{"type":"string"},
+    "ErrorMessage":{
+      "type":"string",
+      "max":600
+    },
+    "Event":{"type":"string"},
+    "ExternalId":{"type":"string"},
+    "GetConnectionInput":{
+      "type":"structure",
+      "required":["ConnectionArn"],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a connection.</p>"
+        }
+      }
+    },
+    "GetConnectionOutput":{
+      "type":"structure",
+      "members":{
+        "Connection":{
+          "shape":"Connection",
+          "documentation":"<p>The connection details, such as status, owner, and provider type.</p>"
+        }
+      }
+    },
+    "GetHostInput":{
+      "type":"structure",
+      "required":["HostArn"],
+      "members":{
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the requested host.</p>"
+        }
+      }
+    },
+    "GetHostOutput":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"HostName",
+          "documentation":"<p>The name of the requested host.</p>"
+        },
+        "Status":{
+          "shape":"HostStatus",
+          "documentation":"<p>The status of the requested host.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type of the requested host, such as GitHub Enterprise Server.</p>"
+        },
+        "ProviderEndpoint":{
+          "shape":"Url",
+          "documentation":"<p>The endpoint of the infrastructure represented by the requested host.</p>"
+        },
+        "VpcConfiguration":{
+          "shape":"VpcConfiguration",
+          "documentation":"<p>The VPC configuration of the requested host.</p>"
+        }
+      }
+    },
+    "GetRepositoryLinkInput":{
+      "type":"structure",
+      "required":["RepositoryLinkId"],
+      "members":{
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link to get.</p>"
+        }
+      }
+    },
+    "GetRepositoryLinkOutput":{
+      "type":"structure",
+      "required":["RepositoryLinkInfo"],
+      "members":{
+        "RepositoryLinkInfo":{
+          "shape":"RepositoryLinkInfo",
+          "documentation":"<p>The information returned for a specified repository link.</p>"
+        }
+      }
+    },
+    "GetRepositorySyncStatusInput":{
+      "type":"structure",
+      "required":[
+        "Branch",
+        "RepositoryLinkId",
+        "SyncType"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch of the repository link for the requested repository sync status.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The repository link ID for the requested repository sync status.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type of the requested sync status.</p>"
+        }
+      }
+    },
+    "GetRepositorySyncStatusOutput":{
+      "type":"structure",
+      "required":["LatestSync"],
+      "members":{
+        "LatestSync":{
+          "shape":"RepositorySyncAttempt",
+          "documentation":"<p>The status of the latest sync returned for a specified repository and branch.</p>"
+        }
+      }
+    },
+    "GetResourceSyncStatusInput":{
+      "type":"structure",
+      "required":[
+        "ResourceName",
+        "SyncType"
+      ],
+      "members":{
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource for the sync status with the Git repository.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type for the sync status with the Git repository.</p>"
+        }
+      }
+    },
+    "GetResourceSyncStatusOutput":{
+      "type":"structure",
+      "required":["LatestSync"],
+      "members":{
+        "DesiredState":{
+          "shape":"Revision",
+          "documentation":"<p>The desired state of the Amazon Web Services resource for the sync status with the Git repository.</p>"
+        },
+        "LatestSuccessfulSync":{
+          "shape":"ResourceSyncAttempt",
+          "documentation":"<p>The latest successful sync for the sync status with the Git repository.</p>"
+        },
+        "LatestSync":{
+          "shape":"ResourceSyncAttempt",
+          "documentation":"<p>The latest sync for the sync status with the Git repository, whether successful or not.</p>"
+        }
+      }
+    },
+    "GetSyncBlockerSummaryInput":{
+      "type":"structure",
+      "required":[
+        "SyncType",
+        "ResourceName"
+      ],
+      "members":{
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type for the sync blocker summary.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource currently blocked from automatically being synced from a Git repository.</p>"
+        }
+      }
+    },
+    "GetSyncBlockerSummaryOutput":{
+      "type":"structure",
+      "required":["SyncBlockerSummary"],
+      "members":{
+        "SyncBlockerSummary":{
+          "shape":"SyncBlockerSummary",
+          "documentation":"<p>The list of sync blockers for a specified resource.</p>"
+        }
+      }
+    },
+    "GetSyncConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "SyncType",
+        "ResourceName"
+      ],
+      "members":{
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type for the sync configuration for which you want to retrieve information.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource for the sync configuration for which you want to retrieve information.</p>"
+        }
+      }
+    },
+    "GetSyncConfigurationOutput":{
+      "type":"structure",
+      "required":["SyncConfiguration"],
+      "members":{
+        "SyncConfiguration":{
+          "shape":"SyncConfiguration",
+          "documentation":"<p>The details about the sync configuration for which you want to retrieve information.</p>"
+        }
+      }
+    },
+    "Host":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"HostName",
+          "documentation":"<p>The name of the host.</p>"
+        },
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The name of the installed provider to be associated with your connection. The host resource represents the infrastructure where your provider type is installed. The valid provider type is GitHub Enterprise Server.</p>"
+        },
+        "ProviderEndpoint":{
+          "shape":"Url",
+          "documentation":"<p>The endpoint of the infrastructure where your provider type is installed.</p>"
+        },
+        "VpcConfiguration":{
+          "shape":"VpcConfiguration",
+          "documentation":"<p>The VPC configuration provisioned for the host.</p>"
+        },
+        "Status":{
+          "shape":"HostStatus",
+          "documentation":"<p>The status of the host, such as PENDING, AVAILABLE, VPC_CONFIG_DELETING, VPC_CONFIG_INITIALIZING, and VPC_CONFIG_FAILED_INITIALIZATION.</p>"
+        },
+        "StatusMessage":{
+          "shape":"HostStatusMessage",
+          "documentation":"<p>The status description for the host.</p>"
+        }
+      },
+      "documentation":"<p>A resource that represents the infrastructure where a third-party provider is installed. The host is used when you create connections to an installed third-party provider type, such as GitHub Enterprise Server. You create one host for all connections to that provider.</p> <note> <p>A host created through the CLI or the SDK is in `PENDING` status by default. You can make its status `AVAILABLE` by setting up the host in the console.</p> </note>"
+    },
+    "HostArn":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"arn:aws(-[\\w]+)*:codestar-connections:.+:[0-9]{12}:host\\/.+"
+    },
+    "HostList":{
+      "type":"list",
+      "member":{"shape":"Host"}
+    },
+    "HostName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":".*"
+    },
+    "HostStatus":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":".*"
+    },
+    "HostStatusMessage":{"type":"string"},
+    "IamRoleArn":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"arn:aws(-[\\w]+)*:iam::\\d{12}:role/[a-zA-Z_0-9+=,.@\\-_/]+"
+    },
+    "Id":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Received an internal server exception. Try again later.</p>",
+      "exception":true
+    },
+    "InvalidInputException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input is not valid. Verify that the action is typed correctly.</p>",
+      "exception":true
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"arn:aws(-[\\w]+)*:kms:[a-z\\-0-9]+:\\d{12}:key/[a-zA-Z0-9\\-]+"
+    },
+    "LatestSyncBlockerList":{
+      "type":"list",
+      "member":{"shape":"SyncBlocker"}
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Exceeded the maximum limit for connections.</p>",
+      "exception":true
+    },
+    "ListConnectionsInput":{
+      "type":"structure",
+      "members":{
+        "ProviderTypeFilter":{
+          "shape":"ProviderType",
+          "documentation":"<p>Filters the list of connections to those associated with a specified provider, such as Bitbucket.</p>"
+        },
+        "HostArnFilter":{
+          "shape":"HostArn",
+          "documentation":"<p>Filters the list of connections to those associated with a specified host.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token that was returned from the previous <code>ListConnections</code> call, which can be used to return the next set of connections in the list.</p>"
+        }
+      }
+    },
+    "ListConnectionsOutput":{
+      "type":"structure",
+      "members":{
+        "Connections":{
+          "shape":"ConnectionList",
+          "documentation":"<p>A list of connections and the details for each connection, such as status, owner, and provider type.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that can be used in the next <code>ListConnections</code> call. To view all items in the list, continue to call this operation with each subsequent token until no more <code>nextToken</code> values are returned.</p>"
+        }
+      }
+    },
+    "ListHostsInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. To retrieve the remaining results, make another call with the returned <code>nextToken</code> value.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token that was returned from the previous <code>ListHosts</code> call, which can be used to return the next set of hosts in the list.</p>"
+        }
+      }
+    },
+    "ListHostsOutput":{
+      "type":"structure",
+      "members":{
+        "Hosts":{
+          "shape":"HostList",
+          "documentation":"<p>A list of hosts and the details for each host, such as status, endpoint, and provider type.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that can be used in the next <code>ListHosts</code> call. To view all items in the list, continue to call this operation with each subsequent token until no more <code>nextToken</code> values are returned.</p>"
+        }
+      }
+    },
+    "ListRepositoryLinksInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p> A non-zero, non-negative integer used to limit the number of returned results.</p>"
+        },
+        "NextToken":{
+          "shape":"SharpNextToken",
+          "documentation":"<p> An enumeration token that, when provided in a request, returns the next batch of the results.</p>"
+        }
+      }
+    },
+    "ListRepositoryLinksOutput":{
+      "type":"structure",
+      "required":["RepositoryLinks"],
+      "members":{
+        "RepositoryLinks":{
+          "shape":"RepositoryLinkList",
+          "documentation":"<p>Lists the repository links called by the list repository links operation.</p>"
+        },
+        "NextToken":{
+          "shape":"SharpNextToken",
+          "documentation":"<p>An enumeration token that allows the operation to batch the results of the operation. </p>"
+        }
+      }
+    },
+    "ListRepositorySyncDefinitionsInput":{
+      "type":"structure",
+      "required":[
+        "RepositoryLinkId",
+        "SyncType"
+      ],
+      "members":{
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link for the sync definition for which you want to retrieve information.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type of the repository link for the the sync definition for which you want to retrieve information.</p>"
+        }
+      }
+    },
+    "ListRepositorySyncDefinitionsOutput":{
+      "type":"structure",
+      "required":["RepositorySyncDefinitions"],
+      "members":{
+        "RepositorySyncDefinitions":{
+          "shape":"RepositorySyncDefinitionList",
+          "documentation":"<p>The list of repository sync definitions returned by the request. A <code>RepositorySyncDefinition</code> is a mapping from a repository branch to all the Amazon Web Services resources that are being synced from that branch.</p>"
+        },
+        "NextToken":{
+          "shape":"SharpNextToken",
+          "documentation":"<p>An enumeration token that, when provided in a request, returns the next batch of the results.</p>"
+        }
+      }
+    },
+    "ListSyncConfigurationsInput":{
+      "type":"structure",
+      "required":[
+        "RepositoryLinkId",
+        "SyncType"
+      ],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>A non-zero, non-negative integer used to limit the number of returned results.</p>"
+        },
+        "NextToken":{
+          "shape":"SharpNextToken",
+          "documentation":"<p>An enumeration token that allows the operation to batch the results of the operation.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link for the requested list of sync configurations.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type for the requested list of sync configurations.</p>"
+        }
+      }
+    },
+    "ListSyncConfigurationsOutput":{
+      "type":"structure",
+      "required":["SyncConfigurations"],
+      "members":{
+        "SyncConfigurations":{
+          "shape":"SyncConfigurationList",
+          "documentation":"<p>The list of repository sync definitions returned by the request.</p>"
+        },
+        "NextToken":{
+          "shape":"SharpNextToken",
+          "documentation":"<p>An enumeration token that allows the operation to batch the next results of the operation.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which you want to get information about tags, if any.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tag key and value pairs associated with the specified resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":100,
+      "min":0
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "OwnerId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "Parent":{"type":"string"},
+    "ProviderType":{
+      "type":"string",
+      "enum":[
+        "Bitbucket",
+        "GitHub",
+        "GitHubEnterpriseServer",
+        "GitLab",
+        "GitLabSelfManaged"
+      ]
+    },
+    "PublishDeploymentStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "RepositoryLinkArn":{
+      "type":"string",
+      "pattern":"^arn:aws(?:-[a-z]+)*:codestar-connections:[a-z\\-0-9]+:\\d{12}:repository-link\\/[a-zA-Z0-9\\-:/]+"
+    },
+    "RepositoryLinkId":{
+      "type":"string",
+      "pattern":"^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$"
+    },
+    "RepositoryLinkInfo":{
+      "type":"structure",
+      "required":[
+        "ConnectionArn",
+        "OwnerId",
+        "ProviderType",
+        "RepositoryLinkArn",
+        "RepositoryLinkId",
+        "RepositoryName"
+      ],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection associated with the repository link.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the encryption key for the repository associated with the repository link.</p>"
+        },
+        "OwnerId":{
+          "shape":"OwnerId",
+          "documentation":"<p>The owner ID for the repository associated with the repository link, such as the owner ID in GitHub.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type for the connection, such as GitHub, associated with the repository link.</p>"
+        },
+        "RepositoryLinkArn":{
+          "shape":"RepositoryLinkArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the repository link.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link.</p>"
+        },
+        "RepositoryName":{
+          "shape":"RepositoryName",
+          "documentation":"<p>The name of the repository associated with the repository link.</p>"
+        }
+      },
+      "documentation":"<p>Information about the repository link resource, such as the repository link ARN, the associated connection ARN, encryption key ARN, and owner ID.</p>"
+    },
+    "RepositoryLinkList":{
+      "type":"list",
+      "member":{"shape":"RepositoryLinkInfo"}
+    },
+    "RepositoryName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "RepositorySyncAttempt":{
+      "type":"structure",
+      "required":[
+        "StartedAt",
+        "Status",
+        "Events"
+      ],
+      "members":{
+        "StartedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time of a specific sync attempt.</p>"
+        },
+        "Status":{
+          "shape":"RepositorySyncStatus",
+          "documentation":"<p>The status of a specific sync attempt. The following are valid statuses:</p> <ul> <li> <p>INITIATED - A repository sync attempt has been created and will begin soon.</p> </li> <li> <p>IN_PROGRESS - A repository sync attempt has started and work is being done to reconcile the branch.</p> </li> <li> <p>SUCCEEDED - The repository sync attempt has completed successfully.</p> </li> <li> <p>FAILED - The repository sync attempt has failed.</p> </li> <li> <p>QUEUED - The repository sync attempt didn't execute and was queued.</p> </li> </ul>"
+        },
+        "Events":{
+          "shape":"RepositorySyncEventList",
+          "documentation":"<p>The events associated with a specific sync attempt.</p>"
+        }
+      },
+      "documentation":"<p>Information about a repository sync attempt for a repository with a sync configuration.</p>"
+    },
+    "RepositorySyncDefinition":{
+      "type":"structure",
+      "required":[
+        "Branch",
+        "Directory",
+        "Parent",
+        "Target"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch specified for a repository sync definition.</p>"
+        },
+        "Directory":{
+          "shape":"Directory",
+          "documentation":"<p>The configuration file for a repository sync definition. This value comes from creating or updating the <code>config-file</code> field of a <code>sync-configuration</code>.</p>"
+        },
+        "Parent":{
+          "shape":"Parent",
+          "documentation":"<p>The parent resource specified for a repository sync definition.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The target resource specified for a repository sync definition. In some cases, such as CFN_STACK_SYNC, the parent and target resource are the same.</p>"
+        }
+      },
+      "documentation":"<p>The definition for a repository with a sync configuration.</p>"
+    },
+    "RepositorySyncDefinitionList":{
+      "type":"list",
+      "member":{"shape":"RepositorySyncDefinition"}
+    },
+    "RepositorySyncEvent":{
+      "type":"structure",
+      "required":[
+        "Event",
+        "Time",
+        "Type"
+      ],
+      "members":{
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>A description of a repository sync event.</p>"
+        },
+        "ExternalId":{
+          "shape":"ExternalId",
+          "documentation":"<p>The ID for a repository sync event.</p>"
+        },
+        "Time":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that a repository sync event occurred.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The event type for a repository sync event.</p>"
+        }
+      },
+      "documentation":"<p>Information about a repository sync event.</p>"
+    },
+    "RepositorySyncEventList":{
+      "type":"list",
+      "member":{"shape":"RepositorySyncEvent"}
+    },
+    "RepositorySyncStatus":{
+      "type":"string",
+      "enum":[
+        "FAILED",
+        "INITIATED",
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "QUEUED"
+      ]
+    },
+    "ResolvedReason":{
+      "type":"string",
+      "max":250,
+      "min":1
+    },
+    "ResourceAlreadyExistsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Unable to create resource. Resource already exists.</p>",
+      "exception":true
+    },
+    "ResourceName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^[0-9A-Za-z]+[0-9A-Za-z_\\\\-]*$"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Resource not found. Verify the connection resource ARN and try again.</p>",
+      "exception":true
+    },
+    "ResourceSyncAttempt":{
+      "type":"structure",
+      "required":[
+        "Events",
+        "InitialRevision",
+        "StartedAt",
+        "Status",
+        "TargetRevision",
+        "Target"
+      ],
+      "members":{
+        "Events":{
+          "shape":"ResourceSyncEventList",
+          "documentation":"<p>The events related to a resource sync attempt.</p>"
+        },
+        "InitialRevision":{
+          "shape":"Revision",
+          "documentation":"<p>The current state of the resource as defined in the resource's <code>config-file</code> in the linked repository.</p>"
+        },
+        "StartedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time for a resource sync attempt.</p>"
+        },
+        "Status":{
+          "shape":"ResourceSyncStatus",
+          "documentation":"<p>The status for a resource sync attempt. The follow are valid statuses:</p> <ul> <li> <p>SYNC-INITIATED - A resource sync attempt has been created and will begin soon.</p> </li> <li> <p>SYNCING - Syncing has started and work is being done to reconcile state.</p> </li> <li> <p>SYNCED - Syncing has completed successfully.</p> </li> <li> <p>SYNC_FAILED - A resource sync attempt has failed.</p> </li> </ul>"
+        },
+        "TargetRevision":{
+          "shape":"Revision",
+          "documentation":"<p>The desired state of the resource as defined in the resource's <code>config-file</code> in the linked repository. Git sync attempts to update the resource to this state.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The name of the Amazon Web Services resource that is attempted to be synchronized.</p>"
+        }
+      },
+      "documentation":"<p>Information about a resource sync attempt.</p>"
+    },
+    "ResourceSyncEvent":{
+      "type":"structure",
+      "required":[
+        "Event",
+        "Time",
+        "Type"
+      ],
+      "members":{
+        "Event":{
+          "shape":"Event",
+          "documentation":"<p>The event for a resource sync event.</p>"
+        },
+        "ExternalId":{
+          "shape":"ExternalId",
+          "documentation":"<p>The ID for a resource sync event.</p>"
+        },
+        "Time":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that a resource sync event occurred.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of resource sync event.</p>"
+        }
+      },
+      "documentation":"<p>Information about a resource sync event for the resource associated with a sync configuration.</p>"
+    },
+    "ResourceSyncEventList":{
+      "type":"list",
+      "member":{"shape":"ResourceSyncEvent"}
+    },
+    "ResourceSyncStatus":{
+      "type":"string",
+      "enum":[
+        "FAILED",
+        "INITIATED",
+        "IN_PROGRESS",
+        "SUCCEEDED"
+      ]
+    },
+    "ResourceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Resource not found. Verify the ARN for the host resource and try again.</p>",
+      "exception":true
+    },
+    "RetryLatestCommitFailedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Retrying the latest commit failed. Try again later.</p>",
+      "exception":true
+    },
+    "Revision":{
+      "type":"structure",
+      "required":[
+        "Branch",
+        "Directory",
+        "OwnerId",
+        "RepositoryName",
+        "ProviderType",
+        "Sha"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch name for a specific revision.</p>"
+        },
+        "Directory":{
+          "shape":"Directory",
+          "documentation":"<p>The directory, if any, for a specific revision.</p>"
+        },
+        "OwnerId":{
+          "shape":"OwnerId",
+          "documentation":"<p>The owner ID for a specific revision, such as the GitHub owner ID for a GitHub repository.</p>"
+        },
+        "RepositoryName":{
+          "shape":"RepositoryName",
+          "documentation":"<p>The repository name for a specific revision.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type for a revision, such as GitHub.</p>"
+        },
+        "Sha":{
+          "shape":"SHA",
+          "documentation":"<p>The SHA, such as the commit ID, for a specific revision.</p>"
+        }
+      },
+      "documentation":"<p>Information about the revision for a specific sync event, such as the branch, owner ID, and name of the repository.</p>"
+    },
+    "SHA":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "max":20,
+      "min":11,
+      "pattern":"sg-\\w{8}(\\w{9})?"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":10,
+      "min":1
+    },
+    "SharpNextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "SubnetId":{
+      "type":"string",
+      "max":24,
+      "min":15,
+      "pattern":"subnet-\\w{8}(\\w{9})?"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "max":10,
+      "min":1
+    },
+    "SyncBlocker":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "Type",
+        "Status",
+        "CreatedReason",
+        "CreatedAt"
+      ],
+      "members":{
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID for a specific sync blocker.</p>"
+        },
+        "Type":{
+          "shape":"BlockerType",
+          "documentation":"<p>The sync blocker type.</p>"
+        },
+        "Status":{
+          "shape":"BlockerStatus",
+          "documentation":"<p>The status for a specific sync blocker.</p>"
+        },
+        "CreatedReason":{
+          "shape":"CreatedReason",
+          "documentation":"<p>The provided reason for a specific sync blocker.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time for a specific sync blocker.</p>"
+        },
+        "Contexts":{
+          "shape":"SyncBlockerContextList",
+          "documentation":"<p>The contexts for a specific sync blocker.</p>"
+        },
+        "ResolvedReason":{
+          "shape":"ResolvedReason",
+          "documentation":"<p>The resolved reason for a specific sync blocker.</p>"
+        },
+        "ResolvedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that a specific sync blocker was resolved.</p>"
+        }
+      },
+      "documentation":"<p>Information about a blocker for a sync event.</p>"
+    },
+    "SyncBlockerContext":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"SyncBlockerContextKey",
+          "documentation":"<p>The key provided for a context key-value pair for a specific sync blocker.</p>"
+        },
+        "Value":{
+          "shape":"SyncBlockerContextValue",
+          "documentation":"<p>The value provided for a context key-value pair for a specific sync blocker.</p>"
+        }
+      },
+      "documentation":"<p>The context for a specific sync blocker.</p>"
+    },
+    "SyncBlockerContextKey":{"type":"string"},
+    "SyncBlockerContextList":{
+      "type":"list",
+      "member":{"shape":"SyncBlockerContext"}
+    },
+    "SyncBlockerContextValue":{"type":"string"},
+    "SyncBlockerDoesNotExistException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Unable to continue. The sync blocker does not exist.</p>",
+      "exception":true
+    },
+    "SyncBlockerSummary":{
+      "type":"structure",
+      "required":["ResourceName"],
+      "members":{
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The resource name for sync blocker summary.</p>"
+        },
+        "ParentResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The parent resource name for a sync blocker summary.</p>"
+        },
+        "LatestBlockers":{
+          "shape":"LatestSyncBlockerList",
+          "documentation":"<p>The latest events for a sync blocker summary.</p>"
+        }
+      },
+      "documentation":"<p>A summary for sync blockers.</p>"
+    },
+    "SyncConfiguration":{
+      "type":"structure",
+      "required":[
+        "Branch",
+        "OwnerId",
+        "ProviderType",
+        "RepositoryLinkId",
+        "RepositoryName",
+        "ResourceName",
+        "RoleArn",
+        "SyncType"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch associated with a specific sync configuration.</p>"
+        },
+        "ConfigFile":{
+          "shape":"DeploymentFilePath",
+          "documentation":"<p>The file path to the configuration file associated with a specific sync configuration. The path should point to an actual file in the sync configurations linked repository.</p>"
+        },
+        "OwnerId":{
+          "shape":"OwnerId",
+          "documentation":"<p>The owner ID for the repository associated with a specific sync configuration, such as the owner ID in GitHub.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The connection provider type associated with a specific sync configuration, such as GitHub.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link associated with a specific sync configuration.</p>"
+        },
+        "RepositoryName":{
+          "shape":"RepositoryName",
+          "documentation":"<p>The name of the repository associated with a specific sync configuration.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the connection resource associated with a specific sync configuration.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role associated with a specific sync configuration.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The type of sync for a specific sync configuration.</p>"
+        },
+        "PublishDeploymentStatus":{
+          "shape":"PublishDeploymentStatus",
+          "documentation":"<p>Whether to enable or disable publishing of deployment status to source providers.</p>"
+        },
+        "TriggerResourceUpdateOn":{
+          "shape":"TriggerResourceUpdateOn",
+          "documentation":"<p>When to trigger Git sync to begin the stack update.</p>"
+        }
+      },
+      "documentation":"<p>Information, such as repository, branch, provider, and resource names for a specific sync configuration.</p>"
+    },
+    "SyncConfigurationList":{
+      "type":"list",
+      "member":{"shape":"SyncConfiguration"}
+    },
+    "SyncConfigurationStillExistsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Unable to continue. The sync blocker still exists.</p>",
+      "exception":true
+    },
+    "SyncConfigurationType":{
+      "type":"string",
+      "enum":["CFN_STACK_SYNC"]
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The tag's key.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The tag's value.</p>"
+        }
+      },
+      "documentation":"<p>A tag is a key-value pair that is used to manage the resource.</p> <p>This tag is available for use by Amazon Web Services services that support tags.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":".*"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to which you want to add or update tags.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags you want to modify or add to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":".*"
+    },
+    "Target":{"type":"string"},
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TlsCertificate":{
+      "type":"string",
+      "max":16384,
+      "min":1,
+      "pattern":"[\\s\\S]*"
+    },
+    "TriggerResourceUpdateOn":{
+      "type":"string",
+      "enum":[
+        "ANY_CHANGE",
+        "FILE_CHANGE"
+      ]
+    },
+    "Type":{"type":"string"},
+    "UnsupportedOperationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The operation is not supported. Check the connection status and try again.</p>",
+      "exception":true
+    },
+    "UnsupportedProviderTypeException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified provider type is not supported for connections.</p>",
+      "exception":true
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to remove tags from.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of keys for the tags to be removed from the resource.</p>"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateHostInput":{
+      "type":"structure",
+      "required":["HostArn"],
+      "members":{
+        "HostArn":{
+          "shape":"HostArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the host to be updated.</p>"
+        },
+        "ProviderEndpoint":{
+          "shape":"Url",
+          "documentation":"<p>The URL or endpoint of the host to be updated.</p>"
+        },
+        "VpcConfiguration":{
+          "shape":"VpcConfiguration",
+          "documentation":"<p>The VPC configuration of the host to be updated. A VPC must be configured and the infrastructure to be represented by the host must already be connected to the VPC.</p>"
+        }
+      }
+    },
+    "UpdateHostOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateOutOfSyncException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The update is out of sync. Try syncing again.</p>",
+      "exception":true
+    },
+    "UpdateRepositoryLinkInput":{
+      "type":"structure",
+      "required":["RepositoryLinkId"],
+      "members":{
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the connection for the repository link to be updated. The updated connection ARN must have the same providerType (such as GitHub) as the original connection ARN for the repo link.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the encryption key for the repository link to be updated.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link to be updated.</p>"
+        }
+      }
+    },
+    "UpdateRepositoryLinkOutput":{
+      "type":"structure",
+      "required":["RepositoryLinkInfo"],
+      "members":{
+        "RepositoryLinkInfo":{
+          "shape":"RepositoryLinkInfo",
+          "documentation":"<p>Information about the repository link to be updated.</p>"
+        }
+      }
+    },
+    "UpdateSyncBlockerInput":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "SyncType",
+        "ResourceName",
+        "ResolvedReason"
+      ],
+      "members":{
+        "Id":{
+          "shape":"Id",
+          "documentation":"<p>The ID of the sync blocker to be updated.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type of the sync blocker to be updated.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the resource for the sync blocker to be updated.</p>"
+        },
+        "ResolvedReason":{
+          "shape":"ResolvedReason",
+          "documentation":"<p>The reason for resolving the sync blocker.</p>"
+        }
+      }
+    },
+    "UpdateSyncBlockerOutput":{
+      "type":"structure",
+      "required":[
+        "ResourceName",
+        "SyncBlocker"
+      ],
+      "members":{
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The resource name for the sync blocker.</p>"
+        },
+        "ParentResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The parent resource name for the sync blocker.</p>"
+        },
+        "SyncBlocker":{
+          "shape":"SyncBlocker",
+          "documentation":"<p>Information about the sync blocker to be updated.</p>"
+        }
+      }
+    },
+    "UpdateSyncConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "ResourceName",
+        "SyncType"
+      ],
+      "members":{
+        "Branch":{
+          "shape":"BranchName",
+          "documentation":"<p>The branch for the sync configuration to be updated.</p>"
+        },
+        "ConfigFile":{
+          "shape":"DeploymentFilePath",
+          "documentation":"<p>The configuration file for the sync configuration to be updated.</p>"
+        },
+        "RepositoryLinkId":{
+          "shape":"RepositoryLinkId",
+          "documentation":"<p>The ID of the repository link for the sync configuration to be updated.</p>"
+        },
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the Amazon Web Services resource for the sync configuration to be updated.</p>"
+        },
+        "RoleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the IAM role for the sync configuration to be updated.</p>"
+        },
+        "SyncType":{
+          "shape":"SyncConfigurationType",
+          "documentation":"<p>The sync type for the sync configuration to be updated.</p>"
+        },
+        "PublishDeploymentStatus":{
+          "shape":"PublishDeploymentStatus",
+          "documentation":"<p>Whether to enable or disable publishing of deployment status to source providers.</p>"
+        },
+        "TriggerResourceUpdateOn":{
+          "shape":"TriggerResourceUpdateOn",
+          "documentation":"<p>When to trigger Git sync to begin the stack update.</p>"
+        }
+      }
+    },
+    "UpdateSyncConfigurationOutput":{
+      "type":"structure",
+      "required":["SyncConfiguration"],
+      "members":{
+        "SyncConfiguration":{
+          "shape":"SyncConfiguration",
+          "documentation":"<p>The information returned for the sync configuration to be updated.</p>"
+        }
+      }
+    },
+    "Url":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":".*"
+    },
+    "VpcConfiguration":{
+      "type":"structure",
+      "required":[
+        "VpcId",
+        "SubnetIds",
+        "SecurityGroupIds"
+      ],
+      "members":{
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the Amazon VPC connected to the infrastructure where your provider type is installed.</p>"
+        },
+        "SubnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The ID of the subnet or subnets associated with the Amazon VPC connected to the infrastructure where your provider type is installed.</p>"
+        },
+        "SecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>The ID of the security group or security groups associated with the Amazon VPC connected to the infrastructure where your provider type is installed.</p>"
+        },
+        "TlsCertificate":{
+          "shape":"TlsCertificate",
+          "documentation":"<p>The value of the Transport Layer Security (TLS) certificate associated with the infrastructure where your provider type is installed.</p>"
+        }
+      },
+      "documentation":"<p>The VPC configuration provisioned for the host.</p>"
+    },
+    "VpcId":{
+      "type":"string",
+      "max":21,
+      "min":12,
+      "pattern":"vpc-\\w{8}(\\w{9})?"
+    }
+  },
+  "documentation":"<fullname>AWS CodeStar Connections</fullname> <p>This Amazon Web Services CodeStar Connections API Reference provides descriptions and usage examples of the operations and data types for the Amazon Web Services CodeStar Connections API. You can use the connections API to work with connections and installations.</p> <p> <i>Connections</i> are configurations that you use to connect Amazon Web Services resources to external code repositories. Each connection is a resource that can be given to services such as CodePipeline to connect to a third-party repository such as Bitbucket. For example, you can add the connection in CodePipeline so that it triggers your pipeline when a code change is made to your third-party code repository. Each connection is named and associated with a unique ARN that is used to reference the connection.</p> <p>When you create a connection, the console initiates a third-party connection handshake. <i>Installations</i> are the apps that are used to conduct this handshake. For example, the installation for the Bitbucket provider type is the Bitbucket app. When you create a connection, you can choose an existing installation or create one.</p> <p>When you want to create a connection to an installed provider type such as GitHub Enterprise Server, you create a <i>host</i> for your connections.</p> <p>You can work with connections by calling:</p> <ul> <li> <p> <a>CreateConnection</a>, which creates a uniquely named connection that can be referenced by services such as CodePipeline.</p> </li> <li> <p> <a>DeleteConnection</a>, which deletes the specified connection.</p> </li> <li> <p> <a>GetConnection</a>, which returns information about the connection, including the connection status.</p> </li> <li> <p> <a>ListConnections</a>, which lists the connections associated with your account.</p> </li> </ul> <p>You can work with hosts by calling:</p> <ul> <li> <p> <a>CreateHost</a>, which creates a host that represents the infrastructure where your provider is installed.</p> </li> <li> <p> <a>DeleteHost</a>, which deletes the specified host.</p> </li> <li> <p> <a>GetHost</a>, which returns information about the host, including the setup status.</p> </li> <li> <p> <a>ListHosts</a>, which lists the hosts associated with your account.</p> </li> </ul> <p>You can work with tags in Amazon Web Services CodeStar Connections by calling the following:</p> <ul> <li> <p> <a>ListTagsForResource</a>, which gets information about Amazon Web Services tags for a specified Amazon Resource Name (ARN) in Amazon Web Services CodeStar Connections.</p> </li> <li> <p> <a>TagResource</a>, which adds or updates tags for a resource in Amazon Web Services CodeStar Connections.</p> </li> <li> <p> <a>UntagResource</a>, which removes tags for a resource in Amazon Web Services CodeStar Connections.</p> </li> </ul> <p>For information about how to use Amazon Web Services CodeStar Connections, see the <a href=\"https://docs.aws.amazon.com/dtconsole/latest/userguide/welcome-connections.html\">Developer Tools User Guide</a>.</p>"
+}

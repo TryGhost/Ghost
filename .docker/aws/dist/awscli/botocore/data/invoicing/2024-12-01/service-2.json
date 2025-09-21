@@ -1,0 +1,1214 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-12-01",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"invoicing",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Invoicing",
+    "serviceId":"Invoicing",
+    "signatureVersion":"v4",
+    "signingName":"invoicing",
+    "targetPrefix":"Invoicing",
+    "uid":"invoicing-2024-12-01"
+  },
+  "operations":{
+    "BatchGetInvoiceProfile":{
+      "name":"BatchGetInvoiceProfile",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"BatchGetInvoiceProfileRequest"},
+      "output":{"shape":"BatchGetInvoiceProfileResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This gets the invoice profile associated with a set of accounts. The accounts must be linked accounts under the requester management account organization.</p>"
+    },
+    "CreateInvoiceUnit":{
+      "name":"CreateInvoiceUnit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateInvoiceUnitRequest"},
+      "output":{"shape":"CreateInvoiceUnitResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This creates a new invoice unit with the provided definition.</p>"
+    },
+    "DeleteInvoiceUnit":{
+      "name":"DeleteInvoiceUnit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteInvoiceUnitRequest"},
+      "output":{"shape":"DeleteInvoiceUnitResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This deletes an invoice unit with the provided invoice unit ARN. </p>"
+    },
+    "GetInvoiceUnit":{
+      "name":"GetInvoiceUnit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetInvoiceUnitRequest"},
+      "output":{"shape":"GetInvoiceUnitResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This retrieves the invoice unit definition.</p>"
+    },
+    "ListInvoiceSummaries":{
+      "name":"ListInvoiceSummaries",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInvoiceSummariesRequest"},
+      "output":{"shape":"ListInvoiceSummariesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves your invoice details programmatically, without line item details.</p>"
+    },
+    "ListInvoiceUnits":{
+      "name":"ListInvoiceUnits",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListInvoiceUnitsRequest"},
+      "output":{"shape":"ListInvoiceUnitsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>This fetches a list of all invoice unit definitions for a given account, as of the provided <code>AsOf</code> date.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the tags for a resource. </p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Adds a tag to a resource. </p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p> Removes a tag from a resource. </p>"
+    },
+    "UpdateInvoiceUnit":{
+      "name":"UpdateInvoiceUnit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateInvoiceUnitRequest"},
+      "output":{"shape":"UpdateInvoiceUnitResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>You can update the invoice unit configuration at any time, and Amazon Web Services will use the latest configuration at the end of the month.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"BasicString"},
+        "resourceName":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p>You don't have sufficient access to perform this action. </p>"
+        }
+      },
+      "documentation":"<p>You don't have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AccountIdList":{
+      "type":"list",
+      "member":{"shape":"AccountIdString"},
+      "max":1000,
+      "min":1
+    },
+    "AccountIdString":{
+      "type":"string",
+      "pattern":"\\d{12}"
+    },
+    "AmountBreakdown":{
+      "type":"structure",
+      "members":{
+        "SubTotalAmount":{
+          "shape":"BasicString",
+          "documentation":"<p> The total of a set of the breakdown. </p>"
+        },
+        "Discounts":{
+          "shape":"DiscountsBreakdown",
+          "documentation":"<p> The discounted amount. </p>"
+        },
+        "Taxes":{
+          "shape":"TaxesBreakdown",
+          "documentation":"<p> The tax amount. </p>"
+        },
+        "Fees":{
+          "shape":"FeesBreakdown",
+          "documentation":"<p> The fee amount. </p>"
+        }
+      },
+      "documentation":"<p>Details about how the total amount was calculated and categorized. </p>"
+    },
+    "AsOfTimestamp":{"type":"timestamp"},
+    "BasicString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\s\\S]*"
+    },
+    "BasicStringWithoutSpace":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"\\S+"
+    },
+    "BatchGetInvoiceProfileRequest":{
+      "type":"structure",
+      "required":["AccountIds"],
+      "members":{
+        "AccountIds":{
+          "shape":"AccountIdList",
+          "documentation":"<p>Retrieves the corresponding invoice profile data for these account IDs. </p>"
+        }
+      }
+    },
+    "BatchGetInvoiceProfileResponse":{
+      "type":"structure",
+      "members":{
+        "Profiles":{
+          "shape":"ProfileList",
+          "documentation":"<p> A list of invoice profiles corresponding to the requested accounts. </p>"
+        }
+      }
+    },
+    "BillingPeriod":{
+      "type":"structure",
+      "required":[
+        "Month",
+        "Year"
+      ],
+      "members":{
+        "Month":{
+          "shape":"Month",
+          "documentation":"<p> The billing period month. </p>"
+        },
+        "Year":{
+          "shape":"Year",
+          "documentation":"<p> The billing period year. </p>"
+        }
+      },
+      "documentation":"<p> The billing period for which you want to retrieve invoice-related documents. </p>"
+    },
+    "CreateInvoiceUnitRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "InvoiceReceiver",
+        "Rule"
+      ],
+      "members":{
+        "Name":{
+          "shape":"InvoiceUnitName",
+          "documentation":"<p> The unique name of the invoice unit that is shown on the generated invoice. This can't be changed once it is set. To change this name, you must delete the invoice unit recreate. </p>"
+        },
+        "InvoiceReceiver":{
+          "shape":"AccountIdString",
+          "documentation":"<p> The Amazon Web Services account ID chosen to be the receiver of an invoice unit. All invoices generated for that invoice unit will be sent to this account ID. </p>"
+        },
+        "Description":{
+          "shape":"DescriptionString",
+          "documentation":"<p> The invoice unit's description. This can be changed at a later time. </p>"
+        },
+        "TaxInheritanceDisabled":{
+          "shape":"TaxInheritanceDisabledFlag",
+          "documentation":"<p>Whether the invoice unit based tax inheritance is/ should be enabled or disabled. </p>"
+        },
+        "Rule":{
+          "shape":"InvoiceUnitRule",
+          "documentation":"<p>The <code>InvoiceUnitRule</code> object used to create invoice units. </p>"
+        },
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p> The tag structure that contains a tag key and value. </p>"
+        }
+      }
+    },
+    "CreateInvoiceUnitResponse":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        }
+      }
+    },
+    "CurrencyCode":{
+      "type":"string",
+      "max":3,
+      "min":3
+    },
+    "CurrencyExchangeDetails":{
+      "type":"structure",
+      "members":{
+        "SourceCurrencyCode":{
+          "shape":"BasicString",
+          "documentation":"<p>The exchange source currency. </p>"
+        },
+        "TargetCurrencyCode":{
+          "shape":"BasicString",
+          "documentation":"<p>The exchange target currency. </p>"
+        },
+        "Rate":{
+          "shape":"BasicString",
+          "documentation":"<p>The currency exchange rate. </p>"
+        }
+      },
+      "documentation":"<p>The details of currency exchange. </p>"
+    },
+    "DateInterval":{
+      "type":"structure",
+      "required":[
+        "StartDate",
+        "EndDate"
+      ],
+      "members":{
+        "StartDate":{
+          "shape":"Timestamp",
+          "documentation":"<p> The beginning of the time period that you want invoice-related documents for. The start date is inclusive. For example, if <code>start</code> is <code>2019-01-01</code>, AWS retrieves invoices starting at <code>2019-01-01</code> up to the end date. </p>"
+        },
+        "EndDate":{
+          "shape":"Timestamp",
+          "documentation":"<p> The end of the time period that you want invoice-related documents for. The end date is exclusive. For example, if <code>end</code> is <code>2019-01-10</code>, Amazon Web Services retrieves invoice-related documents from the start date up to, but not including, <code>2018-01-10</code>. </p>"
+        }
+      },
+      "documentation":"<p> The time period that you want invoice-related documents for. </p>"
+    },
+    "DeleteInvoiceUnitRequest":{
+      "type":"structure",
+      "required":["InvoiceUnitArn"],
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        }
+      }
+    },
+    "DeleteInvoiceUnitResponse":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        }
+      }
+    },
+    "DescriptionString":{
+      "type":"string",
+      "max":500,
+      "min":0,
+      "pattern":"[\\S\\s]*"
+    },
+    "DiscountsBreakdown":{
+      "type":"structure",
+      "members":{
+        "Breakdown":{
+          "shape":"DiscountsBreakdownAmountList",
+          "documentation":"<p>The list of discounts information. </p>"
+        },
+        "TotalAmount":{
+          "shape":"BasicString",
+          "documentation":"<p> The discount's total amount. </p>"
+        }
+      },
+      "documentation":"<p>The discounts details. </p>"
+    },
+    "DiscountsBreakdownAmount":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"BasicString",
+          "documentation":"<p> The list of discounts information. </p>"
+        },
+        "Amount":{
+          "shape":"BasicString",
+          "documentation":"<p>The discounted amount. </p>"
+        },
+        "Rate":{
+          "shape":"BasicString",
+          "documentation":"<p> The details for the discount rate.. </p>"
+        }
+      },
+      "documentation":"<p> The discounted amount. </p>"
+    },
+    "DiscountsBreakdownAmountList":{
+      "type":"list",
+      "member":{"shape":"DiscountsBreakdownAmount"}
+    },
+    "Entity":{
+      "type":"structure",
+      "members":{
+        "InvoicingEntity":{
+          "shape":"BasicString",
+          "documentation":"<p>The name of the entity that issues the Amazon Web Services invoice.</p>"
+        }
+      },
+      "documentation":"<p>The organization name providing Amazon Web Services services.</p>"
+    },
+    "FeesBreakdown":{
+      "type":"structure",
+      "members":{
+        "Breakdown":{
+          "shape":"FeesBreakdownAmountList",
+          "documentation":"<p>The list of fees information. </p>"
+        },
+        "TotalAmount":{
+          "shape":"BasicString",
+          "documentation":"<p> The total amount of fees. </p>"
+        }
+      },
+      "documentation":"<p> The details of fees. </p>"
+    },
+    "FeesBreakdownAmount":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"BasicString",
+          "documentation":"<p> The list of fees information. </p>"
+        },
+        "Amount":{
+          "shape":"BasicString",
+          "documentation":"<p> The fee amount. </p>"
+        },
+        "Rate":{
+          "shape":"BasicString",
+          "documentation":"<p> Details about the rate amount. </p>"
+        }
+      },
+      "documentation":"<p> The fee amount. </p>"
+    },
+    "FeesBreakdownAmountList":{
+      "type":"list",
+      "member":{"shape":"FeesBreakdownAmount"}
+    },
+    "Filters":{
+      "type":"structure",
+      "members":{
+        "Names":{
+          "shape":"InvoiceUnitNames",
+          "documentation":"<p> An optional input to the list API. You can specify a list of invoice unit names inside filters to return invoice units that match only the specified invoice unit names. If multiple names are provided, the result is an <code>OR</code> condition (match any) of the specified invoice unit names. </p>"
+        },
+        "InvoiceReceivers":{
+          "shape":"AccountIdList",
+          "documentation":"<p> You can specify a list of Amazon Web Services account IDs inside filters to return invoice units that match only the specified accounts. If multiple accounts are provided, the result is an <code>OR</code> condition (match any) of the specified accounts. This filter only matches the specified accounts on the invoice receivers of the invoice units. </p>"
+        },
+        "Accounts":{
+          "shape":"AccountIdList",
+          "documentation":"<p> You can specify a list of Amazon Web Services account IDs inside filters to return invoice units that match only the specified accounts. If multiple accounts are provided, the result is an <code>OR</code> condition (match any) of the specified accounts. The specified account IDs are matched with either the receiver or the linked accounts in the rules. </p>"
+        }
+      },
+      "documentation":"<p>An optional input to the list API. If multiple filters are specified, the returned list will be a configuration that match all of the provided filters. Supported filter types are <code>InvoiceReceivers</code>, <code>Names</code>, and <code>Accounts</code>. </p>"
+    },
+    "GetInvoiceUnitRequest":{
+      "type":"structure",
+      "required":["InvoiceUnitArn"],
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "AsOf":{
+          "shape":"AsOfTimestamp",
+          "documentation":"<p> The state of an invoice unit at a specified time. You can see legacy invoice units that are currently deleted if the <code>AsOf</code> time is set to before it was deleted. If an <code>AsOf</code> is not provided, the default value is the current time. </p>"
+        }
+      }
+    },
+    "GetInvoiceUnitResponse":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "InvoiceReceiver":{
+          "shape":"AccountIdString",
+          "documentation":"<p> The Amazon Web Services account ID chosen to be the receiver of an invoice unit. All invoices generated for that invoice unit will be sent to this account ID. </p>"
+        },
+        "Name":{
+          "shape":"InvoiceUnitName",
+          "documentation":"<p> The unique name of the invoice unit that is shown on the generated invoice. </p>"
+        },
+        "Description":{
+          "shape":"DescriptionString",
+          "documentation":"<p> The assigned description for an invoice unit. </p>"
+        },
+        "TaxInheritanceDisabled":{
+          "shape":"TaxInheritanceDisabledFlag",
+          "documentation":"<p> Whether the invoice unit based tax inheritance is/ should be enabled or disabled. </p>",
+          "box":true
+        },
+        "Rule":{"shape":"InvoiceUnitRule"},
+        "LastModified":{
+          "shape":"LastModifiedTimestamp",
+          "documentation":"<p> The most recent date the invoice unit response was updated. </p>"
+        }
+      }
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The processing request failed because of an unknown error, exception, or failure.</p>"
+        },
+        "message":{"shape":"BasicString"}
+      },
+      "documentation":"<p>The processing request failed because of an unknown error, exception, or failure. </p>",
+      "exception":true,
+      "fault":true
+    },
+    "InvoiceCurrencyAmount":{
+      "type":"structure",
+      "members":{
+        "TotalAmount":{
+          "shape":"BasicString",
+          "documentation":"<p> The invoice currency amount. </p>"
+        },
+        "TotalAmountBeforeTax":{
+          "shape":"BasicString",
+          "documentation":"<p> Details about the invoice total amount before tax. </p>"
+        },
+        "CurrencyCode":{
+          "shape":"CurrencyCode",
+          "documentation":"<p>The currency dominion of the invoice document.</p>"
+        },
+        "AmountBreakdown":{
+          "shape":"AmountBreakdown",
+          "documentation":"<p> Details about the invoice currency amount. </p>"
+        },
+        "CurrencyExchangeDetails":{
+          "shape":"CurrencyExchangeDetails",
+          "documentation":"<p> The details of currency exchange. </p>"
+        }
+      },
+      "documentation":"<p> The amount charged after taxes, in the preferred currency. </p>"
+    },
+    "InvoiceProfile":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountIdString",
+          "documentation":"<p> The account ID the invoice profile is generated for. </p>"
+        },
+        "ReceiverName":{
+          "shape":"BasicStringWithoutSpace",
+          "documentation":"<p> The name of the person receiving the invoice profile. </p>"
+        },
+        "ReceiverAddress":{
+          "shape":"ReceiverAddress",
+          "documentation":"<p>The address of the receiver that will be printed on the invoice. </p>"
+        },
+        "ReceiverEmail":{
+          "shape":"SensitiveBasicStringWithoutSpace",
+          "documentation":"<p>The email address for the invoice profile receiver. </p>"
+        },
+        "Issuer":{
+          "shape":"BasicStringWithoutSpace",
+          "documentation":"<p> This specifies the issuing entity of the invoice. </p>"
+        },
+        "TaxRegistrationNumber":{
+          "shape":"SensitiveBasicStringWithoutSpace",
+          "documentation":"<p> Your Tax Registration Number (TRN) information. </p>"
+        }
+      },
+      "documentation":"<p> Contains high-level information about the invoice receiver. </p>"
+    },
+    "InvoiceSummaries":{
+      "type":"list",
+      "member":{"shape":"InvoiceSummary"}
+    },
+    "InvoiceSummariesFilter":{
+      "type":"structure",
+      "members":{
+        "TimeInterval":{
+          "shape":"DateInterval",
+          "documentation":"<p>The date range for invoice summary retrieval. </p>"
+        },
+        "BillingPeriod":{
+          "shape":"BillingPeriod",
+          "documentation":"<p>The billing period associated with the invoice documents. </p>"
+        },
+        "InvoicingEntity":{
+          "shape":"BasicString",
+          "documentation":"<p>The name of the entity that issues the Amazon Web Services invoice.</p>"
+        }
+      },
+      "documentation":"<p> Filters for your invoice summaries. </p>"
+    },
+    "InvoiceSummariesMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "InvoiceSummariesSelector":{
+      "type":"structure",
+      "required":[
+        "ResourceType",
+        "Value"
+      ],
+      "members":{
+        "ResourceType":{
+          "shape":"ListInvoiceSummariesResourceType",
+          "documentation":"<p>The query identifier type (<code>INVOICE_ID</code> or <code>ACCOUNT_ID</code>).</p>"
+        },
+        "Value":{
+          "shape":"StringWithoutNewLine",
+          "documentation":"<p>The value of the query identifier.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the invoice summary.</p>"
+    },
+    "InvoiceSummary":{
+      "type":"structure",
+      "members":{
+        "AccountId":{
+          "shape":"AccountIdString",
+          "documentation":"<p> The Amazon Web Services account ID. </p>"
+        },
+        "InvoiceId":{
+          "shape":"BasicString",
+          "documentation":"<p> The invoice ID. </p>"
+        },
+        "IssuedDate":{
+          "shape":"Timestamp",
+          "documentation":"<p> The issued date of the invoice. </p>"
+        },
+        "DueDate":{
+          "shape":"Timestamp",
+          "documentation":"<p> The invoice due date. </p>"
+        },
+        "Entity":{
+          "shape":"Entity",
+          "documentation":"<p>The organization name providing Amazon Web Services services.</p>"
+        },
+        "BillingPeriod":{
+          "shape":"BillingPeriod",
+          "documentation":"<p> The billing period of the invoice-related document. </p>"
+        },
+        "InvoiceType":{
+          "shape":"InvoiceType",
+          "documentation":"<p> The type of invoice. </p>"
+        },
+        "OriginalInvoiceId":{
+          "shape":"BasicString",
+          "documentation":"<p>The initial or original invoice ID. </p>"
+        },
+        "PurchaseOrderNumber":{
+          "shape":"BasicString",
+          "documentation":"<p> The purchase order number associated to the invoice.</p>"
+        },
+        "BaseCurrencyAmount":{
+          "shape":"InvoiceCurrencyAmount",
+          "documentation":"<p> The summary with the product and service currency. </p>"
+        },
+        "TaxCurrencyAmount":{
+          "shape":"InvoiceCurrencyAmount",
+          "documentation":"<p> The summary with the tax currency. </p>"
+        },
+        "PaymentCurrencyAmount":{
+          "shape":"InvoiceCurrencyAmount",
+          "documentation":"<p> The summary with the customer configured currency. </p>"
+        }
+      },
+      "documentation":"<p> The invoice that the API retrieved. </p>"
+    },
+    "InvoiceType":{
+      "type":"string",
+      "enum":[
+        "INVOICE",
+        "CREDIT_MEMO"
+      ]
+    },
+    "InvoiceUnit":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p>ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "InvoiceReceiver":{
+          "shape":"AccountIdString",
+          "documentation":"<p>The account that receives invoices related to the invoice unit. </p>"
+        },
+        "Name":{
+          "shape":"InvoiceUnitName",
+          "documentation":"<p> A unique name that is distinctive within your Amazon Web Services. </p>"
+        },
+        "Description":{
+          "shape":"DescriptionString",
+          "documentation":"<p>The assigned description for an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "TaxInheritanceDisabled":{
+          "shape":"TaxInheritanceDisabledFlag",
+          "documentation":"<p>Whether the invoice unit based tax inheritance is/ should be enabled or disabled. </p>",
+          "box":true
+        },
+        "Rule":{
+          "shape":"InvoiceUnitRule",
+          "documentation":"<p> An <code>InvoiceUnitRule</code> object used the categorize invoice units. </p>"
+        },
+        "LastModified":{
+          "shape":"LastModifiedTimestamp",
+          "documentation":"<p> The last time the invoice unit was updated. This is important to determine the version of invoice unit configuration used to create the invoices. Any invoice created after this modified time will use this invoice unit configuration. </p>"
+        }
+      },
+      "documentation":"<p>An invoice unit is a set of mutually exclusive accounts that correspond to your business entity. Invoice units allow you separate Amazon Web Services account costs and configures your invoice for each business entity going forward. </p>"
+    },
+    "InvoiceUnitArnString":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"arn:aws[-a-z0-9]*:[a-z0-9]+:[-a-z0-9]*:[0-9]{12}:[-a-zA-Z0-9/:_]+"
+    },
+    "InvoiceUnitName":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"(?! )[\\p{L}\\p{N}\\p{Z}-_]*(?<! )"
+    },
+    "InvoiceUnitNames":{
+      "type":"list",
+      "member":{"shape":"InvoiceUnitName"}
+    },
+    "InvoiceUnitRule":{
+      "type":"structure",
+      "members":{
+        "LinkedAccounts":{
+          "shape":"AccountIdList",
+          "documentation":"<p>The list of <code>LINKED_ACCOUNT</code> IDs where charges are included within the invoice unit. </p>"
+        }
+      },
+      "documentation":"<p> This is used to categorize the invoice unit. Values are Amazon Web Services account IDs. Currently, the only supported rule is <code>LINKED_ACCOUNT</code>. </p>"
+    },
+    "InvoiceUnits":{
+      "type":"list",
+      "member":{"shape":"InvoiceUnit"}
+    },
+    "LastModifiedTimestamp":{"type":"timestamp"},
+    "ListInvoiceSummariesRequest":{
+      "type":"structure",
+      "required":["Selector"],
+      "members":{
+        "Selector":{
+          "shape":"InvoiceSummariesSelector",
+          "documentation":"<p>The option to retrieve details for a specific invoice by providing its unique ID. Alternatively, access information for all invoices linked to the account by providing an account ID.</p>"
+        },
+        "Filter":{
+          "shape":"InvoiceSummariesFilter",
+          "documentation":"<p>Filters you can use to customize your invoice summary.</p>"
+        },
+        "NextToken":{
+          "shape":"NextTokenString",
+          "documentation":"<p>The token to retrieve the next set of results. Amazon Web Services provides the token when the response from a previous call has more results than the maximum page size.</p>"
+        },
+        "MaxResults":{
+          "shape":"InvoiceSummariesMaxResults",
+          "documentation":"<p>The maximum number of invoice summaries a paginated response can contain.</p>"
+        }
+      }
+    },
+    "ListInvoiceSummariesResourceType":{
+      "type":"string",
+      "enum":[
+        "ACCOUNT_ID",
+        "INVOICE_ID"
+      ]
+    },
+    "ListInvoiceSummariesResponse":{
+      "type":"structure",
+      "required":["InvoiceSummaries"],
+      "members":{
+        "InvoiceSummaries":{
+          "shape":"InvoiceSummaries",
+          "documentation":"<p>List of key (summary level) invoice details without line item details.</p>"
+        },
+        "NextToken":{
+          "shape":"NextTokenString",
+          "documentation":"<p>The token to retrieve the next set of results. Amazon Web Services provides the token when the response from a previous call has more results than the maximum page size.</p>"
+        }
+      }
+    },
+    "ListInvoiceUnitsRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{
+          "shape":"Filters",
+          "documentation":"<p> An optional input to the list API. If multiple filters are specified, the returned list will be a configuration that match all of the provided filters. Supported filter types are <code>InvoiceReceivers</code>, <code>Names</code>, and <code>Accounts</code>. </p>"
+        },
+        "NextToken":{
+          "shape":"NextTokenString",
+          "documentation":"<p>The next token used to indicate where the returned list should start from. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsInteger",
+          "documentation":"<p>The maximum number of invoice units that can be returned. </p>"
+        },
+        "AsOf":{
+          "shape":"AsOfTimestamp",
+          "documentation":"<p> The state of an invoice unit at a specified time. You can see legacy invoice units that are currently deleted if the <code>AsOf</code> time is set to before it was deleted. If an <code>AsOf</code> is not provided, the default value is the current time. </p>"
+        }
+      }
+    },
+    "ListInvoiceUnitsResponse":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnits":{
+          "shape":"InvoiceUnits",
+          "documentation":"<p> An invoice unit is a set of mutually exclusive accounts that correspond to your business entity. </p>"
+        },
+        "NextToken":{
+          "shape":"NextTokenString",
+          "documentation":"<p>The next token used to indicate where the returned list should start from. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagrisArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of tags to list. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p> Adds a tag to a resource. </p>"
+        }
+      }
+    },
+    "MaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":500,
+      "min":1
+    },
+    "Month":{
+      "type":"integer",
+      "box":true,
+      "max":12,
+      "min":1
+    },
+    "NextTokenString":{
+      "type":"string",
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "ProfileList":{
+      "type":"list",
+      "member":{"shape":"InvoiceProfile"}
+    },
+    "ReceiverAddress":{
+      "type":"structure",
+      "members":{
+        "AddressLine1":{
+          "shape":"BasicString",
+          "documentation":"<p> The first line of the address. </p>"
+        },
+        "AddressLine2":{
+          "shape":"BasicString",
+          "documentation":"<p> The second line of the address, if applicable. </p>"
+        },
+        "AddressLine3":{
+          "shape":"BasicString",
+          "documentation":"<p> The third line of the address, if applicable. </p>"
+        },
+        "DistrictOrCounty":{
+          "shape":"BasicString",
+          "documentation":"<p> The district or country the address is located in. </p>"
+        },
+        "City":{
+          "shape":"BasicString",
+          "documentation":"<p> The city that the address is in. </p>"
+        },
+        "StateOrRegion":{
+          "shape":"BasicString",
+          "documentation":"<p> The state, region, or province the address is located. </p>"
+        },
+        "CountryCode":{
+          "shape":"BasicString",
+          "documentation":"<p> The country code for the country the address is in. </p>"
+        },
+        "CompanyName":{
+          "shape":"BasicString",
+          "documentation":"<p> A unique company name. </p>"
+        },
+        "PostalCode":{
+          "shape":"BasicString",
+          "documentation":"<p> The postal code associated with the address. </p>"
+        }
+      },
+      "documentation":"<p> The details of the address associated with the receiver. </p>",
+      "sensitive":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"BasicString"},
+        "resourceName":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p>The resource could not be found.</p>"
+        }
+      },
+      "documentation":"<p>The resource could not be found. </p>",
+      "exception":true
+    },
+    "ResourceTag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"ResourceTagKey",
+          "documentation":"<p>The object key of your of your resource tag. </p>"
+        },
+        "Value":{
+          "shape":"ResourceTagValue",
+          "documentation":"<p> The specific value of the resource tag. </p>"
+        }
+      },
+      "documentation":"<p>The tag structure that contains a tag key and value. </p>"
+    },
+    "ResourceTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ResourceTagKeyList":{
+      "type":"list",
+      "member":{"shape":"ResourceTagKey"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagList":{
+      "type":"list",
+      "member":{"shape":"ResourceTag"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "SensitiveBasicStringWithoutSpace":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"\\S+",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"BasicString"}
+      },
+      "documentation":"<p>The request was rejected because it attempted to create resources beyond the current Amazon Web Services account limits. The error message describes the limit exceeded. </p>",
+      "exception":true
+    },
+    "StringWithoutNewLine":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":".*"
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "ResourceTags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagrisArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the tags. </p>"
+        },
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p> Adds a tag to a resource. </p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagrisArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:aws[-a-z0-9]*:(invoicing)::[0-9]{12}:[-a-zA-Z0-9/:_]+"
+    },
+    "TaxInheritanceDisabledFlag":{"type":"boolean"},
+    "TaxesBreakdown":{
+      "type":"structure",
+      "members":{
+        "Breakdown":{
+          "shape":"TaxesBreakdownAmountList",
+          "documentation":"<p> A list of tax information. </p>"
+        },
+        "TotalAmount":{
+          "shape":"BasicString",
+          "documentation":"<p> The total amount for your taxes. </p>"
+        }
+      },
+      "documentation":"<p> The details of the taxes. </p>"
+    },
+    "TaxesBreakdownAmount":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"BasicString",
+          "documentation":"<p> The details of the taxes. </p>"
+        },
+        "Amount":{
+          "shape":"BasicString",
+          "documentation":"<p> The tax amount. </p>"
+        },
+        "Rate":{
+          "shape":"BasicString",
+          "documentation":"<p> The details of the tax rate. </p>"
+        }
+      },
+      "documentation":"<p> The tax amount. </p>"
+    },
+    "TaxesBreakdownAmountList":{
+      "type":"list",
+      "member":{"shape":"TaxesBreakdownAmount"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"BasicString"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "ResourceTagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagrisArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) to untag. </p>"
+        },
+        "ResourceTagKeys":{
+          "shape":"ResourceTagKeyList",
+          "documentation":"<p> Keys for the tags to be removed. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateInvoiceUnitRequest":{
+      "type":"structure",
+      "required":["InvoiceUnitArn"],
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p>The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "Description":{
+          "shape":"DescriptionString",
+          "documentation":"<p>The assigned description for an invoice unit. This information can't be modified or deleted. </p>"
+        },
+        "TaxInheritanceDisabled":{
+          "shape":"TaxInheritanceDisabledFlag",
+          "documentation":"<p>Whether the invoice unit based tax inheritance is/ should be enabled or disabled. </p>",
+          "box":true
+        },
+        "Rule":{
+          "shape":"InvoiceUnitRule",
+          "documentation":"<p>The <code>InvoiceUnitRule</code> object used to update invoice units. </p>"
+        }
+      }
+    },
+    "UpdateInvoiceUnitResponse":{
+      "type":"structure",
+      "members":{
+        "InvoiceUnitArn":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p> The ARN to identify an invoice unit. This information can't be modified or deleted. </p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"BasicString"},
+        "resourceName":{
+          "shape":"InvoiceUnitArnString",
+          "documentation":"<p>You don't have sufficient access to perform this action. </p>"
+        },
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>You don't have sufficient access to perform this action. </p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p> The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>"
+        }
+      },
+      "documentation":"<p> The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"BasicString",
+          "documentation":"<p> The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>"
+        },
+        "message":{
+          "shape":"BasicString",
+          "documentation":"<p> The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>"
+        }
+      },
+      "documentation":"<p> The input fails to satisfy the constraints specified by an Amazon Web Services service. </p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "nonMemberPresent",
+        "maxAccountsExceeded",
+        "maxInvoiceUnitsExceeded",
+        "duplicateInvoiceUnit",
+        "mutualExclusionError",
+        "accountMembershipError",
+        "taxSettingsError",
+        "expiredNextToken",
+        "invalidNextToken",
+        "invalidInput",
+        "fieldValidationFailed",
+        "cannotParse",
+        "unknownOperation",
+        "other"
+      ]
+    },
+    "Year":{
+      "type":"integer",
+      "box":true,
+      "max":2050,
+      "min":2005
+    }
+  },
+  "documentation":"<p> <b>Amazon Web Services Invoice Configuration</b> </p> <p>You can use Amazon Web Services Invoice Configuration APIs to programmatically create, update, delete, get, and list invoice units. You can also programmatically fetch the information of the invoice receiver. For example, business legal name, address, and invoicing contacts. </p> <p>You can use Amazon Web Services Invoice Configuration to receive separate Amazon Web Services invoices based your organizational needs. By using Amazon Web Services Invoice Configuration, you can configure invoice units that are groups of Amazon Web Services accounts that represent your business entities, and receive separate invoices for each business entity. You can also assign a unique member or payer account as the invoice receiver for each invoice unit. As you create new accounts within your Organizations using Amazon Web Services Invoice Configuration APIs, you can automate the creation of new invoice units and subsequently automate the addition of new accounts to your invoice units.</p> <p>Service endpoint</p> <p>You can use the following endpoints for Amazon Web Services Invoice Configuration:</p> <ul> <li> <p> <code>https://invoicing.us-east-1.api.aws</code> </p> </li> </ul>"
+}

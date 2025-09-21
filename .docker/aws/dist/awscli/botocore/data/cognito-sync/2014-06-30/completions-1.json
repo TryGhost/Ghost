@@ -1,0 +1,189 @@
+{
+  "version": "1.0",
+  "resources": {
+    "IdentityPoolUsage": {
+      "operation": "ListIdentityPoolUsage",
+      "resourceIdentifier": {
+        "IdentityPoolId": "IdentityPoolUsages[].IdentityPoolId"
+      }
+    }
+  },
+  "operations": {
+    "BulkPublish": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "DeleteDataset": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "DescribeDataset": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "DescribeIdentityPoolUsage": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "DescribeIdentityUsage": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "GetBulkPublishDetails": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "GetCognitoEvents": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "GetIdentityPoolConfiguration": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "ListDatasets": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "ListRecords": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "RegisterDevice": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "SetCognitoEvents": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "SetIdentityPoolConfiguration": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "SubscribeToDataset": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "UnsubscribeFromDataset": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    },
+    "UpdateRecords": {
+      "IdentityPoolId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IdentityPoolUsage",
+            "resourceIdentifier": "IdentityPoolId"
+          }
+        ]
+      }
+    }
+  }
+}

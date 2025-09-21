@@ -1,0 +1,22 @@
+{
+  "pagination": {
+    "ListInstanceTypes": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "InstanceTypes"
+    },
+    "ListRegions": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "Regions"
+    },
+    "ListWorkspaceInstances": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "WorkspaceInstances"
+    }
+  }
+}

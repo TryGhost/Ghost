@@ -1,0 +1,4067 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-04-28",
+    "endpointPrefix":"m2",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWSMainframeModernization",
+    "serviceId":"m2",
+    "signatureVersion":"v4",
+    "signingName":"m2",
+    "uid":"m2-2021-04-28",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CancelBatchJobExecution":{
+      "name":"CancelBatchJobExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/batch-job-executions/{executionId}/cancel",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelBatchJobExecutionRequest"},
+      "output":{"shape":"CancelBatchJobExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Cancels the running of a specific batch job execution.</p>"
+    },
+    "CreateApplication":{
+      "name":"CreateApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateApplicationRequest"},
+      "output":{"shape":"CreateApplicationResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a new application with given parameters. Requires an existing runtime environment and application definition file.</p>",
+      "idempotent":true
+    },
+    "CreateDataSetExportTask":{
+      "name":"CreateDataSetExportTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/dataset-export-task",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDataSetExportTaskRequest"},
+      "output":{"shape":"CreateDataSetExportTaskResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a data set export task for a specific application.</p>",
+      "idempotent":true
+    },
+    "CreateDataSetImportTask":{
+      "name":"CreateDataSetImportTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/dataset-import-task",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDataSetImportTaskRequest"},
+      "output":{"shape":"CreateDataSetImportTaskResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a data set import task for a specific application.</p>",
+      "idempotent":true
+    },
+    "CreateDeployment":{
+      "name":"CreateDeployment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/deployments",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDeploymentRequest"},
+      "output":{"shape":"CreateDeploymentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates and starts a deployment to deploy an application into a runtime environment.</p>",
+      "idempotent":true
+    },
+    "CreateEnvironment":{
+      "name":"CreateEnvironment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateEnvironmentRequest"},
+      "output":{"shape":"CreateEnvironmentResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a runtime environment for a given runtime engine.</p>",
+      "idempotent":true
+    },
+    "DeleteApplication":{
+      "name":"DeleteApplication",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/applications/{applicationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteApplicationRequest"},
+      "output":{"shape":"DeleteApplicationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a specific application. You cannot delete a running application.</p>",
+      "idempotent":true
+    },
+    "DeleteApplicationFromEnvironment":{
+      "name":"DeleteApplicationFromEnvironment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/applications/{applicationId}/environment/{environmentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteApplicationFromEnvironmentRequest"},
+      "output":{"shape":"DeleteApplicationFromEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a specific application from the specific runtime environment where it was previously deployed. You cannot delete a runtime environment using DeleteEnvironment if any application has ever been deployed to it. This API removes the association of the application with the runtime environment so you can delete the environment smoothly.</p>"
+    },
+    "DeleteEnvironment":{
+      "name":"DeleteEnvironment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{environmentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteEnvironmentRequest"},
+      "output":{"shape":"DeleteEnvironmentResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a specific runtime environment. The environment cannot contain deployed applications. If it does, you must delete those applications before you delete the environment.</p>",
+      "idempotent":true
+    },
+    "GetApplication":{
+      "name":"GetApplication",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetApplicationRequest"},
+      "output":{"shape":"GetApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes the details of a specific application.</p>"
+    },
+    "GetApplicationVersion":{
+      "name":"GetApplicationVersion",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/versions/{applicationVersion}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetApplicationVersionRequest"},
+      "output":{"shape":"GetApplicationVersionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns details about a specific version of a specific application.</p>"
+    },
+    "GetBatchJobExecution":{
+      "name":"GetBatchJobExecution",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/batch-job-executions/{executionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetBatchJobExecutionRequest"},
+      "output":{"shape":"GetBatchJobExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets the details of a specific batch job execution for a specific application.</p>"
+    },
+    "GetDataSetDetails":{
+      "name":"GetDataSetDetails",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/datasets/{dataSetName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataSetDetailsRequest"},
+      "output":{"shape":"GetDataSetDetailsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ExecutionTimeoutException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets the details of a specific data set.</p>"
+    },
+    "GetDataSetExportTask":{
+      "name":"GetDataSetExportTask",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/dataset-export-tasks/{taskId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataSetExportTaskRequest"},
+      "output":{"shape":"GetDataSetExportTaskResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets the status of a data set import task initiated with the <a>CreateDataSetExportTask</a> operation.</p>"
+    },
+    "GetDataSetImportTask":{
+      "name":"GetDataSetImportTask",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/dataset-import-tasks/{taskId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDataSetImportTaskRequest"},
+      "output":{"shape":"GetDataSetImportTaskResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets the status of a data set import task initiated with the <a>CreateDataSetImportTask</a> operation.</p>"
+    },
+    "GetDeployment":{
+      "name":"GetDeployment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/deployments/{deploymentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDeploymentRequest"},
+      "output":{"shape":"GetDeploymentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets details of a specific deployment with a given deployment identifier.</p>"
+    },
+    "GetEnvironment":{
+      "name":"GetEnvironment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{environmentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEnvironmentRequest"},
+      "output":{"shape":"GetEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Describes a specific runtime environment.</p>"
+    },
+    "GetSignedBluinsightsUrl":{
+      "name":"GetSignedBluinsightsUrl",
+      "http":{
+        "method":"GET",
+        "requestUri":"/signed-bi-url",
+        "responseCode":200
+      },
+      "output":{"shape":"GetSignedBluinsightsUrlResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a single sign-on URL that can be used to connect to AWS Blu Insights.</p>"
+    },
+    "ListApplicationVersions":{
+      "name":"ListApplicationVersions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/versions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationVersionsRequest"},
+      "output":{"shape":"ListApplicationVersionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of the application versions for a specific application.</p>"
+    },
+    "ListApplications":{
+      "name":"ListApplications",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications",
+        "responseCode":200
+      },
+      "input":{"shape":"ListApplicationsRequest"},
+      "output":{"shape":"ListApplicationsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the applications associated with a specific Amazon Web Services account. You can provide the unique identifier of a specific runtime environment in a query parameter to see all applications associated with that environment.</p>"
+    },
+    "ListBatchJobDefinitions":{
+      "name":"ListBatchJobDefinitions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/batch-job-definitions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListBatchJobDefinitionsRequest"},
+      "output":{"shape":"ListBatchJobDefinitionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all the available batch job definitions based on the batch job resources uploaded during the application creation. You can use the batch job definitions in the list to start a batch job.</p>"
+    },
+    "ListBatchJobExecutions":{
+      "name":"ListBatchJobExecutions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/batch-job-executions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListBatchJobExecutionsRequest"},
+      "output":{"shape":"ListBatchJobExecutionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists historical, current, and scheduled batch job executions for a specific application.</p>"
+    },
+    "ListBatchJobRestartPoints":{
+      "name":"ListBatchJobRestartPoints",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/batch-job-executions/{executionId}/steps",
+        "responseCode":200
+      },
+      "input":{"shape":"ListBatchJobRestartPointsRequest"},
+      "output":{"shape":"ListBatchJobRestartPointsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists all the job steps for a JCL file to restart a batch job. This is only applicable for Micro Focus engine with versions 8.0.6 and above.</p>"
+    },
+    "ListDataSetExportHistory":{
+      "name":"ListDataSetExportHistory",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/dataset-export-tasks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataSetExportHistoryRequest"},
+      "output":{"shape":"ListDataSetExportHistoryResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the data set exports for the specified application.</p>"
+    },
+    "ListDataSetImportHistory":{
+      "name":"ListDataSetImportHistory",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/dataset-import-tasks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataSetImportHistoryRequest"},
+      "output":{"shape":"ListDataSetImportHistoryResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the data set imports for the specified application.</p>"
+    },
+    "ListDataSets":{
+      "name":"ListDataSets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/datasets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDataSetsRequest"},
+      "output":{"shape":"ListDataSetsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ExecutionTimeoutException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the data sets imported for a specific application. In Amazon Web Services Mainframe Modernization, data sets are associated with applications deployed on runtime environments. This is known as importing data sets. Currently, Amazon Web Services Mainframe Modernization can import data sets into catalogs using <a href=\"https://docs.aws.amazon.com/m2/latest/APIReference/API_CreateDataSetImportTask.html\">CreateDataSetImportTask</a>.</p>"
+    },
+    "ListDeployments":{
+      "name":"ListDeployments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{applicationId}/deployments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDeploymentsRequest"},
+      "output":{"shape":"ListDeploymentsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of all deployments of a specific application. A deployment is a combination of a specific application and a specific version of that application. Each deployment is mapped to a particular application version.</p>"
+    },
+    "ListEngineVersions":{
+      "name":"ListEngineVersions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/engine-versions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEngineVersionsRequest"},
+      "output":{"shape":"ListEngineVersionsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the available engine versions.</p>"
+    },
+    "ListEnvironments":{
+      "name":"ListEnvironments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEnvironmentsRequest"},
+      "output":{"shape":"ListEnvironmentsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the runtime environments.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the tags for the specified resource.</p>"
+    },
+    "StartApplication":{
+      "name":"StartApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartApplicationRequest"},
+      "output":{"shape":"StartApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts an application that is currently stopped.</p>"
+    },
+    "StartBatchJob":{
+      "name":"StartBatchJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/batch-job",
+        "responseCode":200
+      },
+      "input":{"shape":"StartBatchJobRequest"},
+      "output":{"shape":"StartBatchJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a batch job and returns the unique identifier of this execution of the batch job. The associated application must be running in order to start the batch job.</p>"
+    },
+    "StopApplication":{
+      "name":"StopApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications/{applicationId}/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopApplicationRequest"},
+      "output":{"shape":"StopApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stops a running application.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds one or more tags to the specified resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes one or more tags from the specified resource.</p>"
+    },
+    "UpdateApplication":{
+      "name":"UpdateApplication",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/applications/{applicationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateApplicationRequest"},
+      "output":{"shape":"UpdateApplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates an application and creates a new version.</p>"
+    },
+    "UpdateEnvironment":{
+      "name":"UpdateEnvironment",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/environments/{environmentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateEnvironmentRequest"},
+      "output":{"shape":"UpdateEnvironmentResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates the configuration details for a specific runtime environment.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The account or role doesn't have the right permissions to make the request.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AlternateKey":{
+      "type":"structure",
+      "required":[
+        "length",
+        "offset"
+      ],
+      "members":{
+        "allowDuplicates":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the alternate key values are supposed to be unique for the given data set.</p>"
+        },
+        "length":{
+          "shape":"Integer",
+          "documentation":"<p>A strictly positive integer value representing the length of the alternate key.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the alternate key.</p>"
+        },
+        "offset":{
+          "shape":"Integer",
+          "documentation":"<p>A positive integer value representing the offset to mark the start of the alternate key part in the record byte array.</p>"
+        }
+      },
+      "documentation":"<p>Defines an alternate key. This value is optional. A legacy data set might not have any alternate key defined but if those alternate keys definitions exist, provide them, as some applications will make use of them.</p>"
+    },
+    "AlternateKeyList":{
+      "type":"list",
+      "member":{"shape":"AlternateKey"}
+    },
+    "ApplicationDeploymentLifecycle":{
+      "type":"string",
+      "enum":[
+        "Deploying",
+        "Deployed"
+      ]
+    },
+    "ApplicationLifecycle":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Created",
+        "Available",
+        "Ready",
+        "Starting",
+        "Running",
+        "Stopping",
+        "Stopped",
+        "Failed",
+        "Deleting",
+        "Deleting From Environment"
+      ]
+    },
+    "ApplicationSummary":{
+      "type":"structure",
+      "required":[
+        "applicationArn",
+        "applicationId",
+        "applicationVersion",
+        "creationTime",
+        "engineType",
+        "name",
+        "status"
+      ],
+      "members":{
+        "applicationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application.</p>"
+        },
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the application.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the application was created.</p>"
+        },
+        "deploymentStatus":{
+          "shape":"ApplicationDeploymentLifecycle",
+          "documentation":"<p>Indicates either an ongoing deployment or if the application has ever deployed successfully.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The type of the target platform for this application.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment that hosts this application.</p>"
+        },
+        "lastStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when you last started the application. Null until the application runs for the first time.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "roleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role associated with the application.</p>"
+        },
+        "status":{
+          "shape":"ApplicationLifecycle",
+          "documentation":"<p>The status of the application.</p>"
+        },
+        "versionStatus":{
+          "shape":"ApplicationVersionLifecycle",
+          "documentation":"<p>Indicates the status of the latest version of the application.</p>"
+        }
+      },
+      "documentation":"<p>A subset of the possible application attributes. Used in the application list.</p>"
+    },
+    "ApplicationSummaryList":{
+      "type":"list",
+      "member":{"shape":"ApplicationSummary"}
+    },
+    "ApplicationVersionLifecycle":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Available",
+        "Failed"
+      ]
+    },
+    "ApplicationVersionSummary":{
+      "type":"structure",
+      "required":[
+        "applicationVersion",
+        "creationTime",
+        "status"
+      ],
+      "members":{
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The application version.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the application version was created.</p>"
+        },
+        "status":{
+          "shape":"ApplicationVersionLifecycle",
+          "documentation":"<p>The status of the application.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      },
+      "documentation":"<p>Defines an application version summary.</p>"
+    },
+    "ApplicationVersionSummaryList":{
+      "type":"list",
+      "member":{"shape":"ApplicationVersionSummary"}
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"^arn:(aws|aws-cn|aws-iso|aws-iso-[a-z]{1}|aws-us-gov):[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:([a-z]{2}-((iso[a-z]{0,1}-)|(gov-)){0,1}[a-z]+-[0-9]|):[0-9]{12}:[A-Za-z0-9/][A-Za-z0-9:_/+=,@.-]{0,1023}$"
+    },
+    "ArnList":{
+      "type":"list",
+      "member":{"shape":"Arn"},
+      "min":1
+    },
+    "AuthSecretsManagerArn":{
+      "type":"string",
+      "max":2048,
+      "min":20
+    },
+    "BatchJobDefinition":{
+      "type":"structure",
+      "members":{
+        "fileBatchJobDefinition":{
+          "shape":"FileBatchJobDefinition",
+          "documentation":"<p>Specifies a file containing a batch job definition.</p>"
+        },
+        "scriptBatchJobDefinition":{
+          "shape":"ScriptBatchJobDefinition",
+          "documentation":"<p>A script containing a batch job definition.</p>"
+        }
+      },
+      "documentation":"<p>Defines the details of a batch job.</p>",
+      "union":true
+    },
+    "BatchJobDefinitions":{
+      "type":"list",
+      "member":{"shape":"BatchJobDefinition"}
+    },
+    "BatchJobExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "Submitting",
+        "Holding",
+        "Dispatching",
+        "Running",
+        "Cancelling",
+        "Cancelled",
+        "Succeeded",
+        "Failed",
+        "Purged",
+        "Succeeded With Warning"
+      ]
+    },
+    "BatchJobExecutionSummary":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "executionId",
+        "startTime",
+        "status"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application that hosts this batch job.</p>"
+        },
+        "batchJobIdentifier":{
+          "shape":"BatchJobIdentifier",
+          "documentation":"<p>The unique identifier of this batch job.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when this batch job execution ended.</p>"
+        },
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of this execution of the batch job.</p>"
+        },
+        "jobId":{
+          "shape":"String100",
+          "documentation":"<p>The unique identifier of a particular batch job.</p>"
+        },
+        "jobName":{
+          "shape":"String100",
+          "documentation":"<p>The name of a particular batch job.</p>"
+        },
+        "jobType":{
+          "shape":"BatchJobType",
+          "documentation":"<p>The type of a particular batch job execution.</p>"
+        },
+        "returnCode":{
+          "shape":"String",
+          "documentation":"<p>The batch job return code from either the Blu Age or Micro Focus runtime engines. For more information, see <a href=\"https://www.ibm.com/docs/en/was/8.5.5?topic=model-batch-return-codes\">Batch return codes</a> in the <i>IBM WebSphere Application Server</i> documentation.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when a particular batch job execution started.</p>"
+        },
+        "status":{
+          "shape":"BatchJobExecutionStatus",
+          "documentation":"<p>The status of a particular batch job execution.</p>"
+        }
+      },
+      "documentation":"<p>A subset of the possible batch job attributes. Used in the batch job list.</p>"
+    },
+    "BatchJobExecutionSummaryList":{
+      "type":"list",
+      "member":{"shape":"BatchJobExecutionSummary"}
+    },
+    "BatchJobIdentifier":{
+      "type":"structure",
+      "members":{
+        "fileBatchJobIdentifier":{
+          "shape":"FileBatchJobIdentifier",
+          "documentation":"<p>Specifies a file associated with a specific batch job.</p>"
+        },
+        "restartBatchJobIdentifier":{
+          "shape":"RestartBatchJobIdentifier",
+          "documentation":"<p>Specifies the required information for restart, including <code>executionId</code> and <code>JobStepRestartMarker</code>.</p>"
+        },
+        "s3BatchJobIdentifier":{
+          "shape":"S3BatchJobIdentifier",
+          "documentation":"<p>Specifies an Amazon S3 location that identifies the batch jobs that you want to run. Use this identifier to run ad hoc batch jobs.</p>"
+        },
+        "scriptBatchJobIdentifier":{
+          "shape":"ScriptBatchJobIdentifier",
+          "documentation":"<p>A batch job identifier in which the batch job to run is identified by the script name.</p>"
+        }
+      },
+      "documentation":"<p>Identifies a specific batch job.</p>",
+      "union":true
+    },
+    "BatchJobParametersMap":{
+      "type":"map",
+      "key":{"shape":"BatchParamKey"},
+      "value":{"shape":"BatchParamValue"},
+      "documentation":"<p>Job parameters are optional. Can contain up to 500 entries.</p>",
+      "max":500,
+      "min":0
+    },
+    "BatchJobStepList":{
+      "type":"list",
+      "member":{"shape":"JobStep"}
+    },
+    "BatchJobType":{
+      "type":"string",
+      "enum":[
+        "VSE",
+        "JES2",
+        "JES3"
+      ]
+    },
+    "BatchParamKey":{
+      "type":"string",
+      "documentation":"<p>See https://www.ibm.com/docs/en/workload-automation/9.3.0?topic=zos-coding-variables-in-jcl to get details about limits for both keys and values: 8 for keys (variable names), 44 for values (variable values) In addition, keys will be only alphabetic characters and digits, without any space or special characters (dash, underscore, etc ...)</p> <p>For BluAge Engine: There is no limit in length of keys and values. Additional validation may be applied in code, per engine. Parameter key: the first character must be alphabetic. Can be of up to 32 alphanumeric characters.</p>",
+      "max":32,
+      "min":1,
+      "pattern":"^[A-Za-z][A-Za-z0-9]{1,31}$"
+    },
+    "BatchParamValue":{
+      "type":"string",
+      "documentation":"<p>Parameter value can be of up to 1024 alphanumeric characters.</p>",
+      "max":1024,
+      "min":0
+    },
+    "Boolean":{"type":"boolean"},
+    "CancelBatchJobExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "executionId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "authSecretsManagerArn":{
+          "shape":"AuthSecretsManagerArn",
+          "documentation":"<p>The Amazon Web Services Secrets Manager containing user's credentials for authentication and authorization for Cancel Batch Job Execution operation.</p>"
+        },
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the batch job execution.</p>",
+          "location":"uri",
+          "locationName":"executionId"
+        }
+      }
+    },
+    "CancelBatchJobExecutionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "CapacityValue":{
+      "type":"integer",
+      "box":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "documentation":"<p>A client token is a unique, case-sensitive string of up to 128 ASCII characters with ASCII values of 33-126 inclusive. It is generated by the client to ensure idempotent operations, allowing safe retries without unintended side effects.</p>",
+      "max":128,
+      "min":0,
+      "pattern":"^[!-~]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the conflicting resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the conflicting resource.</p>"
+        }
+      },
+      "documentation":"<p>The parameters provided in the request conflict with existing resources.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "definition",
+        "engineType",
+        "name"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A client token is a unique, case-sensitive string of up to 128 ASCII characters with ASCII values of 33-126 inclusive. It's generated by the client to ensure idempotent operations, allowing for safe retries without unintended side effects.</p>",
+          "idempotencyToken":true
+        },
+        "definition":{
+          "shape":"Definition",
+          "documentation":"<p>The application definition for this application. You can specify either inline JSON or an S3 bucket location.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The type of the target platform for this application.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a customer managed key.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "roleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies a role that the application uses to access Amazon Web Services resources that are not part of the application or are in a different Amazon Web Services account.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags to apply to the application.</p>"
+        }
+      }
+    },
+    "CreateApplicationResponse":{
+      "type":"structure",
+      "required":[
+        "applicationArn",
+        "applicationId",
+        "applicationVersion"
+      ],
+      "members":{
+        "applicationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application.</p>"
+        },
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique application identifier.</p>"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version number of the application.</p>"
+        }
+      }
+    },
+    "CreateDataSetExportTaskRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "exportConfig"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application for which you want to export data sets.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier you provide to ensure the idempotency of the request to create a data set export. The service generates the clientToken when the API call is triggered. The token expires after one hour, so if you retry the API within this timeframe with the same clientToken, you will get the same response. The service also handles deleting the clientToken after it expires.</p>",
+          "idempotencyToken":true
+        },
+        "exportConfig":{
+          "shape":"DataSetExportConfig",
+          "documentation":"<p>The data set export task configuration.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"KMSKeyId",
+          "documentation":"<p>The identifier of a customer managed key.</p>"
+        }
+      }
+    },
+    "CreateDataSetExportTaskResponse":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier. This operation is asynchronous. Use this identifier with the <a>GetDataSetExportTask</a> operation to obtain the status of this task.</p>"
+        }
+      }
+    },
+    "CreateDataSetImportTaskRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "importConfig"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application for which you want to import data sets.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request to create a data set import. The service generates the clientToken when the API call is triggered. The token expires after one hour, so if you retry the API within this timeframe with the same clientToken, you will get the same response. The service also handles deleting the clientToken after it expires. </p>",
+          "idempotencyToken":true
+        },
+        "importConfig":{
+          "shape":"DataSetImportConfig",
+          "documentation":"<p>The data set import task configuration.</p>"
+        }
+      }
+    },
+    "CreateDataSetImportTaskResponse":{
+      "type":"structure",
+      "required":["taskId"],
+      "members":{
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier. This operation is asynchronous. Use this identifier with the <a>GetDataSetImportTask</a> operation to obtain the status of this task.</p>"
+        }
+      }
+    },
+    "CreateDeploymentRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "applicationVersion",
+        "environmentId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The application identifier.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the application to deploy.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier you provide to ensure the idempotency of the request to create a deployment. The service generates the clientToken when the API call is triggered. The token expires after one hour, so if you retry the API within this timeframe with the same clientToken, you will get the same response. The service also handles deleting the clientToken after it expires. </p>",
+          "idempotencyToken":true
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the runtime environment where you want to deploy this application.</p>"
+        }
+      }
+    },
+    "CreateDeploymentResponse":{
+      "type":"structure",
+      "required":["deploymentId"],
+      "members":{
+        "deploymentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the deployment.</p>"
+        }
+      }
+    },
+    "CreateEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "engineType",
+        "instanceType",
+        "name"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Unique, case-sensitive identifier you provide to ensure the idempotency of the request to create an environment. The service generates the clientToken when the API call is triggered. The token expires after one hour, so if you retry the API within this timeframe with the same clientToken, you will get the same response. The service also handles deleting the clientToken after it expires. </p>",
+          "idempotencyToken":true
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the runtime environment.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The engine type for the runtime environment.</p>"
+        },
+        "engineVersion":{
+          "shape":"EngineVersion",
+          "documentation":"<p>The version of the engine type for the runtime environment.</p>"
+        },
+        "highAvailabilityConfig":{
+          "shape":"HighAvailabilityConfig",
+          "documentation":"<p>The details of a high availability configuration for this runtime environment.</p>"
+        },
+        "instanceType":{
+          "shape":"String20",
+          "documentation":"<p>The type of instance for the runtime environment.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a customer managed key.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the runtime environment. Must be unique within the account.</p>"
+        },
+        "networkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The network type required for the runtime environment.</p>"
+        },
+        "preferredMaintenanceWindow":{
+          "shape":"String50",
+          "documentation":"<p>Configures the maintenance window that you want for the runtime environment. The maintenance window must have the format <code>ddd:hh24:mi-ddd:hh24:mi</code> and must be less than 24 hours. The following two examples are valid maintenance windows: <code>sun:23:45-mon:00:15</code> or <code>sat:01:00-sat:03:00</code>. </p> <p>If you do not provide a value, a random system-generated value will be assigned.</p>"
+        },
+        "publiclyAccessible":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the runtime environment is publicly accessible.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"String50List",
+          "documentation":"<p>The list of security groups for the VPC associated with this runtime environment.</p>"
+        },
+        "storageConfigurations":{
+          "shape":"StorageConfigurationList",
+          "documentation":"<p>Optional. The storage configurations for this runtime environment.</p>"
+        },
+        "subnetIds":{
+          "shape":"String50List",
+          "documentation":"<p>The list of subnets associated with the VPC for this runtime environment.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for the runtime environment.</p>"
+        }
+      }
+    },
+    "CreateEnvironmentResponse":{
+      "type":"structure",
+      "required":["environmentId"],
+      "members":{
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment.</p>"
+        }
+      }
+    },
+    "DataSet":{
+      "type":"structure",
+      "required":[
+        "datasetName",
+        "datasetOrg",
+        "recordLength"
+      ],
+      "members":{
+        "datasetName":{
+          "shape":"String",
+          "documentation":"<p>The logical identifier for a specific data set (in mainframe format).</p>"
+        },
+        "datasetOrg":{
+          "shape":"DatasetOrgAttributes",
+          "documentation":"<p>The type of dataset. The only supported value is VSAM.</p>"
+        },
+        "recordLength":{
+          "shape":"RecordLength",
+          "documentation":"<p>The length of a record.</p>"
+        },
+        "relativePath":{
+          "shape":"String",
+          "documentation":"<p>The relative location of the data set in the database or file system. </p>"
+        },
+        "storageType":{
+          "shape":"String",
+          "documentation":"<p>The storage type of the data set: database or file system. For Micro Focus, database corresponds to datastore and file system corresponds to EFS/FSX. For Blu Age, there is no support of file system and database corresponds to Blusam. </p>"
+        }
+      },
+      "documentation":"<p>Defines a data set.</p>"
+    },
+    "DataSetExportConfig":{
+      "type":"structure",
+      "members":{
+        "dataSets":{
+          "shape":"DataSetExportList",
+          "documentation":"<p>The data sets.</p>"
+        },
+        "s3Location":{
+          "shape":"String",
+          "documentation":"<p>The Amazon S3 location of the data sets.</p>"
+        }
+      },
+      "documentation":"<p>Identifies one or more data sets you want to import with the <a>CreateDataSetExportTask</a> operation.</p>",
+      "union":true
+    },
+    "DataSetExportItem":{
+      "type":"structure",
+      "required":[
+        "datasetName",
+        "externalLocation"
+      ],
+      "members":{
+        "datasetName":{
+          "shape":"String200",
+          "documentation":"<p>The data set.</p>"
+        },
+        "externalLocation":{
+          "shape":"ExternalLocation",
+          "documentation":"<p>The location of the data set.</p>"
+        }
+      },
+      "documentation":"<p>Identifies a specific data set to export from an external location.</p>"
+    },
+    "DataSetExportList":{
+      "type":"list",
+      "member":{"shape":"DataSetExportItem"},
+      "max":1024,
+      "min":1
+    },
+    "DataSetExportSummary":{
+      "type":"structure",
+      "required":[
+        "failed",
+        "inProgress",
+        "pending",
+        "succeeded",
+        "total"
+      ],
+      "members":{
+        "failed":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set exports that have failed.</p>"
+        },
+        "inProgress":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set exports that are in progress.</p>"
+        },
+        "pending":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set exports that are pending.</p>"
+        },
+        "succeeded":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set exports that have succeeded.</p>"
+        },
+        "total":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of data set exports.</p>"
+        }
+      },
+      "documentation":"<p>Represents a summary of data set exports.</p>"
+    },
+    "DataSetExportTask":{
+      "type":"structure",
+      "required":[
+        "status",
+        "summary",
+        "taskId"
+      ],
+      "members":{
+        "status":{
+          "shape":"DataSetTaskLifecycle",
+          "documentation":"<p>The status of the data set export task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If dataset exports failed, the failure reason will show here.</p>"
+        },
+        "summary":{
+          "shape":"DataSetExportSummary",
+          "documentation":"<p>A summary of the data set export task.</p>"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the data set export task.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a data set export task.</p>"
+    },
+    "DataSetExportTaskList":{
+      "type":"list",
+      "member":{"shape":"DataSetExportTask"}
+    },
+    "DataSetImportConfig":{
+      "type":"structure",
+      "members":{
+        "dataSets":{
+          "shape":"DataSetImportList",
+          "documentation":"<p>The data sets.</p>"
+        },
+        "s3Location":{
+          "shape":"String2000",
+          "documentation":"<p>The Amazon S3 location of the data sets.</p>"
+        }
+      },
+      "documentation":"<p>Identifies one or more data sets you want to import with the <a>CreateDataSetImportTask</a> operation.</p>",
+      "union":true
+    },
+    "DataSetImportItem":{
+      "type":"structure",
+      "required":[
+        "dataSet",
+        "externalLocation"
+      ],
+      "members":{
+        "dataSet":{
+          "shape":"DataSet",
+          "documentation":"<p>The data set.</p>"
+        },
+        "externalLocation":{
+          "shape":"ExternalLocation",
+          "documentation":"<p>The location of the data set.</p>"
+        }
+      },
+      "documentation":"<p>Identifies a specific data set to import from an external location.</p>"
+    },
+    "DataSetImportList":{
+      "type":"list",
+      "member":{"shape":"DataSetImportItem"},
+      "max":100,
+      "min":1
+    },
+    "DataSetImportSummary":{
+      "type":"structure",
+      "required":[
+        "failed",
+        "inProgress",
+        "pending",
+        "succeeded",
+        "total"
+      ],
+      "members":{
+        "failed":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set imports that have failed.</p>"
+        },
+        "inProgress":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set imports that are in progress.</p>"
+        },
+        "pending":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set imports that are pending.</p>"
+        },
+        "succeeded":{
+          "shape":"Integer",
+          "documentation":"<p>The number of data set imports that have succeeded.</p>"
+        },
+        "total":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of data set imports.</p>"
+        }
+      },
+      "documentation":"<p>Represents a summary of data set imports.</p>"
+    },
+    "DataSetImportTask":{
+      "type":"structure",
+      "required":[
+        "status",
+        "summary",
+        "taskId"
+      ],
+      "members":{
+        "status":{
+          "shape":"DataSetTaskLifecycle",
+          "documentation":"<p>The status of the data set import task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If dataset import failed, the failure reason will show here.</p>"
+        },
+        "summary":{
+          "shape":"DataSetImportSummary",
+          "documentation":"<p>A summary of the data set import task.</p>"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the data set import task.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a data set import task.</p>"
+    },
+    "DataSetImportTaskList":{
+      "type":"list",
+      "member":{"shape":"DataSetImportTask"}
+    },
+    "DataSetSummary":{
+      "type":"structure",
+      "required":["dataSetName"],
+      "members":{
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the data set was created.</p>"
+        },
+        "dataSetName":{
+          "shape":"String200",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "dataSetOrg":{
+          "shape":"String20",
+          "documentation":"<p>The type of data set. The only supported value is VSAM.</p>"
+        },
+        "format":{
+          "shape":"String20",
+          "documentation":"<p>The format of the data set. </p>"
+        },
+        "lastReferencedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last time the data set was referenced.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last time the data set was updated.</p>"
+        }
+      },
+      "documentation":"<p>A subset of the possible data set attributes.</p>"
+    },
+    "DataSetTaskLifecycle":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Running",
+        "Completed",
+        "Failed"
+      ]
+    },
+    "DataSetsSummaryList":{
+      "type":"list",
+      "member":{"shape":"DataSetSummary"}
+    },
+    "DatasetDetailOrgAttributes":{
+      "type":"structure",
+      "members":{
+        "gdg":{
+          "shape":"GdgDetailAttributes",
+          "documentation":"<p>The generation data group of the data set.</p>"
+        },
+        "po":{
+          "shape":"PoDetailAttributes",
+          "documentation":"<p>The details of a PO type data set.</p>"
+        },
+        "ps":{
+          "shape":"PsDetailAttributes",
+          "documentation":"<p>The details of a PS type data set.</p>"
+        },
+        "vsam":{
+          "shape":"VsamDetailAttributes",
+          "documentation":"<p>The details of a VSAM data set.</p>"
+        }
+      },
+      "documentation":"<p>Additional details about the data set. Different attributes correspond to different data set organizations. The values are populated based on datasetOrg, storageType and backend (Blu Age or Micro Focus).</p>",
+      "union":true
+    },
+    "DatasetOrgAttributes":{
+      "type":"structure",
+      "members":{
+        "gdg":{
+          "shape":"GdgAttributes",
+          "documentation":"<p>The generation data group of the data set.</p>"
+        },
+        "po":{
+          "shape":"PoAttributes",
+          "documentation":"<p>The details of a PO type data set.</p>"
+        },
+        "ps":{
+          "shape":"PsAttributes",
+          "documentation":"<p>The details of a PS type data set.</p>"
+        },
+        "vsam":{
+          "shape":"VsamAttributes",
+          "documentation":"<p>The details of a VSAM data set.</p>"
+        }
+      },
+      "documentation":"<p>Additional details about the data set. Different attributes correspond to different data set organizations. The values are populated based on datasetOrg, storageType and backend (Blu Age or Micro Focus).</p>",
+      "union":true
+    },
+    "Definition":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"StringFree65000",
+          "documentation":"<p>The content of the application definition. This is a JSON object that contains the resource configuration/definitions that identify an application.</p>"
+        },
+        "s3Location":{
+          "shape":"String2000",
+          "documentation":"<p>The S3 bucket that contains the application definition.</p>"
+        }
+      },
+      "documentation":"<p>The application definition for a particular application. </p>",
+      "union":true
+    },
+    "DeleteApplicationFromEnvironmentRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "environmentId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application you want to delete.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment where the application was previously deployed.</p>",
+          "location":"uri",
+          "locationName":"environmentId"
+        }
+      }
+    },
+    "DeleteApplicationFromEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteApplicationRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application you want to delete.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        }
+      }
+    },
+    "DeleteApplicationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteEnvironmentRequest":{
+      "type":"structure",
+      "required":["environmentId"],
+      "members":{
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment you want to delete.</p>",
+          "location":"uri",
+          "locationName":"environmentId"
+        }
+      }
+    },
+    "DeleteEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeployedVersionSummary":{
+      "type":"structure",
+      "required":[
+        "applicationVersion",
+        "status"
+      ],
+      "members":{
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the deployed application.</p>"
+        },
+        "status":{
+          "shape":"DeploymentLifecycle",
+          "documentation":"<p>The status of the deployment.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of a deployed application.</p>"
+    },
+    "DeploymentLifecycle":{
+      "type":"string",
+      "enum":[
+        "Deploying",
+        "Succeeded",
+        "Failed",
+        "Updating Deployment"
+      ]
+    },
+    "DeploymentList":{
+      "type":"list",
+      "member":{"shape":"DeploymentSummary"}
+    },
+    "DeploymentSummary":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "applicationVersion",
+        "creationTime",
+        "deploymentId",
+        "environmentId",
+        "status"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the application.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the deployment was created.</p>"
+        },
+        "deploymentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the deployment.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment.</p>"
+        },
+        "status":{
+          "shape":"DeploymentLifecycle",
+          "documentation":"<p>The current status of the deployment.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      },
+      "documentation":"<p>A subset of information about a specific deployment.</p>"
+    },
+    "EfsStorageConfiguration":{
+      "type":"structure",
+      "required":[
+        "fileSystemId",
+        "mountPoint"
+      ],
+      "members":{
+        "fileSystemId":{
+          "shape":"String200",
+          "documentation":"<p>The file system identifier.</p>",
+          "locationName":"file-system-id"
+        },
+        "mountPoint":{
+          "shape":"String200",
+          "documentation":"<p>The mount point for the file system.</p>",
+          "locationName":"mount-point"
+        }
+      },
+      "documentation":"<p>Defines the storage configuration for an Amazon EFS file system.</p>"
+    },
+    "EngineType":{
+      "type":"string",
+      "enum":[
+        "microfocus",
+        "bluage"
+      ]
+    },
+    "EngineVersion":{
+      "type":"string",
+      "pattern":"^\\S{1,10}$"
+    },
+    "EngineVersionsSummary":{
+      "type":"structure",
+      "required":[
+        "engineType",
+        "engineVersion"
+      ],
+      "members":{
+        "engineType":{
+          "shape":"String",
+          "documentation":"<p>The type of target platform for the application.</p>"
+        },
+        "engineVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the engine type used by the application.</p>"
+        }
+      },
+      "documentation":"<p>A subset of information about the engine version for a specific application.</p>"
+    },
+    "EngineVersionsSummaryList":{
+      "type":"list",
+      "member":{"shape":"EngineVersionsSummary"}
+    },
+    "EntityDescription":{
+      "type":"string",
+      "max":500,
+      "min":0
+    },
+    "EntityName":{
+      "type":"string",
+      "pattern":"^[A-Za-z0-9][A-Za-z0-9_\\-]{1,59}$"
+    },
+    "EntityNameList":{
+      "type":"list",
+      "member":{"shape":"EntityName"},
+      "max":10,
+      "min":1
+    },
+    "EnvironmentLifecycle":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Available",
+        "Updating",
+        "Deleting",
+        "Failed",
+        "UnHealthy"
+      ]
+    },
+    "EnvironmentSummary":{
+      "type":"structure",
+      "required":[
+        "creationTime",
+        "engineType",
+        "engineVersion",
+        "environmentArn",
+        "environmentId",
+        "instanceType",
+        "name",
+        "status"
+      ],
+      "members":{
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the runtime environment was created.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The target platform for the runtime environment.</p>"
+        },
+        "engineVersion":{
+          "shape":"EngineVersion",
+          "documentation":"<p>The version of the runtime engine.</p>"
+        },
+        "environmentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a particular runtime environment.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of a particular runtime environment.</p>"
+        },
+        "instanceType":{
+          "shape":"String20",
+          "documentation":"<p>The instance type of the runtime environment.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the runtime environment.</p>"
+        },
+        "networkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The network type supported by the runtime environment.</p>"
+        },
+        "status":{
+          "shape":"EnvironmentLifecycle",
+          "documentation":"<p>The status of the runtime environment</p>"
+        }
+      },
+      "documentation":"<p>Contains a subset of the possible runtime environment attributes. Used in the environment list.</p>"
+    },
+    "EnvironmentSummaryList":{
+      "type":"list",
+      "member":{"shape":"EnvironmentSummary"}
+    },
+    "ExecutionTimeoutException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p> Failed to connect to server, or didn’t receive response within expected time period.</p>",
+      "error":{"httpStatusCode":504},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ExternalLocation":{
+      "type":"structure",
+      "members":{
+        "s3Location":{
+          "shape":"String2000",
+          "documentation":"<p>The URI of the Amazon S3 bucket.</p>"
+        }
+      },
+      "documentation":"<p>Defines an external storage location.</p>",
+      "union":true
+    },
+    "FileBatchJobDefinition":{
+      "type":"structure",
+      "required":["fileName"],
+      "members":{
+        "fileName":{
+          "shape":"String",
+          "documentation":"<p>The name of the file containing the batch job definition.</p>"
+        },
+        "folderPath":{
+          "shape":"String",
+          "documentation":"<p>The path to the file containing the batch job definition.</p>"
+        }
+      },
+      "documentation":"<p>A file containing a batch job definition.</p>"
+    },
+    "FileBatchJobIdentifier":{
+      "type":"structure",
+      "required":["fileName"],
+      "members":{
+        "fileName":{
+          "shape":"String",
+          "documentation":"<p>The file name for the batch job identifier.</p>"
+        },
+        "folderPath":{
+          "shape":"String",
+          "documentation":"<p>The relative path to the file name for the batch job identifier.</p>"
+        }
+      },
+      "documentation":"<p>A batch job identifier in which the batch job to run is identified by the file name and the relative path to the file name.</p>"
+    },
+    "FsxStorageConfiguration":{
+      "type":"structure",
+      "required":[
+        "fileSystemId",
+        "mountPoint"
+      ],
+      "members":{
+        "fileSystemId":{
+          "shape":"String200",
+          "documentation":"<p>The file system identifier.</p>",
+          "locationName":"file-system-id"
+        },
+        "mountPoint":{
+          "shape":"String200",
+          "documentation":"<p>The mount point for the file system.</p>",
+          "locationName":"mount-point"
+        }
+      },
+      "documentation":"<p>Defines the storage configuration for an Amazon FSx file system.</p>"
+    },
+    "GdgAttributes":{
+      "type":"structure",
+      "members":{
+        "limit":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum number of generation data sets, up to 255, in a GDG.</p>"
+        },
+        "rollDisposition":{
+          "shape":"String",
+          "documentation":"<p>The disposition of the data set in the catalog.</p>"
+        }
+      },
+      "documentation":"<p>The required attributes for a generation data group data set. A generation data set is one of a collection of successive, historically related, catalogued data sets that together are known as a generation data group (GDG). Use this structure when you want to import a GDG. For more information on GDG, see <a href=\"https://www.ibm.com/docs/en/zos/2.3.0?topic=guide-generation-data-sets\">Generation data sets</a>.</p>"
+    },
+    "GdgDetailAttributes":{
+      "type":"structure",
+      "members":{
+        "limit":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum number of generation data sets, up to 255, in a GDG.</p>"
+        },
+        "rollDisposition":{
+          "shape":"String50",
+          "documentation":"<p>The disposition of the data set in the catalog.</p>"
+        }
+      },
+      "documentation":"<p>The required attributes for a generation data group data set. A generation data set is one of a collection of successive, historically related, catalogued data sets that together are known as a generation data group (GDG). Use this structure when you want to import a GDG. For more information on GDG, see <a href=\"https://www.ibm.com/docs/en/zos/2.3.0?topic=guide-generation-data-sets\">Generation data sets</a>.</p>"
+    },
+    "GetApplicationRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        }
+      }
+    },
+    "GetApplicationResponse":{
+      "type":"structure",
+      "required":[
+        "applicationArn",
+        "applicationId",
+        "creationTime",
+        "engineType",
+        "latestVersion",
+        "name",
+        "status"
+      ],
+      "members":{
+        "applicationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the application.</p>"
+        },
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the application.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when this application was created.</p>"
+        },
+        "deployedVersion":{
+          "shape":"DeployedVersionSummary",
+          "documentation":"<p>The version of the application that is deployed.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The type of the target platform for the application.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the runtime environment where you want to deploy the application.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a customer managed key.</p>"
+        },
+        "lastStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when you last started the application. Null until the application runs for the first time.</p>"
+        },
+        "latestVersion":{
+          "shape":"ApplicationVersionSummary",
+          "documentation":"<p>The latest version of the application.</p>"
+        },
+        "listenerArns":{
+          "shape":"ArnList",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the network load balancer listener created in your Amazon Web Services account. Amazon Web Services Mainframe Modernization creates this listener for you the first time you deploy an application.</p>"
+        },
+        "listenerPorts":{
+          "shape":"PortList",
+          "documentation":"<p>The port associated with the network load balancer listener created in your Amazon Web Services account.</p>"
+        },
+        "loadBalancerDnsName":{
+          "shape":"String100",
+          "documentation":"<p>The public DNS name of the load balancer created in your Amazon Web Services account.</p>"
+        },
+        "logGroups":{
+          "shape":"LogGroupSummaries",
+          "documentation":"<p>The list of log summaries. Each log summary includes the log type as well as the log group identifier. These are CloudWatch logs. Amazon Web Services Mainframe Modernization pushes the application log to CloudWatch under the customer's account.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "roleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role associated with the application.</p>"
+        },
+        "status":{
+          "shape":"ApplicationLifecycle",
+          "documentation":"<p>The status of the application.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags associated with the application.</p>"
+        },
+        "targetGroupArns":{
+          "shape":"ArnList",
+          "documentation":"<p>Returns the Amazon Resource Names (ARNs) of the target groups that are attached to the network load balancer.</p>"
+        }
+      }
+    },
+    "GetApplicationVersionRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "applicationVersion"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The specific version of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationVersion"
+        }
+      }
+    },
+    "GetApplicationVersionResponse":{
+      "type":"structure",
+      "required":[
+        "applicationVersion",
+        "creationTime",
+        "definitionContent",
+        "name",
+        "status"
+      ],
+      "members":{
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The specific version of the application.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the application version was created.</p>"
+        },
+        "definitionContent":{
+          "shape":"StringFree65000",
+          "documentation":"<p>The content of the application definition. This is a JSON object that contains the resource configuration and definitions that identify an application.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The application description.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the application version.</p>"
+        },
+        "status":{
+          "shape":"ApplicationVersionLifecycle",
+          "documentation":"<p>The status of the application version.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      }
+    },
+    "GetBatchJobExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "executionId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the batch job execution.</p>",
+          "location":"uri",
+          "locationName":"executionId"
+        }
+      }
+    },
+    "GetBatchJobExecutionResponse":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "executionId",
+        "startTime",
+        "status"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the application.</p>"
+        },
+        "batchJobIdentifier":{
+          "shape":"BatchJobIdentifier",
+          "documentation":"<p>The unique identifier of this batch job.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the batch job execution ended.</p>"
+        },
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier for this batch job execution.</p>"
+        },
+        "jobId":{
+          "shape":"String100",
+          "documentation":"<p>The unique identifier for this batch job.</p>"
+        },
+        "jobName":{
+          "shape":"String100",
+          "documentation":"<p>The name of this batch job.</p>"
+        },
+        "jobStepRestartMarker":{
+          "shape":"JobStepRestartMarker",
+          "documentation":"<p>The step/procedure step information for the restart batch job operation.</p>"
+        },
+        "jobType":{
+          "shape":"BatchJobType",
+          "documentation":"<p>The type of job.</p>"
+        },
+        "jobUser":{
+          "shape":"String100",
+          "documentation":"<p>The user for the job.</p>"
+        },
+        "returnCode":{
+          "shape":"String",
+          "documentation":"<p>The batch job return code from either the Blu Age or Micro Focus runtime engines. For more information, see <a href=\"https://www.ibm.com/docs/en/was/8.5.5?topic=model-batch-return-codes\">Batch return codes</a> in the <i>IBM WebSphere Application Server</i> documentation.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the batch job execution started.</p>"
+        },
+        "status":{
+          "shape":"BatchJobExecutionStatus",
+          "documentation":"<p>The status of the batch job execution.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      }
+    },
+    "GetDataSetDetailsRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "dataSetName"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application that this data set is associated with.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "dataSetName":{
+          "shape":"String200",
+          "documentation":"<p>The name of the data set.</p>",
+          "location":"uri",
+          "locationName":"dataSetName"
+        }
+      }
+    },
+    "GetDataSetDetailsResponse":{
+      "type":"structure",
+      "required":["dataSetName"],
+      "members":{
+        "blocksize":{
+          "shape":"Integer",
+          "documentation":"<p>The size of the block on disk. </p>",
+          "box":true
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the data set was created.</p>"
+        },
+        "dataSetName":{
+          "shape":"String200",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "dataSetOrg":{
+          "shape":"DatasetDetailOrgAttributes",
+          "documentation":"<p>The type of data set. The only supported value is VSAM.</p>"
+        },
+        "fileSize":{
+          "shape":"Long",
+          "documentation":"<p>File size of the dataset.</p>"
+        },
+        "lastReferencedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last time the data set was referenced.</p>"
+        },
+        "lastUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last time the data set was updated.</p>"
+        },
+        "location":{
+          "shape":"String2000",
+          "documentation":"<p>The location where the data set is stored.</p>"
+        },
+        "recordLength":{
+          "shape":"Integer",
+          "documentation":"<p>The length of records in the data set.</p>",
+          "box":true
+        }
+      }
+    },
+    "GetDataSetExportTaskRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "taskId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The application identifier.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier returned by the <a>CreateDataSetExportTask</a> operation.</p>",
+          "location":"uri",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "GetDataSetExportTaskResponse":{
+      "type":"structure",
+      "required":[
+        "status",
+        "taskId"
+      ],
+      "members":{
+        "kmsKeyArn":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a customer managed key used for exported data set encryption.</p>"
+        },
+        "status":{
+          "shape":"DataSetTaskLifecycle",
+          "documentation":"<p>The status of the task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>If dataset export failed, the failure reason will show here.</p>"
+        },
+        "summary":{
+          "shape":"DataSetExportSummary",
+          "documentation":"<p>A summary of the status of the task.</p>"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier.</p>"
+        }
+      }
+    },
+    "GetDataSetImportTaskRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "taskId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The application identifier.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier returned by the <a>CreateDataSetImportTask</a> operation. </p>",
+          "location":"uri",
+          "locationName":"taskId"
+        }
+      }
+    },
+    "GetDataSetImportTaskResponse":{
+      "type":"structure",
+      "required":[
+        "status",
+        "taskId"
+      ],
+      "members":{
+        "status":{
+          "shape":"DataSetTaskLifecycle",
+          "documentation":"<p>The status of the task.</p>"
+        },
+        "summary":{
+          "shape":"DataSetImportSummary",
+          "documentation":"<p>A summary of the status of the task.</p>"
+        },
+        "taskId":{
+          "shape":"Identifier",
+          "documentation":"<p>The task identifier.</p>"
+        }
+      }
+    },
+    "GetDeploymentRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "deploymentId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "deploymentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier for the deployment.</p>",
+          "location":"uri",
+          "locationName":"deploymentId"
+        }
+      }
+    },
+    "GetDeploymentResponse":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "applicationVersion",
+        "creationTime",
+        "deploymentId",
+        "environmentId",
+        "status"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>"
+        },
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The application version.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the deployment was created.</p>"
+        },
+        "deploymentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the deployment.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment.</p>"
+        },
+        "status":{
+          "shape":"DeploymentLifecycle",
+          "documentation":"<p>The status of the deployment.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        }
+      }
+    },
+    "GetEnvironmentRequest":{
+      "type":"structure",
+      "required":["environmentId"],
+      "members":{
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment.</p>",
+          "location":"uri",
+          "locationName":"environmentId"
+        }
+      }
+    },
+    "GetEnvironmentResponse":{
+      "type":"structure",
+      "required":[
+        "creationTime",
+        "engineType",
+        "engineVersion",
+        "environmentArn",
+        "environmentId",
+        "instanceType",
+        "name",
+        "securityGroupIds",
+        "status",
+        "subnetIds",
+        "vpcId"
+      ],
+      "members":{
+        "actualCapacity":{
+          "shape":"CapacityValue",
+          "documentation":"<p>The number of instances included in the runtime environment. A standalone runtime environment has a maximum of one instance. Currently, a high availability runtime environment has a maximum of two instances. </p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the runtime environment was created.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the runtime environment.</p>"
+        },
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The target platform for the runtime environment.</p>"
+        },
+        "engineVersion":{
+          "shape":"EngineVersion",
+          "documentation":"<p>The version of the runtime engine.</p>"
+        },
+        "environmentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the runtime environment.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment.</p>"
+        },
+        "highAvailabilityConfig":{
+          "shape":"HighAvailabilityConfig",
+          "documentation":"<p>The desired capacity of the high availability configuration for the runtime environment.</p>"
+        },
+        "instanceType":{
+          "shape":"String20",
+          "documentation":"<p>The type of instance underlying the runtime environment.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a customer managed key.</p>"
+        },
+        "loadBalancerArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the load balancer used with the runtime environment.</p>"
+        },
+        "name":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the runtime environment. Must be unique within the account.</p>"
+        },
+        "networkType":{
+          "shape":"NetworkType",
+          "documentation":"<p>The network type supported by the runtime environment.</p>"
+        },
+        "pendingMaintenance":{
+          "shape":"PendingMaintenance",
+          "documentation":"<p>Indicates the pending maintenance scheduled on this environment.</p>"
+        },
+        "preferredMaintenanceWindow":{
+          "shape":"String50",
+          "documentation":"<p>The maintenance window for the runtime environment. If you don't provide a value for the maintenance window, the service assigns a random value.</p>"
+        },
+        "publiclyAccessible":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether applications running in this runtime environment are publicly accessible. </p>"
+        },
+        "securityGroupIds":{
+          "shape":"String50List",
+          "documentation":"<p>The unique identifiers of the security groups assigned to this runtime environment.</p>"
+        },
+        "status":{
+          "shape":"EnvironmentLifecycle",
+          "documentation":"<p>The status of the runtime environment. If the Amazon Web Services Mainframe Modernization environment is missing a connection to the customer owned dependent resource, the status will be <code>Unhealthy</code>.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the reported status.</p>"
+        },
+        "storageConfigurations":{
+          "shape":"StorageConfigurationList",
+          "documentation":"<p>The storage configurations defined for the runtime environment.</p>"
+        },
+        "subnetIds":{
+          "shape":"String50List",
+          "documentation":"<p>The unique identifiers of the subnets assigned to this runtime environment.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags defined for this runtime environment.</p>"
+        },
+        "vpcId":{
+          "shape":"String50",
+          "documentation":"<p>The unique identifier for the VPC used with this runtime environment.</p>"
+        }
+      }
+    },
+    "GetSignedBluinsightsUrlResponse":{
+      "type":"structure",
+      "required":["signedBiUrl"],
+      "members":{
+        "signedBiUrl":{
+          "shape":"String",
+          "documentation":"<p>Single sign-on AWS Blu Insights URL.</p>"
+        }
+      }
+    },
+    "HighAvailabilityConfig":{
+      "type":"structure",
+      "required":["desiredCapacity"],
+      "members":{
+        "desiredCapacity":{
+          "shape":"CapacityValue",
+          "documentation":"<p>The number of instances in a high availability configuration. The minimum possible value is 1 and the maximum is 100.</p>"
+        }
+      },
+      "documentation":"<p>Defines the details of a high availability configuration.</p>"
+    },
+    "Identifier":{
+      "type":"string",
+      "pattern":"^\\S{1,80}$"
+    },
+    "IdentifierList":{
+      "type":"list",
+      "member":{"shape":"Identifier"},
+      "max":10,
+      "min":1
+    },
+    "Integer":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An unexpected error occurred during the processing of the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "JobIdentifier":{
+      "type":"structure",
+      "members":{
+        "fileName":{
+          "shape":"String",
+          "documentation":"<p>The name of the file that contains the batch job definition.</p>"
+        },
+        "scriptName":{
+          "shape":"String",
+          "documentation":"<p>The name of the script that contains the batch job definition.</p>"
+        }
+      },
+      "documentation":"<p>Identifies a specific batch job.</p>",
+      "union":true
+    },
+    "JobStep":{
+      "type":"structure",
+      "members":{
+        "procStepName":{
+          "shape":"String",
+          "documentation":"<p>The name of a procedure step.</p>"
+        },
+        "procStepNumber":{
+          "shape":"Integer",
+          "documentation":"<p>The number of a procedure step.</p>"
+        },
+        "stepCheckpoint":{
+          "shape":"Integer",
+          "documentation":"<p>A registered step-level checkpoint identifier that can be used for restarting an Amazon Web Services Blu Age application batch job.</p>",
+          "box":true
+        },
+        "stepCheckpointStatus":{
+          "shape":"String",
+          "documentation":"<p>The step-level checkpoint status for an Amazon Web Services Blu Age application batch job.</p>"
+        },
+        "stepCheckpointTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The step-level checkpoint status for an Amazon Web Services Blu Age application batch job.</p>"
+        },
+        "stepCondCode":{
+          "shape":"String",
+          "documentation":"<p>The condition code of a step.</p>"
+        },
+        "stepName":{
+          "shape":"String",
+          "documentation":"<p>The name of a step.</p>"
+        },
+        "stepNumber":{
+          "shape":"Integer",
+          "documentation":"<p>The number of a step.</p>"
+        },
+        "stepRestartable":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies if a step can be restarted or not.</p>"
+        }
+      },
+      "documentation":"<p>Provides information related to a job step.</p>"
+    },
+    "JobStepRestartMarker":{
+      "type":"structure",
+      "required":["fromStep"],
+      "members":{
+        "fromProcStep":{
+          "shape":"String",
+          "documentation":"<p>The procedure step name that a batch job was restarted from.</p>"
+        },
+        "fromStep":{
+          "shape":"String",
+          "documentation":"<p>The step name that a batch job was restarted from.</p>"
+        },
+        "skip":{
+          "shape":"Boolean",
+          "documentation":"<p>The step-level checkpoint timestamp (creation or last modification) for an Amazon Web Services Blu Age application batch job.</p>",
+          "box":true
+        },
+        "stepCheckpoint":{
+          "shape":"Integer",
+          "documentation":"<p>Skip selected step and issue a restart from immediate successor step for an Amazon Web Services Blu Age application batch job.</p>",
+          "box":true
+        },
+        "toProcStep":{
+          "shape":"String",
+          "documentation":"<p>The procedure step name that a batch job was restarted to.</p>"
+        },
+        "toStep":{
+          "shape":"String",
+          "documentation":"<p>The step name that a batch job was restarted to.</p>"
+        }
+      },
+      "documentation":"<p>Provides step/procedure step information for a restart batch job operation.</p>"
+    },
+    "KMSKeyId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9:/_-]+$"
+    },
+    "ListApplicationVersionsRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of application versions to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListApplicationVersionsResponse":{
+      "type":"structure",
+      "required":["applicationVersions"],
+      "members":{
+        "applicationVersions":{
+          "shape":"ApplicationVersionSummaryList",
+          "documentation":"<p>The list of application versions.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListApplicationsRequest":{
+      "type":"structure",
+      "members":{
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment where the applications are deployed.</p>",
+          "location":"querystring",
+          "locationName":"environmentId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of applications to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "names":{
+          "shape":"EntityNameList",
+          "documentation":"<p>The names of the applications.</p>",
+          "location":"querystring",
+          "locationName":"names"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to control the number of applications displayed in the list.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListApplicationsResponse":{
+      "type":"structure",
+      "required":["applications"],
+      "members":{
+        "applications":{
+          "shape":"ApplicationSummaryList",
+          "documentation":"<p>Returns a list of summary details for all the applications in a runtime environment.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's returned when the response doesn't contain all applications.</p>"
+        }
+      }
+    },
+    "ListBatchJobDefinitionsRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of batch job definitions to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "prefix":{
+          "shape":"String",
+          "documentation":"<p>If the batch job definition is a FileBatchJobDefinition, the prefix allows you to search on the file names of FileBatchJobDefinitions.</p>",
+          "location":"querystring",
+          "locationName":"prefix"
+        }
+      }
+    },
+    "ListBatchJobDefinitionsResponse":{
+      "type":"structure",
+      "required":["batchJobDefinitions"],
+      "members":{
+        "batchJobDefinitions":{
+          "shape":"BatchJobDefinitions",
+          "documentation":"<p>The list of batch job definitions.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListBatchJobExecutionsRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "executionIds":{
+          "shape":"IdentifierList",
+          "documentation":"<p>The unique identifier of each batch job execution.</p>",
+          "location":"querystring",
+          "locationName":"executionIds"
+        },
+        "jobName":{
+          "shape":"String100",
+          "documentation":"<p>The name of each batch job execution.</p>",
+          "location":"querystring",
+          "locationName":"jobName"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of batch job executions to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to control the number of batch job executions displayed in the list.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "startedAfter":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time after which the batch job executions started.</p>",
+          "location":"querystring",
+          "locationName":"startedAfter"
+        },
+        "startedBefore":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time before the batch job executions started.</p>",
+          "location":"querystring",
+          "locationName":"startedBefore"
+        },
+        "status":{
+          "shape":"BatchJobExecutionStatus",
+          "documentation":"<p>The status of the batch job executions.</p>",
+          "location":"querystring",
+          "locationName":"status"
+        }
+      }
+    },
+    "ListBatchJobExecutionsResponse":{
+      "type":"structure",
+      "required":["batchJobExecutions"],
+      "members":{
+        "batchJobExecutions":{
+          "shape":"BatchJobExecutionSummaryList",
+          "documentation":"<p>Returns a list of batch job executions for an application.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's returned when the response doesn't contain all batch job executions.</p>"
+        }
+      }
+    },
+    "ListBatchJobRestartPointsRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "executionId"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "authSecretsManagerArn":{
+          "shape":"AuthSecretsManagerArn",
+          "documentation":"<p>The Amazon Web Services Secrets Manager containing user's credentials for authentication and authorization for List Batch Job Restart Points operation.</p>",
+          "location":"querystring",
+          "locationName":"authSecretsManagerArn"
+        },
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the batch job execution.</p>",
+          "location":"uri",
+          "locationName":"executionId"
+        }
+      }
+    },
+    "ListBatchJobRestartPointsResponse":{
+      "type":"structure",
+      "members":{
+        "batchJobSteps":{
+          "shape":"BatchJobStepList",
+          "documentation":"<p>Returns all the batch job steps and related information for a batch job that previously ran.</p>"
+        }
+      }
+    },
+    "ListDataSetExportHistoryRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDataSetExportHistoryResponse":{
+      "type":"structure",
+      "required":["dataSetExportTasks"],
+      "members":{
+        "dataSetExportTasks":{
+          "shape":"DataSetExportTaskList",
+          "documentation":"<p>The data set export tasks.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListDataSetImportHistoryRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDataSetImportHistoryResponse":{
+      "type":"structure",
+      "required":["dataSetImportTasks"],
+      "members":{
+        "dataSetImportTasks":{
+          "shape":"DataSetImportTaskList",
+          "documentation":"<p>The data set import tasks.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListDataSetsRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application for which you want to list the associated data sets.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nameFilter":{
+          "shape":"String200",
+          "documentation":"<p>Filter dataset name matching the specified pattern. Can use * and % as wild cards.</p>",
+          "location":"querystring",
+          "locationName":"nameFilter"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "prefix":{
+          "shape":"String200",
+          "documentation":"<p>The prefix of the data set name, which you can use to filter the list of data sets.</p>",
+          "location":"querystring",
+          "locationName":"prefix"
+        }
+      }
+    },
+    "ListDataSetsResponse":{
+      "type":"structure",
+      "required":["dataSets"],
+      "members":{
+        "dataSets":{
+          "shape":"DataSetsSummaryList",
+          "documentation":"<p>The list of data sets, containing information including the creation time, the data set name, the data set organization, the data set format, and the last time the data set was referenced or updated.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListDeploymentsRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The application identifier.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDeploymentsResponse":{
+      "type":"structure",
+      "required":["deployments"],
+      "members":{
+        "deployments":{
+          "shape":"DeploymentList",
+          "documentation":"<p>The list of deployments that is returned.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListEngineVersionsRequest":{
+      "type":"structure",
+      "members":{
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The type of target platform.</p>",
+          "location":"querystring",
+          "locationName":"engineType"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token returned from a previous call to this operation. This specifies the next item to return. To return to the beginning of the list, exclude this parameter.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListEngineVersionsResponse":{
+      "type":"structure",
+      "required":["engineVersions"],
+      "members":{
+        "engineVersions":{
+          "shape":"EngineVersionsSummaryList",
+          "documentation":"<p>Returns the engine versions.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are more items to return, this contains a token that is passed to a subsequent call to this operation to retrieve the next set of items.</p>"
+        }
+      }
+    },
+    "ListEnvironmentsRequest":{
+      "type":"structure",
+      "members":{
+        "engineType":{
+          "shape":"EngineType",
+          "documentation":"<p>The engine type for the runtime environment.</p>",
+          "location":"querystring",
+          "locationName":"engineType"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of runtime environments to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "names":{
+          "shape":"EntityNameList",
+          "documentation":"<p>The names of the runtime environments. Must be unique within the account.</p>",
+          "location":"querystring",
+          "locationName":"names"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token to control the number of runtime environments displayed in the list.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListEnvironmentsResponse":{
+      "type":"structure",
+      "required":["environments"],
+      "members":{
+        "environments":{
+          "shape":"EnvironmentSummaryList",
+          "documentation":"<p>Returns a list of summary details for all the runtime environments in your account. </p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A pagination token that's returned when the response doesn't contain all the runtime environments.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for the resource.</p>"
+        }
+      }
+    },
+    "LogGroupIdentifier":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "LogGroupSummaries":{
+      "type":"list",
+      "member":{"shape":"LogGroupSummary"}
+    },
+    "LogGroupSummary":{
+      "type":"structure",
+      "required":[
+        "logGroupName",
+        "logType"
+      ],
+      "members":{
+        "logGroupName":{
+          "shape":"LogGroupIdentifier",
+          "documentation":"<p>The name of the log group.</p>"
+        },
+        "logType":{
+          "shape":"String20",
+          "documentation":"<p>The type of log.</p>"
+        }
+      },
+      "documentation":"<p>A subset of the attributes that describe a log group. In CloudWatch a log group is a group of log streams that share the same retention, monitoring, and access control settings.</p>"
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaintenanceSchedule":{
+      "type":"structure",
+      "members":{
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the scheduled maintenance is to end.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the scheduled maintenance is to start.</p>"
+        }
+      },
+      "documentation":"<p>The information about the maintenance schedule.</p>"
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":2000,
+      "min":1
+    },
+    "NetworkType":{
+      "type":"string",
+      "enum":[
+        "ipv4",
+        "dual"
+      ]
+    },
+    "NextToken":{
+      "type":"string",
+      "pattern":"^\\S{1,2000}$"
+    },
+    "PendingMaintenance":{
+      "type":"structure",
+      "members":{
+        "engineVersion":{
+          "shape":"String",
+          "documentation":"<p>The specific runtime engine that the maintenance schedule applies to.</p>"
+        },
+        "schedule":{
+          "shape":"MaintenanceSchedule",
+          "documentation":"<p>The maintenance schedule for the runtime engine version.</p>"
+        }
+      },
+      "documentation":"<p>The scheduled maintenance for a runtime engine.</p>"
+    },
+    "PoAttributes":{
+      "type":"structure",
+      "required":[
+        "format",
+        "memberFileExtensions"
+      ],
+      "members":{
+        "encoding":{
+          "shape":"String",
+          "documentation":"<p>The character set encoding of the data set.</p>"
+        },
+        "format":{
+          "shape":"String",
+          "documentation":"<p>The format of the data set records.</p>"
+        },
+        "memberFileExtensions":{
+          "shape":"String20List",
+          "documentation":"<p>An array containing one or more filename extensions, allowing you to specify which files to be included as PDS member.</p>"
+        }
+      },
+      "documentation":"<p>The supported properties for a PO type data set.</p>"
+    },
+    "PoDetailAttributes":{
+      "type":"structure",
+      "required":[
+        "encoding",
+        "format"
+      ],
+      "members":{
+        "encoding":{
+          "shape":"String",
+          "documentation":"<p>The character set encoding of the data set.</p>"
+        },
+        "format":{
+          "shape":"String",
+          "documentation":"<p>The format of the data set records.</p>"
+        }
+      },
+      "documentation":"<p>The supported properties for a PO type data set.</p>"
+    },
+    "PortList":{
+      "type":"list",
+      "member":{"shape":"Integer"},
+      "min":1
+    },
+    "PrimaryKey":{
+      "type":"structure",
+      "required":[
+        "length",
+        "offset"
+      ],
+      "members":{
+        "length":{
+          "shape":"Integer",
+          "documentation":"<p>A strictly positive integer value representing the length of the primary key. </p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>A name for the Primary Key.</p>"
+        },
+        "offset":{
+          "shape":"Integer",
+          "documentation":"<p>A positive integer value representing the offset to mark the start of the primary key in the record byte array.</p>"
+        }
+      },
+      "documentation":"<p>The primary key for a KSDS data set.</p>"
+    },
+    "PsAttributes":{
+      "type":"structure",
+      "required":["format"],
+      "members":{
+        "encoding":{
+          "shape":"String",
+          "documentation":"<p>The character set encoding of the data set.</p>"
+        },
+        "format":{
+          "shape":"String",
+          "documentation":"<p>The format of the data set records.</p>"
+        }
+      },
+      "documentation":"<p>The supported properties for a PS type data set.</p>"
+    },
+    "PsDetailAttributes":{
+      "type":"structure",
+      "required":[
+        "encoding",
+        "format"
+      ],
+      "members":{
+        "encoding":{
+          "shape":"String",
+          "documentation":"<p>The character set encoding of the data set.</p>"
+        },
+        "format":{
+          "shape":"String",
+          "documentation":"<p>The format of the data set records.</p>"
+        }
+      },
+      "documentation":"<p>The supported properties for a PS type data set.</p>"
+    },
+    "RecordLength":{
+      "type":"structure",
+      "required":[
+        "max",
+        "min"
+      ],
+      "members":{
+        "max":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum record length. In case of fixed, both minimum and maximum are the same.</p>"
+        },
+        "min":{
+          "shape":"Integer",
+          "documentation":"<p>The minimum record length of a record.</p>"
+        }
+      },
+      "documentation":"<p>The length of the records in the data set.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the missing resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the missing resource.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RestartBatchJobIdentifier":{
+      "type":"structure",
+      "required":[
+        "executionId",
+        "jobStepRestartMarker"
+      ],
+      "members":{
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The <code>executionId</code> from the <code>StartBatchJob</code> response when the job ran for the first time.</p>"
+        },
+        "jobStepRestartMarker":{
+          "shape":"JobStepRestartMarker",
+          "documentation":"<p>The step/procedure step information for a restart batch job operation.</p>"
+        }
+      },
+      "documentation":"<p>An identifier for the <code>StartBatchJob</code> API to show that it is a restart operation.</p>"
+    },
+    "S3BatchJobIdentifier":{
+      "type":"structure",
+      "required":[
+        "bucket",
+        "identifier"
+      ],
+      "members":{
+        "bucket":{
+          "shape":"String",
+          "documentation":"<p>The Amazon S3 bucket that contains the batch job definitions.</p>"
+        },
+        "identifier":{
+          "shape":"JobIdentifier",
+          "documentation":"<p>Identifies the batch job definition. This identifier can also point to any batch job definition that already exists in the application or to one of the batch job definitions within the directory that is specified in <code>keyPrefix</code>.</p>"
+        },
+        "keyPrefix":{
+          "shape":"String",
+          "documentation":"<p>The key prefix that specifies the path to the folder in the S3 bucket that has the batch job definitions.</p>"
+        }
+      },
+      "documentation":"<p>A batch job identifier in which the batch jobs to run are identified by an Amazon S3 location.</p>"
+    },
+    "ScriptBatchJobDefinition":{
+      "type":"structure",
+      "required":["scriptName"],
+      "members":{
+        "scriptName":{
+          "shape":"String",
+          "documentation":"<p>The name of the script containing the batch job definition.</p>"
+        }
+      },
+      "documentation":"<p>A batch job definition contained in a script.</p>"
+    },
+    "ScriptBatchJobIdentifier":{
+      "type":"structure",
+      "required":["scriptName"],
+      "members":{
+        "scriptName":{
+          "shape":"String",
+          "documentation":"<p>The name of the script containing the batch job definition.</p>"
+        }
+      },
+      "documentation":"<p>A batch job identifier in which the batch job to run is identified by the script name.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the exceeded quota.</p>"
+        },
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource that is exceeding the quota limit.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of resource that is exceeding the quota limit for Amazon Web Services Mainframe Modernization.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>A code that identifies the service that the exceeded quota belongs to.</p>"
+        }
+      },
+      "documentation":"<p>One or more quotas for Amazon Web Services Mainframe Modernization exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Server cannot process the request at the moment.</p>",
+      "error":{"httpStatusCode":503},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "StartApplicationRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application you want to start.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        }
+      }
+    },
+    "StartApplicationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StartBatchJobRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "batchJobIdentifier"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application associated with this batch job.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "authSecretsManagerArn":{
+          "shape":"AuthSecretsManagerArn",
+          "documentation":"<p>The Amazon Web Services Secrets Manager containing user's credentials for authentication and authorization for Start Batch Job execution operation.</p>"
+        },
+        "batchJobIdentifier":{
+          "shape":"BatchJobIdentifier",
+          "documentation":"<p>The unique identifier of the batch job.</p>"
+        },
+        "jobParams":{
+          "shape":"BatchJobParametersMap",
+          "documentation":"<p>The collection of batch job parameters. For details about limits for keys and values, see <a href=\"https://www.ibm.com/docs/en/workload-automation/9.3.0?topic=zos-coding-variables-in-jcl\">Coding variables in JCL</a>.</p>"
+        }
+      }
+    },
+    "StartBatchJobResponse":{
+      "type":"structure",
+      "required":["executionId"],
+      "members":{
+        "executionId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of this execution of the batch job.</p>"
+        }
+      }
+    },
+    "StopApplicationRequest":{
+      "type":"structure",
+      "required":["applicationId"],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application you want to stop.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "forceStop":{
+          "shape":"Boolean",
+          "documentation":"<p>Stopping an application process can take a long time. Setting this parameter to true lets you force stop the application so you don't need to wait until the process finishes to apply another action on the application. The default value is false.</p>"
+        }
+      }
+    },
+    "StopApplicationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StorageConfiguration":{
+      "type":"structure",
+      "members":{
+        "efs":{
+          "shape":"EfsStorageConfiguration",
+          "documentation":"<p>Defines the storage configuration for an Amazon EFS file system.</p>"
+        },
+        "fsx":{
+          "shape":"FsxStorageConfiguration",
+          "documentation":"<p>Defines the storage configuration for an Amazon FSx file system.</p>"
+        }
+      },
+      "documentation":"<p>Defines the storage configuration for a runtime environment.</p>",
+      "union":true
+    },
+    "StorageConfigurationList":{
+      "type":"list",
+      "member":{"shape":"StorageConfiguration"}
+    },
+    "String":{"type":"string"},
+    "String100":{
+      "type":"string",
+      "pattern":"^\\S{1,100}$"
+    },
+    "String20":{
+      "type":"string",
+      "pattern":"^\\S{1,20}$"
+    },
+    "String200":{
+      "type":"string",
+      "pattern":"^\\S{1,200}$"
+    },
+    "String2000":{
+      "type":"string",
+      "pattern":"^\\S{1,2000}$"
+    },
+    "String20List":{
+      "type":"list",
+      "member":{"shape":"String20"},
+      "max":10,
+      "min":1
+    },
+    "String50":{
+      "type":"string",
+      "pattern":"^\\S{1,50}$"
+    },
+    "String50List":{
+      "type":"list",
+      "member":{"shape":"String50"}
+    },
+    "StringFree65000":{
+      "type":"string",
+      "max":65000,
+      "min":1
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:).+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to add to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the throttled request.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to wait before retrying the request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the service that the throttled request was made to.</p>"
+        }
+      },
+      "documentation":"<p>The number of requests made exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The keys of the tags to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "currentApplicationVersion"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the application you want to update.</p>",
+          "location":"uri",
+          "locationName":"applicationId"
+        },
+        "currentApplicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The current version of the application to update.</p>"
+        },
+        "definition":{
+          "shape":"Definition",
+          "documentation":"<p>The application definition for this application. You can specify either inline JSON or an S3 bucket location.</p>"
+        },
+        "description":{
+          "shape":"EntityDescription",
+          "documentation":"<p>The description of the application to update.</p>"
+        }
+      }
+    },
+    "UpdateApplicationResponse":{
+      "type":"structure",
+      "required":["applicationVersion"],
+      "members":{
+        "applicationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The new version of the application.</p>"
+        }
+      }
+    },
+    "UpdateEnvironmentRequest":{
+      "type":"structure",
+      "required":["environmentId"],
+      "members":{
+        "applyDuringMaintenanceWindow":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether to update the runtime environment during the maintenance window. The default is false. Currently, Amazon Web Services Mainframe Modernization accepts the <code>engineVersion</code> parameter only if <code>applyDuringMaintenanceWindow</code> is true. If any parameter other than <code>engineVersion</code> is provided in <code>UpdateEnvironmentRequest</code>, it will fail if <code>applyDuringMaintenanceWindow</code> is set to true.</p>"
+        },
+        "desiredCapacity":{
+          "shape":"CapacityValue",
+          "documentation":"<p>The desired capacity for the runtime environment to update. The minimum possible value is 0 and the maximum is 100.</p>"
+        },
+        "engineVersion":{
+          "shape":"EngineVersion",
+          "documentation":"<p>The version of the runtime engine for the runtime environment.</p>"
+        },
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment that you want to update.</p>",
+          "location":"uri",
+          "locationName":"environmentId"
+        },
+        "forceUpdate":{
+          "shape":"Boolean",
+          "documentation":"<p>Forces the updates on the environment. This option is needed if the applications in the environment are not stopped or if there are ongoing application-related activities in the environment.</p> <p>If you use this option, be aware that it could lead to data corruption in the applications, and that you might need to perform repair and recovery procedures for the applications.</p> <p>This option is not needed if the attribute being updated is <code>preferredMaintenanceWindow</code>.</p>"
+        },
+        "instanceType":{
+          "shape":"String20",
+          "documentation":"<p>The instance type for the runtime environment to update.</p>"
+        },
+        "preferredMaintenanceWindow":{
+          "shape":"String",
+          "documentation":"<p>Configures the maintenance window that you want for the runtime environment. The maintenance window must have the format <code>ddd:hh24:mi-ddd:hh24:mi</code> and must be less than 24 hours. The following two examples are valid maintenance windows: <code>sun:23:45-mon:00:15</code> or <code>sat:01:00-sat:03:00</code>. </p> <p>If you do not provide a value, a random system-generated value will be assigned.</p>"
+        }
+      }
+    },
+    "UpdateEnvironmentResponse":{
+      "type":"structure",
+      "required":["environmentId"],
+      "members":{
+        "environmentId":{
+          "shape":"Identifier",
+          "documentation":"<p>The unique identifier of the runtime environment that was updated.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The list of fields that failed service validation.</p>"
+        },
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason why it failed service validation.</p>"
+        }
+      },
+      "documentation":"<p>One or more parameters provided in the request is not valid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "message",
+        "name"
+      ],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The message of the exception field.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the exception field.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a validation exception field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "featureNotAvailable",
+        "unsupportedEngineVersion",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "Version":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "VsamAttributes":{
+      "type":"structure",
+      "required":["format"],
+      "members":{
+        "alternateKeys":{
+          "shape":"AlternateKeyList",
+          "documentation":"<p>The alternate key definitions, if any. A legacy dataset might not have any alternate key defined, but if those alternate keys definitions exist, provide them as some applications will make use of them.</p>"
+        },
+        "compressed":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether indexes for this dataset are stored as compressed values. If you have a large data set (typically &gt; 100 Mb), consider setting this flag to True.</p>"
+        },
+        "encoding":{
+          "shape":"String",
+          "documentation":"<p>The character set used by the data set. Can be ASCII, EBCDIC, or unknown.</p>"
+        },
+        "format":{
+          "shape":"String",
+          "documentation":"<p>The record format of the data set.</p>"
+        },
+        "primaryKey":{
+          "shape":"PrimaryKey",
+          "documentation":"<p>The primary key of the data set.</p>"
+        }
+      },
+      "documentation":"<p>The attributes of a VSAM type data set.</p>"
+    },
+    "VsamDetailAttributes":{
+      "type":"structure",
+      "members":{
+        "alternateKeys":{
+          "shape":"AlternateKeyList",
+          "documentation":"<p>The alternate key definitions, if any. A legacy dataset might not have any alternate key defined, but if those alternate keys definitions exist, provide them as some applications will make use of them.</p>"
+        },
+        "cacheAtStartup":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to True, enforces loading the data set into cache before it’s used by the application.</p>",
+          "box":true
+        },
+        "compressed":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether indexes for this dataset are stored as compressed values. If you have a large data set (typically &gt; 100 Mb), consider setting this flag to True.</p>",
+          "box":true
+        },
+        "encoding":{
+          "shape":"String20",
+          "documentation":"<p>The character set used by the data set. Can be ASCII, EBCDIC, or unknown.</p>"
+        },
+        "primaryKey":{
+          "shape":"PrimaryKey",
+          "documentation":"<p>The primary key of the data set.</p>"
+        },
+        "recordFormat":{
+          "shape":"String20",
+          "documentation":"<p>The record format of the data set.</p>"
+        }
+      },
+      "documentation":"<p>The attributes of a VSAM type data set.</p>"
+    }
+  },
+  "documentation":"<p>Amazon Web Services Mainframe Modernization provides tools and resources to help you plan and implement migration and modernization from mainframes to Amazon Web Services managed runtime environments. It provides tools for analyzing existing mainframe applications, developing or updating mainframe applications using COBOL or PL/I, and implementing an automated pipeline for continuous integration and continuous delivery (CI/CD) of the applications.</p>"
+}

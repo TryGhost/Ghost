@@ -1,0 +1,70 @@
+{
+  "pagination": {
+    "ListChannels": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "channels"
+    },
+    "ListEventRules": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "eventRules"
+    },
+    "ListNotificationConfigurations": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "notificationConfigurations"
+    },
+    "ListNotificationEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "notificationEvents"
+    },
+    "ListNotificationHubs": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "notificationHubs"
+    },
+    "ListManagedNotificationChannelAssociations": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "channelAssociations"
+    },
+    "ListManagedNotificationChildEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "managedNotificationChildEvents"
+    },
+    "ListManagedNotificationConfigurations": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "managedNotificationConfigurations"
+    },
+    "ListManagedNotificationEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "managedNotificationEvents"
+    },
+    "ListMemberAccounts": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "memberAccounts"
+    },
+    "ListOrganizationalUnits": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "organizationalUnits"
+    }
+  }
+}

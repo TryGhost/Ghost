@@ -1,0 +1,255 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Domain": {
+      "operation": "DescribeDomains",
+      "resourceIdentifier": {
+        "DomainName": "DomainStatusList[].DomainName"
+      }
+    }
+  },
+  "operations": {
+    "BuildSuggesters": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DefineAnalysisScheme": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DefineExpression": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DefineIndexField": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DefineSuggester": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteAnalysisScheme": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteDomain": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteExpression": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteIndexField": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DeleteSuggester": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeAnalysisSchemes": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeAvailabilityOptions": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeDomains": {
+      "DomainNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeExpressions": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeIndexFields": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeScalingParameters": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeServiceAccessPolicies": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "DescribeSuggesters": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "IndexDocuments": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateAvailabilityOptions": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateScalingParameters": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    },
+    "UpdateServiceAccessPolicies": {
+      "DomainName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Domain",
+            "resourceIdentifier": "DomainName"
+          }
+        ]
+      }
+    }
+  }
+}

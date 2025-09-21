@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "resources": {
+    "EntityAggregate": {
+      "operation": "DescribeEntityAggregates",
+      "resourceIdentifier": {
+        "eventArn": "entityAggregates[].eventArn"
+      }
+    }
+  },
+  "operations": {
+    "DescribeEntityAggregates": {
+      "eventArns": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EntityAggregate",
+            "resourceIdentifier": "eventArn"
+          }
+        ]
+      }
+    },
+    "DescribeEventDetails": {
+      "eventArns": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EntityAggregate",
+            "resourceIdentifier": "eventArn"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,2646 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-07-26",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"arc-region-switch",
+    "jsonVersion":"1.0",
+    "protocol":"smithy-rpc-v2-cbor",
+    "protocols":[
+      "smithy-rpc-v2-cbor",
+      "json"
+    ],
+    "serviceFullName":"ARC - Region switch",
+    "serviceId":"ARC Region switch",
+    "signatureVersion":"v4",
+    "signingName":"arc-region-switch",
+    "targetPrefix":"ArcRegionSwitch",
+    "uid":"arc-region-switch-2022-07-26"
+  },
+  "operations":{
+    "ApprovePlanExecutionStep":{
+      "name":"ApprovePlanExecutionStep",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ApprovePlanExecutionStepRequest"},
+      "output":{"shape":"ApprovePlanExecutionStepResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Approves a step in a plan execution that requires manual approval. When you create a plan, you can include approval steps that require manual intervention before the execution can proceed. This operation allows you to provide that approval.</p> <p>You must specify the plan ARN, execution ID, step name, and approval status. You can also provide an optional comment explaining the approval decision.</p>"
+    },
+    "CancelPlanExecution":{
+      "name":"CancelPlanExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CancelPlanExecutionRequest"},
+      "output":{"shape":"CancelPlanExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Cancels an in-progress plan execution. This operation stops the execution of the plan and prevents any further steps from being processed.</p> <p>You must specify the plan ARN and execution ID. You can also provide an optional comment explaining why the execution was canceled.</p>"
+    },
+    "CreatePlan":{
+      "name":"CreatePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreatePlanRequest"},
+      "output":{"shape":"CreatePlanResponse"},
+      "documentation":"<p>Creates a new Region switch plan. A plan defines the steps required to shift traffic from one Amazon Web Services Region to another.</p> <p>You must specify a name for the plan, the primary Region, and at least one additional Region. You can also provide a description, execution role, recovery time objective, associated alarms, triggers, and workflows that define the steps to execute during a Region switch.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "DeletePlan":{
+      "name":"DeletePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeletePlanRequest"},
+      "output":{"shape":"DeletePlanResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"IllegalStateException"}
+      ],
+      "documentation":"<p>Deletes a Region switch plan. You must specify the ARN of the plan to delete.</p> <p>You cannot delete a plan that has an active execution in progress.</p>",
+      "idempotent":true,
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "GetPlan":{
+      "name":"GetPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPlanRequest"},
+      "output":{"shape":"GetPlanResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about a Region switch plan. You must specify the ARN of the plan.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "GetPlanEvaluationStatus":{
+      "name":"GetPlanEvaluationStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPlanEvaluationStatusRequest"},
+      "output":{"shape":"GetPlanEvaluationStatusResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the evaluation status of a Region switch plan. The evaluation status provides information about the last time the plan was evaluated and any warnings or issues detected.</p>"
+    },
+    "GetPlanExecution":{
+      "name":"GetPlanExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPlanExecutionRequest"},
+      "output":{"shape":"GetPlanExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about a specific plan execution. You must specify the plan ARN and execution ID.</p>"
+    },
+    "GetPlanInRegion":{
+      "name":"GetPlanInRegion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetPlanInRegionRequest"},
+      "output":{"shape":"GetPlanInRegionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves information about a Region switch plan in a specific Amazon Web Services Region. This operation is useful for getting Region-specific information about a plan.</p>"
+    },
+    "ListPlanExecutionEvents":{
+      "name":"ListPlanExecutionEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlanExecutionEventsRequest"},
+      "output":{"shape":"ListPlanExecutionEventsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the events that occurred during a plan execution. These events provide a detailed timeline of the execution process.</p>"
+    },
+    "ListPlanExecutions":{
+      "name":"ListPlanExecutions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlanExecutionsRequest"},
+      "output":{"shape":"ListPlanExecutionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the executions of a Region switch plan. This operation returns information about both current and historical executions.</p>"
+    },
+    "ListPlans":{
+      "name":"ListPlans",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlansRequest"},
+      "output":{"shape":"ListPlansResponse"},
+      "documentation":"<p>Lists all Region switch plans in your Amazon Web Services account.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "ListPlansInRegion":{
+      "name":"ListPlansInRegion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlansInRegionRequest"},
+      "output":{"shape":"ListPlansInRegionResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all Region switch plans in your Amazon Web Services account that are available in the current Amazon Web Services Region.</p>"
+    },
+    "ListRoute53HealthChecks":{
+      "name":"ListRoute53HealthChecks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRoute53HealthChecksRequest"},
+      "output":{"shape":"ListRoute53HealthChecksResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List the Amazon Route 53 health checks.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the tags attached to a Region switch resource.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "StartPlanExecution":{
+      "name":"StartPlanExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartPlanExecutionRequest"},
+      "output":{"shape":"StartPlanExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"IllegalStateException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"IllegalArgumentException"}
+      ],
+      "documentation":"<p>Starts the execution of a Region switch plan. You can execute a plan in either PRACTICE or RECOVERY mode.</p> <p>In PRACTICE mode, the execution simulates the steps without making actual changes to your application's traffic routing. In RECOVERY mode, the execution performs actual changes to shift traffic between Regions.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds or updates tags for a Region switch resource. You can assign metadata to your resources in the form of tags, which are key-value pairs.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes tags from a Region switch resource.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "UpdatePlan":{
+      "name":"UpdatePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePlanRequest"},
+      "output":{"shape":"UpdatePlanResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates an existing Region switch plan. You can modify the plan's description, workflows, execution role, recovery time objective, associated alarms, and triggers.</p>",
+      "staticContextParams":{
+        "UseControlPlaneEndpoint":{"value":true}
+      }
+    },
+    "UpdatePlanExecution":{
+      "name":"UpdatePlanExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePlanExecutionRequest"},
+      "output":{"shape":"UpdatePlanExecutionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"IllegalStateException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an in-progress plan execution. This operation allows you to modify certain aspects of the execution, such as adding a comment or changing the action.</p>"
+    },
+    "UpdatePlanExecutionStep":{
+      "name":"UpdatePlanExecutionStep",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdatePlanExecutionStepRequest"},
+      "output":{"shape":"UpdatePlanExecutionStepResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates a specific step in an in-progress plan execution. This operation allows you to modify the step's comment or action.</p>"
+    }
+  },
+  "shapes":{
+    "AbbreviatedExecution":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId",
+        "startTime",
+        "mode",
+        "executionState",
+        "executionAction",
+        "executionRegion"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version for the plan.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan execution was last updated.</p>"
+        },
+        "comment":{
+          "shape":"String",
+          "documentation":"<p>An optional comment about the plan execution.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan execution was started.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan execution was ended.</p>"
+        },
+        "mode":{
+          "shape":"ExecutionMode",
+          "documentation":"<p>The plan execution mode. Valid values are <code>Practice</code>, for testing without making actual changes, or <code>Recovery</code>, for actual traffic shifting and application recovery.</p>"
+        },
+        "executionState":{
+          "shape":"ExecutionState",
+          "documentation":"<p>The plan execution state. Provides the state of a plan execution, for example, In Progress or Paused by Operator.</p>"
+        },
+        "executionAction":{
+          "shape":"ExecutionAction",
+          "documentation":"<p>The plan execution action. Valid values are <code>Activate</code>, to activate an Amazon Web Services Region, or <code>Deactivate</code>, to deactivate a Region.</p>"
+        },
+        "executionRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region for a plan execution.</p>"
+        },
+        "actualRecoveryTime":{
+          "shape":"Duration",
+          "documentation":"<p>The actual recovery time that Region switch calculates for a plan execution. Actual recovery time includes the time for the plan to run added to the time elapsed until the application health alarms that you've specified are healthy again.</p>"
+        }
+      },
+      "documentation":"<p>A summarized representation of a plan execution. This structure contains key information about an execution without all the detailed step data.</p>"
+    },
+    "AbbreviatedExecutionsList":{
+      "type":"list",
+      "member":{"shape":"AbbreviatedExecution"}
+    },
+    "AbbreviatedPlan":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "owner",
+        "name",
+        "regions",
+        "recoveryApproach"
+      ],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Region switch plan.</p>"
+        },
+        "owner":{
+          "shape":"AccountId",
+          "documentation":"<p>The owner of a Region switch plan.</p>"
+        },
+        "name":{
+          "shape":"PlanName",
+          "documentation":"<p>The name of a Region switch plan.</p>"
+        },
+        "regions":{
+          "shape":"RegionList",
+          "documentation":"<p>The Amazon Web Services Region specified for a Region switch plan.</p>"
+        },
+        "recoveryApproach":{
+          "shape":"RecoveryApproach",
+          "documentation":"<p>The recovery approach for a Region switch plan, which can be active/active (activeActive) or active/passive (activePassive).</p>"
+        },
+        "primaryRegion":{
+          "shape":"Region",
+          "documentation":"<p>The primary Region for a plan.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version for the plan.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan execution was last updated.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of a Region switch plan.</p>"
+        },
+        "executionRole":{
+          "shape":"String",
+          "documentation":"<p>The execution role is a way to categorize a Region switch plan. </p>"
+        },
+        "activePlanExecution":{
+          "shape":"ExecutionId",
+          "documentation":"<p>Specifies if this is the active plan execution at this time.</p>"
+        },
+        "recoveryTimeObjectiveMinutes":{
+          "shape":"AbbreviatedPlanRecoveryTimeObjectiveMinutesInteger",
+          "documentation":"<p>The recovery time objective that you've specified.</p>"
+        }
+      },
+      "documentation":"<p>A summarized representation of a Region switch plan. This structure contains key information about a plan without all the detailed workflow and step data.</p>"
+    },
+    "AbbreviatedPlanRecoveryTimeObjectiveMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10080,
+      "min":1
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p> <p>HTTP Status Code: 403</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "pattern":"\\d{12}"
+    },
+    "AlarmCondition":{
+      "type":"string",
+      "enum":[
+        "red",
+        "green"
+      ]
+    },
+    "AlarmType":{
+      "type":"string",
+      "enum":[
+        "applicationHealth",
+        "trigger"
+      ]
+    },
+    "Approval":{
+      "type":"string",
+      "enum":[
+        "approve",
+        "decline"
+      ]
+    },
+    "ApprovePlanExecutionStepRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId",
+        "stepName",
+        "approval"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "stepName":{
+          "shape":"StepName",
+          "documentation":"<p>The name of a step in a plan execution.</p>"
+        },
+        "approval":{
+          "shape":"Approval",
+          "documentation":"<p>The status of approval for a plan execution step. </p>"
+        },
+        "comment":{
+          "shape":"ExecutionComment",
+          "documentation":"<p>A comment that you can enter about a plan execution.</p>"
+        }
+      }
+    },
+    "ApprovePlanExecutionStepResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "ArcRoutingControlConfiguration":{
+      "type":"structure",
+      "required":["regionAndRoutingControls"],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"ArcRoutingControlConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "regionAndRoutingControls":{
+          "shape":"RegionAndRoutingControls",
+          "documentation":"<p>The Region and ARC routing controls for the configuration.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for ARC routing controls used in a Region switch plan. Routing controls are simple on/off switches that you can use to shift traffic away from an impaired Region.</p>"
+    },
+    "ArcRoutingControlConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ArcRoutingControlState":{
+      "type":"structure",
+      "required":[
+        "routingControlArn",
+        "state"
+      ],
+      "members":{
+        "routingControlArn":{
+          "shape":"RoutingControlArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a routing control.</p>"
+        },
+        "state":{
+          "shape":"RoutingControlStateChange",
+          "documentation":"<p>The state of an ARC routing control, On or Off.</p>"
+        }
+      },
+      "documentation":"<p>Represents the state of an ARC routing control.</p>"
+    },
+    "ArcRoutingControlStates":{
+      "type":"list",
+      "member":{"shape":"ArcRoutingControlState"}
+    },
+    "Asg":{
+      "type":"structure",
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "arn":{
+          "shape":"AsgArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the EC2 Auto Scaling group.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for an Amazon EC2 Auto Scaling group used in a Region switch plan.</p>"
+    },
+    "AsgArn":{
+      "type":"string",
+      "pattern":"arn:aws:autoscaling:[a-z0-9-]+:\\d{12}:autoScalingGroup:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:autoScalingGroupName/[\\S\\s]{1,255}"
+    },
+    "AsgList":{
+      "type":"list",
+      "member":{"shape":"Asg"},
+      "max":2,
+      "min":2
+    },
+    "AssociatedAlarm":{
+      "type":"structure",
+      "required":[
+        "resourceIdentifier",
+        "alarmType"
+      ],
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "resourceIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The resource identifier for alarms that you associate with a plan.</p>"
+        },
+        "alarmType":{
+          "shape":"AlarmType",
+          "documentation":"<p>The alarm type for an associated alarm. An associated CloudWatch alarm can be an application health alarm or a trigger alarm.</p>"
+        }
+      },
+      "documentation":"<p>An Amazon CloudWatch alarm associated with a Region switch plan. These alarms can be used to trigger automatic execution of the plan.</p>"
+    },
+    "AssociatedAlarmMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"AssociatedAlarm"}
+    },
+    "AuroraClusterArn":{"type":"string"},
+    "AuroraClusterArns":{
+      "type":"list",
+      "member":{"shape":"AuroraClusterArn"}
+    },
+    "CancelPlanExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "comment":{
+          "shape":"ExecutionComment",
+          "documentation":"<p>A comment that you can enter about canceling a plan execution step.</p>"
+        }
+      }
+    },
+    "CancelPlanExecutionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "CreatePlanRequest":{
+      "type":"structure",
+      "required":[
+        "workflows",
+        "executionRole",
+        "name",
+        "regions",
+        "recoveryApproach"
+      ],
+      "members":{
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of a Region switch plan.</p>"
+        },
+        "workflows":{
+          "shape":"WorkflowList",
+          "documentation":"<p>An array of workflows included in a Region switch plan.</p>"
+        },
+        "executionRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>An execution role is a way to categorize a Region switch plan.</p>"
+        },
+        "recoveryTimeObjectiveMinutes":{
+          "shape":"CreatePlanRequestRecoveryTimeObjectiveMinutesInteger",
+          "documentation":"<p>Optionally, you can specify an recovery time objective for a Region switch plan, in minutes.</p>"
+        },
+        "associatedAlarms":{
+          "shape":"AssociatedAlarmMap",
+          "documentation":"<p>The alarms associated with a Region switch plan.</p>"
+        },
+        "triggers":{
+          "shape":"TriggerList",
+          "documentation":"<p>The triggers associated with a Region switch plan.</p>"
+        },
+        "name":{
+          "shape":"PlanName",
+          "documentation":"<p>The name of a Region switch plan.</p>"
+        },
+        "regions":{
+          "shape":"RegionList",
+          "documentation":"<p>An array that specifies the Amazon Web Services Regions for a Region switch plan. Specify two Regions.</p>"
+        },
+        "recoveryApproach":{
+          "shape":"RecoveryApproach",
+          "documentation":"<p>The recovery approach for a Region switch plan, which can be active/active (activeActive) or active/passive (activePassive).</p>"
+        },
+        "primaryRegion":{
+          "shape":"Region",
+          "documentation":"<p>The primary Amazon Web Services Region for the application. This is the Region where the application normally runs before any Region switch occurs.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags to apply to the Region switch plan.</p>"
+        }
+      }
+    },
+    "CreatePlanRequestRecoveryTimeObjectiveMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10080,
+      "min":1
+    },
+    "CreatePlanResponse":{
+      "type":"structure",
+      "members":{
+        "plan":{
+          "shape":"Plan",
+          "documentation":"<p>The details of the created Region switch plan.</p>"
+        }
+      }
+    },
+    "CustomActionLambdaConfiguration":{
+      "type":"structure",
+      "required":[
+        "lambdas",
+        "retryIntervalMinutes",
+        "regionToRun"
+      ],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"CustomActionLambdaConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "lambdas":{
+          "shape":"LambdaList",
+          "documentation":"<p>The Amazon Web Services Lambda functions for the execution block.</p>"
+        },
+        "retryIntervalMinutes":{
+          "shape":"Float",
+          "documentation":"<p>The retry interval specified.</p>"
+        },
+        "regionToRun":{
+          "shape":"RegionToRunIn",
+          "documentation":"<p>The Amazon Web Services Region for the function to run in.</p>"
+        },
+        "ungraceful":{
+          "shape":"LambdaUngraceful",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for Amazon Web Services Lambda functions that perform custom actions during a Region switch.</p>"
+    },
+    "CustomActionLambdaConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "DeletePlanRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        }
+      }
+    },
+    "DeletePlanResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Duration":{
+      "type":"string",
+      "pattern":"P(?!$)(\\d+Y)?(\\d+M)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+S)?)?"
+    },
+    "Ec2AsgCapacityIncreaseConfiguration":{
+      "type":"structure",
+      "required":["asgs"],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"Ec2AsgCapacityIncreaseConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "asgs":{
+          "shape":"AsgList",
+          "documentation":"<p>The EC2 Auto Scaling groups for the configuration.</p>"
+        },
+        "ungraceful":{
+          "shape":"Ec2Ungraceful",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        },
+        "targetPercent":{
+          "shape":"Integer",
+          "documentation":"<p>The target percentage that you specify for EC2 Auto Scaling groups.</p>"
+        },
+        "capacityMonitoringApproach":{
+          "shape":"Ec2AsgCapacityMonitoringApproach",
+          "documentation":"<p>The monitoring approach that you specify EC2 Auto Scaling groups for the configuration.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for increasing the capacity of Amazon EC2 Auto Scaling groups during a Region switch.</p>"
+    },
+    "Ec2AsgCapacityIncreaseConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "Ec2AsgCapacityMonitoringApproach":{
+      "type":"string",
+      "enum":[
+        "sampledMaxInLast24Hours",
+        "autoscalingMaxInLast24Hours"
+      ]
+    },
+    "Ec2Ungraceful":{
+      "type":"structure",
+      "required":["minimumSuccessPercentage"],
+      "members":{
+        "minimumSuccessPercentage":{
+          "shape":"Ec2UngracefulMinimumSuccessPercentageInteger",
+          "documentation":"<p>The minimum success percentage that you specify for EC2 Auto Scaling groups.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for handling failures when performing operations on EC2 resources.</p>"
+    },
+    "Ec2UngracefulMinimumSuccessPercentageInteger":{
+      "type":"integer",
+      "box":true,
+      "max":99,
+      "min":0
+    },
+    "EcsCapacityIncreaseConfiguration":{
+      "type":"structure",
+      "required":["services"],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"EcsCapacityIncreaseConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "services":{
+          "shape":"ServiceList",
+          "documentation":"<p>The services specified for the configuration.</p>"
+        },
+        "ungraceful":{
+          "shape":"EcsUngraceful",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        },
+        "targetPercent":{
+          "shape":"Integer",
+          "documentation":"<p>The target percentage specified for the configuration.</p>"
+        },
+        "capacityMonitoringApproach":{
+          "shape":"EcsCapacityMonitoringApproach",
+          "documentation":"<p>The monitoring approach specified for the configuration, for example, <code>Most_Recent</code>.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for an Amazon Web Services ECS capacity increase.</p>"
+    },
+    "EcsCapacityIncreaseConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "EcsCapacityMonitoringApproach":{
+      "type":"string",
+      "enum":[
+        "sampledMaxInLast24Hours",
+        "containerInsightsMaxInLast24Hours"
+      ]
+    },
+    "EcsClusterArn":{
+      "type":"string",
+      "pattern":"arn:aws:ecs:[a-z0-9-]+:\\d{12}:cluster/[a-zA-Z0-9_-]{1,255}"
+    },
+    "EcsServiceArn":{
+      "type":"string",
+      "pattern":"arn:aws:ecs:[a-z0-9-]+:\\d{12}:service/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]{1,255}"
+    },
+    "EcsUngraceful":{
+      "type":"structure",
+      "required":["minimumSuccessPercentage"],
+      "members":{
+        "minimumSuccessPercentage":{
+          "shape":"EcsUngracefulMinimumSuccessPercentageInteger",
+          "documentation":"<p>The minimum success percentage specified for the configuration.</p>"
+        }
+      },
+      "documentation":"<p>The settings for ungraceful execution.</p>"
+    },
+    "EcsUngracefulMinimumSuccessPercentageInteger":{
+      "type":"integer",
+      "box":true,
+      "max":99,
+      "min":0
+    },
+    "EksCapacityMonitoringApproach":{
+      "type":"string",
+      "enum":["sampledMaxInLast24Hours"]
+    },
+    "EksCluster":{
+      "type":"structure",
+      "required":["clusterArn"],
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "clusterArn":{
+          "shape":"EksClusterArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Amazon Web Services EKS cluster.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Web Services EKS cluster execution block configuration.</p>"
+    },
+    "EksClusterArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-zA-Z-]*:eks:[a-z0-9-]+:\\d{12}:cluster/[a-zA-Z0-9][a-zA-Z0-9-_]{0,99}"
+    },
+    "EksClusters":{
+      "type":"list",
+      "member":{"shape":"EksCluster"},
+      "min":2
+    },
+    "EksResourceScalingConfiguration":{
+      "type":"structure",
+      "required":["kubernetesResourceType"],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"EksResourceScalingConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "kubernetesResourceType":{
+          "shape":"KubernetesResourceType",
+          "documentation":"<p>The Kubernetes resource type for the configuration.</p>"
+        },
+        "scalingResources":{
+          "shape":"KubernetesScalingApps",
+          "documentation":"<p>The scaling resources for the configuration.</p>"
+        },
+        "eksClusters":{
+          "shape":"EksClusters",
+          "documentation":"<p>The clusters for the configuration.</p>"
+        },
+        "ungraceful":{
+          "shape":"EksResourceScalingUngraceful",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        },
+        "targetPercent":{
+          "shape":"EksResourceScalingConfigurationTargetPercentInteger",
+          "documentation":"<p>The target percentage for the configuration.</p>"
+        },
+        "capacityMonitoringApproach":{
+          "shape":"EksCapacityMonitoringApproach",
+          "documentation":"<p>The monitoring approach for the configuration, that is, whether it was sampled in the last 24 hours or autoscaled in the last 24 hours.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Web Services EKS resource scaling configuration.</p>"
+    },
+    "EksResourceScalingConfigurationTargetPercentInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "EksResourceScalingConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "EksResourceScalingUngraceful":{
+      "type":"structure",
+      "required":["minimumSuccessPercentage"],
+      "members":{
+        "minimumSuccessPercentage":{
+          "shape":"EksResourceScalingUngracefulMinimumSuccessPercentageInteger",
+          "documentation":"<p>The minimum success percentage for the configuration.</p>"
+        }
+      },
+      "documentation":"<p>The ungraceful settings for Amazon Web Services EKS resource scaling.</p>"
+    },
+    "EksResourceScalingUngracefulMinimumSuccessPercentageInteger":{
+      "type":"integer",
+      "box":true,
+      "max":99,
+      "min":0
+    },
+    "EvaluationStatus":{
+      "type":"string",
+      "enum":[
+        "passed",
+        "actionRequired",
+        "pendingEvaluation",
+        "unknown"
+      ]
+    },
+    "ExecutionAction":{
+      "type":"string",
+      "enum":[
+        "activate",
+        "deactivate"
+      ]
+    },
+    "ExecutionApprovalConfiguration":{
+      "type":"structure",
+      "required":["approvalRole"],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"ExecutionApprovalConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "approvalRole":{
+          "shape":"RoleArn",
+          "documentation":"<p>The IAM approval role for the configuration.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for approval steps in a Region switch plan execution. Approval steps require manual intervention before the execution can proceed.</p>"
+    },
+    "ExecutionApprovalConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "ExecutionBlockConfiguration":{
+      "type":"structure",
+      "members":{
+        "customActionLambdaConfig":{
+          "shape":"CustomActionLambdaConfiguration",
+          "documentation":"<p>An Amazon Web Services Lambda execution block.</p>"
+        },
+        "ec2AsgCapacityIncreaseConfig":{
+          "shape":"Ec2AsgCapacityIncreaseConfiguration",
+          "documentation":"<p>An EC2 Auto Scaling group execution block.</p>"
+        },
+        "executionApprovalConfig":{
+          "shape":"ExecutionApprovalConfiguration",
+          "documentation":"<p>A manual approval execution block.</p>"
+        },
+        "arcRoutingControlConfig":{
+          "shape":"ArcRoutingControlConfiguration",
+          "documentation":"<p>An ARC routing control execution block.</p>"
+        },
+        "globalAuroraConfig":{
+          "shape":"GlobalAuroraConfiguration",
+          "documentation":"<p>An Aurora Global Database execution block.</p>"
+        },
+        "parallelConfig":{
+          "shape":"ParallelExecutionBlockConfiguration",
+          "documentation":"<p>A parallel configuration execution block.</p>"
+        },
+        "regionSwitchPlanConfig":{
+          "shape":"RegionSwitchPlanConfiguration",
+          "documentation":"<p>A Region switch plan execution block.</p>"
+        },
+        "ecsCapacityIncreaseConfig":{
+          "shape":"EcsCapacityIncreaseConfiguration",
+          "documentation":"<p>The capacity increase specified for the configuration.</p>"
+        },
+        "eksResourceScalingConfig":{
+          "shape":"EksResourceScalingConfiguration",
+          "documentation":"<p>An Amazon Web Services EKS resource scaling execution block.</p>"
+        },
+        "route53HealthCheckConfig":{
+          "shape":"Route53HealthCheckConfiguration",
+          "documentation":"<p>The Amazon Route 53 health check configuration.</p>"
+        }
+      },
+      "documentation":"<p>Execution block configurations for a workflow in a Region switch plan. An execution block represents a specific type of action to perform during a Region switch.</p>",
+      "union":true
+    },
+    "ExecutionBlockType":{
+      "type":"string",
+      "enum":[
+        "CustomActionLambda",
+        "ManualApproval",
+        "AuroraGlobalDatabase",
+        "EC2AutoScaling",
+        "ARCRoutingControl",
+        "ARCRegionSwitchPlan",
+        "Parallel",
+        "ECSServiceScaling",
+        "EKSResourceScaling",
+        "Route53HealthCheck"
+      ]
+    },
+    "ExecutionComment":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "ExecutionEvent":{
+      "type":"structure",
+      "required":["eventId"],
+      "members":{
+        "timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp for an execution event.</p>"
+        },
+        "type":{
+          "shape":"ExecutionEventType",
+          "documentation":"<p>The type of an execution event.</p>"
+        },
+        "stepName":{
+          "shape":"StepName",
+          "documentation":"<p>The step name for an execution event.</p>"
+        },
+        "executionBlockType":{
+          "shape":"ExecutionBlockType",
+          "documentation":"<p>The execution block type for an execution event.</p>"
+        },
+        "resources":{
+          "shape":"Resources",
+          "documentation":"<p>The resources for an execution event.</p>"
+        },
+        "error":{
+          "shape":"String",
+          "documentation":"<p>Errors for an execution event.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description for an execution event.</p>"
+        },
+        "eventId":{
+          "shape":"String",
+          "documentation":"<p>The event ID for an execution event.</p>"
+        },
+        "previousEventId":{
+          "shape":"String",
+          "documentation":"<p>The event ID of the previous execution event.</p>"
+        }
+      },
+      "documentation":"<p>Represents an event that occurred during a plan execution. These events provide a detailed timeline of the execution process.</p>"
+    },
+    "ExecutionEventList":{
+      "type":"list",
+      "member":{"shape":"ExecutionEvent"}
+    },
+    "ExecutionEventType":{
+      "type":"string",
+      "enum":[
+        "unknown",
+        "executionPending",
+        "executionStarted",
+        "executionSucceeded",
+        "executionFailed",
+        "executionPausing",
+        "executionPaused",
+        "executionCanceling",
+        "executionCanceled",
+        "executionPendingApproval",
+        "executionBehaviorChangedToUngraceful",
+        "executionBehaviorChangedToGraceful",
+        "executionPendingChildPlanManualApproval",
+        "executionSuccessMonitoringApplicationHealth",
+        "stepStarted",
+        "stepUpdate",
+        "stepSucceeded",
+        "stepFailed",
+        "stepSkipped",
+        "stepPausedByError",
+        "stepPausedByOperator",
+        "stepCanceled",
+        "stepPendingApproval",
+        "stepExecutionBehaviorChangedToUngraceful",
+        "stepPendingApplicationHealthMonitor"
+      ]
+    },
+    "ExecutionId":{"type":"string"},
+    "ExecutionMode":{
+      "type":"string",
+      "enum":[
+        "graceful",
+        "ungraceful"
+      ]
+    },
+    "ExecutionState":{
+      "type":"string",
+      "enum":[
+        "inProgress",
+        "pausedByFailedStep",
+        "pausedByOperator",
+        "completed",
+        "completedWithExceptions",
+        "canceled",
+        "planExecutionTimedOut",
+        "pendingManualApproval",
+        "failed",
+        "pending",
+        "completedMonitoringApplicationHealth"
+      ]
+    },
+    "Float":{
+      "type":"float",
+      "box":true
+    },
+    "GetPlanEvaluationStatusRequest":{
+      "type":"structure",
+      "required":["planArn"],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Region switch plan to retrieve evaluation status for.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "GetPlanEvaluationStatusResponse":{
+      "type":"structure",
+      "required":["planArn"],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "lastEvaluationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time of the last time that Region switch ran an evaluation of the plan.</p>"
+        },
+        "lastEvaluatedVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the last evaluation of the plan.</p>"
+        },
+        "region":{
+          "shape":"Region",
+          "documentation":"<p>The Amazon Web Services Region for the plan.</p>"
+        },
+        "evaluationState":{
+          "shape":"EvaluationStatus",
+          "documentation":"<p>The evaluation state for the plan.</p>"
+        },
+        "warnings":{
+          "shape":"PlanWarnings",
+          "documentation":"<p>The current evaluation warnings for the plan. </p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "GetPlanExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan with the execution to retrieve.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "maxResults":{
+          "shape":"GetPlanExecutionStepStatesMaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "GetPlanExecutionResponse":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId",
+        "startTime",
+        "mode",
+        "executionState",
+        "executionAction",
+        "executionRegion"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version for the plan.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan execution was last updated.</p>"
+        },
+        "comment":{
+          "shape":"String",
+          "documentation":"<p>A comment included on the plan execution.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time (UTC) when the plan execution started.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time (UTC) when the plan execution ended.</p>"
+        },
+        "mode":{
+          "shape":"ExecutionMode",
+          "documentation":"<p>The plan execution mode. Valid values are <code>Practice</code>, for testing without making actual changes, or <code>Recovery</code>, for actual traffic shifting and application recovery.</p>"
+        },
+        "executionState":{
+          "shape":"ExecutionState",
+          "documentation":"<p>The plan execution state. Provides the state of a plan execution, for example, In Progress or Paused by Operator.</p>"
+        },
+        "executionAction":{
+          "shape":"ExecutionAction",
+          "documentation":"<p>The plan execution action. Valid values are <code>Activate</code>, to activate an Amazon Web Services Region, or <code>Deactivate</code>, to deactivate a Region.</p>"
+        },
+        "executionRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region for a plan execution.</p>"
+        },
+        "stepStates":{
+          "shape":"StepStates",
+          "documentation":"<p>The states of the steps in the plan execution.</p>"
+        },
+        "plan":{
+          "shape":"Plan",
+          "documentation":"<p>The details of the Region switch plan.</p>"
+        },
+        "actualRecoveryTime":{
+          "shape":"Duration",
+          "documentation":"<p>The actual recovery time that Region switch calculates for a plan execution. Actual recovery time includes the time for the plan to run added to the time elapsed until the application health alarms that you've specified are healthy again.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "GetPlanExecutionStepStatesMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "GetPlanInRegionRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan in Region.</p>"
+        }
+      }
+    },
+    "GetPlanInRegionResponse":{
+      "type":"structure",
+      "members":{
+        "plan":{
+          "shape":"Plan",
+          "documentation":"<p>The details of the Region switch plan.</p>"
+        }
+      }
+    },
+    "GetPlanRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        }
+      }
+    },
+    "GetPlanResponse":{
+      "type":"structure",
+      "members":{
+        "plan":{
+          "shape":"Plan",
+          "documentation":"<p>The detailed information about the requested Region switch plan.</p>"
+        }
+      }
+    },
+    "GlobalAuroraConfiguration":{
+      "type":"structure",
+      "required":[
+        "behavior",
+        "globalClusterIdentifier",
+        "databaseClusterArns"
+      ],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"GlobalAuroraConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The timeout value specified for the configuration.</p>"
+        },
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "behavior":{
+          "shape":"GlobalAuroraDefaultBehavior",
+          "documentation":"<p>The behavior for a global database, that is, only allow switchover or also allow failover.</p>"
+        },
+        "ungraceful":{
+          "shape":"GlobalAuroraUngraceful",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        },
+        "globalClusterIdentifier":{
+          "shape":"GlobalClusterIdentifier",
+          "documentation":"<p>The global cluster identifier for a global database.</p>"
+        },
+        "databaseClusterArns":{
+          "shape":"AuroraClusterArns",
+          "documentation":"<p>The database cluster Amazon Resource Names (ARNs) for a global database.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for Amazon Aurora global databases used in a Region switch plan.</p>"
+    },
+    "GlobalAuroraConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "GlobalAuroraDefaultBehavior":{
+      "type":"string",
+      "enum":[
+        "switchoverOnly",
+        "failover"
+      ]
+    },
+    "GlobalAuroraUngraceful":{
+      "type":"structure",
+      "members":{
+        "ungraceful":{
+          "shape":"GlobalAuroraUngracefulBehavior",
+          "documentation":"<p>The settings for ungraceful execution.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for handling failures when performing operations on Aurora global databases.</p>"
+    },
+    "GlobalAuroraUngracefulBehavior":{
+      "type":"string",
+      "enum":["failover"]
+    },
+    "GlobalClusterIdentifier":{"type":"string"},
+    "IamRoleArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-zA-Z0-9-]*:iam::[0-9]{12}:role/.+"
+    },
+    "IllegalArgumentException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has an invalid argument.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "IllegalStateException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The operation failed because the current state of the resource doesn't allow the operation to proceed.</p> <p>HTTP Status Code: 400</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception, or failure.</p> <p>HTTP Status Code: 500</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "KubernetesNamespace":{
+      "type":"string",
+      "pattern":"[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"
+    },
+    "KubernetesResourceType":{
+      "type":"structure",
+      "required":[
+        "apiVersion",
+        "kind"
+      ],
+      "members":{
+        "apiVersion":{
+          "shape":"String",
+          "documentation":"<p>The API version type for the Kubernetes resource.</p>"
+        },
+        "kind":{
+          "shape":"String",
+          "documentation":"<p>The kind for the Kubernetes resource.</p>"
+        }
+      },
+      "documentation":"<p>Defines the type of Kubernetes resource to scale in an Amazon EKS cluster.</p>"
+    },
+    "KubernetesScalingApplication":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"RegionalScalingResource"}
+    },
+    "KubernetesScalingApps":{
+      "type":"list",
+      "member":{"shape":"KubernetesScalingApplication"},
+      "min":1
+    },
+    "KubernetesScalingResource":{
+      "type":"structure",
+      "required":[
+        "namespace",
+        "name"
+      ],
+      "members":{
+        "namespace":{
+          "shape":"KubernetesNamespace",
+          "documentation":"<p>The namespace for the Kubernetes resource.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name for the Kubernetes resource.</p>"
+        },
+        "hpaName":{
+          "shape":"String",
+          "documentation":"<p>The hpaname for the Kubernetes resource.</p>"
+        }
+      },
+      "documentation":"<p>Defines a Kubernetes resource to scale in an Amazon EKS cluster.</p>"
+    },
+    "LambdaArn":{"type":"string"},
+    "LambdaList":{
+      "type":"list",
+      "member":{"shape":"Lambdas"},
+      "max":2,
+      "min":1
+    },
+    "LambdaUngraceful":{
+      "type":"structure",
+      "members":{
+        "behavior":{
+          "shape":"LambdaUngracefulBehavior",
+          "documentation":"<p>The ungraceful behavior for a Lambda function, which must be set to <code>skip</code>.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for handling failures when invoking Lambda functions.</p>"
+    },
+    "LambdaUngracefulBehavior":{
+      "type":"string",
+      "enum":["skip"]
+    },
+    "Lambdas":{
+      "type":"structure",
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "arn":{
+          "shape":"LambdaArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Lambda function.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for Amazon Web Services Lambda functions used in a Region switch plan.</p>"
+    },
+    "ListExecutionEventsMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListExecutionsMaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListPlanExecutionEventsRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "maxResults":{
+          "shape":"ListExecutionEventsMaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        },
+        "name":{
+          "shape":"StepName",
+          "documentation":"<p>The name of the plan execution event.</p>"
+        }
+      }
+    },
+    "ListPlanExecutionEventsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"ExecutionEventList",
+          "documentation":"<p>The items in the plan execution event.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListPlanExecutionsRequest":{
+      "type":"structure",
+      "required":["planArn"],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The ARN for the plan.</p>"
+        },
+        "maxResults":{
+          "shape":"ListExecutionsMaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        },
+        "state":{
+          "shape":"ExecutionState",
+          "documentation":"<p>The state of the plan execution. For example, the plan execution might be In Progress.</p>"
+        }
+      }
+    },
+    "ListPlanExecutionsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"AbbreviatedExecutionsList",
+          "documentation":"<p>The items in the plan execution to return.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListPlansInRegionRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListPlansInRegionResponse":{
+      "type":"structure",
+      "members":{
+        "plans":{
+          "shape":"PlanList",
+          "documentation":"<p>The plans that were requested.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListPlansRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListPlansResponse":{
+      "type":"structure",
+      "members":{
+        "plans":{
+          "shape":"PlanList",
+          "documentation":"<p>The plans that were requested.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListRoute53HealthChecksRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Route 53 health check request.</p>"
+        },
+        "hostedZoneId":{
+          "shape":"Route53HostedZoneId",
+          "documentation":"<p>The hosted zone ID for the health checks.</p>"
+        },
+        "recordName":{
+          "shape":"Route53RecordName",
+          "documentation":"<p>The record name for the health checks.</p>"
+        },
+        "maxResults":{
+          "shape":"ListRoute53HealthChecksRequestMaxResultsInteger",
+          "documentation":"<p>The number of objects that you want to return with this call.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListRoute53HealthChecksRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":10
+    },
+    "ListRoute53HealthChecksResponse":{
+      "type":"structure",
+      "members":{
+        "healthChecks":{
+          "shape":"Route53HealthCheckList",
+          "documentation":"<p>List of the health checks requested.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies that you want to receive the next page of results. Valid only if you received a <code>nextToken</code> response in the previous request. If you did, it indicates that more output is available. Set this parameter to the value provided by the previous call's <code>nextToken</code> response to request the next page of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "resourceTags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags for a resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MinimalWorkflow":{
+      "type":"structure",
+      "members":{
+        "action":{
+          "shape":"ExecutionAction",
+          "documentation":"<p>The action for a minimal workflow, which can be Activate or Deactivate.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name for a minimal workflow</p>"
+        }
+      },
+      "documentation":"<p>A simplified representation of a workflow in a Region switch plan.</p>"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ParallelExecutionBlockConfiguration":{
+      "type":"structure",
+      "required":["steps"],
+      "members":{
+        "steps":{
+          "shape":"Steps",
+          "documentation":"<p>The steps for a parallel execution block.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for steps that should be executed in parallel during a Region switch.</p>"
+    },
+    "Plan":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "workflows",
+        "executionRole",
+        "name",
+        "regions",
+        "recoveryApproach",
+        "owner"
+      ],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description for a plan.</p>"
+        },
+        "workflows":{
+          "shape":"WorkflowList",
+          "documentation":"<p>The workflows for a plan.</p>"
+        },
+        "executionRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The execution role for a plan.</p>"
+        },
+        "recoveryTimeObjectiveMinutes":{
+          "shape":"PlanRecoveryTimeObjectiveMinutesInteger",
+          "documentation":"<p>The recovery time objective for a plan.</p>"
+        },
+        "associatedAlarms":{
+          "shape":"AssociatedAlarmMap",
+          "documentation":"<p>The associated application health alarms for a plan.</p>"
+        },
+        "triggers":{
+          "shape":"TriggerList",
+          "documentation":"<p>The triggers for a plan.</p>"
+        },
+        "name":{
+          "shape":"PlanName",
+          "documentation":"<p>The name for a plan.</p>"
+        },
+        "regions":{
+          "shape":"RegionList",
+          "documentation":"<p>The Amazon Web Services Regions for a plan.</p>"
+        },
+        "recoveryApproach":{
+          "shape":"RecoveryApproach",
+          "documentation":"<p>The recovery approach for a Region switch plan, which can be active/active (activeActive) or active/passive (activePassive).</p>"
+        },
+        "primaryRegion":{
+          "shape":"Region",
+          "documentation":"<p>The primary Region for a plan.</p>"
+        },
+        "owner":{
+          "shape":"AccountId",
+          "documentation":"<p>The owner of a plan.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version for the plan.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the plan was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Represents a Region switch plan. A plan defines the steps required to shift traffic from one Amazon Web Services Region to another.</p>"
+    },
+    "PlanArn":{
+      "type":"string",
+      "pattern":"arn:aws[a-zA-Z-]*:arc-region-switch::[0-9]{12}:plan/([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,30}[a-zA-Z0-9])?):([a-z0-9]{6})"
+    },
+    "PlanList":{
+      "type":"list",
+      "member":{"shape":"AbbreviatedPlan"}
+    },
+    "PlanName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,30}[a-zA-Z0-9])?"
+    },
+    "PlanRecoveryTimeObjectiveMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10080,
+      "min":1
+    },
+    "PlanWarnings":{
+      "type":"list",
+      "member":{"shape":"ResourceWarning"}
+    },
+    "RecoveryApproach":{
+      "type":"string",
+      "enum":[
+        "activeActive",
+        "activePassive"
+      ]
+    },
+    "Region":{
+      "type":"string",
+      "pattern":"[a-z]{2}-[a-z-]+-\\d+"
+    },
+    "RegionAndRoutingControls":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ArcRoutingControlStates"}
+    },
+    "RegionList":{
+      "type":"list",
+      "member":{"shape":"Region"},
+      "max":2,
+      "min":2
+    },
+    "RegionSwitchPlanConfiguration":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan configuration.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for nested Region switch plans. This allows one Region switch plan to trigger another plan as part of its execution.</p>"
+    },
+    "RegionToRunIn":{
+      "type":"string",
+      "enum":[
+        "activatingRegion",
+        "deactivatingRegion"
+      ]
+    },
+    "RegionalScalingResource":{
+      "type":"map",
+      "key":{"shape":"Region"},
+      "value":{"shape":"KubernetesScalingResource"}
+    },
+    "ResourceArn":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The specified resource was not found.</p> <p>HTTP Status Code: 404</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceWarning":{
+      "type":"structure",
+      "required":[
+        "version",
+        "warningStatus",
+        "warningUpdatedTime",
+        "warningMessage"
+      ],
+      "members":{
+        "workflow":{
+          "shape":"MinimalWorkflow",
+          "documentation":"<p>The workflow for the resource warning.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version for the resource warning.</p>"
+        },
+        "stepName":{
+          "shape":"StepName",
+          "documentation":"<p>The name of the step for the resource warning.</p>"
+        },
+        "resourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "warningStatus":{
+          "shape":"ResourceWarningStatus",
+          "documentation":"<p>The status of the resource warning.</p>"
+        },
+        "warningUpdatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the warning was last updated.</p>"
+        },
+        "warningMessage":{
+          "shape":"String",
+          "documentation":"<p>The warning message about what needs to be corrected.</p>"
+        }
+      },
+      "documentation":"<p>Represents a warning about a resource in a Region switch plan.</p>"
+    },
+    "ResourceWarningStatus":{
+      "type":"string",
+      "enum":[
+        "active",
+        "resolved"
+      ]
+    },
+    "Resources":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "RoleArn":{"type":"string"},
+    "Route53HealthCheck":{
+      "type":"structure",
+      "required":[
+        "hostedZoneId",
+        "recordName",
+        "region"
+      ],
+      "members":{
+        "hostedZoneId":{
+          "shape":"Route53HostedZoneId",
+          "documentation":"<p>The Amazon Route 53 health check hosted zone ID.</p>"
+        },
+        "recordName":{
+          "shape":"Route53RecordName",
+          "documentation":"<p>The Amazon Route 53 record name.</p>"
+        },
+        "healthCheckId":{
+          "shape":"Route53HealthCheckId",
+          "documentation":"<p>The Amazon Route 53 health check ID.</p>"
+        },
+        "region":{
+          "shape":"Region",
+          "documentation":"<p>The Amazon Route 53 Region.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Route 53 health check.</p>"
+    },
+    "Route53HealthCheckConfiguration":{
+      "type":"structure",
+      "required":[
+        "hostedZoneId",
+        "recordName"
+      ],
+      "members":{
+        "timeoutMinutes":{
+          "shape":"Route53HealthCheckConfigurationTimeoutMinutesInteger",
+          "documentation":"<p>The Amazon Route 53 health check configuration time out (in minutes).</p>"
+        },
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for the configuration.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the configuration.</p>"
+        },
+        "hostedZoneId":{
+          "shape":"Route53HostedZoneId",
+          "documentation":"<p>The Amazon Route 53 health check configuration hosted zone ID.</p>"
+        },
+        "recordName":{
+          "shape":"Route53RecordName",
+          "documentation":"<p>The Amazon Route 53 health check configuration record name.</p>"
+        },
+        "recordSets":{
+          "shape":"Route53ResourceRecordSetList",
+          "documentation":"<p>The Amazon Route 53 health check configuration record sets.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Route 53 health check configuration.</p>"
+    },
+    "Route53HealthCheckConfigurationTimeoutMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "Route53HealthCheckId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "Route53HealthCheckList":{
+      "type":"list",
+      "member":{"shape":"Route53HealthCheck"}
+    },
+    "Route53HostedZoneId":{
+      "type":"string",
+      "max":32,
+      "min":1
+    },
+    "Route53RecordName":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "Route53ResourceRecordSet":{
+      "type":"structure",
+      "members":{
+        "recordSetIdentifier":{
+          "shape":"Route53ResourceRecordSetIdentifier",
+          "documentation":"<p>The Amazon Route 53 record set identifier.</p>"
+        },
+        "region":{
+          "shape":"Region",
+          "documentation":"<p>The Amazon Route 53 record set Region.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Route 53 record set.</p>"
+    },
+    "Route53ResourceRecordSetIdentifier":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "Route53ResourceRecordSetList":{
+      "type":"list",
+      "member":{"shape":"Route53ResourceRecordSet"}
+    },
+    "RoutingControlArn":{"type":"string"},
+    "RoutingControlStateChange":{
+      "type":"string",
+      "enum":[
+        "On",
+        "Off"
+      ]
+    },
+    "Service":{
+      "type":"structure",
+      "members":{
+        "crossAccountRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The cross account role for a service.</p>"
+        },
+        "externalId":{
+          "shape":"String",
+          "documentation":"<p>The external ID (secret key) for the service.</p>"
+        },
+        "clusterArn":{
+          "shape":"EcsClusterArn",
+          "documentation":"<p>The cluster Amazon Resource Name (ARN) for a service.</p>"
+        },
+        "serviceArn":{
+          "shape":"EcsServiceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for a service.</p>"
+        }
+      },
+      "documentation":"<p>The service for a cross account role.</p>"
+    },
+    "ServiceList":{
+      "type":"list",
+      "member":{"shape":"Service"},
+      "max":2,
+      "min":2
+    },
+    "StartPlanExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "targetRegion",
+        "action"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan to execute.</p>"
+        },
+        "targetRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region to target with this execution. This is the Region that traffic will be shifted to or from, depending on the action.</p>"
+        },
+        "action":{
+          "shape":"ExecutionAction",
+          "documentation":"<p>The action to perform. Valid values are ACTIVATE (to shift traffic to the target Region) or DEACTIVATE (to shift traffic away from the target Region).</p>"
+        },
+        "mode":{
+          "shape":"ExecutionMode",
+          "documentation":"<p>The plan execution mode. Valid values are <code>Practice</code>, for testing without making actual changes, or <code>Recovery</code>, for actual traffic shifting and application recovery.</p>"
+        },
+        "comment":{
+          "shape":"ExecutionComment",
+          "documentation":"<p>An optional comment explaining why the plan execution is being started.</p>"
+        },
+        "latestVersion":{
+          "shape":"String",
+          "documentation":"<p>A boolean value indicating whether to use the latest version of the plan. If set to false, you must specify a specific version.</p>"
+        }
+      }
+    },
+    "StartPlanExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "plan":{
+          "shape":"PlanArn",
+          "documentation":"<p>The details of the Region switch plan.</p>"
+        },
+        "planVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the plan, a unique number generated by Region switch.</p>"
+        },
+        "activateRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region to activate.</p>"
+        },
+        "deactivateRegion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services Region to deactivate.</p>"
+        }
+      }
+    },
+    "Step":{
+      "type":"structure",
+      "required":[
+        "name",
+        "executionBlockConfiguration",
+        "executionBlockType"
+      ],
+      "members":{
+        "name":{
+          "shape":"StepName",
+          "documentation":"<p>The name of a step in a workflow.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of a step in a workflow.</p>"
+        },
+        "executionBlockConfiguration":{
+          "shape":"ExecutionBlockConfiguration",
+          "documentation":"<p>The configuration for an execution block in a workflow.</p>"
+        },
+        "executionBlockType":{
+          "shape":"ExecutionBlockType",
+          "documentation":"<p>The type of an execution block in a workflow.</p>"
+        }
+      },
+      "documentation":"<p>Represents a step in a Region switch plan workflow. Each step performs a specific action during the Region switch process.</p>"
+    },
+    "StepName":{"type":"string"},
+    "StepState":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"StepName",
+          "documentation":"<p>The name of a step in a workflow.</p>"
+        },
+        "status":{
+          "shape":"StepStatus",
+          "documentation":"<p>The status of a step in a workflow. For example, a status might be Completed or Pending Approval.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when a step started execution.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when a step endeded execution.</p>"
+        },
+        "stepMode":{
+          "shape":"ExecutionMode",
+          "documentation":"<p>The mode for a step execution. The mode can be Graceful or Ungraceful.</p>"
+        }
+      },
+      "documentation":"<p>Represents the state of a step in a plan execution.</p>"
+    },
+    "StepStates":{
+      "type":"list",
+      "member":{"shape":"StepState"}
+    },
+    "StepStatus":{
+      "type":"string",
+      "enum":[
+        "notStarted",
+        "running",
+        "failed",
+        "completed",
+        "canceled",
+        "skipped",
+        "pendingApproval"
+      ]
+    },
+    "Steps":{
+      "type":"list",
+      "member":{"shape":"Step"}
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "tags"
+      ],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for a tag that you add to a resource.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Tags that you add to a resource. You can add a maximum of 50 tags in Region switch.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Trigger":{
+      "type":"structure",
+      "required":[
+        "targetRegion",
+        "action",
+        "conditions",
+        "minDelayMinutesBetweenExecutions"
+      ],
+      "members":{
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description for a trigger.</p>"
+        },
+        "targetRegion":{
+          "shape":"Region",
+          "documentation":"<p>The Amazon Web Services Region for a trigger.</p>"
+        },
+        "action":{
+          "shape":"WorkflowTargetAction",
+          "documentation":"<p>The action to perform when the trigger fires. Valid values include ACTIVATE and DEACTIVATE.</p>"
+        },
+        "conditions":{
+          "shape":"TriggerConditionList",
+          "documentation":"<p>The conditions that must be met for the trigger to fire.</p>"
+        },
+        "minDelayMinutesBetweenExecutions":{
+          "shape":"Integer",
+          "documentation":"<p>The minimum time, in minutes, that must elapse between automatic executions of the plan.</p>"
+        }
+      },
+      "documentation":"<p>Defines a condition that can automatically trigger the execution of a Region switch plan.</p>"
+    },
+    "TriggerCondition":{
+      "type":"structure",
+      "required":[
+        "associatedAlarmName",
+        "condition"
+      ],
+      "members":{
+        "associatedAlarmName":{
+          "shape":"String",
+          "documentation":"<p>The name of the CloudWatch alarm associated with the condition.</p>"
+        },
+        "condition":{
+          "shape":"AlarmCondition",
+          "documentation":"<p>The condition that must be met. Valid values include ALARM and OK.</p>"
+        }
+      },
+      "documentation":"<p>Defines a condition that must be met for a trigger to fire.</p>"
+    },
+    "TriggerConditionList":{
+      "type":"list",
+      "member":{"shape":"TriggerCondition"},
+      "max":10,
+      "min":1
+    },
+    "TriggerList":{
+      "type":"list",
+      "member":{"shape":"Trigger"}
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "resourceTagKeys"
+      ],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for a tag you remove a resource from.</p>"
+        },
+        "resourceTagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>Tag keys that you remove from a resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdatePlanExecutionAction":{
+      "type":"string",
+      "enum":[
+        "switchToGraceful",
+        "switchToUngraceful",
+        "pause",
+        "resume"
+      ]
+    },
+    "UpdatePlanExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId",
+        "action"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan with the execution to update.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The execution identifier of a plan execution.</p>"
+        },
+        "action":{
+          "shape":"UpdatePlanExecutionAction",
+          "documentation":"<p>The action specified for a plan execution, for example, Switch to Graceful or Pause.</p>"
+        },
+        "comment":{
+          "shape":"ExecutionComment",
+          "documentation":"<p>An optional comment about the plan execution.</p>"
+        }
+      }
+    },
+    "UpdatePlanExecutionResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdatePlanExecutionStepAction":{
+      "type":"string",
+      "enum":[
+        "switchToUngraceful",
+        "skip"
+      ]
+    },
+    "UpdatePlanExecutionStepRequest":{
+      "type":"structure",
+      "required":[
+        "planArn",
+        "executionId",
+        "comment",
+        "stepName",
+        "actionToTake"
+      ],
+      "members":{
+        "planArn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan containing the execution step to update.</p>"
+        },
+        "executionId":{
+          "shape":"ExecutionId",
+          "documentation":"<p>The unique identifier of the plan execution containing the step to update.</p>"
+        },
+        "comment":{
+          "shape":"ExecutionComment",
+          "documentation":"<p>An optional comment about the plan execution.</p>"
+        },
+        "stepName":{
+          "shape":"String",
+          "documentation":"<p>The name of the execution step to update.</p>"
+        },
+        "actionToTake":{
+          "shape":"UpdatePlanExecutionStepAction",
+          "documentation":"<p>The updated action to take for the step. This can be used to skip or retry a step.</p>"
+        }
+      }
+    },
+    "UpdatePlanExecutionStepResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdatePlanRequest":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "workflows",
+        "executionRole"
+      ],
+      "members":{
+        "arn":{
+          "shape":"PlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the plan.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The updated description for the Region switch plan.</p>"
+        },
+        "workflows":{
+          "shape":"WorkflowList",
+          "documentation":"<p>The updated workflows for the Region switch plan.</p>"
+        },
+        "executionRole":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The updated IAM role ARN that grants Region switch the permissions needed to execute the plan steps.</p>"
+        },
+        "recoveryTimeObjectiveMinutes":{
+          "shape":"UpdatePlanRequestRecoveryTimeObjectiveMinutesInteger",
+          "documentation":"<p>The updated target recovery time objective (RTO) in minutes for the plan.</p>"
+        },
+        "associatedAlarms":{
+          "shape":"AssociatedAlarmMap",
+          "documentation":"<p>The updated CloudWatch alarms associated with the plan.</p>"
+        },
+        "triggers":{
+          "shape":"TriggerList",
+          "documentation":"<p>The updated conditions that can automatically trigger the execution of the plan.</p>"
+        }
+      }
+    },
+    "UpdatePlanRequestRecoveryTimeObjectiveMinutesInteger":{
+      "type":"integer",
+      "box":true,
+      "max":10080,
+      "min":1
+    },
+    "UpdatePlanResponse":{
+      "type":"structure",
+      "members":{
+        "plan":{
+          "shape":"Plan",
+          "documentation":"<p>The details of the updated Region switch plan.</p>"
+        }
+      }
+    },
+    "Workflow":{
+      "type":"structure",
+      "required":["workflowTargetAction"],
+      "members":{
+        "steps":{
+          "shape":"Steps",
+          "documentation":"<p>The steps that make up the workflow.</p>"
+        },
+        "workflowTargetAction":{
+          "shape":"WorkflowTargetAction",
+          "documentation":"<p>The action that the workflow performs. Valid values include ACTIVATE and DEACTIVATE.</p>"
+        },
+        "workflowTargetRegion":{
+          "shape":"Region",
+          "documentation":"<p>The Amazon Web Services Region that the workflow targets.</p>"
+        },
+        "workflowDescription":{
+          "shape":"String",
+          "documentation":"<p>The description of the workflow.</p>"
+        }
+      },
+      "documentation":"<p>Represents a workflow in a Region switch plan. A workflow defines a sequence of steps to execute during a Region switch.</p>"
+    },
+    "WorkflowList":{
+      "type":"list",
+      "member":{"shape":"Workflow"}
+    },
+    "WorkflowTargetAction":{
+      "type":"string",
+      "enum":[
+        "activate",
+        "deactivate"
+      ]
+    }
+  },
+  "documentation":"<p>Amazon Application Recovery Controller (ARC) Region switch helps you to quickly and reliably shift traffic away from an impaired Amazon Web Services Region to a healthy Region. With Region switch, you can create plans that define the steps to shift traffic for your application from one Amazon Web Services Region to another. You can test your plans in practice mode before using them in a real recovery scenario.</p> <p>Region switch provides a structured approach to multi-Region failover, helping you to meet your recovery time objectives (RTOs) and maintain business continuity during regional disruptions.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/r53recovery/latest/dg/region-switch.html\">Region switch in ARC</a> in the <i>Amazon Application Recovery Controller User Guide</i>.</p>"
+}

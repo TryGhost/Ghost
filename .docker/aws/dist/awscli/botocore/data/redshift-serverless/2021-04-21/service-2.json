@@ -1,0 +1,4499 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-04-21",
+    "endpointPrefix":"redshift-serverless",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"Redshift Serverless",
+    "serviceId":"Redshift Serverless",
+    "signatureVersion":"v4",
+    "signingName":"redshift-serverless",
+    "targetPrefix":"RedshiftServerless",
+    "uid":"redshift-serverless-2021-04-21",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "ConvertRecoveryPointToSnapshot":{
+      "name":"ConvertRecoveryPointToSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ConvertRecoveryPointToSnapshotRequest"},
+      "output":{"shape":"ConvertRecoveryPointToSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Converts a recovery point to a snapshot. For more information about recovery points and snapshots, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/serverless-snapshots-recovery-points.html\">Working with snapshots and recovery points</a>.</p>"
+    },
+    "CreateCustomDomainAssociation":{
+      "name":"CreateCustomDomainAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateCustomDomainAssociationRequest"},
+      "output":{"shape":"CreateCustomDomainAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates a custom domain association for Amazon Redshift Serverless.</p>"
+    },
+    "CreateEndpointAccess":{
+      "name":"CreateEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateEndpointAccessRequest"},
+      "output":{"shape":"CreateEndpointAccessResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates an Amazon Redshift Serverless managed VPC endpoint.</p>",
+      "idempotent":true
+    },
+    "CreateNamespace":{
+      "name":"CreateNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateNamespaceRequest"},
+      "output":{"shape":"CreateNamespaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"}
+      ],
+      "documentation":"<p>Creates a namespace in Amazon Redshift Serverless.</p>",
+      "idempotent":true
+    },
+    "CreateReservation":{
+      "name":"CreateReservation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateReservationRequest"},
+      "output":{"shape":"CreateReservationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates an Amazon Redshift Serverless reservation, which gives you the option to commit to a specified number of Redshift Processing Units (RPUs) for a year at a discount from Serverless on-demand (OD) rates.</p>",
+      "idempotent":true
+    },
+    "CreateScheduledAction":{
+      "name":"CreateScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateScheduledActionRequest"},
+      "output":{"shape":"CreateScheduledActionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a scheduled action. A scheduled action contains a schedule and an Amazon Redshift API action. For example, you can create a schedule of when to run the <code>CreateSnapshot</code> API operation.</p>",
+      "idempotent":true
+    },
+    "CreateSnapshot":{
+      "name":"CreateSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSnapshotRequest"},
+      "output":{"shape":"CreateSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a snapshot of all databases in a namespace. For more information about snapshots, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/serverless-snapshots-recovery-points.html\"> Working with snapshots and recovery points</a>.</p>",
+      "idempotent":true
+    },
+    "CreateSnapshotCopyConfiguration":{
+      "name":"CreateSnapshotCopyConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSnapshotCopyConfigurationRequest"},
+      "output":{"shape":"CreateSnapshotCopyConfigurationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a snapshot copy configuration that lets you copy snapshots to another Amazon Web Services Region.</p>",
+      "idempotent":true
+    },
+    "CreateUsageLimit":{
+      "name":"CreateUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateUsageLimitRequest"},
+      "output":{"shape":"CreateUsageLimitResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates a usage limit for a specified Amazon Redshift Serverless usage type. The usage limit is identified by the returned usage limit identifier. </p>",
+      "idempotent":true
+    },
+    "CreateWorkgroup":{
+      "name":"CreateWorkgroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateWorkgroupRequest"},
+      "output":{"shape":"CreateWorkgroupResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InsufficientCapacityException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"Ipv6CidrBlockNotFoundException"}
+      ],
+      "documentation":"<p>Creates an workgroup in Amazon Redshift Serverless.</p> <p>VPC Block Public Access (BPA) enables you to block resources in VPCs and subnets that you own in a Region from reaching or being reached from the internet through internet gateways and egress-only internet gateways. If a workgroup is in an account with VPC BPA turned on, the following capabilities are blocked: </p> <ul> <li> <p>Creating a public access workgroup</p> </li> <li> <p>Modifying a private workgroup to public</p> </li> <li> <p>Adding a subnet with VPC BPA turned on to the workgroup when the workgroup is public</p> </li> </ul> <p>For more information about VPC BPA, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/security-vpc-bpa.html\">Block public access to VPCs and subnets</a> in the <i>Amazon VPC User Guide</i>.</p>",
+      "idempotent":true
+    },
+    "DeleteCustomDomainAssociation":{
+      "name":"DeleteCustomDomainAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteCustomDomainAssociationRequest"},
+      "output":{"shape":"DeleteCustomDomainAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes a custom domain association for Amazon Redshift Serverless.</p>"
+    },
+    "DeleteEndpointAccess":{
+      "name":"DeleteEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteEndpointAccessRequest"},
+      "output":{"shape":"DeleteEndpointAccessResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an Amazon Redshift Serverless managed VPC endpoint.</p>",
+      "idempotent":true
+    },
+    "DeleteNamespace":{
+      "name":"DeleteNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteNamespaceRequest"},
+      "output":{"shape":"DeleteNamespaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a namespace from Amazon Redshift Serverless. Before you delete the namespace, you can create a final snapshot that has all of the data within the namespace.</p>",
+      "idempotent":true
+    },
+    "DeleteResourcePolicy":{
+      "name":"DeleteResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteResourcePolicyRequest"},
+      "output":{"shape":"DeleteResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified resource policy.</p>"
+    },
+    "DeleteScheduledAction":{
+      "name":"DeleteScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteScheduledActionRequest"},
+      "output":{"shape":"DeleteScheduledActionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a scheduled action.</p>",
+      "idempotent":true
+    },
+    "DeleteSnapshot":{
+      "name":"DeleteSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSnapshotRequest"},
+      "output":{"shape":"DeleteSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a snapshot from Amazon Redshift Serverless.</p>",
+      "idempotent":true
+    },
+    "DeleteSnapshotCopyConfiguration":{
+      "name":"DeleteSnapshotCopyConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSnapshotCopyConfigurationRequest"},
+      "output":{"shape":"DeleteSnapshotCopyConfigurationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a snapshot copy configuration</p>",
+      "idempotent":true
+    },
+    "DeleteUsageLimit":{
+      "name":"DeleteUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteUsageLimitRequest"},
+      "output":{"shape":"DeleteUsageLimitResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a usage limit from Amazon Redshift Serverless.</p>",
+      "idempotent":true
+    },
+    "DeleteWorkgroup":{
+      "name":"DeleteWorkgroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteWorkgroupRequest"},
+      "output":{"shape":"DeleteWorkgroupResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a workgroup.</p>",
+      "idempotent":true
+    },
+    "GetCredentials":{
+      "name":"GetCredentials",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetCredentialsRequest"},
+      "output":{"shape":"GetCredentialsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a database user name and temporary password with temporary authorization to log in to Amazon Redshift Serverless.</p> <p>By default, the temporary credentials expire in 900 seconds. You can optionally specify a duration between 900 seconds (15 minutes) and 3600 seconds (60 minutes).</p> <p>The Identity and Access Management (IAM) user or role that runs GetCredentials must have an IAM policy attached that allows access to all necessary actions and resources.</p> <p>If the <code>DbName</code> parameter is specified, the IAM policy must allow access to the resource dbname for the specified database name.</p>"
+    },
+    "GetCustomDomainAssociation":{
+      "name":"GetCustomDomainAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetCustomDomainAssociationRequest"},
+      "output":{"shape":"GetCustomDomainAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Gets information about a specific custom domain association.</p>"
+    },
+    "GetEndpointAccess":{
+      "name":"GetEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetEndpointAccessRequest"},
+      "output":{"shape":"GetEndpointAccessResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information, such as the name, about a VPC endpoint.</p>"
+    },
+    "GetNamespace":{
+      "name":"GetNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetNamespaceRequest"},
+      "output":{"shape":"GetNamespaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a namespace in Amazon Redshift Serverless.</p>"
+    },
+    "GetRecoveryPoint":{
+      "name":"GetRecoveryPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRecoveryPointRequest"},
+      "output":{"shape":"GetRecoveryPointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a recovery point.</p>"
+    },
+    "GetReservation":{
+      "name":"GetReservation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetReservationRequest"},
+      "output":{"shape":"GetReservationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Gets an Amazon Redshift Serverless reservation. A reservation gives you the option to commit to a specified number of Redshift Processing Units (RPUs) for a year at a discount from Serverless on-demand (OD) rates.</p>"
+    },
+    "GetReservationOffering":{
+      "name":"GetReservationOffering",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetReservationOfferingRequest"},
+      "output":{"shape":"GetReservationOfferingResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the reservation offering. The offering determines the payment schedule for the reservation.</p>"
+    },
+    "GetResourcePolicy":{
+      "name":"GetResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetResourcePolicyRequest"},
+      "output":{"shape":"GetResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a resource policy.</p>"
+    },
+    "GetScheduledAction":{
+      "name":"GetScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetScheduledActionRequest"},
+      "output":{"shape":"GetScheduledActionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a scheduled action.</p>"
+    },
+    "GetSnapshot":{
+      "name":"GetSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetSnapshotRequest"},
+      "output":{"shape":"GetSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a specific snapshot.</p>"
+    },
+    "GetTableRestoreStatus":{
+      "name":"GetTableRestoreStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTableRestoreStatusRequest"},
+      "output":{"shape":"GetTableRestoreStatusResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a <code>TableRestoreStatus</code> object.</p>"
+    },
+    "GetTrack":{
+      "name":"GetTrack",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTrackRequest"},
+      "output":{"shape":"GetTrackResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Get the Redshift Serverless version for a specified track.</p>"
+    },
+    "GetUsageLimit":{
+      "name":"GetUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetUsageLimitRequest"},
+      "output":{"shape":"GetUsageLimitResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a usage limit.</p>"
+    },
+    "GetWorkgroup":{
+      "name":"GetWorkgroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetWorkgroupRequest"},
+      "output":{"shape":"GetWorkgroupResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a specific workgroup.</p>"
+    },
+    "ListCustomDomainAssociations":{
+      "name":"ListCustomDomainAssociations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListCustomDomainAssociationsRequest"},
+      "output":{"shape":"ListCustomDomainAssociationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Lists custom domain associations for Amazon Redshift Serverless.</p>"
+    },
+    "ListEndpointAccess":{
+      "name":"ListEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListEndpointAccessRequest"},
+      "output":{"shape":"ListEndpointAccessResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns an array of <code>EndpointAccess</code> objects and relevant information.</p>"
+    },
+    "ListManagedWorkgroups":{
+      "name":"ListManagedWorkgroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListManagedWorkgroupsRequest"},
+      "output":{"shape":"ListManagedWorkgroupsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about a list of specified managed workgroups in your account.</p>"
+    },
+    "ListNamespaces":{
+      "name":"ListNamespaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListNamespacesRequest"},
+      "output":{"shape":"ListNamespacesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a list of specified namespaces.</p>"
+    },
+    "ListRecoveryPoints":{
+      "name":"ListRecoveryPoints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRecoveryPointsRequest"},
+      "output":{"shape":"ListRecoveryPointsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns an array of recovery points.</p>"
+    },
+    "ListReservationOfferings":{
+      "name":"ListReservationOfferings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReservationOfferingsRequest"},
+      "output":{"shape":"ListReservationOfferingsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the current reservation offerings in your account.</p>"
+    },
+    "ListReservations":{
+      "name":"ListReservations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListReservationsRequest"},
+      "output":{"shape":"ListReservationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of Reservation objects.</p>"
+    },
+    "ListScheduledActions":{
+      "name":"ListScheduledActions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListScheduledActionsRequest"},
+      "output":{"shape":"ListScheduledActionsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of scheduled actions. You can use the flags to filter the list of returned scheduled actions.</p>"
+    },
+    "ListSnapshotCopyConfigurations":{
+      "name":"ListSnapshotCopyConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSnapshotCopyConfigurationsRequest"},
+      "output":{"shape":"ListSnapshotCopyConfigurationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of snapshot copy configurations.</p>"
+    },
+    "ListSnapshots":{
+      "name":"ListSnapshots",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSnapshotsRequest"},
+      "output":{"shape":"ListSnapshotsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of snapshots.</p>"
+    },
+    "ListTableRestoreStatus":{
+      "name":"ListTableRestoreStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTableRestoreStatusRequest"},
+      "output":{"shape":"ListTableRestoreStatusResponse"},
+      "errors":[
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about an array of <code>TableRestoreStatus</code> objects.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the tags assigned to a resource.</p>"
+    },
+    "ListTracks":{
+      "name":"ListTracks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTracksRequest"},
+      "output":{"shape":"ListTracksResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List the Amazon Redshift Serverless versions.</p>"
+    },
+    "ListUsageLimits":{
+      "name":"ListUsageLimits",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListUsageLimitsRequest"},
+      "output":{"shape":"ListUsageLimitsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidPaginationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all usage limits within Amazon Redshift Serverless.</p>"
+    },
+    "ListWorkgroups":{
+      "name":"ListWorkgroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListWorkgroupsRequest"},
+      "output":{"shape":"ListWorkgroupsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns information about a list of specified workgroups.</p>"
+    },
+    "PutResourcePolicy":{
+      "name":"PutResourcePolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutResourcePolicyRequest"},
+      "output":{"shape":"PutResourcePolicyResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates or updates a resource policy. Currently, you can use policies to share snapshots across Amazon Web Services accounts.</p>"
+    },
+    "RestoreFromRecoveryPoint":{
+      "name":"RestoreFromRecoveryPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RestoreFromRecoveryPointRequest"},
+      "output":{"shape":"RestoreFromRecoveryPointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Restore the data from a recovery point.</p>"
+    },
+    "RestoreFromSnapshot":{
+      "name":"RestoreFromSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RestoreFromSnapshotRequest"},
+      "output":{"shape":"RestoreFromSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Restores a namespace from a snapshot.</p>",
+      "idempotent":true
+    },
+    "RestoreTableFromRecoveryPoint":{
+      "name":"RestoreTableFromRecoveryPoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RestoreTableFromRecoveryPointRequest"},
+      "output":{"shape":"RestoreTableFromRecoveryPointResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Restores a table from a recovery point to your Amazon Redshift Serverless instance. You can't use this operation to restore tables with interleaved sort keys.</p>"
+    },
+    "RestoreTableFromSnapshot":{
+      "name":"RestoreTableFromSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RestoreTableFromSnapshotRequest"},
+      "output":{"shape":"RestoreTableFromSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Restores a table from a snapshot to your Amazon Redshift Serverless instance. You can't use this operation to restore tables with <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/t_Sorting_data.html#t_Sorting_data-interleaved\">interleaved sort keys</a>.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Assigns one or more tags to a resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes a tag or set of tags from a resource.</p>"
+    },
+    "UpdateCustomDomainAssociation":{
+      "name":"UpdateCustomDomainAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateCustomDomainAssociationRequest"},
+      "output":{"shape":"UpdateCustomDomainAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Updates an Amazon Redshift Serverless certificate associated with a custom domain.</p>"
+    },
+    "UpdateEndpointAccess":{
+      "name":"UpdateEndpointAccess",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateEndpointAccessRequest"},
+      "output":{"shape":"UpdateEndpointAccessResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an Amazon Redshift Serverless managed endpoint.</p>"
+    },
+    "UpdateNamespace":{
+      "name":"UpdateNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateNamespaceRequest"},
+      "output":{"shape":"UpdateNamespaceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a namespace with the specified settings. Unless required, you can't update multiple parameters in one request. For example, you must specify both <code>adminUsername</code> and <code>adminUserPassword</code> to update either field, but you can't update both <code>kmsKeyId</code> and <code>logExports</code> in a single request.</p>"
+    },
+    "UpdateScheduledAction":{
+      "name":"UpdateScheduledAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateScheduledActionRequest"},
+      "output":{"shape":"UpdateScheduledActionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a scheduled action.</p>",
+      "idempotent":true
+    },
+    "UpdateSnapshot":{
+      "name":"UpdateSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSnapshotRequest"},
+      "output":{"shape":"UpdateSnapshotResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a snapshot.</p>"
+    },
+    "UpdateSnapshotCopyConfiguration":{
+      "name":"UpdateSnapshotCopyConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateSnapshotCopyConfigurationRequest"},
+      "output":{"shape":"UpdateSnapshotCopyConfigurationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates a snapshot copy configuration.</p>"
+    },
+    "UpdateUsageLimit":{
+      "name":"UpdateUsageLimit",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateUsageLimitRequest"},
+      "output":{"shape":"UpdateUsageLimitResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Update a usage limit in Amazon Redshift Serverless. You can't update the usage type or period of a usage limit.</p>"
+    },
+    "UpdateWorkgroup":{
+      "name":"UpdateWorkgroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateWorkgroupRequest"},
+      "output":{"shape":"UpdateWorkgroupResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InsufficientCapacityException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"Ipv6CidrBlockNotFoundException"}
+      ],
+      "documentation":"<p>Updates a workgroup with the specified configuration settings. You can't update multiple parameters in one request. For example, you can update <code>baseCapacity</code> or <code>port</code> in a single request, but you can't update both in the same request.</p> <p>VPC Block Public Access (BPA) enables you to block resources in VPCs and subnets that you own in a Region from reaching or being reached from the internet through internet gateways and egress-only internet gateways. If a workgroup is in an account with VPC BPA turned on, the following capabilities are blocked: </p> <ul> <li> <p>Creating a public access workgroup</p> </li> <li> <p>Modifying a private workgroup to public</p> </li> <li> <p>Adding a subnet with VPC BPA turned on to the workgroup when the workgroup is public</p> </li> </ul> <p>For more information about VPC BPA, see <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/security-vpc-bpa.html\">Block public access to VPCs and subnets</a> in the <i>Amazon VPC User Guide</i>.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"String"},
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AccountIdList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "Association":{
+      "type":"structure",
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainCertificateExpiryTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The expiration time for the certificate.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      },
+      "documentation":"<p>An object that represents the custom domain name association.</p>"
+    },
+    "AssociationList":{
+      "type":"list",
+      "member":{"shape":"Association"}
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "Capacity":{"type":"integer"},
+    "Charge":{"type":"double"},
+    "ConfigParameter":{
+      "type":"structure",
+      "members":{
+        "parameterKey":{
+          "shape":"ParameterKey",
+          "documentation":"<p>The key of the parameter. The options are <code>auto_mv</code>, <code>datestyle</code>, <code>enable_case_sensitive_identifier</code>, <code>enable_user_activity_logging</code>, <code>query_group</code>, <code>search_path</code>, <code>require_ssl</code>, <code>use_fips_ssl</code>, and query monitoring metrics that let you define performance boundaries. For more information about query monitoring rules and available metrics, see <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/cm-c-wlm-query-monitoring-rules.html#cm-c-wlm-query-monitoring-metrics-serverless\">Query monitoring metrics for Amazon Redshift Serverless</a>.</p>"
+        },
+        "parameterValue":{
+          "shape":"ParameterValue",
+          "documentation":"<p>The value of the parameter to set.</p>"
+        }
+      },
+      "documentation":"<p>An array of key-value pairs to set for advanced control over Amazon Redshift Serverless.</p>"
+    },
+    "ConfigParameterList":{
+      "type":"list",
+      "member":{"shape":"ConfigParameter"}
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The submitted action has conflicts.</p>",
+      "exception":true
+    },
+    "ConvertRecoveryPointToSnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "recoveryPointId",
+        "snapshotName"
+      ],
+      "members":{
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the recovery point.</p>"
+        },
+        "retentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>How long to retain the snapshot.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_Tag.html\">Tag objects</a> to associate with the created snapshot.</p>"
+        }
+      }
+    },
+    "ConvertRecoveryPointToSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The snapshot converted from the recovery point.</p>"
+        }
+      }
+    },
+    "CreateCustomDomainAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "customDomainCertificateArn",
+        "customDomainName",
+        "workgroupName"
+      ],
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name to associate with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "CreateCustomDomainAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainCertificateExpiryTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The expiration time for the certificate.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name to associate with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "CreateEndpointAccessRequest":{
+      "type":"structure",
+      "required":[
+        "endpointName",
+        "subnetIds",
+        "workgroupName"
+      ],
+      "members":{
+        "endpointName":{
+          "shape":"String",
+          "documentation":"<p>The name of the VPC endpoint. An endpoint name must contain 1-30 characters. Valid characters are A-Z, a-z, 0-9, and hyphen(-). The first character must be a letter. The name can't contain two consecutive hyphens or end with a hyphen.</p>"
+        },
+        "ownerAccount":{
+          "shape":"OwnerAccount",
+          "documentation":"<p>The owner Amazon Web Services account for the Amazon Redshift Serverless workgroup.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>The unique identifers of subnets from which Amazon Redshift Serverless chooses one to deploy a VPC endpoint.</p>"
+        },
+        "vpcSecurityGroupIds":{
+          "shape":"VpcSecurityGroupIdList",
+          "documentation":"<p>The unique identifiers of the security group that defines the ports, protocols, and sources for inbound traffic that you are authorizing into your endpoint.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the workgroup to associate with the VPC endpoint.</p>"
+        }
+      }
+    },
+    "CreateEndpointAccessResponse":{
+      "type":"structure",
+      "members":{
+        "endpoint":{
+          "shape":"EndpointAccess",
+          "documentation":"<p>The created VPC endpoint.</p>"
+        }
+      }
+    },
+    "CreateNamespaceRequest":{
+      "type":"structure",
+      "required":["namespaceName"],
+      "members":{
+        "adminPasswordSecretKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the Key Management Service (KMS) key used to encrypt and store the namespace's admin credentials secret. You can only use this parameter if <code>manageAdminPassword</code> is true.</p>"
+        },
+        "adminUserPassword":{
+          "shape":"DbPassword",
+          "documentation":"<p>The password of the administrator for the first database created in the namespace.</p> <p>You can't use <code>adminUserPassword</code> if <code>manageAdminPassword</code> is true. </p>"
+        },
+        "adminUsername":{
+          "shape":"DbUser",
+          "documentation":"<p>The username of the administrator for the first database created in the namespace.</p>"
+        },
+        "dbName":{
+          "shape":"String",
+          "documentation":"<p>The name of the first database created in the namespace.</p>"
+        },
+        "defaultIamRoleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role to set as a default in the namespace.</p>"
+        },
+        "iamRoles":{
+          "shape":"IamRoleArnList",
+          "documentation":"<p>A list of IAM roles to associate with the namespace.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Amazon Web Services Key Management Service key used to encrypt your data.</p>"
+        },
+        "logExports":{
+          "shape":"LogExportList",
+          "documentation":"<p>The types of logs the namespace can export. Available export types are <code>userlog</code>, <code>connectionlog</code>, and <code>useractivitylog</code>.</p>"
+        },
+        "manageAdminPassword":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, Amazon Redshift uses Secrets Manager to manage the namespace's admin credentials. You can't use <code>adminUserPassword</code> if <code>manageAdminPassword</code> is true. If <code>manageAdminPassword</code> is false or not set, Amazon Redshift uses <code>adminUserPassword</code> for the admin user account's password. </p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace.</p>"
+        },
+        "redshiftIdcApplicationArn":{
+          "shape":"RedshiftIdcApplicationArn",
+          "documentation":"<p>The ARN for the Redshift application that integrates with IAM Identity Center.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tag instances.</p>"
+        }
+      }
+    },
+    "CreateNamespaceResponse":{
+      "type":"structure",
+      "members":{
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The created namespace object.</p>"
+        }
+      }
+    },
+    "CreateReservationRequest":{
+      "type":"structure",
+      "required":[
+        "capacity",
+        "offeringId"
+      ],
+      "members":{
+        "capacity":{
+          "shape":"Capacity",
+          "documentation":"<p>The number of Redshift Processing Units (RPUs) to reserve.</p>"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. This token must be a valid UUIDv4 value. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\"> Making retries safe with idempotent APIs </a>.</p>",
+          "idempotencyToken":true
+        },
+        "offeringId":{
+          "shape":"CreateReservationRequestOfferingIdString",
+          "documentation":"<p>The ID of the offering associated with the reservation. The offering determines the payment schedule for the reservation.</p>"
+        }
+      }
+    },
+    "CreateReservationRequestOfferingIdString":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "CreateReservationResponse":{
+      "type":"structure",
+      "members":{
+        "reservation":{
+          "shape":"Reservation",
+          "documentation":"<p>The reservation object that the <code>CreateReservation</code> action created.</p>"
+        }
+      }
+    },
+    "CreateScheduledActionRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "roleArn",
+        "schedule",
+        "scheduledActionName",
+        "targetAction"
+      ],
+      "members":{
+        "enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the schedule is enabled. If false, the scheduled action does not trigger. For more information about <code>state</code> of the scheduled action, see <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_ScheduledAction.html\">ScheduledAction</a>.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end time in UTC when the schedule is no longer active. After this time, the scheduled action does not trigger.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace for which to create a scheduled action.</p>"
+        },
+        "roleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the IAM role to assume to run the scheduled action. This IAM role must have permission to run the Amazon Redshift Serverless API operation in the scheduled action. This IAM role must allow the Amazon Redshift scheduler to schedule creating snapshots. (Principal scheduler.redshift.amazonaws.com) to assume permissions on your behalf. For more information about the IAM role to use with the Amazon Redshift scheduler, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-identity-based.html\">Using Identity-Based Policies for Amazon Redshift</a> in the Amazon Redshift Management Guide</p>"
+        },
+        "schedule":{
+          "shape":"Schedule",
+          "documentation":"<p>The schedule for a one-time (at timestamp format) or recurring (cron format) scheduled action. Schedule invocations must be separated by at least one hour. Times are in UTC.</p> <ul> <li> <p>Format of at timestamp is <code>yyyy-mm-ddThh:mm:ss</code>. For example, <code>2016-03-04T17:27:00</code>.</p> </li> <li> <p>Format of cron expression is <code>(Minutes Hours Day-of-month Month Day-of-week Year)</code>. For example, <code>\"(0 10 ? * MON *)\"</code>. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions\">Cron Expressions</a> in the <i>Amazon CloudWatch Events User Guide</i>.</p> </li> </ul>"
+        },
+        "scheduledActionDescription":{
+          "shape":"String",
+          "documentation":"<p>The description of the scheduled action.</p>"
+        },
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>The name of the scheduled action.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time in UTC when the schedule is active. Before this time, the scheduled action does not trigger.</p>"
+        },
+        "targetAction":{"shape":"TargetAction"}
+      }
+    },
+    "CreateScheduledActionResponse":{
+      "type":"structure",
+      "members":{
+        "scheduledAction":{
+          "shape":"ScheduledActionResponse",
+          "documentation":"<p>The returned <code>ScheduledAction</code> object that describes the properties of a scheduled action.</p>"
+        }
+      }
+    },
+    "CreateSnapshotCopyConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "destinationRegion",
+        "namespaceName"
+      ],
+      "members":{
+        "destinationKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The KMS key to use to encrypt your snapshots in the destination Amazon Web Services Region.</p>"
+        },
+        "destinationRegion":{
+          "shape":"String",
+          "documentation":"<p>The destination Amazon Web Services Region that you want to copy snapshots to.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to copy snapshots from.</p>"
+        },
+        "snapshotRetentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The retention period of the snapshots that you copy to the destination Amazon Web Services Region.</p>"
+        }
+      }
+    },
+    "CreateSnapshotCopyConfigurationResponse":{
+      "type":"structure",
+      "required":["snapshotCopyConfiguration"],
+      "members":{
+        "snapshotCopyConfiguration":{
+          "shape":"SnapshotCopyConfiguration",
+          "documentation":"<p>The snapshot copy configuration object that is returned.</p>"
+        }
+      }
+    },
+    "CreateSnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "snapshotName"
+      ],
+      "members":{
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace to create a snapshot for.</p>"
+        },
+        "retentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>How long to retain the created snapshot.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_Tag.html\">Tag objects</a> to associate with the snapshot.</p>"
+        }
+      }
+    },
+    "CreateSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The created snapshot object.</p>"
+        }
+      }
+    },
+    "CreateSnapshotScheduleActionParameters":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "snapshotNamePrefix"
+      ],
+      "members":{
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace for which you want to configure a scheduled action to create a snapshot.</p>"
+        },
+        "retentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The retention period of the snapshot created by the scheduled action.</p>"
+        },
+        "snapshotNamePrefix":{
+          "shape":"SnapshotNamePrefix",
+          "documentation":"<p>A string prefix that is attached to the name of the snapshot created by the scheduled action. The final name of the snapshot is the string prefix appended by the date and time of when the snapshot was created.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_Tag.html\">Tag objects</a> to associate with the snapshot.</p>"
+        }
+      },
+      "documentation":"<p>The parameters that you can use to configure a <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_CreateScheduledAction.html\">scheduled action</a> to create a snapshot. For more information about creating a scheduled action, see <a href=\"https://docs.aws.amazon.com/redshift-serverless/latest/APIReference/API_CreateScheduledAction.html\">CreateScheduledAction</a>.</p>"
+    },
+    "CreateUsageLimitRequest":{
+      "type":"structure",
+      "required":[
+        "amount",
+        "resourceArn",
+        "usageType"
+      ],
+      "members":{
+        "amount":{
+          "shape":"Long",
+          "documentation":"<p>The limit amount. If time-based, this amount is in Redshift Processing Units (RPU) consumed per hour. If data-based, this amount is in terabytes (TB) of data transferred between Regions in cross-account sharing. The value must be a positive number.</p>"
+        },
+        "breachAction":{
+          "shape":"UsageLimitBreachAction",
+          "documentation":"<p>The action that Amazon Redshift Serverless takes when the limit is reached. The default is log.</p>"
+        },
+        "period":{
+          "shape":"UsageLimitPeriod",
+          "documentation":"<p>The time period that the amount applies to. A weekly period begins on Sunday. The default is monthly.</p>"
+        },
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Redshift Serverless resource to create the usage limit for.</p>"
+        },
+        "usageType":{
+          "shape":"UsageLimitUsageType",
+          "documentation":"<p>The type of Amazon Redshift Serverless usage to create a usage limit for.</p>"
+        }
+      }
+    },
+    "CreateUsageLimitResponse":{
+      "type":"structure",
+      "members":{
+        "usageLimit":{
+          "shape":"UsageLimit",
+          "documentation":"<p>The returned usage limit object.</p>"
+        }
+      }
+    },
+    "CreateWorkgroupRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "workgroupName"
+      ],
+      "members":{
+        "baseCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The base data warehouse capacity of the workgroup in Redshift Processing Units (RPUs).</p>"
+        },
+        "configParameters":{
+          "shape":"ConfigParameterList",
+          "documentation":"<p>An array of parameters to set for advanced control over a database. The options are <code>auto_mv</code>, <code>datestyle</code>, <code>enable_case_sensitive_identifier</code>, <code>enable_user_activity_logging</code>, <code>query_group</code>, <code>search_path</code>, <code>require_ssl</code>, <code>use_fips_ssl</code>, and query monitoring metrics that let you define performance boundaries. For more information about query monitoring rules and available metrics, see <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/cm-c-wlm-query-monitoring-rules.html#cm-c-wlm-query-monitoring-metrics-serverless\"> Query monitoring metrics for Amazon Redshift Serverless</a>.</p>"
+        },
+        "enhancedVpcRouting":{
+          "shape":"Boolean",
+          "documentation":"<p>The value that specifies whether to turn on enhanced virtual private cloud (VPC) routing, which forces Amazon Redshift Serverless to route traffic through your VPC instead of over the internet.</p>"
+        },
+        "ipAddressType":{
+          "shape":"IpAddressType",
+          "documentation":"<p>The IP address type that the workgroup supports. Possible values are <code>ipv4</code> and <code>dualstack</code>.</p>"
+        },
+        "maxCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum data-warehouse capacity Amazon Redshift Serverless uses to serve queries. The max capacity is specified in RPUs.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to associate with the workgroup.</p>"
+        },
+        "port":{
+          "shape":"Integer",
+          "documentation":"<p>The custom port to use when connecting to a workgroup. Valid port ranges are 5431-5455 and 8191-8215. The default is 5439.</p>"
+        },
+        "pricePerformanceTarget":{
+          "shape":"PerformanceTarget",
+          "documentation":"<p>An object that represents the price performance target settings for the workgroup.</p>"
+        },
+        "publiclyAccessible":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that specifies whether the workgroup can be accessed from a public network.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>An array of security group IDs to associate with the workgroup.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>An array of VPC subnet IDs to associate with the workgroup.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A array of tag instances.</p>"
+        },
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>An optional parameter for the name of the track for the workgroup. If you don't provide a track name, the workgroup is assigned to the <code>current</code> track.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the created workgroup.</p>"
+        }
+      }
+    },
+    "CreateWorkgroupResponse":{
+      "type":"structure",
+      "members":{
+        "workgroup":{
+          "shape":"Workgroup",
+          "documentation":"<p>The created workgroup object.</p>"
+        }
+      }
+    },
+    "CurrencyCode":{"type":"string"},
+    "CustomDomainCertificateArnString":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:[\\w+=/,.@-]+:acm:[\\w+=/,.@-]*:[0-9]+:[\\w+=,.@-]+(/[\\w+=,.@-]+)*"
+    },
+    "CustomDomainName":{
+      "type":"string",
+      "max":253,
+      "min":1,
+      "pattern":"^(((?!-)[A-Za-z0-9-]{0,62}[A-Za-z0-9])\\.)+((?!-)[A-Za-z0-9-]{1,62}[A-Za-z0-9])$"
+    },
+    "DbName":{"type":"string"},
+    "DbPassword":{
+      "type":"string",
+      "sensitive":true
+    },
+    "DbUser":{
+      "type":"string",
+      "sensitive":true
+    },
+    "DeleteCustomDomainAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "customDomainName",
+        "workgroupName"
+      ],
+      "members":{
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "DeleteCustomDomainAssociationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteEndpointAccessRequest":{
+      "type":"structure",
+      "required":["endpointName"],
+      "members":{
+        "endpointName":{
+          "shape":"String",
+          "documentation":"<p>The name of the VPC endpoint to delete.</p>"
+        }
+      }
+    },
+    "DeleteEndpointAccessResponse":{
+      "type":"structure",
+      "members":{
+        "endpoint":{
+          "shape":"EndpointAccess",
+          "documentation":"<p>The deleted VPC endpoint.</p>"
+        }
+      }
+    },
+    "DeleteNamespaceRequest":{
+      "type":"structure",
+      "required":["namespaceName"],
+      "members":{
+        "finalSnapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to be created before the namespace is deleted.</p>"
+        },
+        "finalSnapshotRetentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>How long to retain the final snapshot.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to delete.</p>"
+        }
+      }
+    },
+    "DeleteNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The deleted namespace object.</p>"
+        }
+      }
+    },
+    "DeleteResourcePolicyRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the policy to delete.</p>"
+        }
+      }
+    },
+    "DeleteResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteScheduledActionRequest":{
+      "type":"structure",
+      "required":["scheduledActionName"],
+      "members":{
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>The name of the scheduled action to delete.</p>"
+        }
+      }
+    },
+    "DeleteScheduledActionResponse":{
+      "type":"structure",
+      "members":{
+        "scheduledAction":{
+          "shape":"ScheduledActionResponse",
+          "documentation":"<p>The deleted scheduled action object.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotCopyConfigurationRequest":{
+      "type":"structure",
+      "required":["snapshotCopyConfigurationId"],
+      "members":{
+        "snapshotCopyConfigurationId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the snapshot copy configuration to delete.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotCopyConfigurationResponse":{
+      "type":"structure",
+      "required":["snapshotCopyConfiguration"],
+      "members":{
+        "snapshotCopyConfiguration":{
+          "shape":"SnapshotCopyConfiguration",
+          "documentation":"<p>The deleted snapshot copy configuration object.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotRequest":{
+      "type":"structure",
+      "required":["snapshotName"],
+      "members":{
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The deleted snapshot object.</p>"
+        }
+      }
+    },
+    "DeleteUsageLimitRequest":{
+      "type":"structure",
+      "required":["usageLimitId"],
+      "members":{
+        "usageLimitId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the usage limit to delete.</p>"
+        }
+      }
+    },
+    "DeleteUsageLimitResponse":{
+      "type":"structure",
+      "members":{
+        "usageLimit":{
+          "shape":"UsageLimit",
+          "documentation":"<p>The deleted usage limit object.</p>"
+        }
+      }
+    },
+    "DeleteWorkgroupRequest":{
+      "type":"structure",
+      "required":["workgroupName"],
+      "members":{
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteWorkgroupResponse":{
+      "type":"structure",
+      "required":["workgroup"],
+      "members":{
+        "workgroup":{
+          "shape":"Workgroup",
+          "documentation":"<p>The deleted workgroup object.</p>"
+        }
+      }
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "Duration":{"type":"integer"},
+    "Endpoint":{
+      "type":"structure",
+      "members":{
+        "address":{
+          "shape":"String",
+          "documentation":"<p>The DNS address of the VPC endpoint.</p>"
+        },
+        "port":{
+          "shape":"Integer",
+          "documentation":"<p>The port that Amazon Redshift Serverless listens on.</p>"
+        },
+        "vpcEndpoints":{
+          "shape":"VpcEndpointList",
+          "documentation":"<p>An array of <code>VpcEndpoint</code> objects.</p>"
+        }
+      },
+      "documentation":"<p>The VPC endpoint object.</p>"
+    },
+    "EndpointAccess":{
+      "type":"structure",
+      "members":{
+        "address":{
+          "shape":"String",
+          "documentation":"<p>The DNS address of the endpoint.</p>"
+        },
+        "endpointArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the VPC endpoint.</p>"
+        },
+        "endpointCreateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the endpoint was created.</p>"
+        },
+        "endpointName":{
+          "shape":"String",
+          "documentation":"<p>The name of the VPC endpoint.</p>"
+        },
+        "endpointStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the VPC endpoint.</p>"
+        },
+        "port":{
+          "shape":"Integer",
+          "documentation":"<p>The port number on which Amazon Redshift Serverless accepts incoming connections.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>The unique identifier of subnets where Amazon Redshift Serverless choose to deploy the VPC endpoint.</p>"
+        },
+        "vpcEndpoint":{
+          "shape":"VpcEndpoint",
+          "documentation":"<p>The connection endpoint for connecting to Amazon Redshift Serverless.</p>"
+        },
+        "vpcSecurityGroups":{
+          "shape":"VpcSecurityGroupMembershipList",
+          "documentation":"<p>The security groups associated with the endpoint.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the workgroup associated with the endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Information about an Amazon Redshift Serverless VPC endpoint.</p>"
+    },
+    "EndpointAccessList":{
+      "type":"list",
+      "member":{"shape":"EndpointAccess"}
+    },
+    "GetCredentialsRequest":{
+      "type":"structure",
+      "members":{
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup. The custom domain name or the workgroup name must be included in the request.</p>"
+        },
+        "dbName":{
+          "shape":"DbName",
+          "documentation":"<p>The name of the database to get temporary authorization to log on to.</p> <p>Constraints:</p> <ul> <li> <p>Must be 1 to 64 alphanumeric characters or hyphens.</p> </li> <li> <p>Must contain only uppercase or lowercase letters, numbers, underscore, plus sign, period (dot), at symbol (@), or hyphen.</p> </li> <li> <p>The first character must be a letter.</p> </li> <li> <p>Must not contain a colon ( : ) or slash ( / ).</p> </li> <li> <p>Cannot be a reserved word. A list of reserved words can be found in <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html\">Reserved Words </a> in the Amazon Redshift Database Developer Guide</p> </li> </ul>"
+        },
+        "durationSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds until the returned temporary password expires. The minimum is 900 seconds, and the maximum is 3600 seconds.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "GetCredentialsResponse":{
+      "type":"structure",
+      "members":{
+        "dbPassword":{
+          "shape":"DbPassword",
+          "documentation":"<p>A temporary password that authorizes the user name returned by <code>DbUser</code> to log on to the database <code>DbName</code>.</p>"
+        },
+        "dbUser":{
+          "shape":"DbUser",
+          "documentation":"<p>A database user name that is authorized to log on to the database <code>DbName</code> using the password <code>DbPassword</code>. If the specified <code>DbUser</code> exists in the database, the new user name has the same database privileges as the the user named in <code>DbUser</code>. By default, the user is added to PUBLIC.</p>"
+        },
+        "expiration":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time the password in <code>DbPassword</code> expires.</p>"
+        },
+        "nextRefreshTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The date and time of when the <code>DbUser</code> and <code>DbPassword</code> authorization refreshes.</p>"
+        }
+      }
+    },
+    "GetCustomDomainAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "customDomainName",
+        "workgroupName"
+      ],
+      "members":{
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "GetCustomDomainAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainCertificateExpiryTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The expiration time for the certificate.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "GetEndpointAccessRequest":{
+      "type":"structure",
+      "required":["endpointName"],
+      "members":{
+        "endpointName":{
+          "shape":"String",
+          "documentation":"<p>The name of the VPC endpoint to return information for.</p>"
+        }
+      }
+    },
+    "GetEndpointAccessResponse":{
+      "type":"structure",
+      "members":{
+        "endpoint":{
+          "shape":"EndpointAccess",
+          "documentation":"<p>The returned VPC endpoint.</p>"
+        }
+      }
+    },
+    "GetNamespaceRequest":{
+      "type":"structure",
+      "required":["namespaceName"],
+      "members":{
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to retrieve information for.</p>"
+        }
+      }
+    },
+    "GetNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The returned namespace object.</p>"
+        }
+      }
+    },
+    "GetRecoveryPointRequest":{
+      "type":"structure",
+      "required":["recoveryPointId"],
+      "members":{
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the recovery point to return information for.</p>"
+        }
+      }
+    },
+    "GetRecoveryPointResponse":{
+      "type":"structure",
+      "members":{
+        "recoveryPoint":{
+          "shape":"RecoveryPoint",
+          "documentation":"<p>The returned recovery point object.</p>"
+        }
+      }
+    },
+    "GetReservationOfferingRequest":{
+      "type":"structure",
+      "required":["offeringId"],
+      "members":{
+        "offeringId":{
+          "shape":"GetReservationOfferingRequestOfferingIdString",
+          "documentation":"<p>The identifier for the offering..</p>"
+        }
+      }
+    },
+    "GetReservationOfferingRequestOfferingIdString":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "GetReservationOfferingResponse":{
+      "type":"structure",
+      "required":["reservationOffering"],
+      "members":{
+        "reservationOffering":{
+          "shape":"ReservationOffering",
+          "documentation":"<p>The returned reservation offering. The offering determines the payment schedule for the reservation.</p>"
+        }
+      }
+    },
+    "GetReservationRequest":{
+      "type":"structure",
+      "required":["reservationId"],
+      "members":{
+        "reservationId":{
+          "shape":"GetReservationRequestReservationIdString",
+          "documentation":"<p>The ID of the reservation to retrieve.</p>"
+        }
+      }
+    },
+    "GetReservationRequestReservationIdString":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "GetReservationResponse":{
+      "type":"structure",
+      "required":["reservation"],
+      "members":{
+        "reservation":{
+          "shape":"Reservation",
+          "documentation":"<p>The returned reservation object.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to return.</p>"
+        }
+      }
+    },
+    "GetResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "resourcePolicy":{
+          "shape":"ResourcePolicy",
+          "documentation":"<p>The returned resource policy.</p>"
+        }
+      }
+    },
+    "GetScheduledActionRequest":{
+      "type":"structure",
+      "required":["scheduledActionName"],
+      "members":{
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>The name of the scheduled action.</p>"
+        }
+      }
+    },
+    "GetScheduledActionResponse":{
+      "type":"structure",
+      "members":{
+        "scheduledAction":{
+          "shape":"ScheduledActionResponse",
+          "documentation":"<p>The returned scheduled action object.</p>"
+        }
+      }
+    },
+    "GetSnapshotRequest":{
+      "type":"structure",
+      "members":{
+        "ownerAccount":{
+          "shape":"String",
+          "documentation":"<p>The owner Amazon Web Services account of a snapshot shared with another user.</p>"
+        },
+        "snapshotArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the snapshot to return.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to return.</p>"
+        }
+      }
+    },
+    "GetSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The returned snapshot object.</p>"
+        }
+      }
+    },
+    "GetTableRestoreStatusRequest":{
+      "type":"structure",
+      "required":["tableRestoreRequestId"],
+      "members":{
+        "tableRestoreRequestId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the <code>RestoreTableFromSnapshot</code> request to return status for.</p>"
+        }
+      }
+    },
+    "GetTableRestoreStatusResponse":{
+      "type":"structure",
+      "members":{
+        "tableRestoreStatus":{
+          "shape":"TableRestoreStatus",
+          "documentation":"<p>The returned <code>TableRestoreStatus</code> object that contains information about the status of your <code>RestoreTableFromSnapshot</code> request.</p>"
+        }
+      }
+    },
+    "GetTrackRequest":{
+      "type":"structure",
+      "required":["trackName"],
+      "members":{
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>The name of the track of which its version is fetched.</p>"
+        }
+      }
+    },
+    "GetTrackResponse":{
+      "type":"structure",
+      "members":{
+        "track":{
+          "shape":"ServerlessTrack",
+          "documentation":"<p>The version of the specified track.</p>"
+        }
+      }
+    },
+    "GetUsageLimitRequest":{
+      "type":"structure",
+      "required":["usageLimitId"],
+      "members":{
+        "usageLimitId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the usage limit to return information for.</p>"
+        }
+      }
+    },
+    "GetUsageLimitResponse":{
+      "type":"structure",
+      "members":{
+        "usageLimit":{
+          "shape":"UsageLimit",
+          "documentation":"<p>The returned usage limit object.</p>"
+        }
+      }
+    },
+    "GetWorkgroupRequest":{
+      "type":"structure",
+      "required":["workgroupName"],
+      "members":{
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup to return information for.</p>"
+        }
+      }
+    },
+    "GetWorkgroupResponse":{
+      "type":"structure",
+      "required":["workgroup"],
+      "members":{
+        "workgroup":{
+          "shape":"Workgroup",
+          "documentation":"<p>The returned workgroup object.</p>"
+        }
+      }
+    },
+    "IamRoleArn":{"type":"string"},
+    "IamRoleArnList":{
+      "type":"list",
+      "member":{"shape":"IamRoleArn"}
+    },
+    "InsufficientCapacityException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>There is an insufficient capacity to perform the action.</p>",
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "InvalidPaginationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The provided pagination token is invalid.</p>",
+      "exception":true
+    },
+    "IpAddressType":{
+      "type":"string",
+      "pattern":"^(ipv4|dualstack)$"
+    },
+    "Ipv6CidrBlockNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>There are no subnets in your VPC with associated IPv6 CIDR blocks. To use dual-stack mode, associate an IPv6 CIDR block with each subnet in your VPC.</p>",
+      "exception":true
+    },
+    "KmsKeyId":{"type":"string"},
+    "ListCustomDomainAssociationsRequest":{
+      "type":"structure",
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "maxResults":{
+          "shape":"ListCustomDomainAssociationsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListCustomDomainAssociationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListCustomDomainAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "associations":{
+          "shape":"AssociationList",
+          "documentation":"<p>A list of Association objects.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListEndpointAccessRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListEndpointAccessRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListEndpointAccess</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListEndpointAccess</code> operations, which returns results in the next page.</p>"
+        },
+        "ownerAccount":{
+          "shape":"OwnerAccount",
+          "documentation":"<p>The owner Amazon Web Services account for the Amazon Redshift Serverless workgroup.</p>"
+        },
+        "vpcId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the virtual private cloud with access to Amazon Redshift Serverless.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the workgroup associated with the VPC endpoint to return.</p>"
+        }
+      }
+    },
+    "ListEndpointAccessRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListEndpointAccessResponse":{
+      "type":"structure",
+      "required":["endpoints"],
+      "members":{
+        "endpoints":{
+          "shape":"EndpointAccessList",
+          "documentation":"<p>The returned VPC endpoints.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListManagedWorkgroupsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListManagedWorkgroupsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use nextToken to display the next page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If your initial ListManagedWorkgroups operation returns a nextToken, you can include the returned nextToken in following ListManagedWorkgroups operations, which returns results in the next page.</p>"
+        },
+        "sourceArn":{
+          "shape":"SourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the managed workgroup in the AWS Glue Data Catalog.</p>"
+        }
+      }
+    },
+    "ListManagedWorkgroupsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListManagedWorkgroupsResponse":{
+      "type":"structure",
+      "members":{
+        "managedWorkgroups":{
+          "shape":"ManagedWorkgroups",
+          "documentation":"<p>The returned array of managed workgroups.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. To retrieve the next page, make the call again using the returned token.</p>"
+        }
+      }
+    },
+    "ListNamespacesRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListNamespacesRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListNamespaces</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListNamespaces</code> operations, which returns results in the next page.</p>"
+        }
+      }
+    },
+    "ListNamespacesRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListNamespacesResponse":{
+      "type":"structure",
+      "required":["namespaces"],
+      "members":{
+        "namespaces":{
+          "shape":"NamespaceList",
+          "documentation":"<p>The list of returned namespaces.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListRecoveryPointsRequest":{
+      "type":"structure",
+      "members":{
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when creation of the recovery point finished.</p>"
+        },
+        "maxResults":{
+          "shape":"ListRecoveryPointsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "namespaceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the namespace from which to list recovery points.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to list recovery points for.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial <code>ListRecoveryPoints</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListRecoveryPoints</code> operations, which returns results in the next page.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the recovery point's creation was initiated.</p>"
+        }
+      }
+    },
+    "ListRecoveryPointsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListRecoveryPointsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "recoveryPoints":{
+          "shape":"RecoveryPointList",
+          "documentation":"<p>The returned recovery point objects.</p>"
+        }
+      }
+    },
+    "ListReservationOfferingsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListReservationOfferingsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that you can specify in a subsequent call to get the next set of results.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListReservationOfferingsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListReservationOfferingsResponse":{
+      "type":"structure",
+      "required":["reservationOfferingsList"],
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use when requesting the next set of items.</p>"
+        },
+        "reservationOfferingsList":{
+          "shape":"ReservationOfferingsList",
+          "documentation":"<p>The returned list of reservation offerings.</p>"
+        }
+      }
+    },
+    "ListReservationsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListReservationsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that you can specify in a subsequent call to get the next set of results.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. (You received this token from a previous call.)</p>"
+        }
+      }
+    },
+    "ListReservationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListReservationsResponse":{
+      "type":"structure",
+      "required":["reservationsList"],
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token to use when requesting the next set of items.</p>"
+        },
+        "reservationsList":{
+          "shape":"ReservationsList",
+          "documentation":"<p>The serverless reservations returned by the request.</p>"
+        }
+      }
+    },
+    "ListScheduledActionsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListScheduledActionsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. Use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of namespace associated with the scheduled action to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListScheduledActionsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListScheduledActionsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If nextToken is returned, there are more results available. The value of nextToken is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "scheduledActions":{
+          "shape":"ScheduledActionsList",
+          "documentation":"<p>All of the returned scheduled action association objects.</p>"
+        }
+      }
+    },
+    "ListSnapshotCopyConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListSnapshotCopyConfigurationsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The namespace from which to list all snapshot copy configurations.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        }
+      }
+    },
+    "ListSnapshotCopyConfigurationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSnapshotCopyConfigurationsResponse":{
+      "type":"structure",
+      "required":["snapshotCopyConfigurations"],
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "snapshotCopyConfigurations":{
+          "shape":"SnapshotCopyConfigurations",
+          "documentation":"<p>All of the returned snapshot copy configurations.</p>"
+        }
+      }
+    },
+    "ListSnapshotsRequest":{
+      "type":"structure",
+      "members":{
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp showing when the snapshot creation finished.</p>"
+        },
+        "maxResults":{
+          "shape":"ListSnapshotsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "namespaceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the namespace from which to list all snapshots.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace from which to list all snapshots.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "ownerAccount":{
+          "shape":"String",
+          "documentation":"<p>The owner Amazon Web Services account of the snapshot.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the creation of the snapshot was initiated.</p>"
+        }
+      }
+    },
+    "ListSnapshotsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSnapshotsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "snapshots":{
+          "shape":"SnapshotList",
+          "documentation":"<p>All of the returned snapshot objects.</p>"
+        }
+      }
+    },
+    "ListTableRestoreStatusRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListTableRestoreStatusRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use nextToken to display the next page of results.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace from which to list all of the statuses of <code>RestoreTableFromSnapshot</code> operations .</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If your initial <code>ListTableRestoreStatus</code> operation returns a nextToken, you can include the returned <code>nextToken</code> in following <code>ListTableRestoreStatus</code> operations. This will return results on the next page.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The workgroup from which to list all of the statuses of <code>RestoreTableFromSnapshot</code> operations.</p>"
+        }
+      }
+    },
+    "ListTableRestoreStatusRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListTableRestoreStatusResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If your initial <code>ListTableRestoreStatus</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListTableRestoreStatus</code> operations. This will returns results on the next page.</p>"
+        },
+        "tableRestoreStatuses":{
+          "shape":"TableRestoreStatusList",
+          "documentation":"<p>The array of returned <code>TableRestoreStatus</code> objects.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to list tags for.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs assigned to the resource.</p>"
+        }
+      }
+    },
+    "ListTracksRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListTracksRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of response records to return in each call. If the number of remaining response records exceeds the specified MaxRecords value, a value is returned in a marker field of the response. You can retrieve the next set of records by retrying the command with the returned marker value.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If your initial <code>ListTracksRequest</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListTracksRequest</code> operations, which returns results in the next page.</p>"
+        }
+      }
+    },
+    "ListTracksRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListTracksResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "tracks":{
+          "shape":"TrackList",
+          "documentation":"<p>The returned tracks.</p>"
+        }
+      }
+    },
+    "ListUsageLimitsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListUsageLimitsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to get the next page of results. The default is 100.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If your initial <code>ListUsageLimits</code> operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following <code>ListUsageLimits</code> operations, which returns results in the next page. </p>"
+        },
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) associated with the resource whose usage limits you want to list.</p>"
+        },
+        "usageType":{
+          "shape":"UsageLimitUsageType",
+          "documentation":"<p>The Amazon Redshift Serverless feature whose limits you want to see.</p>"
+        }
+      }
+    },
+    "ListUsageLimitsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListUsageLimitsResponse":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>When <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page.</p>"
+        },
+        "usageLimits":{
+          "shape":"UsageLimits",
+          "documentation":"<p>An array of returned usage limit objects.</p>"
+        }
+      }
+    },
+    "ListWorkgroupsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListWorkgroupsRequestMaxResultsInteger",
+          "documentation":"<p>An optional parameter that specifies the maximum number of results to return. You can use <code>nextToken</code> to display the next page of results.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If your initial ListWorkgroups operation returns a <code>nextToken</code>, you can include the returned <code>nextToken</code> in following ListNamespaces operations, which returns results in the next page.</p>"
+        },
+        "ownerAccount":{
+          "shape":"OwnerAccount",
+          "documentation":"<p>The owner Amazon Web Services account for the Amazon Redshift Serverless workgroup.</p>"
+        }
+      }
+    },
+    "ListWorkgroupsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListWorkgroupsResponse":{
+      "type":"structure",
+      "required":["workgroups"],
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p> If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. To retrieve the next page, make the call again using the returned token.</p>"
+        },
+        "workgroups":{
+          "shape":"WorkgroupList",
+          "documentation":"<p>The returned array of workgroups.</p>"
+        }
+      }
+    },
+    "LogExport":{
+      "type":"string",
+      "enum":[
+        "useractivitylog",
+        "userlog",
+        "connectionlog"
+      ]
+    },
+    "LogExportList":{
+      "type":"list",
+      "member":{"shape":"LogExport"},
+      "max":16,
+      "min":0
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "ManagedWorkgroupListItem":{
+      "type":"structure",
+      "members":{
+        "creationDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation date of the managed workgroup.</p>"
+        },
+        "managedWorkgroupId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the managed workgroup.</p>"
+        },
+        "managedWorkgroupName":{
+          "shape":"ManagedWorkgroupName",
+          "documentation":"<p>The name of the managed workgroup.</p>"
+        },
+        "sourceArn":{
+          "shape":"SourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the managed workgroup in the AWS Glue Data Catalog.</p>"
+        },
+        "status":{
+          "shape":"ManagedWorkgroupStatus",
+          "documentation":"<p>The status of the managed workgroup.</p>"
+        }
+      },
+      "documentation":"<p>A collection of Amazon Redshift compute resources managed by AWS Glue.</p>"
+    },
+    "ManagedWorkgroupName":{
+      "type":"string",
+      "max":255,
+      "min":3,
+      "pattern":"^[a-zA-Z0-9_:\\-]+$"
+    },
+    "ManagedWorkgroupStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "DELETING",
+        "MODIFYING",
+        "AVAILABLE",
+        "NOT_AVAILABLE"
+      ]
+    },
+    "ManagedWorkgroups":{
+      "type":"list",
+      "member":{"shape":"ManagedWorkgroupListItem"}
+    },
+    "Namespace":{
+      "type":"structure",
+      "members":{
+        "adminPasswordSecretArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the namespace's admin user credentials secret.</p>"
+        },
+        "adminPasswordSecretKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the Key Management Service (KMS) key used to encrypt and store the namespace's admin credentials secret.</p>"
+        },
+        "adminUsername":{
+          "shape":"DbUser",
+          "documentation":"<p>The username of the administrator for the first database created in the namespace.</p>"
+        },
+        "creationDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date of when the namespace was created.</p>"
+        },
+        "dbName":{
+          "shape":"String",
+          "documentation":"<p>The name of the first database created in the namespace.</p>"
+        },
+        "defaultIamRoleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role to set as a default in the namespace.</p>"
+        },
+        "iamRoles":{
+          "shape":"IamRoleArnList",
+          "documentation":"<p>A list of IAM roles to associate with the namespace.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Amazon Web Services Key Management Service key used to encrypt your data.</p>"
+        },
+        "logExports":{
+          "shape":"LogExportList",
+          "documentation":"<p>The types of logs the namespace can export. Available export types are User log, Connection log, and User activity log.</p>"
+        },
+        "namespaceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) associated with a namespace.</p>"
+        },
+        "namespaceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of a namespace.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace. Must be between 3-64 alphanumeric characters in lowercase, and it cannot be a reserved word. A list of reserved words can be found in <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html\">Reserved Words</a> in the Amazon Redshift Database Developer Guide.</p>"
+        },
+        "status":{
+          "shape":"NamespaceStatus",
+          "documentation":"<p>The status of the namespace.</p>"
+        }
+      },
+      "documentation":"<p>A collection of database objects and users.</p>"
+    },
+    "NamespaceList":{
+      "type":"list",
+      "member":{"shape":"Namespace"}
+    },
+    "NamespaceName":{
+      "type":"string",
+      "max":64,
+      "min":3,
+      "pattern":"^[a-z0-9-]+$"
+    },
+    "NamespaceStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "MODIFYING",
+        "DELETING"
+      ]
+    },
+    "NetworkInterface":{
+      "type":"structure",
+      "members":{
+        "availabilityZone":{
+          "shape":"String",
+          "documentation":"<p>The availability Zone.</p>"
+        },
+        "ipv6Address":{
+          "shape":"String",
+          "documentation":"<p>The IPv6 address of the network interface within the subnet.</p>"
+        },
+        "networkInterfaceId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the network interface.</p>"
+        },
+        "privateIpAddress":{
+          "shape":"String",
+          "documentation":"<p>The IPv4 address of the network interface within the subnet.</p>"
+        },
+        "subnetId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the subnet.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a network interface in an Amazon Redshift Serverless managed VPC endpoint. </p>"
+    },
+    "NetworkInterfaceList":{
+      "type":"list",
+      "member":{"shape":"NetworkInterface"}
+    },
+    "NextInvocationsList":{
+      "type":"list",
+      "member":{"shape":"Timestamp"}
+    },
+    "OfferingId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "OfferingType":{
+      "type":"string",
+      "enum":[
+        "ALL_UPFRONT",
+        "NO_UPFRONT"
+      ]
+    },
+    "OwnerAccount":{
+      "type":"string",
+      "max":12,
+      "min":1,
+      "pattern":"(\\d{12})"
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":1024,
+      "min":8
+    },
+    "ParameterKey":{"type":"string"},
+    "ParameterValue":{"type":"string"},
+    "PerformanceTarget":{
+      "type":"structure",
+      "members":{
+        "level":{
+          "shape":"PerformanceTargetLevelInteger",
+          "documentation":"<p>The target price performance level for the workgroup. Valid values include 1, 25, 50, 75, and 100. These correspond to the price performance levels LOW_COST, ECONOMICAL, BALANCED, RESOURCEFUL, and HIGH_PERFORMANCE.</p>"
+        },
+        "status":{
+          "shape":"PerformanceTargetStatus",
+          "documentation":"<p>Whether the price performance target is enabled for the workgroup.</p>"
+        }
+      },
+      "documentation":"<p>An object that represents the price performance target settings for the workgroup.</p>"
+    },
+    "PerformanceTargetLevelInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "PerformanceTargetStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "PutResourcePolicyRequest":{
+      "type":"structure",
+      "required":[
+        "policy",
+        "resourceArn"
+      ],
+      "members":{
+        "policy":{
+          "shape":"String",
+          "documentation":"<p>The policy to create or update. For example, the following policy grants a user authorization to restore a snapshot.</p> <p> <code>\"{\\\"Version\\\": \\\"2012-10-17\\\", \\\"Statement\\\" : [{ \\\"Sid\\\": \\\"AllowUserRestoreFromSnapshot\\\", \\\"Principal\\\":{\\\"AWS\\\": [\\\"739247239426\\\"]}, \\\"Action\\\": [\\\"redshift-serverless:RestoreFromSnapshot\\\"] , \\\"Effect\\\": \\\"Allow\\\" }]}\"</code> </p>"
+        },
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the account to create or update a resource policy for.</p>"
+        }
+      }
+    },
+    "PutResourcePolicyResponse":{
+      "type":"structure",
+      "members":{
+        "resourcePolicy":{
+          "shape":"ResourcePolicy",
+          "documentation":"<p>The policy that was created or updated.</p>"
+        }
+      }
+    },
+    "RecoveryPoint":{
+      "type":"structure",
+      "members":{
+        "namespaceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the namespace the recovery point is associated with.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace the recovery point is associated with.</p>"
+        },
+        "recoveryPointCreateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time the recovery point is created.</p>"
+        },
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the recovery point.</p>"
+        },
+        "totalSizeInMegaBytes":{
+          "shape":"Double",
+          "documentation":"<p>The total size of the data in the recovery point in megabytes.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup the recovery point is associated with.</p>"
+        }
+      },
+      "documentation":"<p>The automatically created recovery point of a namespace. Recovery points are created every 30 minutes and kept for 24 hours.</p>"
+    },
+    "RecoveryPointList":{
+      "type":"list",
+      "member":{"shape":"RecoveryPoint"}
+    },
+    "RedshiftIdcApplicationArn":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "Reservation":{
+      "type":"structure",
+      "members":{
+        "capacity":{
+          "shape":"Capacity",
+          "documentation":"<p>The number of Redshift Processing Units (RPUs) to reserve.</p>"
+        },
+        "endDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The end date for the serverless reservation. This date is one year after the start date that you specify.</p>"
+        },
+        "offering":{
+          "shape":"ReservationOffering",
+          "documentation":"<p>The type of offering for the reservation. The offering class determines the payment schedule for the reservation.</p>"
+        },
+        "reservationArn":{
+          "shape":"ReservationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies the serverless reservation.</p>"
+        },
+        "reservationId":{
+          "shape":"ReservationId",
+          "documentation":"<p>The identifier that uniquely identifies the serverless reservation.</p>"
+        },
+        "startDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The start date for the serverless reservation. This is the date you specified for the reservation to start when you created the reservation.</p>"
+        },
+        "status":{
+          "shape":"Status",
+          "documentation":"<p>The status of the reservation. Possible values include the following:</p> <ul> <li> <p> <code>payment-pending</code> </p> </li> <li> <p> <code>active</code> </p> </li> <li> <p> <code>payment-failed</code> </p> </li> <li> <p> <code>retired</code> </p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Represents an Amazon Redshift Serverless reservation, which gives you the option to commit to a specified number of Redshift Processing Units (RPUs) for a year at a discount from Serverless on-demand (OD) rates.</p>"
+    },
+    "ReservationArn":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ReservationId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "ReservationOffering":{
+      "type":"structure",
+      "members":{
+        "currencyCode":{
+          "shape":"CurrencyCode",
+          "documentation":"<p>The currency code for the offering.</p>"
+        },
+        "duration":{
+          "shape":"Duration",
+          "documentation":"<p>The duration, in seconds, for which the reservation reserves the RPUs.</p>"
+        },
+        "hourlyCharge":{
+          "shape":"Charge",
+          "documentation":"<p>The rate you are charged for each hour the reservation is active.</p>"
+        },
+        "offeringId":{
+          "shape":"OfferingId",
+          "documentation":"<p>The offering identifier.</p>"
+        },
+        "offeringType":{
+          "shape":"OfferingType",
+          "documentation":"<p>Determines the payment schedule for the reservation.</p>"
+        },
+        "upfrontCharge":{
+          "shape":"Charge",
+          "documentation":"<p>The up-front price you are charged for the reservation.</p>"
+        }
+      },
+      "documentation":"<p>The class of offering for the reservation. The offering class determines the payment schedule for the reservation.</p>"
+    },
+    "ReservationOfferingsList":{
+      "type":"list",
+      "member":{"shape":"ReservationOffering"}
+    },
+    "ReservationsList":{
+      "type":"list",
+      "member":{"shape":"Reservation"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceName":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The name of the resource that could not be found.</p>"
+        }
+      },
+      "documentation":"<p>The resource could not be found.</p>",
+      "exception":true
+    },
+    "ResourcePolicy":{
+      "type":"structure",
+      "members":{
+        "policy":{
+          "shape":"String",
+          "documentation":"<p>The resource policy.</p>"
+        },
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the policy.</p>"
+        }
+      },
+      "documentation":"<p>The resource policy object. Currently, you can use policies to share snapshots across Amazon Web Services accounts.</p>"
+    },
+    "RestoreFromRecoveryPointRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "recoveryPointId",
+        "workgroupName"
+      ],
+      "members":{
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to restore data into.</p>"
+        },
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the recovery point to restore from.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup used to restore data.</p>"
+        }
+      }
+    },
+    "RestoreFromRecoveryPointResponse":{
+      "type":"structure",
+      "members":{
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>The namespace that data was restored into.</p>"
+        },
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the recovery point used for the restore.</p>"
+        }
+      }
+    },
+    "RestoreFromSnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "workgroupName"
+      ],
+      "members":{
+        "adminPasswordSecretKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the Key Management Service (KMS) key used to encrypt and store the namespace's admin credentials secret.</p>"
+        },
+        "manageAdminPassword":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, Amazon Redshift uses Secrets Manager to manage the restored snapshot's admin credentials. If <code>MmanageAdminPassword</code> is false or not set, Amazon Redshift uses the admin credentials that the namespace or cluster had at the time the snapshot was taken.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to restore the snapshot to.</p>"
+        },
+        "ownerAccount":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Web Services account that owns the snapshot.</p>"
+        },
+        "snapshotArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the snapshot to restore from. Required if restoring from a provisioned cluster to Amazon Redshift Serverless. Must not be specified at the same time as <code>snapshotName</code>.</p> <p>The format of the ARN is arn:aws:redshift:&lt;region&gt;:&lt;account_id&gt;:snapshot:&lt;cluster_identifier&gt;/&lt;snapshot_identifier&gt;.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to restore from. Must not be specified at the same time as <code>snapshotArn</code>.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup used to restore the snapshot.</p>"
+        }
+      }
+    },
+    "RestoreFromSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "namespace":{"shape":"Namespace"},
+        "ownerAccount":{
+          "shape":"String",
+          "documentation":"<p>The owner Amazon Web Services; account of the snapshot that was restored.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot used to restore the namespace.</p>"
+        }
+      }
+    },
+    "RestoreTableFromRecoveryPointRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "newTableName",
+        "recoveryPointId",
+        "sourceDatabaseName",
+        "sourceTableName",
+        "workgroupName"
+      ],
+      "members":{
+        "activateCaseSensitiveIdentifier":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether name identifiers for database, schema, and table are case sensitive. If true, the names are case sensitive. If false, the names are not case sensitive. The default is false.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>Namespace of the recovery point to restore from.</p>"
+        },
+        "newTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the table to create from the restore operation.</p>"
+        },
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the recovery point to restore the table from.</p>"
+        },
+        "sourceDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source database that contains the table being restored.</p>"
+        },
+        "sourceSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source schema that contains the table being restored.</p>"
+        },
+        "sourceTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source table being restored.</p>"
+        },
+        "targetDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the database to restore the table to.</p>"
+        },
+        "targetSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the schema to restore the table to.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The workgroup to restore the table to.</p>"
+        }
+      }
+    },
+    "RestoreTableFromRecoveryPointResponse":{
+      "type":"structure",
+      "members":{
+        "tableRestoreStatus":{"shape":"TableRestoreStatus"}
+      }
+    },
+    "RestoreTableFromSnapshotRequest":{
+      "type":"structure",
+      "required":[
+        "namespaceName",
+        "newTableName",
+        "snapshotName",
+        "sourceDatabaseName",
+        "sourceTableName",
+        "workgroupName"
+      ],
+      "members":{
+        "activateCaseSensitiveIdentifier":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether name identifiers for database, schema, and table are case sensitive. If true, the names are case sensitive. If false, the names are not case sensitive. The default is false.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace of the snapshot to restore from.</p>"
+        },
+        "newTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the table to create from the restore operation.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot to restore the table from.</p>"
+        },
+        "sourceDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source database that contains the table being restored.</p>"
+        },
+        "sourceSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source schema that contains the table being restored.</p>"
+        },
+        "sourceTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source table being restored.</p>"
+        },
+        "targetDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the database to restore the table to.</p>"
+        },
+        "targetSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the schema to restore the table to.</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The workgroup to restore the table to.</p>"
+        }
+      }
+    },
+    "RestoreTableFromSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "tableRestoreStatus":{
+          "shape":"TableRestoreStatus",
+          "documentation":"<p>The TableRestoreStatus object that contains the status of the restore operation.</p>"
+        }
+      }
+    },
+    "Schedule":{
+      "type":"structure",
+      "members":{
+        "at":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when Amazon Redshift Serverless should run the scheduled action. Timestamp is in UTC. Format of at expression is <code>yyyy-mm-ddThh:mm:ss</code>. For example, <code>2016-03-04T17:27:00</code>.</p>"
+        },
+        "cron":{
+          "shape":"String",
+          "documentation":"<p>The cron expression to use to schedule a recurring scheduled action. Schedule invocations must be separated by at least one hour. Times are in UTC.</p> <p>Format of cron expressions is <code>(Minutes Hours Day-of-month Month Day-of-week Year)</code>. For example, <code>\"(0 10 ? * MON *)\"</code>. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions\">Cron Expressions</a> in the <i>Amazon CloudWatch Events User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>The schedule of when Amazon Redshift Serverless should run the scheduled action.</p>",
+      "union":true
+    },
+    "ScheduledActionAssociation":{
+      "type":"structure",
+      "members":{
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>Name of associated Amazon Redshift Serverless namespace.</p>"
+        },
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>Name of associated scheduled action.</p>"
+        }
+      },
+      "documentation":"<p>Contains names of objects associated with a scheduled action.</p>"
+    },
+    "ScheduledActionName":{
+      "type":"string",
+      "max":60,
+      "min":3,
+      "pattern":"^[a-z0-9-]+$"
+    },
+    "ScheduledActionResponse":{
+      "type":"structure",
+      "members":{
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end time of </p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The end time in UTC when the schedule is no longer active. After this time, the scheduled action does not trigger.</p>"
+        },
+        "nextInvocations":{
+          "shape":"NextInvocationsList",
+          "documentation":"<p>An array of timestamps of when the next scheduled actions will trigger.</p>"
+        },
+        "roleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the IAM role to assume to run the scheduled action. This IAM role must have permission to run the Amazon Redshift Serverless API operation in the scheduled action. This IAM role must allow the Amazon Redshift scheduler to schedule creating snapshots. (Principal scheduler.redshift.amazonaws.com) to assume permissions on your behalf. For more information about the IAM role to use with the Amazon Redshift scheduler, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-identity-based.html\">Using Identity-Based Policies for Amazon Redshift</a> in the Amazon Redshift Management Guide</p>"
+        },
+        "schedule":{
+          "shape":"Schedule",
+          "documentation":"<p>The schedule for a one-time (at timestamp format) or recurring (cron format) scheduled action. Schedule invocations must be separated by at least one hour. Times are in UTC.</p> <ul> <li> <p>Format of at timestamp is <code>yyyy-mm-ddThh:mm:ss</code>. For example, <code>2016-03-04T17:27:00</code>.</p> </li> <li> <p>Format of cron expression is <code>(Minutes Hours Day-of-month Month Day-of-week Year)</code>. For example, <code>\"(0 10 ? * MON *)\"</code>. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions\">Cron Expressions</a> in the <i>Amazon CloudWatch Events User Guide</i>.</p> </li> </ul>"
+        },
+        "scheduledActionDescription":{
+          "shape":"String",
+          "documentation":"<p>The description of the scheduled action.</p>"
+        },
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>The name of the scheduled action.</p>"
+        },
+        "scheduledActionUuid":{
+          "shape":"String",
+          "documentation":"<p>The uuid of the scheduled action.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time in UTC when the schedule is active. Before this time, the scheduled action does not trigger.</p>"
+        },
+        "state":{
+          "shape":"State",
+          "documentation":"<p>The state of the scheduled action.</p>"
+        },
+        "targetAction":{"shape":"TargetAction"}
+      },
+      "documentation":"<p>The returned scheduled action object.</p>"
+    },
+    "ScheduledActionsList":{
+      "type":"list",
+      "member":{"shape":"ScheduledActionAssociation"}
+    },
+    "SecurityGroupId":{"type":"string"},
+    "SecurityGroupIdList":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"}
+    },
+    "ServerlessTrack":{
+      "type":"structure",
+      "members":{
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>The name of the track. Valid values are <code>current</code> and <code>trailing</code>.</p>"
+        },
+        "updateTargets":{
+          "shape":"UpdateTargetsList",
+          "documentation":"<p>An array of <code>UpdateTarget</code> objects to update with the track.</p>"
+        },
+        "workgroupVersion":{
+          "shape":"String",
+          "documentation":"<p>The workgroup version number for the workgroup release.</p>"
+        }
+      },
+      "documentation":"<p>Defines a track that determines which Amazon Redshift version to apply after a new version is released. If the value for <code>ServerlessTrack</code> is <code>current</code>, the workgroup is updated to the most recently certified release. If the value is <code>trailing</code>, the workgroup is updated to the previously certified release.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The service limit was exceeded.</p>",
+      "exception":true
+    },
+    "Snapshot":{
+      "type":"structure",
+      "members":{
+        "accountsWithProvisionedRestoreAccess":{
+          "shape":"AccountIdList",
+          "documentation":"<p>All of the Amazon Web Services accounts that have access to restore a snapshot to a provisioned cluster.</p>"
+        },
+        "accountsWithRestoreAccess":{
+          "shape":"AccountIdList",
+          "documentation":"<p>All of the Amazon Web Services accounts that have access to restore a snapshot to a namespace.</p>"
+        },
+        "actualIncrementalBackupSizeInMegaBytes":{
+          "shape":"Double",
+          "documentation":"<p>The size of the incremental backup in megabytes.</p>"
+        },
+        "adminPasswordSecretArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the namespace's admin user credentials secret.</p>"
+        },
+        "adminPasswordSecretKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the Key Management Service (KMS) key used to encrypt and store the namespace's admin credentials secret.</p>"
+        },
+        "adminUsername":{
+          "shape":"String",
+          "documentation":"<p>The username of the database within a snapshot.</p>"
+        },
+        "backupProgressInMegaBytes":{
+          "shape":"Double",
+          "documentation":"<p>The size in megabytes of the data that has been backed up to a snapshot.</p>"
+        },
+        "currentBackupRateInMegaBytesPerSecond":{
+          "shape":"Double",
+          "documentation":"<p>The rate at which data is backed up into a snapshot in megabytes per second.</p>"
+        },
+        "elapsedTimeInSeconds":{
+          "shape":"Long",
+          "documentation":"<p>The amount of time it took to back up data into a snapshot.</p>"
+        },
+        "estimatedSecondsToCompletion":{
+          "shape":"Long",
+          "documentation":"<p>The estimated amount of seconds until the snapshot completes backup.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The unique identifier of the KMS key used to encrypt the snapshot.</p>"
+        },
+        "namespaceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the namespace the snapshot was created from.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The name of the namepsace.</p>"
+        },
+        "ownerAccount":{
+          "shape":"String",
+          "documentation":"<p>The owner Amazon Web Services; account of the snapshot.</p>"
+        },
+        "snapshotArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the snapshot.</p>"
+        },
+        "snapshotCreateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp of when the snapshot was created.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot.</p>"
+        },
+        "snapshotRemainingDays":{
+          "shape":"Integer",
+          "documentation":"<p>The amount of days until the snapshot is deleted.</p>"
+        },
+        "snapshotRetentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The period of time, in days, of how long the snapshot is retained.</p>"
+        },
+        "snapshotRetentionStartTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp of when data within the snapshot started getting retained.</p>"
+        },
+        "status":{
+          "shape":"SnapshotStatus",
+          "documentation":"<p>The status of the snapshot.</p>"
+        },
+        "totalBackupSizeInMegaBytes":{
+          "shape":"Double",
+          "documentation":"<p>The total size, in megabytes, of how big the snapshot is.</p>"
+        }
+      },
+      "documentation":"<p>A snapshot object that contains databases.</p>"
+    },
+    "SnapshotCopyConfiguration":{
+      "type":"structure",
+      "members":{
+        "destinationKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the KMS key to use to encrypt your snapshots in the destination Amazon Web Services Region.</p>"
+        },
+        "destinationRegion":{
+          "shape":"String",
+          "documentation":"<p>The destination Amazon Web Services Region to copy snapshots to.</p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to copy snapshots from in the source Amazon Web Services Region.</p>"
+        },
+        "snapshotCopyConfigurationArn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the snapshot copy configuration object.</p>"
+        },
+        "snapshotCopyConfigurationId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the snapshot copy configuration object.</p>"
+        },
+        "snapshotRetentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The retention period of snapshots that are copied to the destination Amazon Web Services Region.</p>"
+        }
+      },
+      "documentation":"<p>The object that you configure to copy snapshots from one namespace to a namespace in another Amazon Web Services Region.</p>"
+    },
+    "SnapshotCopyConfigurations":{
+      "type":"list",
+      "member":{"shape":"SnapshotCopyConfiguration"},
+      "max":100,
+      "min":1
+    },
+    "SnapshotList":{
+      "type":"list",
+      "member":{"shape":"Snapshot"}
+    },
+    "SnapshotNamePrefix":{
+      "type":"string",
+      "max":235,
+      "min":1
+    },
+    "SnapshotStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "CREATING",
+        "DELETED",
+        "CANCELLED",
+        "FAILED",
+        "COPYING"
+      ]
+    },
+    "SourceArn":{
+      "type":"string",
+      "pattern":"^arn:aws[a-z-]*:glue:[a-z0-9-]+:\\d+:(database|catalog)[a-z0-9-:]*(?:/[A-Za-z0-9-_]{1,255})*$"
+    },
+    "State":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "DISABLED"
+      ]
+    },
+    "Status":{
+      "type":"string",
+      "max":16,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "SubnetId":{"type":"string"},
+    "SubnetIdList":{
+      "type":"list",
+      "member":{"shape":"SubnetId"}
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TableRestoreStatus":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message that explains the returned status. For example, if the status of the operation is <code>FAILED</code>, the message explains why the operation failed.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace of the table being restored from.</p>"
+        },
+        "newTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the table to create from the restore operation.</p>"
+        },
+        "progressInMegaBytes":{
+          "shape":"Long",
+          "documentation":"<p>The amount of data restored to the new table so far, in megabytes (MB).</p>"
+        },
+        "recoveryPointId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the recovery point being restored from.</p>"
+        },
+        "requestTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time that the table restore request was made, in Universal Coordinated Time (UTC).</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot being restored from.</p>"
+        },
+        "sourceDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source database being restored from.</p>"
+        },
+        "sourceSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source schema being restored from.</p>"
+        },
+        "sourceTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the source table being restored from.</p>"
+        },
+        "status":{
+          "shape":"String",
+          "documentation":"<p>A value that describes the current state of the table restore request. Possible values are <code>SUCCEEDED</code>, <code>FAILED</code>, <code>CANCELED</code>, <code>PENDING</code>, and <code>IN_PROGRESS</code>.</p>"
+        },
+        "tableRestoreRequestId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the RestoreTableFromSnapshot request.</p>"
+        },
+        "targetDatabaseName":{
+          "shape":"String",
+          "documentation":"<p>The name of the database to restore to.</p>"
+        },
+        "targetSchemaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the schema to restore to.</p>"
+        },
+        "totalDataInMegaBytes":{
+          "shape":"Long",
+          "documentation":"<p>The total amount of data to restore to the new table, in megabytes (MB).</p>"
+        },
+        "workgroupName":{
+          "shape":"String",
+          "documentation":"<p>The name of the workgroup being restored from.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a table restore request.</p>"
+    },
+    "TableRestoreStatusList":{
+      "type":"list",
+      "member":{"shape":"TableRestoreStatus"}
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key to use in the tag.</p>"
+        },
+        "value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>A map of key-value pairs.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to tag.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>The map of the key-value pairs used to tag the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TargetAction":{
+      "type":"structure",
+      "members":{
+        "createSnapshot":{"shape":"CreateSnapshotScheduleActionParameters"}
+      },
+      "documentation":"<p>A JSON format string of the Amazon Redshift Serverless API operation with input parameters. The following is an example of a target action.</p> <p> <code>\"{\"CreateSnapshot\": {\"NamespaceName\": \"sampleNamespace\",\"SnapshotName\": \"sampleSnapshot\", \"retentionPeriod\": \"1\"}}\"</code> </p>",
+      "union":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"String"},
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "resourceName":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The name of the resource that exceeded the number of tags allowed for a resource.</p>"
+        }
+      },
+      "documentation":"<p>The request exceeded the number of tags allowed for a resource.</p>",
+      "exception":true
+    },
+    "TrackList":{
+      "type":"list",
+      "member":{"shape":"ServerlessTrack"}
+    },
+    "TrackName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9_]+$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to remove tags from.</p>"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag or set of tags to remove from the resource.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateCustomDomainAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "customDomainCertificateArn",
+        "customDomainName",
+        "workgroupName"
+      ],
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN). This is optional.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "UpdateCustomDomainAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainCertificateExpiryTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The expiration time for the certificate.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup associated with the database.</p>"
+        }
+      }
+    },
+    "UpdateEndpointAccessRequest":{
+      "type":"structure",
+      "required":["endpointName"],
+      "members":{
+        "endpointName":{
+          "shape":"String",
+          "documentation":"<p>The name of the VPC endpoint to update.</p>"
+        },
+        "vpcSecurityGroupIds":{
+          "shape":"VpcSecurityGroupIdList",
+          "documentation":"<p>The list of VPC security groups associated with the endpoint after the endpoint is modified.</p>"
+        }
+      }
+    },
+    "UpdateEndpointAccessResponse":{
+      "type":"structure",
+      "members":{
+        "endpoint":{
+          "shape":"EndpointAccess",
+          "documentation":"<p>The updated VPC endpoint.</p>"
+        }
+      }
+    },
+    "UpdateNamespaceRequest":{
+      "type":"structure",
+      "required":["namespaceName"],
+      "members":{
+        "adminPasswordSecretKmsKeyId":{
+          "shape":"KmsKeyId",
+          "documentation":"<p>The ID of the Key Management Service (KMS) key used to encrypt and store the namespace's admin credentials secret. You can only use this parameter if <code>manageAdminPassword</code> is true.</p>"
+        },
+        "adminUserPassword":{
+          "shape":"DbPassword",
+          "documentation":"<p>The password of the administrator for the first database created in the namespace. This parameter must be updated together with <code>adminUsername</code>.</p> <p>You can't use <code>adminUserPassword</code> if <code>manageAdminPassword</code> is true. </p>"
+        },
+        "adminUsername":{
+          "shape":"DbUser",
+          "documentation":"<p>The username of the administrator for the first database created in the namespace. This parameter must be updated together with <code>adminUserPassword</code>.</p>"
+        },
+        "defaultIamRoleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role to set as a default in the namespace. This parameter must be updated together with <code>iamRoles</code>.</p>"
+        },
+        "iamRoles":{
+          "shape":"IamRoleArnList",
+          "documentation":"<p>A list of IAM roles to associate with the namespace. This parameter must be updated together with <code>defaultIamRoleArn</code>.</p>"
+        },
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the Amazon Web Services Key Management Service key used to encrypt your data.</p>"
+        },
+        "logExports":{
+          "shape":"LogExportList",
+          "documentation":"<p>The types of logs the namespace can export. The export types are <code>userlog</code>, <code>connectionlog</code>, and <code>useractivitylog</code>.</p>"
+        },
+        "manageAdminPassword":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, Amazon Redshift uses Secrets Manager to manage the namespace's admin credentials. You can't use <code>adminUserPassword</code> if <code>manageAdminPassword</code> is true. If <code>manageAdminPassword</code> is false or not set, Amazon Redshift uses <code>adminUserPassword</code> for the admin user account's password. </p>"
+        },
+        "namespaceName":{
+          "shape":"NamespaceName",
+          "documentation":"<p>The name of the namespace to update. You can't update the name of a namespace once it is created.</p>"
+        }
+      }
+    },
+    "UpdateNamespaceResponse":{
+      "type":"structure",
+      "required":["namespace"],
+      "members":{
+        "namespace":{
+          "shape":"Namespace",
+          "documentation":"<p>A list of tag instances.</p>"
+        }
+      }
+    },
+    "UpdateScheduledActionRequest":{
+      "type":"structure",
+      "required":["scheduledActionName"],
+      "members":{
+        "enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to enable the scheduled action.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end time in UTC of the scheduled action to update.</p>"
+        },
+        "roleArn":{
+          "shape":"IamRoleArn",
+          "documentation":"<p>The ARN of the IAM role to assume to run the scheduled action. This IAM role must have permission to run the Amazon Redshift Serverless API operation in the scheduled action. This IAM role must allow the Amazon Redshift scheduler to schedule creating snapshots (Principal scheduler.redshift.amazonaws.com) to assume permissions on your behalf. For more information about the IAM role to use with the Amazon Redshift scheduler, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-identity-based.html\">Using Identity-Based Policies for Amazon Redshift</a> in the Amazon Redshift Management Guide</p>"
+        },
+        "schedule":{
+          "shape":"Schedule",
+          "documentation":"<p>The schedule for a one-time (at timestamp format) or recurring (cron format) scheduled action. Schedule invocations must be separated by at least one hour. Times are in UTC.</p> <ul> <li> <p>Format of at timestamp is <code>yyyy-mm-ddThh:mm:ss</code>. For example, <code>2016-03-04T17:27:00</code>.</p> </li> <li> <p>Format of cron expression is <code>(Minutes Hours Day-of-month Month Day-of-week Year)</code>. For example, <code>\"(0 10 ? * MON *)\"</code>. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions\">Cron Expressions</a> in the <i>Amazon CloudWatch Events User Guide</i>.</p> </li> </ul>"
+        },
+        "scheduledActionDescription":{
+          "shape":"String",
+          "documentation":"<p>The descripion of the scheduled action to update to.</p>"
+        },
+        "scheduledActionName":{
+          "shape":"ScheduledActionName",
+          "documentation":"<p>The name of the scheduled action to update to.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time in UTC of the scheduled action to update to.</p>"
+        },
+        "targetAction":{"shape":"TargetAction"}
+      }
+    },
+    "UpdateScheduledActionResponse":{
+      "type":"structure",
+      "members":{
+        "scheduledAction":{
+          "shape":"ScheduledActionResponse",
+          "documentation":"<p>The ScheduledAction object that was updated.</p>"
+        }
+      }
+    },
+    "UpdateSnapshotCopyConfigurationRequest":{
+      "type":"structure",
+      "required":["snapshotCopyConfigurationId"],
+      "members":{
+        "snapshotCopyConfigurationId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the snapshot copy configuration to update.</p>"
+        },
+        "snapshotRetentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The new retention period of how long to keep a snapshot in the destination Amazon Web Services Region.</p>"
+        }
+      }
+    },
+    "UpdateSnapshotCopyConfigurationResponse":{
+      "type":"structure",
+      "required":["snapshotCopyConfiguration"],
+      "members":{
+        "snapshotCopyConfiguration":{
+          "shape":"SnapshotCopyConfiguration",
+          "documentation":"<p>The updated snapshot copy configuration object.</p>"
+        }
+      }
+    },
+    "UpdateSnapshotRequest":{
+      "type":"structure",
+      "required":["snapshotName"],
+      "members":{
+        "retentionPeriod":{
+          "shape":"Integer",
+          "documentation":"<p>The new retention period of the snapshot.</p>"
+        },
+        "snapshotName":{
+          "shape":"String",
+          "documentation":"<p>The name of the snapshot.</p>"
+        }
+      }
+    },
+    "UpdateSnapshotResponse":{
+      "type":"structure",
+      "members":{
+        "snapshot":{
+          "shape":"Snapshot",
+          "documentation":"<p>The updated snapshot object.</p>"
+        }
+      }
+    },
+    "UpdateTarget":{
+      "type":"structure",
+      "members":{
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>The name of the new track.</p>"
+        },
+        "workgroupVersion":{
+          "shape":"String",
+          "documentation":"<p>The workgroup version for the new track.</p>"
+        }
+      },
+      "documentation":"<p>A track that you can switch the current track to.</p>"
+    },
+    "UpdateTargetsList":{
+      "type":"list",
+      "member":{"shape":"UpdateTarget"}
+    },
+    "UpdateUsageLimitRequest":{
+      "type":"structure",
+      "required":["usageLimitId"],
+      "members":{
+        "amount":{
+          "shape":"Long",
+          "documentation":"<p>The new limit amount. If time-based, this amount is in Redshift Processing Units (RPU) consumed per hour. If data-based, this amount is in terabytes (TB) of data transferred between Regions in cross-account sharing. The value must be a positive number.</p>"
+        },
+        "breachAction":{
+          "shape":"UsageLimitBreachAction",
+          "documentation":"<p>The new action that Amazon Redshift Serverless takes when the limit is reached.</p>"
+        },
+        "usageLimitId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the usage limit to update.</p>"
+        }
+      }
+    },
+    "UpdateUsageLimitResponse":{
+      "type":"structure",
+      "members":{
+        "usageLimit":{
+          "shape":"UsageLimit",
+          "documentation":"<p>The updated usage limit object.</p>"
+        }
+      }
+    },
+    "UpdateWorkgroupRequest":{
+      "type":"structure",
+      "required":["workgroupName"],
+      "members":{
+        "baseCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The new base data warehouse capacity in Redshift Processing Units (RPUs).</p>"
+        },
+        "configParameters":{
+          "shape":"ConfigParameterList",
+          "documentation":"<p>An array of parameters to set for advanced control over a database. The options are <code>auto_mv</code>, <code>datestyle</code>, <code>enable_case_sensitive_identifier</code>, <code>enable_user_activity_logging</code>, <code>query_group</code>, <code>search_path</code>, <code>require_ssl</code>, <code>use_fips_ssl</code>, and query monitoring metrics that let you define performance boundaries. For more information about query monitoring rules and available metrics, see <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/cm-c-wlm-query-monitoring-rules.html#cm-c-wlm-query-monitoring-metrics-serverless\"> Query monitoring metrics for Amazon Redshift Serverless</a>.</p>"
+        },
+        "enhancedVpcRouting":{
+          "shape":"Boolean",
+          "documentation":"<p>The value that specifies whether to turn on enhanced virtual private cloud (VPC) routing, which forces Amazon Redshift Serverless to route traffic through your VPC.</p>"
+        },
+        "ipAddressType":{
+          "shape":"IpAddressType",
+          "documentation":"<p>The IP address type that the workgroup supports. Possible values are <code>ipv4</code> and <code>dualstack</code>.</p>"
+        },
+        "maxCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum data-warehouse capacity Amazon Redshift Serverless uses to serve queries. The max capacity is specified in RPUs.</p>"
+        },
+        "port":{
+          "shape":"Integer",
+          "documentation":"<p>The custom port to use when connecting to a workgroup. Valid port ranges are 5431-5455 and 8191-8215. The default is 5439.</p>"
+        },
+        "pricePerformanceTarget":{
+          "shape":"PerformanceTarget",
+          "documentation":"<p>An object that represents the price performance target settings for the workgroup.</p>"
+        },
+        "publiclyAccessible":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that specifies whether the workgroup can be accessible from a public network.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>An array of security group IDs to associate with the workgroup.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>An array of VPC subnet IDs to associate with the workgroup.</p>"
+        },
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>An optional parameter for the name of the track for the workgroup. If you don't provide a track name, the workgroup is assigned to the <code>current</code> track.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup to update. You can't update the name of a workgroup once it is created.</p>"
+        }
+      }
+    },
+    "UpdateWorkgroupResponse":{
+      "type":"structure",
+      "required":["workgroup"],
+      "members":{
+        "workgroup":{
+          "shape":"Workgroup",
+          "documentation":"<p>The updated workgroup object.</p>"
+        }
+      }
+    },
+    "UsageLimit":{
+      "type":"structure",
+      "members":{
+        "amount":{
+          "shape":"Long",
+          "documentation":"<p>The limit amount. If time-based, this amount is in RPUs consumed per hour. If data-based, this amount is in terabytes (TB). The value must be a positive number.</p>"
+        },
+        "breachAction":{
+          "shape":"UsageLimitBreachAction",
+          "documentation":"<p>The action that Amazon Redshift Serverless takes when the limit is reached.</p>"
+        },
+        "period":{
+          "shape":"UsageLimitPeriod",
+          "documentation":"<p>The time period that the amount applies to. A weekly period begins on Sunday. The default is monthly.</p>"
+        },
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies the Amazon Redshift Serverless resource.</p>"
+        },
+        "usageLimitArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource associated with the usage limit.</p>"
+        },
+        "usageLimitId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the usage limit.</p>"
+        },
+        "usageType":{
+          "shape":"UsageLimitUsageType",
+          "documentation":"<p>The Amazon Redshift Serverless feature to limit.</p>"
+        }
+      },
+      "documentation":"<p>The usage limit object.</p>"
+    },
+    "UsageLimitBreachAction":{
+      "type":"string",
+      "enum":[
+        "log",
+        "emit-metric",
+        "deactivate"
+      ]
+    },
+    "UsageLimitPeriod":{
+      "type":"string",
+      "enum":[
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "UsageLimitUsageType":{
+      "type":"string",
+      "enum":[
+        "serverless-compute",
+        "cross-region-datasharing"
+      ]
+    },
+    "UsageLimits":{
+      "type":"list",
+      "member":{"shape":"UsageLimit"},
+      "max":100,
+      "min":1
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input failed to satisfy the constraints specified by an AWS service.</p>",
+      "exception":true
+    },
+    "VpcEndpoint":{
+      "type":"structure",
+      "members":{
+        "networkInterfaces":{
+          "shape":"NetworkInterfaceList",
+          "documentation":"<p>One or more network interfaces of the endpoint. Also known as an interface endpoint.</p>"
+        },
+        "vpcEndpointId":{
+          "shape":"String",
+          "documentation":"<p>The connection endpoint ID for connecting to Amazon Redshift Serverless.</p>"
+        },
+        "vpcId":{
+          "shape":"String",
+          "documentation":"<p>The VPC identifier that the endpoint is associated with.</p>"
+        }
+      },
+      "documentation":"<p>The connection endpoint for connecting to Amazon Redshift Serverless through the proxy.</p>"
+    },
+    "VpcEndpointList":{
+      "type":"list",
+      "member":{"shape":"VpcEndpoint"}
+    },
+    "VpcIds":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "VpcSecurityGroupId":{"type":"string"},
+    "VpcSecurityGroupIdList":{
+      "type":"list",
+      "member":{"shape":"VpcSecurityGroupId"}
+    },
+    "VpcSecurityGroupMembership":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"String",
+          "documentation":"<p>The status of the VPC security group.</p>"
+        },
+        "vpcSecurityGroupId":{
+          "shape":"VpcSecurityGroupId",
+          "documentation":"<p>The unique identifier of the VPC security group.</p>"
+        }
+      },
+      "documentation":"<p>Describes the members of a VPC security group.</p>"
+    },
+    "VpcSecurityGroupMembershipList":{
+      "type":"list",
+      "member":{"shape":"VpcSecurityGroupMembership"}
+    },
+    "Workgroup":{
+      "type":"structure",
+      "members":{
+        "baseCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The base data warehouse capacity of the workgroup in Redshift Processing Units (RPUs).</p>"
+        },
+        "configParameters":{
+          "shape":"ConfigParameterList",
+          "documentation":"<p>An array of parameters to set for advanced control over a database. The options are <code>auto_mv</code>, <code>datestyle</code>, <code>enable_case_sensitive_identifier</code>, <code>enable_user_activity_logging</code>, <code>query_group</code>, <code>search_path</code>, <code>require_ssl</code>, <code>use_fips_ssl</code>, and query monitoring metrics that let you define performance boundaries. For more information about query monitoring rules and available metrics, see <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/cm-c-wlm-query-monitoring-rules.html#cm-c-wlm-query-monitoring-metrics-serverless\"> Query monitoring metrics for Amazon Redshift Serverless</a>.</p>"
+        },
+        "creationDate":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation date of the workgroup.</p>"
+        },
+        "crossAccountVpcs":{
+          "shape":"VpcIds",
+          "documentation":"<p>A list of VPCs. Each entry is the unique identifier of a virtual private cloud with access to Amazon Redshift Serverless. If all of the VPCs for the grantee are allowed, it shows an asterisk.</p>"
+        },
+        "customDomainCertificateArn":{
+          "shape":"CustomDomainCertificateArnString",
+          "documentation":"<p>The custom domain name’s certificate Amazon resource name (ARN).</p>"
+        },
+        "customDomainCertificateExpiryTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The expiration time for the certificate.</p>"
+        },
+        "customDomainName":{
+          "shape":"CustomDomainName",
+          "documentation":"<p>The custom domain name associated with the workgroup.</p>"
+        },
+        "endpoint":{
+          "shape":"Endpoint",
+          "documentation":"<p>The endpoint that is created from the workgroup.</p>"
+        },
+        "enhancedVpcRouting":{
+          "shape":"Boolean",
+          "documentation":"<p>The value that specifies whether to enable enhanced virtual private cloud (VPC) routing, which forces Amazon Redshift Serverless to route traffic through your VPC.</p>"
+        },
+        "ipAddressType":{
+          "shape":"IpAddressType",
+          "documentation":"<p>The IP address type that the workgroup supports. Possible values are <code>ipv4</code> and <code>dualstack</code>.</p>"
+        },
+        "maxCapacity":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum data-warehouse capacity Amazon Redshift Serverless uses to serve queries. The max capacity is specified in RPUs.</p>"
+        },
+        "namespaceName":{
+          "shape":"String",
+          "documentation":"<p>The namespace the workgroup is associated with.</p>"
+        },
+        "patchVersion":{
+          "shape":"String",
+          "documentation":"<p>The patch version of your Amazon Redshift Serverless workgroup. For more information about patch versions, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html\">Cluster versions for Amazon Redshift</a>.</p>"
+        },
+        "pendingTrackName":{
+          "shape":"TrackName",
+          "documentation":"<p>The name for the track that you want to assign to the workgroup. When the track changes, the workgroup is switched to the latest workgroup release available for the track. At this point, the track name is applied.</p>"
+        },
+        "port":{
+          "shape":"Integer",
+          "documentation":"<p>The custom port to use when connecting to a workgroup. Valid port ranges are 5431-5455 and 8191-8215. The default is 5439.</p>"
+        },
+        "pricePerformanceTarget":{
+          "shape":"PerformanceTarget",
+          "documentation":"<p>An object that represents the price performance target settings for the workgroup.</p>"
+        },
+        "publiclyAccessible":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that specifies whether the workgroup can be accessible from a public network.</p>"
+        },
+        "securityGroupIds":{
+          "shape":"SecurityGroupIdList",
+          "documentation":"<p>An array of security group IDs to associate with the workgroup.</p>"
+        },
+        "status":{
+          "shape":"WorkgroupStatus",
+          "documentation":"<p>The status of the workgroup.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIdList",
+          "documentation":"<p>An array of subnet IDs the workgroup is associated with.</p>"
+        },
+        "trackName":{
+          "shape":"TrackName",
+          "documentation":"<p>The name of the track for the workgroup.</p>"
+        },
+        "workgroupArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) that links to the workgroup.</p>"
+        },
+        "workgroupId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the workgroup.</p>"
+        },
+        "workgroupName":{
+          "shape":"WorkgroupName",
+          "documentation":"<p>The name of the workgroup.</p>"
+        },
+        "workgroupVersion":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Redshift Serverless version of your workgroup. For more information about Amazon Redshift Serverless versions, see<a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/cluster-versions.html\">Cluster versions for Amazon Redshift</a>.</p>"
+        }
+      },
+      "documentation":"<p>The collection of computing resources from which an endpoint is created.</p>"
+    },
+    "WorkgroupList":{
+      "type":"list",
+      "member":{"shape":"Workgroup"}
+    },
+    "WorkgroupName":{
+      "type":"string",
+      "max":64,
+      "min":3,
+      "pattern":"^[a-z0-9-]+$"
+    },
+    "WorkgroupStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "AVAILABLE",
+        "MODIFYING",
+        "DELETING"
+      ]
+    }
+  },
+  "documentation":"<p>This is an interface reference for Amazon Redshift Serverless. It contains documentation for one of the programming or command line interfaces you can use to manage Amazon Redshift Serverless. </p> <p>Amazon Redshift Serverless automatically provisions data warehouse capacity and intelligently scales the underlying resources based on workload demands. Amazon Redshift Serverless adjusts capacity in seconds to deliver consistently high performance and simplified operations for even the most demanding and volatile workloads. Amazon Redshift Serverless lets you focus on using your data to acquire new insights for your business and customers. </p> <p> To learn more about Amazon Redshift Serverless, see <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/serverless-whatis.html\">What is Amazon Redshift Serverless?</a>.</p>"
+}

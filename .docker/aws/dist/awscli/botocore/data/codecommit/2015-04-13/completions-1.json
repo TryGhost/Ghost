@@ -1,0 +1,288 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Repository": {
+      "operation": "ListRepositories",
+      "resourceIdentifier": {
+        "repositoryName": "repositories[].repositoryName"
+      }
+    }
+  },
+  "operations": {
+    "BatchGetRepositories": {
+      "repositoryNames": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteBranch": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteFile": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "DeleteRepository": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetBlob": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetBranch": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetCommentsForComparedCommit": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetCommentsForPullRequest": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetCommit": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetDifferences": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetFile": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetFolder": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetMergeConflicts": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetRepository": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "GetRepositoryTriggers": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "ListBranches": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "ListPullRequests": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "MergePullRequestByFastForward": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PostCommentForComparedCommit": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PostCommentForPullRequest": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PutFile": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "PutRepositoryTriggers": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "TestRepositoryTriggers": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "UpdateDefaultBranch": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    },
+    "UpdateRepositoryDescription": {
+      "repositoryName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Repository",
+            "resourceIdentifier": "repositoryName"
+          }
+        ]
+      }
+    }
+  }
+}

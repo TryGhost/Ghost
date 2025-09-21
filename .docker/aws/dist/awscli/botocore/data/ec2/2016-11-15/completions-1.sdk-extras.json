@@ -1,0 +1,25 @@
+{
+  "merge": {
+    "resources": {
+      "Instance": {
+        "operation": "DescribeInstances",
+        "resourceIdentifier": {
+          "InstanceIds": "Reservations[].Instances[].InstanceId"
+        }
+      }
+    },
+    "operations": {
+      "DescribeInstances": {
+        "InstanceIds": {
+          "completions": [
+            {
+              "parameters": {},
+              "resourceName": "Instance",
+              "resourceIdentifier": "InstanceIds"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "pagination": {
+    "ListActors": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "actorSummaries"
+    },
+    "ListEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "events"
+    },
+    "ListMemoryRecords": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "memoryRecordSummaries"
+    },
+    "ListSessions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "sessionSummaries"
+    },
+    "RetrieveMemoryRecords": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "memoryRecordSummaries"
+    }
+  }
+}

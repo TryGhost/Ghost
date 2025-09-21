@@ -1,0 +1,169 @@
+{
+  "version": "1.0",
+  "resources": {
+    "HyperParameterTuningJob": {
+      "operation": "ListHyperParameterTuningJobs",
+      "resourceIdentifier": {
+        "HyperParameterTuningJobName": "HyperParameterTuningJobSummaries[].HyperParameterTuningJobName"
+      }
+    },
+    "Model": {
+      "operation": "ListModels",
+      "resourceIdentifier": {
+        "ModelName": "Models[].ModelName"
+      }
+    },
+    "NotebookInstanceLifecycleConfig": {
+      "operation": "ListNotebookInstanceLifecycleConfigs",
+      "resourceIdentifier": {
+        "NotebookInstanceLifecycleConfigName": "NotebookInstanceLifecycleConfigs[].NotebookInstanceLifecycleConfigName"
+      }
+    },
+    "TrainingJob": {
+      "operation": "ListTrainingJobs",
+      "resourceIdentifier": {
+        "TrainingJobName": "TrainingJobSummaries[].TrainingJobName"
+      }
+    },
+    "TransformJob": {
+      "operation": "ListTransformJobs",
+      "resourceIdentifier": {
+        "TransformJobName": "TransformJobSummaries[].TransformJobName"
+      }
+    }
+  },
+  "operations": {
+    "DeleteModel": {
+      "ModelName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Model",
+            "resourceIdentifier": "ModelName"
+          }
+        ]
+      }
+    },
+    "DeleteNotebookInstanceLifecycleConfig": {
+      "NotebookInstanceLifecycleConfigName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NotebookInstanceLifecycleConfig",
+            "resourceIdentifier": "NotebookInstanceLifecycleConfigName"
+          }
+        ]
+      }
+    },
+    "DescribeHyperParameterTuningJob": {
+      "HyperParameterTuningJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HyperParameterTuningJob",
+            "resourceIdentifier": "HyperParameterTuningJobName"
+          }
+        ]
+      }
+    },
+    "DescribeModel": {
+      "ModelName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Model",
+            "resourceIdentifier": "ModelName"
+          }
+        ]
+      }
+    },
+    "DescribeNotebookInstanceLifecycleConfig": {
+      "NotebookInstanceLifecycleConfigName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NotebookInstanceLifecycleConfig",
+            "resourceIdentifier": "NotebookInstanceLifecycleConfigName"
+          }
+        ]
+      }
+    },
+    "DescribeTrainingJob": {
+      "TrainingJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TrainingJob",
+            "resourceIdentifier": "TrainingJobName"
+          }
+        ]
+      }
+    },
+    "DescribeTransformJob": {
+      "TransformJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TransformJob",
+            "resourceIdentifier": "TransformJobName"
+          }
+        ]
+      }
+    },
+    "ListTrainingJobsForHyperParameterTuningJob": {
+      "HyperParameterTuningJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HyperParameterTuningJob",
+            "resourceIdentifier": "HyperParameterTuningJobName"
+          }
+        ]
+      }
+    },
+    "StopHyperParameterTuningJob": {
+      "HyperParameterTuningJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "HyperParameterTuningJob",
+            "resourceIdentifier": "HyperParameterTuningJobName"
+          }
+        ]
+      }
+    },
+    "StopTrainingJob": {
+      "TrainingJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TrainingJob",
+            "resourceIdentifier": "TrainingJobName"
+          }
+        ]
+      }
+    },
+    "StopTransformJob": {
+      "TransformJobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TransformJob",
+            "resourceIdentifier": "TransformJobName"
+          }
+        ]
+      }
+    },
+    "UpdateNotebookInstanceLifecycleConfig": {
+      "NotebookInstanceLifecycleConfigName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "NotebookInstanceLifecycleConfig",
+            "resourceIdentifier": "NotebookInstanceLifecycleConfigName"
+          }
+        ]
+      }
+    }
+  }
+}

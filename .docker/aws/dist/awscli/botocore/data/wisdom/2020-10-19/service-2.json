@@ -1,0 +1,4128 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-10-19",
+    "endpointPrefix":"wisdom",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon Connect Wisdom Service",
+    "serviceId":"Wisdom",
+    "signatureVersion":"v4",
+    "signingName":"wisdom",
+    "uid":"wisdom-2020-10-19"
+  },
+  "operations":{
+    "CreateAssistant":{
+      "name":"CreateAssistant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateAssistantRequest"},
+      "output":{"shape":"CreateAssistantResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an Amazon Connect Wisdom assistant.</p>",
+      "idempotent":true
+    },
+    "CreateAssistantAssociation":{
+      "name":"CreateAssistantAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants/{assistantId}/associations",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateAssistantAssociationRequest"},
+      "output":{"shape":"CreateAssistantAssociationResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates an association between an Amazon Connect Wisdom assistant and another resource. Currently, the only supported association is with a knowledge base. An assistant can have only a single association.</p>",
+      "idempotent":true
+    },
+    "CreateContent":{
+      "name":"CreateContent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateContentRequest"},
+      "output":{"shape":"CreateContentResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates Wisdom content. Before to calling this API, use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a> to upload an asset.</p>",
+      "idempotent":true
+    },
+    "CreateKnowledgeBase":{
+      "name":"CreateKnowledgeBase",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateKnowledgeBaseRequest"},
+      "output":{"shape":"CreateKnowledgeBaseResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a knowledge base.</p> <note> <p>When using this API, you cannot reuse <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/Welcome.html\">Amazon AppIntegrations</a> DataIntegrations with external knowledge bases such as Salesforce and ServiceNow. If you do, you'll get an <code>InvalidRequestException</code> error. </p> <p>For example, you're programmatically managing your external knowledge base, and you want to add or remove one of the fields that is being ingested from Salesforce. Do the following:</p> <ol> <li> <p>Call <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_DeleteKnowledgeBase.html\">DeleteKnowledgeBase</a>.</p> </li> <li> <p>Call <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html\">DeleteDataIntegration</a>.</p> </li> <li> <p>Call <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> to recreate the DataIntegration or a create different one.</p> </li> <li> <p>Call CreateKnowledgeBase.</p> </li> </ol> </note>",
+      "idempotent":true
+    },
+    "CreateQuickResponse":{
+      "name":"CreateQuickResponse",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/quickResponses",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateQuickResponseRequest"},
+      "output":{"shape":"CreateQuickResponseResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a Wisdom quick response.</p>",
+      "idempotent":true
+    },
+    "CreateSession":{
+      "name":"CreateSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants/{assistantId}/sessions",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSessionRequest"},
+      "output":{"shape":"CreateSessionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a session. A session is a contextual container used for generating recommendations. Amazon Connect creates a new Wisdom session for each contact on which Wisdom is enabled.</p>",
+      "idempotent":true
+    },
+    "DeleteAssistant":{
+      "name":"DeleteAssistant",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/assistants/{assistantId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAssistantRequest"},
+      "output":{"shape":"DeleteAssistantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes an assistant.</p>",
+      "idempotent":true
+    },
+    "DeleteAssistantAssociation":{
+      "name":"DeleteAssistantAssociation",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/assistants/{assistantId}/associations/{assistantAssociationId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAssistantAssociationRequest"},
+      "output":{"shape":"DeleteAssistantAssociationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes an assistant association.</p>",
+      "idempotent":true
+    },
+    "DeleteContent":{
+      "name":"DeleteContent",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents/{contentId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteContentRequest"},
+      "output":{"shape":"DeleteContentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the content.</p>",
+      "idempotent":true
+    },
+    "DeleteImportJob":{
+      "name":"DeleteImportJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/importJobs/{importJobId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteImportJobRequest"},
+      "output":{"shape":"DeleteImportJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the quick response import job.</p>",
+      "idempotent":true
+    },
+    "DeleteKnowledgeBase":{
+      "name":"DeleteKnowledgeBase",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteKnowledgeBaseRequest"},
+      "output":{"shape":"DeleteKnowledgeBaseResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the knowledge base.</p> <note> <p>When you use this API to delete an external knowledge base such as Salesforce or ServiceNow, you must also delete the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/Welcome.html\">Amazon AppIntegrations</a> DataIntegration. This is because you can't reuse the DataIntegration after it's been associated with an external knowledge base. However, you can delete and recreate it. See <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html\">DeleteDataIntegration</a> and <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> in the <i>Amazon AppIntegrations API Reference</i>.</p> </note>",
+      "idempotent":true
+    },
+    "DeleteQuickResponse":{
+      "name":"DeleteQuickResponse",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteQuickResponseRequest"},
+      "output":{"shape":"DeleteQuickResponseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a quick response.</p>",
+      "idempotent":true
+    },
+    "GetAssistant":{
+      "name":"GetAssistant",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants/{assistantId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAssistantRequest"},
+      "output":{"shape":"GetAssistantResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about an assistant.</p>"
+    },
+    "GetAssistantAssociation":{
+      "name":"GetAssistantAssociation",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants/{assistantId}/associations/{assistantAssociationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAssistantAssociationRequest"},
+      "output":{"shape":"GetAssistantAssociationResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about an assistant association.</p>"
+    },
+    "GetContent":{
+      "name":"GetContent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents/{contentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetContentRequest"},
+      "output":{"shape":"GetContentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves content, including a pre-signed URL to download the content.</p>"
+    },
+    "GetContentSummary":{
+      "name":"GetContentSummary",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents/{contentId}/summary",
+        "responseCode":200
+      },
+      "input":{"shape":"GetContentSummaryRequest"},
+      "output":{"shape":"GetContentSummaryResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves summary information about the content.</p>"
+    },
+    "GetImportJob":{
+      "name":"GetImportJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/importJobs/{importJobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetImportJobRequest"},
+      "output":{"shape":"GetImportJobResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves the started import job.</p>"
+    },
+    "GetKnowledgeBase":{
+      "name":"GetKnowledgeBase",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetKnowledgeBaseRequest"},
+      "output":{"shape":"GetKnowledgeBaseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about the knowledge base.</p>"
+    },
+    "GetQuickResponse":{
+      "name":"GetQuickResponse",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQuickResponseRequest"},
+      "output":{"shape":"GetQuickResponseResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves the quick response.</p>"
+    },
+    "GetRecommendations":{
+      "name":"GetRecommendations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants/{assistantId}/sessions/{sessionId}/recommendations",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRecommendationsRequest"},
+      "output":{"shape":"GetRecommendationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves recommendations for the specified session. To avoid retrieving the same recommendations in subsequent calls, use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_NotifyRecommendationsReceived.html\">NotifyRecommendationsReceived</a>. This API supports long-polling behavior with the <code>waitTimeSeconds</code> parameter. Short poll is the default behavior and only returns recommendations already available. To perform a manual query against an assistant, use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_QueryAssistant.html\">QueryAssistant</a>.</p>",
+      "deprecated":true,
+      "deprecatedMessage":"GetRecommendations API will be discontinued starting June 1, 2024. To receive generative responses after March 1, 2024 you will need to create a new Assistant in the Connect console and integrate the Amazon Q in Connect JavaScript library (amazon-q-connectjs) into your applications."
+    },
+    "GetSession":{
+      "name":"GetSession",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants/{assistantId}/sessions/{sessionId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSessionRequest"},
+      "output":{"shape":"GetSessionResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information for a specified session.</p>"
+    },
+    "ListAssistantAssociations":{
+      "name":"ListAssistantAssociations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants/{assistantId}/associations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAssistantAssociationsRequest"},
+      "output":{"shape":"ListAssistantAssociationsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists information about assistant associations.</p>"
+    },
+    "ListAssistants":{
+      "name":"ListAssistants",
+      "http":{
+        "method":"GET",
+        "requestUri":"/assistants",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAssistantsRequest"},
+      "output":{"shape":"ListAssistantsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists information about assistants.</p>"
+    },
+    "ListContents":{
+      "name":"ListContents",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents",
+        "responseCode":200
+      },
+      "input":{"shape":"ListContentsRequest"},
+      "output":{"shape":"ListContentsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the content.</p>"
+    },
+    "ListImportJobs":{
+      "name":"ListImportJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/importJobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListImportJobsRequest"},
+      "output":{"shape":"ListImportJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists information about import jobs.</p>"
+    },
+    "ListKnowledgeBases":{
+      "name":"ListKnowledgeBases",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases",
+        "responseCode":200
+      },
+      "input":{"shape":"ListKnowledgeBasesRequest"},
+      "output":{"shape":"ListKnowledgeBasesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the knowledge bases.</p>"
+    },
+    "ListQuickResponses":{
+      "name":"ListQuickResponses",
+      "http":{
+        "method":"GET",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/quickResponses",
+        "responseCode":200
+      },
+      "input":{"shape":"ListQuickResponsesRequest"},
+      "output":{"shape":"ListQuickResponsesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists information about quick response.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the tags for the specified resource.</p>"
+    },
+    "NotifyRecommendationsReceived":{
+      "name":"NotifyRecommendationsReceived",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants/{assistantId}/sessions/{sessionId}/recommendations/notify",
+        "responseCode":200
+      },
+      "input":{"shape":"NotifyRecommendationsReceivedRequest"},
+      "output":{"shape":"NotifyRecommendationsReceivedResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified recommendations from the specified assistant's queue of newly available recommendations. You can use this API in conjunction with <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_GetRecommendations.html\">GetRecommendations</a> and a <code>waitTimeSeconds</code> input for long-polling behavior and avoiding duplicate recommendations.</p>",
+      "idempotent":true
+    },
+    "QueryAssistant":{
+      "name":"QueryAssistant",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants/{assistantId}/query",
+        "responseCode":200
+      },
+      "input":{"shape":"QueryAssistantRequest"},
+      "output":{"shape":"QueryAssistantResponse"},
+      "errors":[
+        {"shape":"RequestTimeoutException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Performs a manual search against the specified assistant. To retrieve recommendations for an assistant, use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_GetRecommendations.html\">GetRecommendations</a>. </p>",
+      "deprecated":true,
+      "deprecatedMessage":"QueryAssistant API will be discontinued starting June 1, 2024. To receive generative responses after March 1, 2024 you will need to create a new Assistant in the Connect console and integrate the Amazon Q in Connect JavaScript library (amazon-q-connectjs) into your applications."
+    },
+    "RemoveKnowledgeBaseTemplateUri":{
+      "name":"RemoveKnowledgeBaseTemplateUri",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/templateUri",
+        "responseCode":204
+      },
+      "input":{"shape":"RemoveKnowledgeBaseTemplateUriRequest"},
+      "output":{"shape":"RemoveKnowledgeBaseTemplateUriResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes a URI template from a knowledge base.</p>"
+    },
+    "SearchContent":{
+      "name":"SearchContent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/search",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchContentRequest"},
+      "output":{"shape":"SearchContentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Searches for content in a specified knowledge base. Can be used to get a specific content resource by its name.</p>"
+    },
+    "SearchQuickResponses":{
+      "name":"SearchQuickResponses",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/search/quickResponses",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchQuickResponsesRequest"},
+      "output":{"shape":"SearchQuickResponsesResponse"},
+      "errors":[
+        {"shape":"RequestTimeoutException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Searches existing Wisdom quick responses in a Wisdom knowledge base.</p>"
+    },
+    "SearchSessions":{
+      "name":"SearchSessions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/assistants/{assistantId}/searchSessions",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchSessionsRequest"},
+      "output":{"shape":"SearchSessionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Searches for sessions.</p>"
+    },
+    "StartContentUpload":{
+      "name":"StartContentUpload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/upload",
+        "responseCode":200
+      },
+      "input":{"shape":"StartContentUploadRequest"},
+      "output":{"shape":"StartContentUploadResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get a URL to upload content to a knowledge base. To upload content, first make a PUT request to the returned URL with your file, making sure to include the required headers. Then use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_CreateContent.html\">CreateContent</a> to finalize the content creation process or <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_UpdateContent.html\">UpdateContent</a> to modify an existing resource. You can only upload content to a knowledge base of type CUSTOM.</p>"
+    },
+    "StartImportJob":{
+      "name":"StartImportJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/importJobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartImportJobRequest"},
+      "output":{"shape":"StartImportJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Start an asynchronous job to import Wisdom resources from an uploaded source file. Before calling this API, use <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a> to upload an asset that contains the resource data.</p> <ul> <li> <p>For importing Wisdom quick responses, you need to upload a csv file including the quick responses. For information about how to format the csv file for importing quick responses, see <a href=\"https://docs.aws.amazon.com/console/connect/quick-responses/add-data\">Import quick responses</a>.</p> </li> </ul>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"TooManyTagsException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds the specified tags to the specified resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p>",
+      "idempotent":true
+    },
+    "UpdateContent":{
+      "name":"UpdateContent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/contents/{contentId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateContentRequest"},
+      "output":{"shape":"UpdateContentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"PreconditionFailedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates information about the content.</p>"
+    },
+    "UpdateKnowledgeBaseTemplateUri":{
+      "name":"UpdateKnowledgeBaseTemplateUri",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/templateUri",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateKnowledgeBaseTemplateUriRequest"},
+      "output":{"shape":"UpdateKnowledgeBaseTemplateUriResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates the template URI of a knowledge base. This is only supported for knowledge bases of type EXTERNAL. Include a single variable in <code>${variable}</code> format; this interpolated by Wisdom using ingested content. For example, if you ingest a Salesforce article, it has an <code>Id</code> value, and you can set the template URI to <code>https://myInstanceName.lightning.force.com/lightning/r/Knowledge__kav/*${Id}*/view</code>. </p>"
+    },
+    "UpdateQuickResponse":{
+      "name":"UpdateQuickResponse",
+      "http":{
+        "method":"POST",
+        "requestUri":"/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateQuickResponseRequest"},
+      "output":{"shape":"UpdateQuickResponseResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"PreconditionFailedException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates an existing Wisdom quick response.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AppIntegrationsConfiguration":{
+      "type":"structure",
+      "required":["appIntegrationArn"],
+      "members":{
+        "appIntegrationArn":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the AppIntegrations DataIntegration to use for ingesting content.</p> <ul> <li> <p> For <a href=\"https://developer.salesforce.com/docs/atlas.en-us.knowledge_dev.meta/knowledge_dev/sforce_api_objects_knowledge__kav.htm\"> Salesforce</a>, your AppIntegrations DataIntegration must have an ObjectConfiguration if objectFields is not provided, including at least <code>Id</code>, <code>ArticleNumber</code>, <code>VersionNumber</code>, <code>Title</code>, <code>PublishStatus</code>, and <code>IsDeleted</code> as source fields. </p> </li> <li> <p> For <a href=\"https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/knowledge-management-api\"> ServiceNow</a>, your AppIntegrations DataIntegration must have an ObjectConfiguration if objectFields is not provided, including at least <code>number</code>, <code>short_description</code>, <code>sys_mod_count</code>, <code>workflow_state</code>, and <code>active</code> as source fields. </p> </li> <li> <p> For <a href=\"https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/\"> Zendesk</a>, your AppIntegrations DataIntegration must have an ObjectConfiguration if <code>objectFields</code> is not provided, including at least <code>id</code>, <code>title</code>, <code>updated_at</code>, and <code>draft</code> as source fields. </p> </li> <li> <p> For <a href=\"https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/sharepoint-net-server-csom-jsom-and-rest-api-index\">SharePoint</a>, your AppIntegrations DataIntegration must have a FileConfiguration, including only file extensions that are among <code>docx</code>, <code>pdf</code>, <code>html</code>, <code>htm</code>, and <code>txt</code>. </p> </li> <li> <p> For <a href=\"https://aws.amazon.com/s3/\">Amazon S3</a>, the ObjectConfiguration and FileConfiguration of your AppIntegrations DataIntegration must be null. The <code>SourceURI</code> of your DataIntegration must use the following format: <code>s3://your_s3_bucket_name</code>.</p> <important> <p>The bucket policy of the corresponding S3 bucket must allow the Amazon Web Services principal <code>app-integrations.amazonaws.com</code> to perform <code>s3:ListBucket</code>, <code>s3:GetObject</code>, and <code>s3:GetBucketLocation</code> against the bucket.</p> </important> </li> </ul>"
+        },
+        "objectFields":{
+          "shape":"ObjectFieldsList",
+          "documentation":"<p>The fields from the source that are made available to your agents in Wisdom. Optional if ObjectConfiguration is included in the provided DataIntegration. </p> <ul> <li> <p> For <a href=\"https://developer.salesforce.com/docs/atlas.en-us.knowledge_dev.meta/knowledge_dev/sforce_api_objects_knowledge__kav.htm\"> Salesforce</a>, you must include at least <code>Id</code>, <code>ArticleNumber</code>, <code>VersionNumber</code>, <code>Title</code>, <code>PublishStatus</code>, and <code>IsDeleted</code>. </p> </li> <li> <p>For <a href=\"https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/knowledge-management-api\"> ServiceNow</a>, you must include at least <code>number</code>, <code>short_description</code>, <code>sys_mod_count</code>, <code>workflow_state</code>, and <code>active</code>. </p> </li> <li> <p>For <a href=\"https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/\"> Zendesk</a>, you must include at least <code>id</code>, <code>title</code>, <code>updated_at</code>, and <code>draft</code>. </p> </li> </ul> <p>Make sure to include additional fields. These fields are indexed and used to source recommendations. </p>"
+        }
+      },
+      "documentation":"<p>Configuration information for Amazon AppIntegrations to automatically ingest content.</p>"
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"^arn:[a-z-]*?:wisdom:[a-z0-9-]*?:[0-9]{12}:[a-z-]*?/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(?:/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$"
+    },
+    "AssistantAssociationData":{
+      "type":"structure",
+      "required":[
+        "assistantArn",
+        "assistantAssociationArn",
+        "assistantAssociationId",
+        "assistantId",
+        "associationData",
+        "associationType"
+      ],
+      "members":{
+        "assistantArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Wisdom assistant.</p>"
+        },
+        "assistantAssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the assistant association.</p>"
+        },
+        "assistantAssociationId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the assistant association.</p>"
+        },
+        "assistantId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the Wisdom assistant.</p>"
+        },
+        "associationData":{
+          "shape":"AssistantAssociationOutputData",
+          "documentation":"<p>A union type that currently has a single argument, the knowledge base ID.</p>"
+        },
+        "associationType":{
+          "shape":"AssociationType",
+          "documentation":"<p>The type of association.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Information about the assistant association.</p>"
+    },
+    "AssistantAssociationInputData":{
+      "type":"structure",
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        }
+      },
+      "documentation":"<p>The data that is input into Wisdom as a result of the assistant association.</p>",
+      "union":true
+    },
+    "AssistantAssociationOutputData":{
+      "type":"structure",
+      "members":{
+        "knowledgeBaseAssociation":{
+          "shape":"KnowledgeBaseAssociationData",
+          "documentation":"<p>The knowledge base where output data is sent.</p>"
+        }
+      },
+      "documentation":"<p>The data that is output as a result of the assistant association.</p>",
+      "union":true
+    },
+    "AssistantAssociationSummary":{
+      "type":"structure",
+      "required":[
+        "assistantArn",
+        "assistantAssociationArn",
+        "assistantAssociationId",
+        "assistantId",
+        "associationData",
+        "associationType"
+      ],
+      "members":{
+        "assistantArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Wisdom assistant.</p>"
+        },
+        "assistantAssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the assistant association.</p>"
+        },
+        "assistantAssociationId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the assistant association.</p>"
+        },
+        "assistantId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the Wisdom assistant.</p>"
+        },
+        "associationData":{
+          "shape":"AssistantAssociationOutputData",
+          "documentation":"<p>The association data.</p>"
+        },
+        "associationType":{
+          "shape":"AssociationType",
+          "documentation":"<p>The type of association.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the assistant association.</p>"
+    },
+    "AssistantAssociationSummaryList":{
+      "type":"list",
+      "member":{"shape":"AssistantAssociationSummary"}
+    },
+    "AssistantData":{
+      "type":"structure",
+      "required":[
+        "assistantArn",
+        "assistantId",
+        "name",
+        "status",
+        "type"
+      ],
+      "members":{
+        "assistantArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Wisdom assistant.</p>"
+        },
+        "assistantId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the Wisdom assistant.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description.</p>"
+        },
+        "integrationConfiguration":{
+          "shape":"AssistantIntegrationConfiguration",
+          "documentation":"<p>The configuration information for the Wisdom assistant integration.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>This KMS key must have a policy that allows <code>kms:CreateGrant</code>, <code>kms:DescribeKey</code>, and <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom. To use Wisdom with chat, the key policy must also allow <code>kms:Decrypt</code>, <code>kms:GenerateDataKey*</code>, and <code>kms:DescribeKey</code> permissions to the <code>connect.amazonaws.com</code> service principal. </p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "status":{
+          "shape":"AssistantStatus",
+          "documentation":"<p>The status of the assistant.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "type":{
+          "shape":"AssistantType",
+          "documentation":"<p>The type of assistant.</p>"
+        }
+      },
+      "documentation":"<p>The assistant data.</p>"
+    },
+    "AssistantIntegrationConfiguration":{
+      "type":"structure",
+      "members":{
+        "topicIntegrationArn":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the integrated Amazon SNS topic used for streaming chat messages.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information for the Wisdom assistant integration.</p>"
+    },
+    "AssistantList":{
+      "type":"list",
+      "member":{"shape":"AssistantSummary"}
+    },
+    "AssistantStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "ACTIVE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETED"
+      ]
+    },
+    "AssistantSummary":{
+      "type":"structure",
+      "required":[
+        "assistantArn",
+        "assistantId",
+        "name",
+        "status",
+        "type"
+      ],
+      "members":{
+        "assistantArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Wisdom assistant.</p>"
+        },
+        "assistantId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the Wisdom assistant.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the assistant.</p>"
+        },
+        "integrationConfiguration":{
+          "shape":"AssistantIntegrationConfiguration",
+          "documentation":"<p>The configuration information for the Wisdom assistant integration.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the assistant.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>This KMS key must have a policy that allows <code>kms:CreateGrant</code>, <code>kms:DescribeKey</code>, and <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom. To use Wisdom with chat, the key policy must also allow <code>kms:Decrypt</code>, <code>kms:GenerateDataKey*</code>, and <code>kms:DescribeKey</code> permissions to the <code>connect.amazonaws.com</code> service principal. </p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "status":{
+          "shape":"AssistantStatus",
+          "documentation":"<p>The status of the assistant.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "type":{
+          "shape":"AssistantType",
+          "documentation":"<p>The type of the assistant.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the assistant.</p>"
+    },
+    "AssistantType":{
+      "type":"string",
+      "enum":["AGENT"]
+    },
+    "AssociationType":{
+      "type":"string",
+      "enum":["KNOWLEDGE_BASE"]
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "Channel":{
+      "type":"string",
+      "max":10,
+      "min":1,
+      "sensitive":true
+    },
+    "Channels":{
+      "type":"list",
+      "member":{"shape":"Channel"}
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "Configuration":{
+      "type":"structure",
+      "members":{
+        "connectConfiguration":{
+          "shape":"ConnectConfiguration",
+          "documentation":"<p>The configuration information of the Amazon Connect data source.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information of the external data source.</p>",
+      "union":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request could not be processed because of conflict in the current state of the resource. For example, if you're using a <code>Create</code> API (such as <code>CreateAssistant</code>) that accepts name, a conflicting resource (usually with the same name) is being created or mutated.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConnectConfiguration":{
+      "type":"structure",
+      "members":{
+        "instanceId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The identifier of the Amazon Connect instance. You can find the instanceId in the ARN of the instance.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information of the Amazon Connect data source.</p>"
+    },
+    "ContactAttributeKey":{"type":"string"},
+    "ContactAttributeKeys":{
+      "type":"list",
+      "member":{"shape":"ContactAttributeKey"},
+      "sensitive":true
+    },
+    "ContactAttributeValue":{"type":"string"},
+    "ContactAttributes":{
+      "type":"map",
+      "key":{"shape":"ContactAttributeKey"},
+      "value":{"shape":"ContactAttributeValue"},
+      "sensitive":true
+    },
+    "ContentData":{
+      "type":"structure",
+      "required":[
+        "contentArn",
+        "contentId",
+        "contentType",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "metadata",
+        "name",
+        "revisionId",
+        "status",
+        "title",
+        "url",
+        "urlExpiry"
+      ],
+      "members":{
+        "contentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the content.</p>"
+        },
+        "contentId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the content.</p>"
+        },
+        "contentType":{
+          "shape":"ContentType",
+          "documentation":"<p>The media type of the content.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "linkOutUri":{
+          "shape":"Uri",
+          "documentation":"<p>The URI of the content.</p>"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>A key/value map to store attributes without affecting tagging or recommendations. For example, when synchronizing data between an external system and Wisdom, you can store an external version identifier as metadata to utilize for determining drift.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the content.</p>"
+        },
+        "revisionId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The identifier of the content revision.</p>"
+        },
+        "status":{
+          "shape":"ContentStatus",
+          "documentation":"<p>The status of the content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "title":{
+          "shape":"ContentTitle",
+          "documentation":"<p>The title of the content.</p>"
+        },
+        "url":{
+          "shape":"Url",
+          "documentation":"<p>The URL of the content.</p>"
+        },
+        "urlExpiry":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The expiration time of the URL as an epoch timestamp.</p>"
+        }
+      },
+      "documentation":"<p>Information about the content.</p>"
+    },
+    "ContentMetadata":{
+      "type":"map",
+      "key":{"shape":"NonEmptyString"},
+      "value":{"shape":"NonEmptyString"},
+      "max":10,
+      "min":0
+    },
+    "ContentReference":{
+      "type":"structure",
+      "members":{
+        "contentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the content.</p>"
+        },
+        "contentId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the content.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        }
+      },
+      "documentation":"<p>Reference information about the content.</p>"
+    },
+    "ContentStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "ACTIVE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETED",
+        "UPDATE_FAILED"
+      ]
+    },
+    "ContentSummary":{
+      "type":"structure",
+      "required":[
+        "contentArn",
+        "contentId",
+        "contentType",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "metadata",
+        "name",
+        "revisionId",
+        "status",
+        "title"
+      ],
+      "members":{
+        "contentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the content.</p>"
+        },
+        "contentId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the content.</p>"
+        },
+        "contentType":{
+          "shape":"ContentType",
+          "documentation":"<p>The media type of the content.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>A key/value map to store attributes without affecting tagging or recommendations. For example, when synchronizing data between an external system and Wisdom, you can store an external version identifier as metadata to utilize for determining drift.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the content.</p>"
+        },
+        "revisionId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The identifier of the revision of the content.</p>"
+        },
+        "status":{
+          "shape":"ContentStatus",
+          "documentation":"<p>The status of the content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "title":{
+          "shape":"ContentTitle",
+          "documentation":"<p>The title of the content.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the content.</p>"
+    },
+    "ContentSummaryList":{
+      "type":"list",
+      "member":{"shape":"ContentSummary"}
+    },
+    "ContentTitle":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ContentType":{
+      "type":"string",
+      "pattern":"^(text/(plain|html|csv))|(application/(pdf|vnd\\.openxmlformats-officedocument\\.wordprocessingml\\.document))|(application/x\\.wisdom-json;source=(salesforce|servicenow|zendesk))$"
+    },
+    "CreateAssistantAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "association",
+        "associationType"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "association":{
+          "shape":"AssistantAssociationInputData",
+          "documentation":"<p>The identifier of the associated resource.</p>"
+        },
+        "associationType":{
+          "shape":"AssociationType",
+          "documentation":"<p>The type of association.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateAssistantAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "assistantAssociation":{
+          "shape":"AssistantAssociationData",
+          "documentation":"<p>The assistant association.</p>"
+        }
+      }
+    },
+    "CreateAssistantRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the assistant.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the assistant.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>The customer managed key must have a policy that allows <code>kms:CreateGrant</code>, <code> kms:DescribeKey</code>, and <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom. To use Wisdom with chat, the key policy must also allow <code>kms:Decrypt</code>, <code>kms:GenerateDataKey*</code>, and <code>kms:DescribeKey</code> permissions to the <code>connect.amazonaws.com</code> service principal. </p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "type":{
+          "shape":"AssistantType",
+          "documentation":"<p>The type of assistant.</p>"
+        }
+      }
+    },
+    "CreateAssistantResponse":{
+      "type":"structure",
+      "members":{
+        "assistant":{
+          "shape":"AssistantData",
+          "documentation":"<p>Information about the assistant.</p>"
+        }
+      }
+    },
+    "CreateContentRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "name",
+        "uploadId"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>A key/value map to store attributes without affecting tagging or recommendations. For example, when synchronizing data between an external system and Wisdom, you can store an external version identifier as metadata to utilize for determining drift.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the content. Each piece of content in a knowledge base must have a unique name. You can retrieve a piece of content using only its knowledge base and its name with the <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_SearchContent.html\">SearchContent</a> API.</p>"
+        },
+        "overrideLinkOutUri":{
+          "shape":"Uri",
+          "documentation":"<p>The URI you want to use for the article. If the knowledge base has a templateUri, setting this argument overrides it for this piece of content.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "title":{
+          "shape":"ContentTitle",
+          "documentation":"<p>The title of the content. If not set, the title is equal to the name.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>A pointer to the uploaded asset. This value is returned by <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a>.</p>"
+        }
+      }
+    },
+    "CreateContentResponse":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"ContentData",
+          "documentation":"<p>The content.</p>"
+        }
+      }
+    },
+    "CreateKnowledgeBaseRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseType",
+        "name"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description.</p>"
+        },
+        "knowledgeBaseType":{
+          "shape":"KnowledgeBaseType",
+          "documentation":"<p>The type of knowledge base. Only CUSTOM knowledge bases allow you to upload your own content. EXTERNAL knowledge bases support integrations with third-party systems whose content is synchronized automatically. </p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the knowledge base.</p>"
+        },
+        "renderingConfiguration":{
+          "shape":"RenderingConfiguration",
+          "documentation":"<p>Information about how to render the content.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>This KMS key must have a policy that allows <code>kms:CreateGrant</code>, <code>kms:DescribeKey</code>, and <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom.</p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "sourceConfiguration":{
+          "shape":"SourceConfiguration",
+          "documentation":"<p>The source of the knowledge base content. Only set this argument for EXTERNAL knowledge bases.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateKnowledgeBaseResponse":{
+      "type":"structure",
+      "members":{
+        "knowledgeBase":{
+          "shape":"KnowledgeBaseData",
+          "documentation":"<p>The knowledge base.</p>"
+        }
+      }
+    },
+    "CreateQuickResponseRequest":{
+      "type":"structure",
+      "required":[
+        "content",
+        "knowledgeBaseId",
+        "name"
+      ],
+      "members":{
+        "channels":{
+          "shape":"Channels",
+          "documentation":"<p>The Amazon Connect channels this quick response applies to.</p>"
+        },
+        "clientToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "content":{
+          "shape":"QuickResponseDataProvider",
+          "documentation":"<p>The content of the quick response.</p>"
+        },
+        "contentType":{
+          "shape":"QuickResponseType",
+          "documentation":"<p>The media type of the quick response content.</p> <ul> <li> <p>Use <code>application/x.quickresponse;format=plain</code> for a quick response written in plain text.</p> </li> <li> <p>Use <code>application/x.quickresponse;format=markdown</code> for a quick response written in richtext.</p> </li> </ul>"
+        },
+        "description":{
+          "shape":"QuickResponseDescription",
+          "documentation":"<p>The description of the quick response.</p>"
+        },
+        "groupingConfiguration":{
+          "shape":"GroupingConfiguration",
+          "documentation":"<p>The configuration information of the user groups that the quick response is accessible to.</p>"
+        },
+        "isActive":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the quick response is active.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "language":{
+          "shape":"LanguageCode",
+          "documentation":"<p>The language code value for the language in which the quick response is written. The supported language codes include <code>de_DE</code>, <code>en_US</code>, <code>es_ES</code>, <code>fr_FR</code>, <code>id_ID</code>, <code>it_IT</code>, <code>ja_JP</code>, <code>ko_KR</code>, <code>pt_BR</code>, <code>zh_CN</code>, <code>zh_TW</code> </p>"
+        },
+        "name":{
+          "shape":"QuickResponseName",
+          "documentation":"<p>The name of the quick response.</p>"
+        },
+        "shortcutKey":{
+          "shape":"ShortCutKey",
+          "documentation":"<p>The shortcut key of the quick response. The value should be unique across the knowledge base. </p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateQuickResponseResponse":{
+      "type":"structure",
+      "members":{
+        "quickResponse":{
+          "shape":"QuickResponseData",
+          "documentation":"<p>The quick response.</p>"
+        }
+      }
+    },
+    "CreateSessionRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "name"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the session.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateSessionResponse":{
+      "type":"structure",
+      "members":{
+        "session":{
+          "shape":"SessionData",
+          "documentation":"<p>The session.</p>"
+        }
+      }
+    },
+    "DeleteAssistantAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "assistantAssociationId",
+        "assistantId"
+      ],
+      "members":{
+        "assistantAssociationId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the assistant association. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantAssociationId"
+        },
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        }
+      }
+    },
+    "DeleteAssistantAssociationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteAssistantRequest":{
+      "type":"structure",
+      "required":["assistantId"],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        }
+      }
+    },
+    "DeleteAssistantResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteContentRequest":{
+      "type":"structure",
+      "required":[
+        "contentId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "contentId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the content. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"contentId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "DeleteContentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "importJobId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "importJobId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the import job to be deleted.</p>",
+          "location":"uri",
+          "locationName":"importJobId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "DeleteImportJobResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteKnowledgeBaseRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The knowledge base to delete content from. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "DeleteKnowledgeBaseResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteQuickResponseRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "quickResponseId"
+      ],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The knowledge base from which the quick response is deleted. The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "quickResponseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the quick response to delete.</p>",
+          "location":"uri",
+          "locationName":"quickResponseId"
+        }
+      }
+    },
+    "DeleteQuickResponseResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\s_.,-]+"
+    },
+    "Document":{
+      "type":"structure",
+      "required":["contentReference"],
+      "members":{
+        "contentReference":{
+          "shape":"ContentReference",
+          "documentation":"<p>A reference to the content resource.</p>"
+        },
+        "excerpt":{
+          "shape":"DocumentText",
+          "documentation":"<p>The excerpt from the document.</p>"
+        },
+        "title":{
+          "shape":"DocumentText",
+          "documentation":"<p>The title of the document.</p>"
+        }
+      },
+      "documentation":"<p>The document.</p>"
+    },
+    "DocumentText":{
+      "type":"structure",
+      "members":{
+        "highlights":{
+          "shape":"Highlights",
+          "documentation":"<p>Highlights in the document text.</p>"
+        },
+        "text":{
+          "shape":"SensitiveString",
+          "documentation":"<p>Text in the document.</p>"
+        }
+      },
+      "documentation":"<p>The text of the document.</p>"
+    },
+    "ExternalSource":{
+      "type":"string",
+      "enum":["AMAZON_CONNECT"]
+    },
+    "ExternalSourceConfiguration":{
+      "type":"structure",
+      "required":[
+        "configuration",
+        "source"
+      ],
+      "members":{
+        "configuration":{
+          "shape":"Configuration",
+          "documentation":"<p>The configuration information of the external data source.</p>"
+        },
+        "source":{
+          "shape":"ExternalSource",
+          "documentation":"<p>The type of the external data source.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information of the external data source.</p>"
+    },
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "field",
+        "operator",
+        "value"
+      ],
+      "members":{
+        "field":{
+          "shape":"FilterField",
+          "documentation":"<p>The field on which to filter.</p>"
+        },
+        "operator":{
+          "shape":"FilterOperator",
+          "documentation":"<p>The operator to use for comparing the field’s value with the provided value.</p>"
+        },
+        "value":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The desired field value on which to filter.</p>"
+        }
+      },
+      "documentation":"<p>A search filter.</p>"
+    },
+    "FilterField":{
+      "type":"string",
+      "enum":["NAME"]
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "FilterOperator":{
+      "type":"string",
+      "enum":["EQUALS"]
+    },
+    "GenericArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:[a-z-]+?:[a-z-]+?:[a-z0-9-]*?:([0-9]{12})?:[a-zA-Z0-9-:/]+$"
+    },
+    "GetAssistantAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "assistantAssociationId",
+        "assistantId"
+      ],
+      "members":{
+        "assistantAssociationId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the assistant association. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantAssociationId"
+        },
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        }
+      }
+    },
+    "GetAssistantAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "assistantAssociation":{
+          "shape":"AssistantAssociationData",
+          "documentation":"<p>The assistant association.</p>"
+        }
+      }
+    },
+    "GetAssistantRequest":{
+      "type":"structure",
+      "required":["assistantId"],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        }
+      }
+    },
+    "GetAssistantResponse":{
+      "type":"structure",
+      "members":{
+        "assistant":{
+          "shape":"AssistantData",
+          "documentation":"<p>Information about the assistant.</p>"
+        }
+      }
+    },
+    "GetContentRequest":{
+      "type":"structure",
+      "required":[
+        "contentId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "contentId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the content. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"contentId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "GetContentResponse":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"ContentData",
+          "documentation":"<p>The content.</p>"
+        }
+      }
+    },
+    "GetContentSummaryRequest":{
+      "type":"structure",
+      "required":[
+        "contentId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "contentId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the content. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"contentId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "GetContentSummaryResponse":{
+      "type":"structure",
+      "members":{
+        "contentSummary":{
+          "shape":"ContentSummary",
+          "documentation":"<p>The content summary.</p>"
+        }
+      }
+    },
+    "GetImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "importJobId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "importJobId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the import job to retrieve.</p>",
+          "location":"uri",
+          "locationName":"importJobId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base that the import job belongs to.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "GetImportJobResponse":{
+      "type":"structure",
+      "members":{
+        "importJob":{
+          "shape":"ImportJobData",
+          "documentation":"<p>The import job.</p>"
+        }
+      }
+    },
+    "GetKnowledgeBaseRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "GetKnowledgeBaseResponse":{
+      "type":"structure",
+      "members":{
+        "knowledgeBase":{
+          "shape":"KnowledgeBaseData",
+          "documentation":"<p>The knowledge base.</p>"
+        }
+      }
+    },
+    "GetQuickResponseRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "quickResponseId"
+      ],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should be a QUICK_RESPONSES type knowledge base.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "quickResponseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the quick response.</p>",
+          "location":"uri",
+          "locationName":"quickResponseId"
+        }
+      }
+    },
+    "GetQuickResponseResponse":{
+      "type":"structure",
+      "members":{
+        "quickResponse":{
+          "shape":"QuickResponseData",
+          "documentation":"<p>The quick response.</p>"
+        }
+      }
+    },
+    "GetRecommendationsRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "sessionId"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "sessionId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the session. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        },
+        "waitTimeSeconds":{
+          "shape":"WaitTimeSeconds",
+          "documentation":"<p>The duration (in seconds) for which the call waits for a recommendation to be made available before returning. If a recommendation is available, the call returns sooner than <code>WaitTimeSeconds</code>. If no messages are available and the wait time expires, the call returns successfully with an empty list.</p>",
+          "location":"querystring",
+          "locationName":"waitTimeSeconds"
+        }
+      }
+    },
+    "GetRecommendationsResponse":{
+      "type":"structure",
+      "required":["recommendations"],
+      "members":{
+        "recommendations":{
+          "shape":"RecommendationList",
+          "documentation":"<p>The recommendations.</p>"
+        },
+        "triggers":{
+          "shape":"RecommendationTriggerList",
+          "documentation":"<p>The triggers corresponding to recommendations.</p>"
+        }
+      }
+    },
+    "GetSessionRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "sessionId"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "sessionId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the session. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "GetSessionResponse":{
+      "type":"structure",
+      "members":{
+        "session":{
+          "shape":"SessionData",
+          "documentation":"<p>The session.</p>"
+        }
+      }
+    },
+    "GroupingConfiguration":{
+      "type":"structure",
+      "members":{
+        "criteria":{
+          "shape":"GroupingCriteria",
+          "documentation":"<p>The criteria used for grouping Wisdom users.</p> <p>The following is the list of supported criteria values.</p> <ul> <li> <p> <code>RoutingProfileArn</code>: Grouping the users by their <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_RoutingProfile.html\">Amazon Connect routing profile ARN</a>. User should have <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_SearchRoutingProfiles.html\">SearchRoutingProfile</a> and <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_DescribeRoutingProfile.html\">DescribeRoutingProfile</a> permissions when setting criteria to this value.</p> </li> </ul>"
+        },
+        "values":{
+          "shape":"GroupingValues",
+          "documentation":"<p>The list of values that define different groups of Wisdom users.</p> <ul> <li> <p>When setting <code>criteria</code> to <code>RoutingProfileArn</code>, you need to provide a list of ARNs of <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_RoutingProfile.html\">Amazon Connect routing profiles</a> as values of this parameter.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The configuration information of the grouping of Wisdom users.</p>"
+    },
+    "GroupingCriteria":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "GroupingValue":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "sensitive":true
+    },
+    "GroupingValues":{
+      "type":"list",
+      "member":{"shape":"GroupingValue"}
+    },
+    "Headers":{
+      "type":"map",
+      "key":{"shape":"NonEmptyString"},
+      "value":{"shape":"NonEmptyString"}
+    },
+    "Highlight":{
+      "type":"structure",
+      "members":{
+        "beginOffsetInclusive":{
+          "shape":"HighlightOffset",
+          "documentation":"<p>The offset for the start of the highlight.</p>"
+        },
+        "endOffsetExclusive":{
+          "shape":"HighlightOffset",
+          "documentation":"<p>The offset for the end of the highlight.</p>"
+        }
+      },
+      "documentation":"<p>Offset specification to describe highlighting of document excerpts for rendering search results and recommendations.</p>"
+    },
+    "HighlightOffset":{"type":"integer"},
+    "Highlights":{
+      "type":"list",
+      "member":{"shape":"Highlight"}
+    },
+    "ImportJobData":{
+      "type":"structure",
+      "required":[
+        "createdTime",
+        "importJobId",
+        "importJobType",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "lastModifiedTime",
+        "status",
+        "uploadId",
+        "url",
+        "urlExpiry"
+      ],
+      "members":{
+        "createdTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the import job was created.</p>"
+        },
+        "externalSourceConfiguration":{"shape":"ExternalSourceConfiguration"},
+        "failedRecordReport":{
+          "shape":"Url",
+          "documentation":"<p>The link to donwload the information of resource data that failed to be imported.</p>"
+        },
+        "importJobId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the import job.</p>"
+        },
+        "importJobType":{
+          "shape":"ImportJobType",
+          "documentation":"<p>The type of the import job.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the import job data was last modified.</p>"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>The metadata fields of the imported Wisdom resources.</p>"
+        },
+        "status":{
+          "shape":"ImportJobStatus",
+          "documentation":"<p>The status of the import job.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>A pointer to the uploaded asset. This value is returned by <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a>.</p>"
+        },
+        "url":{
+          "shape":"Url",
+          "documentation":"<p>The download link to the resource file that is uploaded to the import job.</p>"
+        },
+        "urlExpiry":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The expiration time of the URL as an epoch timestamp.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the import job.</p>"
+    },
+    "ImportJobList":{
+      "type":"list",
+      "member":{"shape":"ImportJobSummary"}
+    },
+    "ImportJobStatus":{
+      "type":"string",
+      "enum":[
+        "START_IN_PROGRESS",
+        "FAILED",
+        "COMPLETE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETED"
+      ]
+    },
+    "ImportJobSummary":{
+      "type":"structure",
+      "required":[
+        "createdTime",
+        "importJobId",
+        "importJobType",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "lastModifiedTime",
+        "status",
+        "uploadId"
+      ],
+      "members":{
+        "createdTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the import job was created.</p>"
+        },
+        "externalSourceConfiguration":{
+          "shape":"ExternalSourceConfiguration",
+          "documentation":"<p>The configuration information of the external source that the resource data are imported from.</p>"
+        },
+        "importJobId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the import job.</p>"
+        },
+        "importJobType":{
+          "shape":"ImportJobType",
+          "documentation":"<p>The type of import job.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the import job was last modified.</p>"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>The metadata fields of the imported Wisdom resources.</p>"
+        },
+        "status":{
+          "shape":"ImportJobStatus",
+          "documentation":"<p>The status of the import job.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>A pointer to the uploaded asset. This value is returned by <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a>.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the import job.</p>"
+    },
+    "ImportJobType":{
+      "type":"string",
+      "enum":["QUICK_RESPONSES"]
+    },
+    "KnowledgeBaseAssociationData":{
+      "type":"structure",
+      "members":{
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        }
+      },
+      "documentation":"<p>Association information about the knowledge base.</p>"
+    },
+    "KnowledgeBaseData":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "knowledgeBaseType",
+        "name",
+        "status"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "knowledgeBaseType":{
+          "shape":"KnowledgeBaseType",
+          "documentation":"<p>The type of knowledge base.</p>"
+        },
+        "lastContentModificationTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>An epoch timestamp indicating the most recent content modification inside the knowledge base. If no content exists in a knowledge base, this value is unset.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the knowledge base.</p>"
+        },
+        "renderingConfiguration":{
+          "shape":"RenderingConfiguration",
+          "documentation":"<p>Information about how to render the content.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>This KMS key must have a policy that allows <code>kms:CreateGrant</code>, <code>kms:DescribeKey</code>, and <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom. </p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "sourceConfiguration":{
+          "shape":"SourceConfiguration",
+          "documentation":"<p>Source configuration information about the knowledge base.</p>"
+        },
+        "status":{
+          "shape":"KnowledgeBaseStatus",
+          "documentation":"<p>The status of the knowledge base.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Information about the knowledge base.</p>"
+    },
+    "KnowledgeBaseList":{
+      "type":"list",
+      "member":{"shape":"KnowledgeBaseSummary"}
+    },
+    "KnowledgeBaseStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "ACTIVE",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETED"
+      ]
+    },
+    "KnowledgeBaseSummary":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "knowledgeBaseType",
+        "name",
+        "status"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the knowledge base.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "knowledgeBaseType":{
+          "shape":"KnowledgeBaseType",
+          "documentation":"<p>The type of knowledge base.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the knowledge base.</p>"
+        },
+        "renderingConfiguration":{
+          "shape":"RenderingConfiguration",
+          "documentation":"<p>Information about how to render the content.</p>"
+        },
+        "serverSideEncryptionConfiguration":{
+          "shape":"ServerSideEncryptionConfiguration",
+          "documentation":"<p>The configuration information for the customer managed key used for encryption. </p> <p>This KMS key must have a policy that allows <code>kms:CreateGrant</code>, <code>kms:DescribeKey</code>, <code>kms:Decrypt/kms:GenerateDataKey</code> permissions to the IAM identity using the key to invoke Wisdom. </p> <p>For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>.</p>"
+        },
+        "sourceConfiguration":{
+          "shape":"SourceConfiguration",
+          "documentation":"<p>Configuration information about the external data source.</p>"
+        },
+        "status":{
+          "shape":"KnowledgeBaseStatus",
+          "documentation":"<p>The status of the knowledge base summary.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the knowledge base.</p>"
+    },
+    "KnowledgeBaseType":{
+      "type":"string",
+      "enum":[
+        "EXTERNAL",
+        "CUSTOM",
+        "QUICK_RESPONSES"
+      ]
+    },
+    "LanguageCode":{
+      "type":"string",
+      "max":5,
+      "min":2
+    },
+    "ListAssistantAssociationsRequest":{
+      "type":"structure",
+      "required":["assistantId"],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListAssistantAssociationsResponse":{
+      "type":"structure",
+      "required":["assistantAssociationSummaries"],
+      "members":{
+        "assistantAssociationSummaries":{
+          "shape":"AssistantAssociationSummaryList",
+          "documentation":"<p>Summary information about assistant associations.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListAssistantsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListAssistantsResponse":{
+      "type":"structure",
+      "required":["assistantSummaries"],
+      "members":{
+        "assistantSummaries":{
+          "shape":"AssistantList",
+          "documentation":"<p>Information about the assistants.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListContentsRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListContentsResponse":{
+      "type":"structure",
+      "required":["contentSummaries"],
+      "members":{
+        "contentSummaries":{
+          "shape":"ContentSummaryList",
+          "documentation":"<p>Information about the content.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListImportJobsRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListImportJobsResponse":{
+      "type":"structure",
+      "required":["importJobSummaries"],
+      "members":{
+        "importJobSummaries":{
+          "shape":"ImportJobList",
+          "documentation":"<p>Summary information about the import jobs.</p>"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListKnowledgeBasesRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListKnowledgeBasesResponse":{
+      "type":"structure",
+      "required":["knowledgeBaseSummaries"],
+      "members":{
+        "knowledgeBaseSummaries":{
+          "shape":"KnowledgeBaseList",
+          "documentation":"<p>Information about the knowledge bases.</p>"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListQuickResponsesRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListQuickResponsesResponse":{
+      "type":"structure",
+      "required":["quickResponseSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        },
+        "quickResponseSummaries":{
+          "shape":"QuickResponseSummaryList",
+          "documentation":"<p>Summary information about the quick responses.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "Name":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\s_.,-]+"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "NonEmptyString":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "NotifyRecommendationsReceivedError":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"NotifyRecommendationsReceivedErrorMessage",
+          "documentation":"<p>A recommendation is causing an error.</p>"
+        },
+        "recommendationId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the recommendation that is in error.</p>"
+        }
+      },
+      "documentation":"<p>An error occurred when creating a recommendation.</p>"
+    },
+    "NotifyRecommendationsReceivedErrorList":{
+      "type":"list",
+      "member":{"shape":"NotifyRecommendationsReceivedError"}
+    },
+    "NotifyRecommendationsReceivedErrorMessage":{"type":"string"},
+    "NotifyRecommendationsReceivedRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "recommendationIds",
+        "sessionId"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "recommendationIds":{
+          "shape":"RecommendationIdList",
+          "documentation":"<p>The identifiers of the recommendations.</p>"
+        },
+        "sessionId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the session. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"sessionId"
+        }
+      }
+    },
+    "NotifyRecommendationsReceivedResponse":{
+      "type":"structure",
+      "members":{
+        "errors":{
+          "shape":"NotifyRecommendationsReceivedErrorList",
+          "documentation":"<p>The identifiers of recommendations that are causing errors.</p>"
+        },
+        "recommendationIds":{
+          "shape":"RecommendationIdList",
+          "documentation":"<p>The identifiers of the recommendations.</p>"
+        }
+      }
+    },
+    "ObjectFieldsList":{
+      "type":"list",
+      "member":{"shape":"NonEmptyString"},
+      "max":100,
+      "min":1
+    },
+    "Order":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "PreconditionFailedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The provided <code>revisionId</code> does not match, indicating the content has been modified since it was last read.</p>",
+      "error":{
+        "httpStatusCode":412,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Priority":{
+      "type":"string",
+      "enum":[
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ]
+    },
+    "QueryAssistantRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "queryText"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        },
+        "queryText":{
+          "shape":"QueryText",
+          "documentation":"<p>The text to search for.</p>"
+        }
+      }
+    },
+    "QueryAssistantResponse":{
+      "type":"structure",
+      "required":["results"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        },
+        "results":{
+          "shape":"QueryResultsList",
+          "documentation":"<p>The results of the query.</p>"
+        }
+      }
+    },
+    "QueryRecommendationTriggerData":{
+      "type":"structure",
+      "members":{
+        "text":{
+          "shape":"QueryText",
+          "documentation":"<p>The text associated with the recommendation trigger.</p>"
+        }
+      },
+      "documentation":"<p>Data associated with the QUERY RecommendationTriggerType.</p>"
+    },
+    "QueryResultsList":{
+      "type":"list",
+      "member":{"shape":"ResultData"}
+    },
+    "QueryText":{
+      "type":"string",
+      "sensitive":true
+    },
+    "QuickResponseContent":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "sensitive":true
+    },
+    "QuickResponseContentProvider":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"QuickResponseContent",
+          "documentation":"<p>The content of the quick response.</p>"
+        }
+      },
+      "documentation":"<p>The container quick response content.</p>",
+      "union":true
+    },
+    "QuickResponseContents":{
+      "type":"structure",
+      "members":{
+        "markdown":{"shape":"QuickResponseContentProvider"},
+        "plainText":{"shape":"QuickResponseContentProvider"}
+      },
+      "documentation":"<p>The content of the quick response stored in different media types.</p>"
+    },
+    "QuickResponseData":{
+      "type":"structure",
+      "required":[
+        "contentType",
+        "createdTime",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "lastModifiedTime",
+        "name",
+        "quickResponseArn",
+        "quickResponseId",
+        "status"
+      ],
+      "members":{
+        "channels":{
+          "shape":"Channels",
+          "documentation":"<p>The Amazon Connect contact channels this quick response applies to. The supported contact channel types include <code>Chat</code>.</p>"
+        },
+        "contentType":{
+          "shape":"QuickResponseType",
+          "documentation":"<p>The media type of the quick response content.</p> <ul> <li> <p>Use <code>application/x.quickresponse;format=plain</code> for quick response written in plain text.</p> </li> <li> <p>Use <code>application/x.quickresponse;format=markdown</code> for quick response written in richtext.</p> </li> </ul>"
+        },
+        "contents":{
+          "shape":"QuickResponseContents",
+          "documentation":"<p>The contents of the quick response.</p>"
+        },
+        "createdTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response was created.</p>"
+        },
+        "description":{
+          "shape":"QuickResponseDescription",
+          "documentation":"<p>The description of the quick response.</p>"
+        },
+        "groupingConfiguration":{
+          "shape":"GroupingConfiguration",
+          "documentation":"<p>The configuration information of the user groups that the quick response is accessible to.</p>"
+        },
+        "isActive":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the quick response is active.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>"
+        },
+        "language":{
+          "shape":"LanguageCode",
+          "documentation":"<p>The language code value for the language in which the quick response is written.</p>"
+        },
+        "lastModifiedBy":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last updated the quick response data.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response data was last modified.</p>"
+        },
+        "name":{
+          "shape":"QuickResponseName",
+          "documentation":"<p>The name of the quick response.</p>"
+        },
+        "quickResponseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the quick response.</p>"
+        },
+        "quickResponseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the quick response.</p>"
+        },
+        "shortcutKey":{
+          "shape":"ShortCutKey",
+          "documentation":"<p>The shortcut key of the quick response. The value should be unique across the knowledge base.</p>"
+        },
+        "status":{
+          "shape":"QuickResponseStatus",
+          "documentation":"<p>The status of the quick response data.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Information about the quick response.</p>"
+    },
+    "QuickResponseDataProvider":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"QuickResponseContent",
+          "documentation":"<p>The content of the quick response.</p>"
+        }
+      },
+      "documentation":"<p>The container of quick response data.</p>",
+      "union":true
+    },
+    "QuickResponseDescription":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "QuickResponseFilterField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "operator"
+      ],
+      "members":{
+        "includeNoExistence":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to treat null value as a match for the attribute field.</p>"
+        },
+        "name":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The name of the attribute field to filter the quick responses by.</p>"
+        },
+        "operator":{
+          "shape":"QuickResponseFilterOperator",
+          "documentation":"<p>The operator to use for filtering.</p>"
+        },
+        "values":{
+          "shape":"QuickResponseFilterValueList",
+          "documentation":"<p>The values of attribute field to filter the quick response by.</p>"
+        }
+      },
+      "documentation":"<p>The quick response fields to filter the quick response query results by.</p> <p>The following is the list of supported field names.</p> <ul> <li> <p>name</p> </li> <li> <p>description</p> </li> <li> <p>shortcutKey</p> </li> <li> <p>isActive</p> </li> <li> <p>channels</p> </li> <li> <p>language</p> </li> <li> <p>contentType</p> </li> <li> <p>createdTime</p> </li> <li> <p>lastModifiedTime</p> </li> <li> <p>lastModifiedBy</p> </li> <li> <p>groupingConfiguration.criteria</p> </li> <li> <p>groupingConfiguration.values</p> </li> </ul>"
+    },
+    "QuickResponseFilterFieldList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseFilterField"},
+      "max":10,
+      "min":0
+    },
+    "QuickResponseFilterOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "PREFIX"
+      ]
+    },
+    "QuickResponseFilterValue":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "QuickResponseFilterValueList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseFilterValue"},
+      "max":5,
+      "min":1
+    },
+    "QuickResponseName":{
+      "type":"string",
+      "max":40,
+      "min":1
+    },
+    "QuickResponseOrderField":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The name of the attribute to order the quick response query results by.</p>"
+        },
+        "order":{
+          "shape":"Order",
+          "documentation":"<p>The order at which the quick responses are sorted by.</p>"
+        }
+      },
+      "documentation":"<p>The quick response fields to order the quick response query results by.</p> <p>The following is the list of supported field names.</p> <ul> <li> <p>name</p> </li> <li> <p>description</p> </li> <li> <p>shortcutKey</p> </li> <li> <p>isActive</p> </li> <li> <p>channels</p> </li> <li> <p>language</p> </li> <li> <p>contentType</p> </li> <li> <p>createdTime</p> </li> <li> <p>lastModifiedTime</p> </li> <li> <p>lastModifiedBy</p> </li> <li> <p>groupingConfiguration.criteria</p> </li> <li> <p>groupingConfiguration.values</p> </li> </ul>"
+    },
+    "QuickResponseQueryField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "operator",
+        "values"
+      ],
+      "members":{
+        "allowFuzziness":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the query expects only exact matches on the attribute field values. The results of the query will only include exact matches if this parameter is set to false.</p>"
+        },
+        "name":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The name of the attribute to query the quick responses by.</p>"
+        },
+        "operator":{
+          "shape":"QuickResponseQueryOperator",
+          "documentation":"<p>The operator to use for matching attribute field values in the query.</p>"
+        },
+        "priority":{
+          "shape":"Priority",
+          "documentation":"<p>The importance of the attribute field when calculating query result relevancy scores. The value set for this parameter affects the ordering of search results.</p>"
+        },
+        "values":{
+          "shape":"QuickResponseQueryValueList",
+          "documentation":"<p>The values of the attribute to query the quick responses by.</p>"
+        }
+      },
+      "documentation":"<p>The quick response fields to query quick responses by.</p> <p>The following is the list of supported field names.</p> <ul> <li> <p>content</p> </li> <li> <p>name</p> </li> <li> <p>description</p> </li> <li> <p>shortcutKey</p> </li> </ul>"
+    },
+    "QuickResponseQueryFieldList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseQueryField"},
+      "max":4,
+      "min":0
+    },
+    "QuickResponseQueryOperator":{
+      "type":"string",
+      "enum":[
+        "CONTAINS",
+        "CONTAINS_AND_PREFIX"
+      ]
+    },
+    "QuickResponseQueryValue":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "QuickResponseQueryValueList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseQueryValue"},
+      "max":5,
+      "min":1
+    },
+    "QuickResponseSearchExpression":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"QuickResponseFilterFieldList",
+          "documentation":"<p>The configuration of filtering rules applied to quick response query results.</p>"
+        },
+        "orderOnField":{
+          "shape":"QuickResponseOrderField",
+          "documentation":"<p>The quick response attribute fields on which the query results are ordered.</p>"
+        },
+        "queries":{
+          "shape":"QuickResponseQueryFieldList",
+          "documentation":"<p>The quick response query expressions.</p>"
+        }
+      },
+      "documentation":"<p>Information about the import job.</p>"
+    },
+    "QuickResponseSearchResultData":{
+      "type":"structure",
+      "required":[
+        "contentType",
+        "contents",
+        "createdTime",
+        "isActive",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "lastModifiedTime",
+        "name",
+        "quickResponseArn",
+        "quickResponseId",
+        "status"
+      ],
+      "members":{
+        "attributesInterpolated":{
+          "shape":"ContactAttributeKeys",
+          "documentation":"<p>The user defined contact attributes that are resolved when the search result is returned.</p>"
+        },
+        "attributesNotInterpolated":{
+          "shape":"ContactAttributeKeys",
+          "documentation":"<p>The user defined contact attributes that are not resolved when the search result is returned.</p>"
+        },
+        "channels":{
+          "shape":"Channels",
+          "documentation":"<p>The Amazon Connect contact channels this quick response applies to. The supported contact channel types include <code>Chat</code>.</p>"
+        },
+        "contentType":{
+          "shape":"QuickResponseType",
+          "documentation":"<p>The media type of the quick response content.</p> <ul> <li> <p>Use <code>application/x.quickresponse;format=plain</code> for quick response written in plain text.</p> </li> <li> <p>Use <code>application/x.quickresponse;format=markdown</code> for quick response written in richtext.</p> </li> </ul>"
+        },
+        "contents":{
+          "shape":"QuickResponseContents",
+          "documentation":"<p>The contents of the quick response.</p>"
+        },
+        "createdTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response was created.</p>"
+        },
+        "description":{
+          "shape":"QuickResponseDescription",
+          "documentation":"<p>The description of the quick response.</p>"
+        },
+        "groupingConfiguration":{
+          "shape":"GroupingConfiguration",
+          "documentation":"<p>The configuration information of the user groups that the quick response is accessible to.</p>"
+        },
+        "isActive":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the quick response is active.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>"
+        },
+        "language":{
+          "shape":"LanguageCode",
+          "documentation":"<p>The language code value for the language in which the quick response is written.</p>"
+        },
+        "lastModifiedBy":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last updated the quick response search result data.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response search result data was last modified.</p>"
+        },
+        "name":{
+          "shape":"QuickResponseName",
+          "documentation":"<p>The name of the quick response.</p>"
+        },
+        "quickResponseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the quick response.</p>"
+        },
+        "quickResponseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the quick response.</p>"
+        },
+        "shortcutKey":{
+          "shape":"ShortCutKey",
+          "documentation":"<p>The shortcut key of the quick response. The value should be unique across the knowledge base.</p>"
+        },
+        "status":{
+          "shape":"QuickResponseStatus",
+          "documentation":"<p>The resource status of the quick response.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>The result of quick response search.</p>"
+    },
+    "QuickResponseSearchResultsList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseSearchResultData"}
+    },
+    "QuickResponseStatus":{
+      "type":"string",
+      "enum":[
+        "CREATE_IN_PROGRESS",
+        "CREATE_FAILED",
+        "CREATED",
+        "DELETE_IN_PROGRESS",
+        "DELETE_FAILED",
+        "DELETED",
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_FAILED"
+      ]
+    },
+    "QuickResponseSummary":{
+      "type":"structure",
+      "required":[
+        "contentType",
+        "createdTime",
+        "knowledgeBaseArn",
+        "knowledgeBaseId",
+        "lastModifiedTime",
+        "name",
+        "quickResponseArn",
+        "quickResponseId",
+        "status"
+      ],
+      "members":{
+        "channels":{
+          "shape":"Channels",
+          "documentation":"<p>The Amazon Connect contact channels this quick response applies to. The supported contact channel types include <code>Chat</code>.</p>"
+        },
+        "contentType":{
+          "shape":"QuickResponseType",
+          "documentation":"<p>The media type of the quick response content.</p> <ul> <li> <p>Use <code>application/x.quickresponse;format=plain</code> for quick response written in plain text.</p> </li> <li> <p>Use <code>application/x.quickresponse;format=markdown</code> for quick response written in richtext.</p> </li> </ul>"
+        },
+        "createdTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response was created.</p>"
+        },
+        "description":{
+          "shape":"QuickResponseDescription",
+          "documentation":"<p>The description of the quick response.</p>"
+        },
+        "isActive":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the quick response is active.</p>"
+        },
+        "knowledgeBaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the knowledge base.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it.</p>"
+        },
+        "lastModifiedBy":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last updated the quick response data.</p>"
+        },
+        "lastModifiedTime":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The timestamp when the quick response summary was last modified.</p>"
+        },
+        "name":{
+          "shape":"QuickResponseName",
+          "documentation":"<p>The name of the quick response.</p>"
+        },
+        "quickResponseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the quick response.</p>"
+        },
+        "quickResponseId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the quick response.</p>"
+        },
+        "status":{
+          "shape":"QuickResponseStatus",
+          "documentation":"<p>The resource status of the quick response.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>The summary information about the quick response.</p>"
+    },
+    "QuickResponseSummaryList":{
+      "type":"list",
+      "member":{"shape":"QuickResponseSummary"}
+    },
+    "QuickResponseType":{
+      "type":"string",
+      "pattern":"^(application/x\\.quickresponse;format=(plain|markdown))$"
+    },
+    "RecommendationData":{
+      "type":"structure",
+      "required":[
+        "document",
+        "recommendationId"
+      ],
+      "members":{
+        "document":{
+          "shape":"Document",
+          "documentation":"<p>The recommended document.</p>"
+        },
+        "recommendationId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the recommendation.</p>"
+        },
+        "relevanceLevel":{
+          "shape":"RelevanceLevel",
+          "documentation":"<p>The relevance level of the recommendation.</p>"
+        },
+        "relevanceScore":{
+          "shape":"RelevanceScore",
+          "documentation":"<p>The relevance score of the recommendation.</p>"
+        },
+        "type":{
+          "shape":"RecommendationType",
+          "documentation":"<p>The type of recommendation.</p>"
+        }
+      },
+      "documentation":"<p>Information about the recommendation.</p>"
+    },
+    "RecommendationIdList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":25,
+      "min":0
+    },
+    "RecommendationList":{
+      "type":"list",
+      "member":{"shape":"RecommendationData"}
+    },
+    "RecommendationSourceType":{
+      "type":"string",
+      "enum":[
+        "ISSUE_DETECTION",
+        "RULE_EVALUATION",
+        "OTHER"
+      ]
+    },
+    "RecommendationTrigger":{
+      "type":"structure",
+      "required":[
+        "data",
+        "id",
+        "recommendationIds",
+        "source",
+        "type"
+      ],
+      "members":{
+        "data":{
+          "shape":"RecommendationTriggerData",
+          "documentation":"<p>A union type containing information related to the trigger.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the recommendation trigger.</p>"
+        },
+        "recommendationIds":{
+          "shape":"RecommendationIdList",
+          "documentation":"<p>The identifiers of the recommendations.</p>"
+        },
+        "source":{
+          "shape":"RecommendationSourceType",
+          "documentation":"<p>The source of the recommendation trigger.</p> <ul> <li> <p>ISSUE_DETECTION: The corresponding recommendations were triggered by a Contact Lens issue.</p> </li> <li> <p>RULE_EVALUATION: The corresponding recommendations were triggered by a Contact Lens rule.</p> </li> </ul>"
+        },
+        "type":{
+          "shape":"RecommendationTriggerType",
+          "documentation":"<p>The type of recommendation trigger.</p>"
+        }
+      },
+      "documentation":"<p>A recommendation trigger provides context on the event that produced the referenced recommendations. Recommendations are only referenced in <code>recommendationIds</code> by a single RecommendationTrigger.</p>"
+    },
+    "RecommendationTriggerData":{
+      "type":"structure",
+      "members":{
+        "query":{
+          "shape":"QueryRecommendationTriggerData",
+          "documentation":"<p>Data associated with the QUERY RecommendationTriggerType.</p>"
+        }
+      },
+      "documentation":"<p>A union type containing information related to the trigger.</p>",
+      "union":true
+    },
+    "RecommendationTriggerList":{
+      "type":"list",
+      "member":{"shape":"RecommendationTrigger"}
+    },
+    "RecommendationTriggerType":{
+      "type":"string",
+      "enum":["QUERY"]
+    },
+    "RecommendationType":{
+      "type":"string",
+      "enum":["KNOWLEDGE_CONTENT"]
+    },
+    "RelevanceLevel":{
+      "type":"string",
+      "enum":[
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ]
+    },
+    "RelevanceScore":{
+      "type":"double",
+      "min":0.0
+    },
+    "RemoveKnowledgeBaseTemplateUriRequest":{
+      "type":"structure",
+      "required":["knowledgeBaseId"],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        }
+      }
+    },
+    "RemoveKnowledgeBaseTemplateUriResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "RenderingConfiguration":{
+      "type":"structure",
+      "members":{
+        "templateUri":{
+          "shape":"Uri",
+          "documentation":"<p>A URI template containing exactly one variable in <code>${variableName} </code>format. This can only be set for <code>EXTERNAL</code> knowledge bases. For Salesforce, ServiceNow, and Zendesk, the variable must be one of the following:</p> <ul> <li> <p>Salesforce: <code>Id</code>, <code>ArticleNumber</code>, <code>VersionNumber</code>, <code>Title</code>, <code>PublishStatus</code>, or <code>IsDeleted</code> </p> </li> <li> <p>ServiceNow: <code>number</code>, <code>short_description</code>, <code>sys_mod_count</code>, <code>workflow_state</code>, or <code>active</code> </p> </li> <li> <p>Zendesk: <code>id</code>, <code>title</code>, <code>updated_at</code>, or <code>draft</code> </p> </li> </ul> <p>The variable is replaced with the actual value for a piece of content when calling <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_GetContent.html\">GetContent</a>. </p>"
+        }
+      },
+      "documentation":"<p>Information about how to render the content.</p>"
+    },
+    "RequestTimeoutException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request reached the service more than 15 minutes after the date stamp on the request or more than 15 minutes after the request expiration date (such as for pre-signed URLs), or the date stamp on the request is more than 15 minutes in the future.</p>",
+      "error":{
+        "httpStatusCode":408,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "resourceName":{
+          "shape":"String",
+          "documentation":"<p>The specified resource name.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResultData":{
+      "type":"structure",
+      "required":[
+        "document",
+        "resultId"
+      ],
+      "members":{
+        "document":{
+          "shape":"Document",
+          "documentation":"<p>The document.</p>"
+        },
+        "relevanceScore":{
+          "shape":"RelevanceScore",
+          "documentation":"<p>The relevance score of the results.</p>"
+        },
+        "resultId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the result data.</p>"
+        }
+      },
+      "documentation":"<p>Information about the result.</p>"
+    },
+    "SearchContentRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "searchExpression"
+      ],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "searchExpression":{
+          "shape":"SearchExpression",
+          "documentation":"<p>The search expression to filter results.</p>"
+        }
+      }
+    },
+    "SearchContentResponse":{
+      "type":"structure",
+      "required":["contentSummaries"],
+      "members":{
+        "contentSummaries":{
+          "shape":"ContentSummaryList",
+          "documentation":"<p>Summary information about the content.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "SearchExpression":{
+      "type":"structure",
+      "required":["filters"],
+      "members":{
+        "filters":{
+          "shape":"FilterList",
+          "documentation":"<p>The search expression filters.</p>"
+        }
+      },
+      "documentation":"<p>The search expression.</p>"
+    },
+    "SearchQuickResponsesRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "searchExpression"
+      ],
+      "members":{
+        "attributes":{
+          "shape":"ContactAttributes",
+          "documentation":"<p>The <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/connect-attrib-list.html#user-defined-attributes\">user-defined Amazon Connect contact attributes</a> to be resolved when search results are returned.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should be a QUICK_RESPONSES type knowledge base. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "searchExpression":{
+          "shape":"QuickResponseSearchExpression",
+          "documentation":"<p>The search expression for querying the quick response.</p>"
+        }
+      }
+    },
+    "SearchQuickResponsesResponse":{
+      "type":"structure",
+      "required":["results"],
+      "members":{
+        "nextToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        },
+        "results":{
+          "shape":"QuickResponseSearchResultsList",
+          "documentation":"<p>The results of the quick response search.</p>"
+        }
+      }
+    },
+    "SearchSessionsRequest":{
+      "type":"structure",
+      "required":[
+        "assistantId",
+        "searchExpression"
+      ],
+      "members":{
+        "assistantId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the Wisdom assistant. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"assistantId"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "searchExpression":{
+          "shape":"SearchExpression",
+          "documentation":"<p>The search expression to filter results.</p>"
+        }
+      }
+    },
+    "SearchSessionsResponse":{
+      "type":"structure",
+      "required":["sessionSummaries"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        },
+        "sessionSummaries":{
+          "shape":"SessionSummaries",
+          "documentation":"<p>Summary information about the sessions.</p>"
+        }
+      }
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServerSideEncryptionConfiguration":{
+      "type":"structure",
+      "members":{
+        "kmsKeyId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The customer managed key used for encryption. For more information about setting up a customer managed key for Wisdom, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html\">Enable Amazon Connect Wisdom for your instance</a>. For information about valid ID values, see <a href=\"https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id\">Key identifiers (KeyId)</a>.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information for the customer managed key used for encryption.</p>"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You've exceeded your service quota. To perform the requested action, remove some of the relevant resources, or use service quotas to request a service quota increase.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SessionData":{
+      "type":"structure",
+      "required":[
+        "name",
+        "sessionArn",
+        "sessionId"
+      ],
+      "members":{
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the session.</p>"
+        },
+        "integrationConfiguration":{
+          "shape":"SessionIntegrationConfiguration",
+          "documentation":"<p>The configuration information for the session integration.</p>"
+        },
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the session.</p>"
+        },
+        "sessionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the session.</p>"
+        },
+        "sessionId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the session.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      },
+      "documentation":"<p>Information about the session.</p>"
+    },
+    "SessionIntegrationConfiguration":{
+      "type":"structure",
+      "members":{
+        "topicIntegrationArn":{
+          "shape":"GenericArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the integrated Amazon SNS topic used for streaming chat messages.</p>"
+        }
+      },
+      "documentation":"<p>The configuration information for the session integration.</p>"
+    },
+    "SessionSummaries":{
+      "type":"list",
+      "member":{"shape":"SessionSummary"}
+    },
+    "SessionSummary":{
+      "type":"structure",
+      "required":[
+        "assistantArn",
+        "assistantId",
+        "sessionArn",
+        "sessionId"
+      ],
+      "members":{
+        "assistantArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Wisdom assistant.</p>"
+        },
+        "assistantId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the Wisdom assistant.</p>"
+        },
+        "sessionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the session.</p>"
+        },
+        "sessionId":{
+          "shape":"Uuid",
+          "documentation":"<p>The identifier of the session.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the session.</p>"
+    },
+    "ShortCutKey":{
+      "type":"string",
+      "max":10,
+      "min":1
+    },
+    "SourceConfiguration":{
+      "type":"structure",
+      "members":{
+        "appIntegrations":{
+          "shape":"AppIntegrationsConfiguration",
+          "documentation":"<p>Configuration information for Amazon AppIntegrations to automatically ingest content.</p>"
+        }
+      },
+      "documentation":"<p>Configuration information about the external data source.</p>",
+      "union":true
+    },
+    "StartContentUploadRequest":{
+      "type":"structure",
+      "required":[
+        "contentType",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "contentType":{
+          "shape":"ContentType",
+          "documentation":"<p>The type of content to upload.</p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "presignedUrlTimeToLive":{
+          "shape":"TimeToLive",
+          "documentation":"<p>The expected expiration time of the generated presigned URL, specified in minutes.</p>"
+        }
+      }
+    },
+    "StartContentUploadResponse":{
+      "type":"structure",
+      "required":[
+        "headersToInclude",
+        "uploadId",
+        "url",
+        "urlExpiry"
+      ],
+      "members":{
+        "headersToInclude":{
+          "shape":"Headers",
+          "documentation":"<p>The headers to include in the upload.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>The identifier of the upload.</p>"
+        },
+        "url":{
+          "shape":"Url",
+          "documentation":"<p>The URL of the upload.</p>"
+        },
+        "urlExpiry":{
+          "shape":"SyntheticTimestamp_epoch_seconds",
+          "documentation":"<p>The expiration time of the URL as an epoch timestamp.</p>"
+        }
+      }
+    },
+    "StartImportJobRequest":{
+      "type":"structure",
+      "required":[
+        "importJobType",
+        "knowledgeBaseId",
+        "uploadId"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>",
+          "idempotencyToken":true
+        },
+        "externalSourceConfiguration":{
+          "shape":"ExternalSourceConfiguration",
+          "documentation":"<p>The configuration information of the external source that the resource data are imported from.</p>"
+        },
+        "importJobType":{
+          "shape":"ImportJobType",
+          "documentation":"<p>The type of the import job.</p> <ul> <li> <p>For importing quick response resource, set the value to <code>QUICK_RESPONSES</code>.</p> </li> </ul>"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p> <ul> <li> <p>For importing Wisdom quick responses, this should be a <code>QUICK_RESPONSES</code> type knowledge base.</p> </li> </ul>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>The metadata fields of the imported Wisdom resources.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>A pointer to the uploaded asset. This value is returned by <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a>.</p>"
+        }
+      }
+    },
+    "StartImportJobResponse":{
+      "type":"structure",
+      "members":{
+        "importJob":{
+          "shape":"ImportJobData",
+          "documentation":"<p>The import job.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "SyntheticTimestamp_epoch_seconds":{
+      "type":"timestamp",
+      "timestampFormat":"unixTimestamp"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "TimeToLive":{
+      "type":"integer",
+      "documentation":"<p>Expiration time in minutes</p>",
+      "box":true,
+      "max":60,
+      "min":1
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"},
+        "resourceName":{
+          "shape":"String",
+          "documentation":"<p>The specified resource name.</p>"
+        }
+      },
+      "documentation":"<p>Amazon Connect Wisdom throws this exception if you have too many tags in your tag set.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateContentRequest":{
+      "type":"structure",
+      "required":[
+        "contentId",
+        "knowledgeBaseId"
+      ],
+      "members":{
+        "contentId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the content. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"contentId"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "metadata":{
+          "shape":"ContentMetadata",
+          "documentation":"<p>A key/value map to store attributes without affecting tagging or recommendations. For example, when synchronizing data between an external system and Wisdom, you can store an external version identifier as metadata to utilize for determining drift.</p>"
+        },
+        "overrideLinkOutUri":{
+          "shape":"Uri",
+          "documentation":"<p>The URI for the article. If the knowledge base has a templateUri, setting this argument overrides it for this piece of content. To remove an existing <code>overrideLinkOurUri</code>, exclude this argument and set <code>removeOverrideLinkOutUri</code> to true.</p>"
+        },
+        "removeOverrideLinkOutUri":{
+          "shape":"Boolean",
+          "documentation":"<p>Unset the existing <code>overrideLinkOutUri</code> if it exists.</p>"
+        },
+        "revisionId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The <code>revisionId</code> of the content resource to update, taken from an earlier call to <code>GetContent</code>, <code>GetContentSummary</code>, <code>SearchContent</code>, or <code>ListContents</code>. If included, this argument acts as an optimistic lock to ensure content was not modified since it was last read. If it has been modified, this API throws a <code>PreconditionFailedException</code>.</p>"
+        },
+        "title":{
+          "shape":"ContentTitle",
+          "documentation":"<p>The title of the content.</p>"
+        },
+        "uploadId":{
+          "shape":"UploadId",
+          "documentation":"<p>A pointer to the uploaded asset. This value is returned by <a href=\"https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html\">StartContentUpload</a>. </p>"
+        }
+      }
+    },
+    "UpdateContentResponse":{
+      "type":"structure",
+      "members":{
+        "content":{
+          "shape":"ContentData",
+          "documentation":"<p>The content.</p>"
+        }
+      }
+    },
+    "UpdateKnowledgeBaseTemplateUriRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "templateUri"
+      ],
+      "members":{
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "templateUri":{
+          "shape":"Uri",
+          "documentation":"<p>The template URI to update.</p>"
+        }
+      }
+    },
+    "UpdateKnowledgeBaseTemplateUriResponse":{
+      "type":"structure",
+      "members":{
+        "knowledgeBase":{
+          "shape":"KnowledgeBaseData",
+          "documentation":"<p>The knowledge base to update.</p>"
+        }
+      }
+    },
+    "UpdateQuickResponseRequest":{
+      "type":"structure",
+      "required":[
+        "knowledgeBaseId",
+        "quickResponseId"
+      ],
+      "members":{
+        "channels":{
+          "shape":"Channels",
+          "documentation":"<p>The Amazon Connect contact channels this quick response applies to. The supported contact channel types include <code>Chat</code>.</p>"
+        },
+        "content":{
+          "shape":"QuickResponseDataProvider",
+          "documentation":"<p>The updated content of the quick response.</p>"
+        },
+        "contentType":{
+          "shape":"QuickResponseType",
+          "documentation":"<p>The media type of the quick response content.</p> <ul> <li> <p>Use <code>application/x.quickresponse;format=plain</code> for quick response written in plain text.</p> </li> <li> <p>Use <code>application/x.quickresponse;format=markdown</code> for quick response written in richtext.</p> </li> </ul>"
+        },
+        "description":{
+          "shape":"QuickResponseDescription",
+          "documentation":"<p>The updated description of the quick response.</p>"
+        },
+        "groupingConfiguration":{
+          "shape":"GroupingConfiguration",
+          "documentation":"<p>The updated grouping configuration of the quick response.</p>"
+        },
+        "isActive":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the quick response is active. </p>"
+        },
+        "knowledgeBaseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the knowledge base. This should not be a QUICK_RESPONSES type knowledge base if you're storing Wisdom Content resource to it. Can be either the ID or the ARN. URLs cannot contain the ARN.</p>",
+          "location":"uri",
+          "locationName":"knowledgeBaseId"
+        },
+        "language":{
+          "shape":"LanguageCode",
+          "documentation":"<p>The language code value for the language in which the quick response is written. The supported language codes include <code>de_DE</code>, <code>en_US</code>, <code>es_ES</code>, <code>fr_FR</code>, <code>id_ID</code>, <code>it_IT</code>, <code>ja_JP</code>, <code>ko_KR</code>, <code>pt_BR</code>, <code>zh_CN</code>, <code>zh_TW</code> </p>"
+        },
+        "name":{
+          "shape":"QuickResponseName",
+          "documentation":"<p>The name of the quick response.</p>"
+        },
+        "quickResponseId":{
+          "shape":"UuidOrArn",
+          "documentation":"<p>The identifier of the quick response.</p>",
+          "location":"uri",
+          "locationName":"quickResponseId"
+        },
+        "removeDescription":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to remove the description from the quick response.</p>"
+        },
+        "removeGroupingConfiguration":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to remove the grouping configuration of the quick response.</p>"
+        },
+        "removeShortcutKey":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to remove the shortcut key of the quick response.</p>"
+        },
+        "shortcutKey":{
+          "shape":"ShortCutKey",
+          "documentation":"<p>The shortcut key of the quick response. The value should be unique across the knowledge base.</p>"
+        }
+      }
+    },
+    "UpdateQuickResponseResponse":{
+      "type":"structure",
+      "members":{
+        "quickResponse":{
+          "shape":"QuickResponseData",
+          "documentation":"<p>The quick response.</p>"
+        }
+      }
+    },
+    "UploadId":{
+      "type":"string",
+      "max":1200,
+      "min":1
+    },
+    "Uri":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "Url":{
+      "type":"string",
+      "max":4096,
+      "min":1,
+      "sensitive":true
+    },
+    "Uuid":{
+      "type":"string",
+      "pattern":"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "UuidOrArn":{
+      "type":"string",
+      "pattern":"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$|^arn:[a-z-]*?:wisdom:[a-z0-9-]*?:[0-9]{12}:[a-z-]*?/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}(?:/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})?$"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by a service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "WaitTimeSeconds":{
+      "type":"integer",
+      "max":20,
+      "min":0
+    }
+  },
+  "documentation":"<p>Amazon Connect Wisdom delivers agents the information they need to solve customer issues as they're actively speaking with customers. Agents can search across connected repositories from within their agent desktop to find answers quickly. Use Amazon Connect Wisdom to create an assistant and a knowledge base, for example, or manage content by uploading custom files.</p>"
+}

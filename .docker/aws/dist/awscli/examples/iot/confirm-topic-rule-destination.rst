@@ -1,0 +1,10 @@
+**To confirm a topic rule destination**
+
+The following ``confirm-topic-rule-destination`` example confirms a topic rule destination with a confirmation token received at an HTTP endpoint. ::
+
+    aws iot confirm-topic-rule-destination \
+        --confirmation-token "AYADeIcmtq-ZkxfpiWIQqHWM5ucAXwABABVhd3MtY3J5cHRvLXB1YmxpYy1rZXkAREFxY1E0UmlGeDg0V21BZWZ1VjZtZWFRVUJJUktUYXJaN09OZlJOczJhRENSZmZYL3JHZC9PR3NNcis5T3ZlSitnQT09AAEAB2F3cy1rbXMAS2Fybjphd3M6a21zOnVzLWVhc3QtMTo5ODc5NTE4NTI0OTk6a2V5L2U4YmU3ODViLTU5NWMtNDcxYi1iOWJmLWQ2Y2I4ZjQxODlmNwC4AQIBAHhwz48UWTGWE1ua0P8U1hj27nsFzEaAdf6Hs2K_7wBheAF62zwMuk_A4dPiC6eyPGuMAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQM9vtRMpf9D3CiZ8sMAgEQgDuFd0Txy-aywpPqg8YEsa1lD4B40aJ2s1wEHKMybiF1RoOZzYisI0IvslzQY5UmCkqq3tV-3f7-nKfosgIAAAAADAAAEAAAAAAAAAAAAAAAAAAi9RMgy-V19V9m6Iw2xfbw_____wAAAAEAAAAAAAAAAAAAAAEAAAB1hw4SokgUcxiJ3gTO6n50NLJVpzyQR1UmPIj5sShqXEQGcOsWmXzpYOOx_PWyPVNsIFHApyK7Cc3g4bW8VaLVwOLkC83g6YaZAh7dFEl2-iufgrzTePl8RZYOWr0O6Aj9DiVzJZx-1iD6Pu-G6PUw1kaO7Knzs2B4AD0qfrHUF4pYRTvyUgBnMGUCMQC8ZRmhKqntd_c6Kgrow3bMUDBvNqo2qZr8Z8Jm2rzgseROlAnLgFLGpGShr99oSZkCMEd1v62NBRKX9HQXnybyF3fkg__-PIetJ803Z4IlIlF8xXlcdPGP-PV1dOXFemyL8g"
+
+This command produces no output.
+
+For more information, see `Confirming a topic rule destination <https://docs.aws.amazon.com/iot/latest/developerguide/rule-destination.html#confirm-destination>`__ in the *AWS IoT Developer Guide*.

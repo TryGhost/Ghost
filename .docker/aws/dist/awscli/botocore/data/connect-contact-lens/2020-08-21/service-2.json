@@ -1,0 +1,407 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-08-21",
+    "endpointPrefix":"contact-lens",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"Amazon Connect Contact Lens",
+    "serviceFullName":"Amazon Connect Contact Lens",
+    "serviceId":"Connect Contact Lens",
+    "signatureVersion":"v4",
+    "signingName":"connect",
+    "uid":"connect-contact-lens-2020-08-21",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "ListRealtimeContactAnalysisSegments":{
+      "name":"ListRealtimeContactAnalysisSegments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/realtime-contact-analysis/analysis-segments"
+      },
+      "input":{"shape":"ListRealtimeContactAnalysisSegmentsRequest"},
+      "output":{"shape":"ListRealtimeContactAnalysisSegmentsResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Provides a list of analysis segments for a real-time analysis session.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "Categories":{
+      "type":"structure",
+      "required":[
+        "MatchedCategories",
+        "MatchedDetails"
+      ],
+      "members":{
+        "MatchedCategories":{
+          "shape":"MatchedCategories",
+          "documentation":"<p>The category rules that have been matched in the analyzed segment.</p>"
+        },
+        "MatchedDetails":{
+          "shape":"MatchedDetails",
+          "documentation":"<p>The category rule that was matched and when it occurred in the transcript.</p>"
+        }
+      },
+      "documentation":"<p>Provides the category rules that are used to automatically categorize contacts based on uttered keywords and phrases.</p>"
+    },
+    "CategoryDetails":{
+      "type":"structure",
+      "required":["PointsOfInterest"],
+      "members":{
+        "PointsOfInterest":{
+          "shape":"PointsOfInterest",
+          "documentation":"<p>The section of audio where the category rule was detected.</p>"
+        }
+      },
+      "documentation":"<p>Provides information about the category rule that was matched.</p>"
+    },
+    "CategoryName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "CharacterOffset":{
+      "type":"integer",
+      "min":0
+    },
+    "CharacterOffsets":{
+      "type":"structure",
+      "required":[
+        "BeginOffsetChar",
+        "EndOffsetChar"
+      ],
+      "members":{
+        "BeginOffsetChar":{
+          "shape":"CharacterOffset",
+          "documentation":"<p>The beginning of the issue.</p>"
+        },
+        "EndOffsetChar":{
+          "shape":"CharacterOffset",
+          "documentation":"<p>The end of the issue.</p>"
+        }
+      },
+      "documentation":"<p>For characters that were detected as issues, where they occur in the transcript.</p>"
+    },
+    "ContactId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "InstanceId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "InternalServiceException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Request processing failed due to an error or failure with the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The request is not valid.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "IssueDetected":{
+      "type":"structure",
+      "required":["CharacterOffsets"],
+      "members":{
+        "CharacterOffsets":{
+          "shape":"CharacterOffsets",
+          "documentation":"<p>The offset for when the issue was detected in the segment.</p>"
+        }
+      },
+      "documentation":"<p>Potential issues that are detected based on an artificial intelligence analysis of each turn in the conversation.</p>"
+    },
+    "IssuesDetected":{
+      "type":"list",
+      "member":{"shape":"IssueDetected"},
+      "max":20,
+      "min":0
+    },
+    "ListRealtimeContactAnalysisSegmentsRequest":{
+      "type":"structure",
+      "required":[
+        "InstanceId",
+        "ContactId"
+      ],
+      "members":{
+        "InstanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The identifier of the Amazon Connect instance.</p>"
+        },
+        "ContactId":{
+          "shape":"ContactId",
+          "documentation":"<p>The identifier of the contact.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListRealtimeContactAnalysisSegmentsResponse":{
+      "type":"structure",
+      "required":["Segments"],
+      "members":{
+        "Segments":{
+          "shape":"RealtimeContactAnalysisSegments",
+          "documentation":"<p>An analyzed transcript or category.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results. If response includes <code>nextToken</code> there are two possible scenarios:</p> <ul> <li> <p>There are more segments so another call is required to get them.</p> </li> <li> <p>There are no more segments at this time, but more may be available later (real-time analysis is in progress) so the client should call the operation again to get new segments.</p> </li> </ul> <p>If response does not include <code>nextToken</code>, the analysis is completed (successfully or failed) and there are no more segments to retrieve.</p>"
+        }
+      }
+    },
+    "MatchedCategories":{
+      "type":"list",
+      "member":{"shape":"CategoryName"},
+      "max":150,
+      "min":0
+    },
+    "MatchedDetails":{
+      "type":"map",
+      "key":{"shape":"CategoryName"},
+      "value":{"shape":"CategoryDetails"},
+      "max":150,
+      "min":0
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "Message":{"type":"string"},
+    "NextToken":{
+      "type":"string",
+      "max":131070,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "OffsetMillis":{
+      "type":"integer",
+      "min":0
+    },
+    "ParticipantId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "ParticipantRole":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "PointOfInterest":{
+      "type":"structure",
+      "required":[
+        "BeginOffsetMillis",
+        "EndOffsetMillis"
+      ],
+      "members":{
+        "BeginOffsetMillis":{
+          "shape":"OffsetMillis",
+          "documentation":"<p>The beginning offset in milliseconds where the category rule was detected.</p>"
+        },
+        "EndOffsetMillis":{
+          "shape":"OffsetMillis",
+          "documentation":"<p>The ending offset in milliseconds where the category rule was detected.</p>"
+        }
+      },
+      "documentation":"<p>The section of the contact audio where that category rule was detected.</p>"
+    },
+    "PointsOfInterest":{
+      "type":"list",
+      "member":{"shape":"PointOfInterest"},
+      "max":20,
+      "min":0
+    },
+    "PostContactSummary":{
+      "type":"structure",
+      "required":["Status"],
+      "members":{
+        "Content":{
+          "shape":"PostContactSummaryContent",
+          "documentation":"<p>The content of the summary.</p>"
+        },
+        "Status":{
+          "shape":"PostContactSummaryStatus",
+          "documentation":"<p>Whether the summary was successfully COMPLETED or FAILED to be generated.</p>"
+        },
+        "FailureCode":{
+          "shape":"PostContactSummaryFailureCode",
+          "documentation":"<p>If the summary failed to be generated, one of the following failure codes occurs:</p> <ul> <li> <p> <code>QUOTA_EXCEEDED</code>: The number of concurrent analytics jobs reached your service quota.</p> </li> <li> <p> <code>INSUFFICIENT_CONVERSATION_CONTENT</code>: The conversation needs to have at least one turn from both the participants in order to generate the summary.</p> </li> <li> <p> <code>FAILED_SAFETY_GUIDELINES</code>: The generated summary cannot be provided because it failed to meet system safety guidelines.</p> </li> <li> <p> <code>INVALID_ANALYSIS_CONFIGURATION</code>: This code occurs when, for example, you're using a <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/supported-languages.html#supported-languages-contact-lens\">language</a> that isn't supported by generative AI-powered post-contact summaries. </p> </li> <li> <p> <code>INTERNAL_ERROR</code>: Internal system error.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Information about the post-contact summary.</p>"
+    },
+    "PostContactSummaryContent":{
+      "type":"string",
+      "max":1762,
+      "min":1
+    },
+    "PostContactSummaryFailureCode":{
+      "type":"string",
+      "enum":[
+        "QUOTA_EXCEEDED",
+        "INSUFFICIENT_CONVERSATION_CONTENT",
+        "FAILED_SAFETY_GUIDELINES",
+        "INVALID_ANALYSIS_CONFIGURATION",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "PostContactSummaryStatus":{
+      "type":"string",
+      "enum":[
+        "FAILED",
+        "COMPLETED"
+      ]
+    },
+    "RealtimeContactAnalysisSegment":{
+      "type":"structure",
+      "members":{
+        "Transcript":{
+          "shape":"Transcript",
+          "documentation":"<p>The analyzed transcript.</p>"
+        },
+        "Categories":{
+          "shape":"Categories",
+          "documentation":"<p>The matched category rules.</p>"
+        },
+        "PostContactSummary":{
+          "shape":"PostContactSummary",
+          "documentation":"<p>Information about the post-contact summary.</p>"
+        }
+      },
+      "documentation":"<p>An analyzed segment for a real-time analysis session.</p>"
+    },
+    "RealtimeContactAnalysisSegments":{
+      "type":"list",
+      "member":{"shape":"RealtimeContactAnalysisSegment"},
+      "max":100,
+      "min":0
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The specified resource was not found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "SentimentValue":{
+      "type":"string",
+      "enum":[
+        "POSITIVE",
+        "NEUTRAL",
+        "NEGATIVE"
+      ]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The throttling limit has been exceeded.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "Transcript":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "ParticipantId",
+        "ParticipantRole",
+        "Content",
+        "BeginOffsetMillis",
+        "EndOffsetMillis"
+      ],
+      "members":{
+        "Id":{
+          "shape":"TranscriptId",
+          "documentation":"<p>The identifier of the transcript.</p>"
+        },
+        "ParticipantId":{
+          "shape":"ParticipantId",
+          "documentation":"<p>The identifier of the participant. Valid values are CUSTOMER or AGENT.</p>"
+        },
+        "ParticipantRole":{
+          "shape":"ParticipantRole",
+          "documentation":"<p>The role of participant. For example, is it a customer, agent, or system.</p>"
+        },
+        "Content":{
+          "shape":"TranscriptContent",
+          "documentation":"<p>The content of the transcript.</p>"
+        },
+        "BeginOffsetMillis":{
+          "shape":"OffsetMillis",
+          "documentation":"<p>The beginning offset in the contact for this transcript.</p>"
+        },
+        "EndOffsetMillis":{
+          "shape":"OffsetMillis",
+          "documentation":"<p>The end offset in the contact for this transcript.</p>"
+        },
+        "Sentiment":{
+          "shape":"SentimentValue",
+          "documentation":"<p>The sentiment detected for this piece of transcript.</p>"
+        },
+        "IssuesDetected":{
+          "shape":"IssuesDetected",
+          "documentation":"<p>List of positions where issues were detected on the transcript.</p>"
+        }
+      },
+      "documentation":"<p>A list of messages in the session.</p>"
+    },
+    "TranscriptContent":{
+      "type":"string",
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "TranscriptId":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":".*\\S.*"
+    }
+  },
+  "documentation":"<ul> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_Operations_Amazon_Connect_Contact_Lens.html\">Contact Lens actions</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_Types_Amazon_Connect_Contact_Lens.html\">Contact Lens data types</a> </p> </li> </ul> <p>Amazon Connect Contact Lens enables you to analyze conversations between customer and agents, by using speech transcription, natural language processing, and intelligent search capabilities. It performs sentiment analysis, detects issues, and enables you to automatically categorize contacts.</p> <p>Amazon Connect Contact Lens provides both real-time and post-call analytics of customer-agent conversations. For more information, see <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/analyze-conversations.html\">Analyze conversations using speech analytics</a> in the <i>Amazon Connect Administrator Guide</i>. </p>"
+}

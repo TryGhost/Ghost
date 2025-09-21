@@ -1,0 +1,483 @@
+{
+  "version": "1.0",
+  "resources": {
+    "EventSourceMapping": {
+      "operation": "ListEventSourceMappings",
+      "resourceIdentifier": {
+        "UUID": "EventSourceMappings[].UUID",
+        "BatchSize": "EventSourceMappings[].BatchSize",
+        "EventSourceArn": "EventSourceMappings[].EventSourceArn"
+      }
+    },
+    "Function": {
+      "operation": "ListFunctions",
+      "resourceIdentifier": {
+        "FunctionName": "Functions[].FunctionName",
+        "Runtime": "Functions[].Runtime",
+        "Role": "Functions[].Role",
+        "Handler": "Functions[].Handler",
+        "Description": "Functions[].Description",
+        "Timeout": "Functions[].Timeout",
+        "MemorySize": "Functions[].MemorySize",
+        "CodeSha256": "Functions[].CodeSha256",
+        "VpcConfig": "Functions[].VpcConfig",
+        "DeadLetterConfig": "Functions[].DeadLetterConfig",
+        "Environment": "Functions[].Environment",
+        "KMSKeyArn": "Functions[].KMSKeyArn",
+        "TracingConfig": "Functions[].TracingConfig",
+        "RevisionId": "Functions[].RevisionId"
+      }
+    }
+  },
+  "operations": {
+    "AddPermission": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    },
+    "DeleteAlias": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "DeleteEventSourceMapping": {
+      "UUID": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSourceMapping",
+            "resourceIdentifier": "UUID"
+          }
+        ]
+      }
+    },
+    "DeleteFunction": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "DeleteFunctionConcurrency": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "GetAlias": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "GetEventSourceMapping": {
+      "UUID": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSourceMapping",
+            "resourceIdentifier": "UUID"
+          }
+        ]
+      }
+    },
+    "GetFunction": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "GetFunctionConfiguration": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "GetPolicy": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "Invoke": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "InvokeAsync": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "ListAliases": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "ListEventSourceMappings": {
+      "EventSourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSourceMapping",
+            "resourceIdentifier": "EventSourceArn"
+          }
+        ]
+      },
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "ListVersionsByFunction": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "PublishVersion": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "CodeSha256": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "CodeSha256"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    },
+    "PutFunctionConcurrency": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      }
+    },
+    "RemovePermission": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    },
+    "UpdateAlias": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    },
+    "UpdateEventSourceMapping": {
+      "UUID": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSourceMapping",
+            "resourceIdentifier": "UUID"
+          }
+        ]
+      },
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "BatchSize": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "EventSourceMapping",
+            "resourceIdentifier": "BatchSize"
+          }
+        ]
+      }
+    },
+    "UpdateFunctionCode": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    },
+    "UpdateFunctionConfiguration": {
+      "FunctionName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "FunctionName"
+          }
+        ]
+      },
+      "Role": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Role"
+          }
+        ]
+      },
+      "Handler": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Handler"
+          }
+        ]
+      },
+      "Description": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Description"
+          }
+        ]
+      },
+      "Timeout": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Timeout"
+          }
+        ]
+      },
+      "MemorySize": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "MemorySize"
+          }
+        ]
+      },
+      "VpcConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "VpcConfig"
+          }
+        ]
+      },
+      "Environment": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Environment"
+          }
+        ]
+      },
+      "Runtime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "Runtime"
+          }
+        ]
+      },
+      "DeadLetterConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "DeadLetterConfig"
+          }
+        ]
+      },
+      "KMSKeyArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "KMSKeyArn"
+          }
+        ]
+      },
+      "TracingConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "TracingConfig"
+          }
+        ]
+      },
+      "RevisionId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Function",
+            "resourceIdentifier": "RevisionId"
+          }
+        ]
+      }
+    }
+  }
+}

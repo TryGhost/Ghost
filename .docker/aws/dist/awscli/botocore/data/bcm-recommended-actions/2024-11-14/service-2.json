@@ -1,0 +1,328 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-11-14",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"bcm-recommended-actions",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"AWS Billing and Cost Management Recommended Actions",
+    "serviceId":"BCM Recommended Actions",
+    "signatureVersion":"v4",
+    "signingName":"bcm-recommended-actions",
+    "targetPrefix":"AWSBillingAndCostManagementRecommendedActions",
+    "uid":"bcm-recommended-actions-2024-11-14"
+  },
+  "operations":{
+    "ListRecommendedActions":{
+      "name":"ListRecommendedActions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRecommendedActionsRequest"},
+      "output":{"shape":"ListRecommendedActionsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of recommended actions that match the filter criteria.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[0-9]{12}"
+    },
+    "ActionFilter":{
+      "type":"structure",
+      "required":[
+        "key",
+        "matchOption",
+        "values"
+      ],
+      "members":{
+        "key":{
+          "shape":"FilterName",
+          "documentation":"<p>The category to filter on. Valid values are <code>FEATURE</code> for feature type, <code>SEVERITY</code> for severity level, and <code>TYPE</code> for recommendation type.</p>"
+        },
+        "matchOption":{
+          "shape":"MatchOption",
+          "documentation":"<p>Specifies how to apply the filter. Use <code>EQUALS</code> to include matching results or <code>NOT_EQUALS</code> to exclude matching results.</p>"
+        },
+        "values":{
+          "shape":"FilterValues",
+          "documentation":"<p>One or more values to match against the specified key.</p>"
+        }
+      },
+      "documentation":"<p>Describes a filter that returns a more specific list of recommended actions.</p>"
+    },
+    "ActionFilterList":{
+      "type":"list",
+      "member":{"shape":"ActionFilter"}
+    },
+    "ActionType":{
+      "type":"string",
+      "enum":[
+        "ADD_ALTERNATE_BILLING_CONTACT",
+        "CREATE_ANOMALY_MONITOR",
+        "CREATE_BUDGET",
+        "ENABLE_COST_OPTIMIZATION_HUB",
+        "MIGRATE_TO_GRANULAR_PERMISSIONS",
+        "PAYMENTS_DUE",
+        "PAYMENTS_PAST_DUE",
+        "REVIEW_ANOMALIES",
+        "REVIEW_BUDGET_ALERTS",
+        "REVIEW_BUDGETS_EXCEEDED",
+        "REVIEW_EXPIRING_RI",
+        "REVIEW_EXPIRING_SP",
+        "REVIEW_FREETIER_USAGE_ALERTS",
+        "REVIEW_SAVINGS_OPPORTUNITY_RECOMMENDATIONS",
+        "UPDATE_EXPIRED_PAYMENT_METHOD",
+        "UPDATE_INVALID_PAYMENT_METHOD",
+        "UPDATE_TAX_EXEMPTION_CERTIFICATE",
+        "UPDATE_TAX_REGISTRATION_NUMBER"
+      ]
+    },
+    "Context":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "Feature":{
+      "type":"string",
+      "enum":[
+        "ACCOUNT",
+        "BUDGETS",
+        "COST_ANOMALY_DETECTION",
+        "COST_OPTIMIZATION_HUB",
+        "FREE_TIER",
+        "IAM",
+        "PAYMENTS",
+        "RESERVATIONS",
+        "SAVINGS_PLANS",
+        "TAX_SETTINGS"
+      ]
+    },
+    "FilterName":{
+      "type":"string",
+      "enum":[
+        "FEATURE",
+        "SEVERITY",
+        "TYPE"
+      ]
+    },
+    "FilterValue":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".*[\\S\\s]*.*"
+    },
+    "FilterValues":{
+      "type":"list",
+      "member":{"shape":"FilterValue"},
+      "min":1
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An unexpected error occurred during the processing of your request.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ListRecommendedActionsRequest":{
+      "type":"structure",
+      "members":{
+        "filter":{
+          "shape":"RequestFilter",
+          "documentation":"<p>The criteria that you want all returned recommended actions to match.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return in the response.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results that you want to retrieve.</p>"
+        }
+      }
+    },
+    "ListRecommendedActionsResponse":{
+      "type":"structure",
+      "required":["recommendedActions"],
+      "members":{
+        "recommendedActions":{
+          "shape":"RecommendedActions",
+          "documentation":"<p>The list of recommended actions that satisfy the filter criteria.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token that indicates the next set of results that you want to retrieve.</p>"
+        }
+      }
+    },
+    "MatchOption":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS"
+      ]
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "NextStep":{"type":"string"},
+    "NextSteps":{
+      "type":"list",
+      "member":{"shape":"NextStep"}
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"[\\S\\s]*"
+    },
+    "RecommendedAction":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID for the recommended action.</p>"
+        },
+        "type":{
+          "shape":"ActionType",
+          "documentation":"<p>The type of action you can take by adopting the recommended action.</p>"
+        },
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account that the recommended action is for.</p>"
+        },
+        "severity":{
+          "shape":"Severity",
+          "documentation":"<p>The severity associated with the recommended action.</p>"
+        },
+        "feature":{
+          "shape":"Feature",
+          "documentation":"<p>The feature associated with the recommended action.</p>"
+        },
+        "context":{
+          "shape":"Context",
+          "documentation":"<p>Context that applies to the recommended action.</p>"
+        },
+        "nextSteps":{
+          "shape":"NextSteps",
+          "documentation":"<p>The possible next steps to execute the recommended action.</p>"
+        },
+        "lastUpdatedTimeStamp":{
+          "shape":"String",
+          "documentation":"<p>The time when the recommended action status was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Describes a specific recommended action.</p>"
+    },
+    "RecommendedActions":{
+      "type":"list",
+      "member":{"shape":"RecommendedAction"}
+    },
+    "RequestFilter":{
+      "type":"structure",
+      "members":{
+        "actions":{
+          "shape":"ActionFilterList",
+          "documentation":"<p>A list of action filters that define criteria for filtering results. Each filter specifies a key, match option, and corresponding values to filter on.</p>"
+        }
+      },
+      "documentation":"<p>Enables filtering of results based on specified action criteria. You can define multiple action filters to refine results using combinations of feature type, severity level, and recommendation type.</p>"
+    },
+    "Severity":{
+      "type":"string",
+      "enum":[
+        "INFO",
+        "WARNING",
+        "CRITICAL"
+      ]
+    },
+    "String":{"type":"string"},
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Provides a single, overarching explanation for the validation failure.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>Lists each problematic field and why it failed validation.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>Provides the name of the field that failed validation.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>Provides a message explaining why the field failed validation.</p>"
+        }
+      },
+      "documentation":"<p>Provides specific details about why a particular field failed validation.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    }
+  },
+  "documentation":"<p>You can use the Billing and Cost Management Recommended Actions API to programmatically query your best practices and recommendations to optimize your costs.</p> <p>The Billing and Cost Management Recommended Actions API provides the following endpoint:</p> <ul> <li> <p> https://bcm-recommended-actions.us-east-1.api.aws</p> </li> </ul>"
+}

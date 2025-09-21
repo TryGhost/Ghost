@@ -1,0 +1,608 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-07-26",
+    "endpointPrefix":"cloudfront-keyvaluestore",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon CloudFront KeyValueStore",
+    "serviceId":"CloudFront KeyValueStore",
+    "signatureVersion":"v4",
+    "signingName":"cloudfront-keyvaluestore",
+    "uid":"cloudfront-keyvaluestore-2022-07-26"
+  },
+  "operations":{
+    "DeleteKey":{
+      "name":"DeleteKey",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/key-value-stores/{KvsARN}/keys/{Key}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteKeyRequest"},
+      "output":{"shape":"DeleteKeyResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the key value pair specified by the key.</p>",
+      "idempotent":true
+    },
+    "DescribeKeyValueStore":{
+      "name":"DescribeKeyValueStore",
+      "http":{
+        "method":"GET",
+        "requestUri":"/key-value-stores/{KvsARN}",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeKeyValueStoreRequest"},
+      "output":{"shape":"DescribeKeyValueStoreResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns metadata information about Key Value Store.</p>"
+    },
+    "GetKey":{
+      "name":"GetKey",
+      "http":{
+        "method":"GET",
+        "requestUri":"/key-value-stores/{KvsARN}/keys/{Key}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetKeyRequest"},
+      "output":{"shape":"GetKeyResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a key value pair.</p>"
+    },
+    "ListKeys":{
+      "name":"ListKeys",
+      "http":{
+        "method":"GET",
+        "requestUri":"/key-value-stores/{KvsARN}/keys",
+        "responseCode":200
+      },
+      "input":{"shape":"ListKeysRequest"},
+      "output":{"shape":"ListKeysResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of key value pairs.</p>"
+    },
+    "PutKey":{
+      "name":"PutKey",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/key-value-stores/{KvsARN}/keys/{Key}",
+        "responseCode":200
+      },
+      "input":{"shape":"PutKeyRequest"},
+      "output":{"shape":"PutKeyResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a new key value pair or replaces the value of an existing key.</p>",
+      "idempotent":true
+    },
+    "UpdateKeys":{
+      "name":"UpdateKeys",
+      "http":{
+        "method":"POST",
+        "requestUri":"/key-value-stores/{KvsARN}/keys",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateKeysRequest"},
+      "output":{"shape":"UpdateKeysResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Puts or Deletes multiple key value pairs in a single, all-or-nothing operation.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Access denied.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Resource is not in expected state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "DeleteKeyRequest":{
+      "type":"structure",
+      "required":[
+        "KvsARN",
+        "Key",
+        "IfMatch"
+      ],
+      "members":{
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        },
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key to delete.</p>",
+          "location":"uri",
+          "locationName":"Key"
+        },
+        "IfMatch":{
+          "shape":"Etag",
+          "documentation":"<p>The current version (ETag) of the Key Value Store that you are deleting keys from, which you can get using DescribeKeyValueStore.</p>",
+          "location":"header",
+          "locationName":"If-Match"
+        }
+      }
+    },
+    "DeleteKeyRequestListItem":{
+      "type":"structure",
+      "required":["Key"],
+      "members":{
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key of the key value pair to be deleted.</p>"
+        }
+      },
+      "documentation":"<p>List item for keys to delete.</p>"
+    },
+    "DeleteKeyRequestsList":{
+      "type":"list",
+      "member":{"shape":"DeleteKeyRequestListItem"}
+    },
+    "DeleteKeyResponse":{
+      "type":"structure",
+      "required":[
+        "ItemCount",
+        "TotalSizeInBytes",
+        "ETag"
+      ],
+      "members":{
+        "ItemCount":{
+          "shape":"Integer",
+          "documentation":"<p>Number of key value pairs in the Key Value Store after the successful delete.</p>"
+        },
+        "TotalSizeInBytes":{
+          "shape":"Long",
+          "documentation":"<p>Total size of the Key Value Store after the successful delete, in bytes.</p>"
+        },
+        "ETag":{
+          "shape":"Etag",
+          "documentation":"<p>The current version identifier of the Key Value Store after the successful delete.</p>",
+          "location":"header",
+          "locationName":"ETag"
+        }
+      },
+      "documentation":"<p>Metadata information about a Key Value Store.</p>"
+    },
+    "DescribeKeyValueStoreRequest":{
+      "type":"structure",
+      "required":["KvsARN"],
+      "members":{
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        }
+      }
+    },
+    "DescribeKeyValueStoreResponse":{
+      "type":"structure",
+      "required":[
+        "ItemCount",
+        "TotalSizeInBytes",
+        "KvsARN",
+        "Created",
+        "ETag"
+      ],
+      "members":{
+        "ItemCount":{
+          "shape":"Integer",
+          "documentation":"<p>Number of key value pairs in the Key Value Store.</p>"
+        },
+        "TotalSizeInBytes":{
+          "shape":"Long",
+          "documentation":"<p>Total size of the Key Value Store in bytes.</p>"
+        },
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>"
+        },
+        "Created":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the Key Value Store was created.</p>"
+        },
+        "ETag":{
+          "shape":"Etag",
+          "documentation":"<p>The version identifier for the current version of the Key Value Store.</p>",
+          "location":"header",
+          "locationName":"ETag"
+        },
+        "LastModified":{
+          "shape":"Timestamp",
+          "documentation":"<p>Date and time when the key value pairs in the Key Value Store was last modified.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The current status of the Key Value Store.</p>"
+        },
+        "FailureReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for Key Value Store creation failure.</p>"
+        }
+      },
+      "documentation":"<p>Metadata information about a Key Value Store.</p>"
+    },
+    "Etag":{"type":"string"},
+    "GetKeyRequest":{
+      "type":"structure",
+      "required":[
+        "KvsARN",
+        "Key"
+      ],
+      "members":{
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        },
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key to get.</p>",
+          "location":"uri",
+          "locationName":"Key"
+        }
+      }
+    },
+    "GetKeyResponse":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value",
+        "ItemCount",
+        "TotalSizeInBytes"
+      ],
+      "members":{
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key of the key value pair.</p>"
+        },
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The value of the key value pair.</p>"
+        },
+        "ItemCount":{
+          "shape":"Integer",
+          "documentation":"<p>Number of key value pairs in the Key Value Store.</p>"
+        },
+        "TotalSizeInBytes":{
+          "shape":"Long",
+          "documentation":"<p>Total size of the Key Value Store in bytes.</p>"
+        }
+      },
+      "documentation":"<p>A key value pair.</p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Internal server error.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "Key":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "KvsARN":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ListKeysRequest":{
+      "type":"structure",
+      "required":["KvsARN"],
+      "members":{
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If nextToken is returned in the response, there are more results available. Make the next call using the returned token to retrieve the next page.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "MaxResults":{
+          "shape":"ListKeysRequestMaxResultsInteger",
+          "documentation":"<p>Maximum number of results that are returned per call. The default is 10 and maximum allowed page is 50.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        }
+      }
+    },
+    "ListKeysRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListKeysResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>If nextToken is returned in the response, there are more results available. Make the next call using the returned token to retrieve the next page.</p>"
+        },
+        "Items":{
+          "shape":"ListKeysResponseList",
+          "documentation":"<p>Key value pairs</p>"
+        }
+      }
+    },
+    "ListKeysResponseList":{
+      "type":"list",
+      "member":{"shape":"ListKeysResponseListItem"}
+    },
+    "ListKeysResponseListItem":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key of the key value pair.</p>"
+        },
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The value of the key value pair.</p>"
+        }
+      },
+      "documentation":"<p>A key value pair.</p>"
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "PutKeyRequest":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value",
+        "KvsARN",
+        "IfMatch"
+      ],
+      "members":{
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key to put.</p>",
+          "location":"uri",
+          "locationName":"Key"
+        },
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The value to put.</p>"
+        },
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        },
+        "IfMatch":{
+          "shape":"Etag",
+          "documentation":"<p>The current version (ETag) of the Key Value Store that you are putting keys into, which you can get using DescribeKeyValueStore.</p>",
+          "location":"header",
+          "locationName":"If-Match"
+        }
+      },
+      "documentation":"<p>A key value pair.</p>"
+    },
+    "PutKeyRequestListItem":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The key of the key value pair list item to put.</p>"
+        },
+        "Value":{
+          "shape":"Value",
+          "documentation":"<p>The value for the key value pair to put.</p>"
+        }
+      },
+      "documentation":"<p>List item for key value pair to put.</p>"
+    },
+    "PutKeyRequestsList":{
+      "type":"list",
+      "member":{"shape":"PutKeyRequestListItem"}
+    },
+    "PutKeyResponse":{
+      "type":"structure",
+      "required":[
+        "ItemCount",
+        "TotalSizeInBytes",
+        "ETag"
+      ],
+      "members":{
+        "ItemCount":{
+          "shape":"Integer",
+          "documentation":"<p>Number of key value pairs in the Key Value Store after the successful put.</p>"
+        },
+        "TotalSizeInBytes":{
+          "shape":"Long",
+          "documentation":"<p>Total size of the Key Value Store after the successful put, in bytes.</p>"
+        },
+        "ETag":{
+          "shape":"Etag",
+          "documentation":"<p>The current version identifier of the Key Value Store after the successful put.</p>",
+          "location":"header",
+          "locationName":"ETag"
+        }
+      },
+      "documentation":"<p>Metadata information about a Key Value Store.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Limit exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "Timestamp":{"type":"timestamp"},
+    "UpdateKeysRequest":{
+      "type":"structure",
+      "required":[
+        "KvsARN",
+        "IfMatch"
+      ],
+      "members":{
+        "KvsARN":{
+          "shape":"KvsARN",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Value Store.</p>",
+          "contextParam":{"name":"KvsARN"},
+          "location":"uri",
+          "locationName":"KvsARN"
+        },
+        "IfMatch":{
+          "shape":"Etag",
+          "documentation":"<p>The current version (ETag) of the Key Value Store that you are updating keys of, which you can get using DescribeKeyValueStore.</p>",
+          "location":"header",
+          "locationName":"If-Match"
+        },
+        "Puts":{
+          "shape":"PutKeyRequestsList",
+          "documentation":"<p>List of key value pairs to put.</p>"
+        },
+        "Deletes":{
+          "shape":"DeleteKeyRequestsList",
+          "documentation":"<p>List of keys to delete.</p>"
+        }
+      }
+    },
+    "UpdateKeysResponse":{
+      "type":"structure",
+      "required":[
+        "ItemCount",
+        "TotalSizeInBytes",
+        "ETag"
+      ],
+      "members":{
+        "ItemCount":{
+          "shape":"Integer",
+          "documentation":"<p>Number of key value pairs in the Key Value Store after the successful update.</p>"
+        },
+        "TotalSizeInBytes":{
+          "shape":"Long",
+          "documentation":"<p>Total size of the Key Value Store after the successful update, in bytes.</p>"
+        },
+        "ETag":{
+          "shape":"Etag",
+          "documentation":"<p>The current version identifier of the Key Value Store after the successful update.</p>",
+          "location":"header",
+          "locationName":"ETag"
+        }
+      },
+      "documentation":"<p>Metadata information about a Key Value Store.</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Validation failed.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Value":{
+      "type":"string",
+      "sensitive":true
+    }
+  },
+  "documentation":"<p>Amazon CloudFront KeyValueStore Service to View and Update Data in a KVS Resource</p>"
+}

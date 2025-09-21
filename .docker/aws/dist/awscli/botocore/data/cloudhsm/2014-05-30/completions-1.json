@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Hapg": {
+      "operation": "ListHapgs",
+      "resourceIdentifier": {
+        "HapgList": "HapgList[]"
+      }
+    }
+  },
+  "operations": {
+    "GetConfig": {
+      "HapgList": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Hapg",
+            "resourceIdentifier": "HapgList"
+          }
+        ]
+      }
+    }
+  }
+}

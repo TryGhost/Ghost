@@ -1,0 +1,1528 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"license-manager-user-subscriptions",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS License Manager User Subscriptions",
+    "serviceId":"License Manager User Subscriptions",
+    "signatureVersion":"v4",
+    "signingName":"license-manager-user-subscriptions",
+    "uid":"license-manager-user-subscriptions-2018-05-10"
+  },
+  "operations":{
+    "AssociateUser":{
+      "name":"AssociateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/AssociateUser",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociateUserRequest"},
+      "output":{"shape":"AssociateUserResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Associates the user to an EC2 instance to utilize user-based subscriptions.</p> <note> <p>Your estimated bill for charges on the number of users and related costs will take 48 hours to appear for billing periods that haven't closed (marked as <b>Pending</b> billing status) in Amazon Web Services Billing. For more information, see <a href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/invoice.html\">Viewing your monthly charges</a> in the <i>Amazon Web Services Billing User Guide</i>.</p> </note>",
+      "idempotent":true
+    },
+    "CreateLicenseServerEndpoint":{
+      "name":"CreateLicenseServerEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/license-server/CreateLicenseServerEndpoint",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateLicenseServerEndpointRequest"},
+      "output":{"shape":"CreateLicenseServerEndpointResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a network endpoint for the Remote Desktop Services (RDS) license server.</p>",
+      "idempotent":true
+    },
+    "DeleteLicenseServerEndpoint":{
+      "name":"DeleteLicenseServerEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/license-server/DeleteLicenseServerEndpoint",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteLicenseServerEndpointRequest"},
+      "output":{"shape":"DeleteLicenseServerEndpointResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes a <code>LicenseServerEndpoint</code> resource.</p>",
+      "idempotent":true
+    },
+    "DeregisterIdentityProvider":{
+      "name":"DeregisterIdentityProvider",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-provider/DeregisterIdentityProvider",
+        "responseCode":200
+      },
+      "input":{"shape":"DeregisterIdentityProviderRequest"},
+      "output":{"shape":"DeregisterIdentityProviderResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deregisters the Active Directory identity provider from License Manager user-based subscriptions.</p>",
+      "idempotent":true
+    },
+    "DisassociateUser":{
+      "name":"DisassociateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/DisassociateUser",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociateUserRequest"},
+      "output":{"shape":"DisassociateUserResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Disassociates the user from an EC2 instance providing user-based subscriptions.</p>",
+      "idempotent":true
+    },
+    "ListIdentityProviders":{
+      "name":"ListIdentityProviders",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-provider/ListIdentityProviders",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIdentityProvidersRequest"},
+      "output":{"shape":"ListIdentityProvidersResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the Active Directory identity providers for user-based subscriptions.</p>"
+    },
+    "ListInstances":{
+      "name":"ListInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/instance/ListInstances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListInstancesRequest"},
+      "output":{"shape":"ListInstancesResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the EC2 instances providing user-based subscriptions.</p>"
+    },
+    "ListLicenseServerEndpoints":{
+      "name":"ListLicenseServerEndpoints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/license-server/ListLicenseServerEndpoints",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLicenseServerEndpointsRequest"},
+      "output":{"shape":"ListLicenseServerEndpointsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>List the Remote Desktop Services (RDS) License Server endpoints </p>"
+    },
+    "ListProductSubscriptions":{
+      "name":"ListProductSubscriptions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/ListProductSubscriptions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListProductSubscriptionsRequest"},
+      "output":{"shape":"ListProductSubscriptionsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists the user-based subscription products available from an identity provider.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the list of tags for the specified resource.</p>"
+    },
+    "ListUserAssociations":{
+      "name":"ListUserAssociations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/ListUserAssociations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListUserAssociationsRequest"},
+      "output":{"shape":"ListUserAssociationsResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists user associations for an identity provider.</p>"
+    },
+    "RegisterIdentityProvider":{
+      "name":"RegisterIdentityProvider",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-provider/RegisterIdentityProvider",
+        "responseCode":200
+      },
+      "input":{"shape":"RegisterIdentityProviderRequest"},
+      "output":{"shape":"RegisterIdentityProviderResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Registers an identity provider for user-based subscriptions.</p>",
+      "idempotent":true
+    },
+    "StartProductSubscription":{
+      "name":"StartProductSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/StartProductSubscription",
+        "responseCode":200
+      },
+      "input":{"shape":"StartProductSubscriptionRequest"},
+      "output":{"shape":"StartProductSubscriptionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts a product subscription for a user with the specified identity provider.</p> <note> <p>Your estimated bill for charges on the number of users and related costs will take 48 hours to appear for billing periods that haven't closed (marked as <b>Pending</b> billing status) in Amazon Web Services Billing. For more information, see <a href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/invoice.html\">Viewing your monthly charges</a> in the <i>Amazon Web Services Billing User Guide</i>.</p> </note>"
+    },
+    "StopProductSubscription":{
+      "name":"StopProductSubscription",
+      "http":{
+        "method":"POST",
+        "requestUri":"/user/StopProductSubscription",
+        "responseCode":200
+      },
+      "input":{"shape":"StopProductSubscriptionRequest"},
+      "output":{"shape":"StopProductSubscriptionResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Stops a product subscription for a user with the specified identity provider.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds tags to a resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes tags from a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateIdentityProviderSettings":{
+      "name":"UpdateIdentityProviderSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/identity-provider/UpdateIdentityProviderSettings",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateIdentityProviderSettingsRequest"},
+      "output":{"shape":"UpdateIdentityProviderSettingsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates additional product configuration settings for the registered identity provider.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have sufficient access to perform this action.</p>",
+      "exception":true
+    },
+    "ActiveDirectoryIdentityProvider":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{
+          "shape":"Directory",
+          "documentation":"<p>The directory ID for an Active Directory identity provider.</p>"
+        },
+        "ActiveDirectorySettings":{
+          "shape":"ActiveDirectorySettings",
+          "documentation":"<p>The <code>ActiveDirectorySettings</code> resource contains details about the Active Directory, including network access details such as domain name and IP addresses, and the credential provider for user administration.</p>"
+        },
+        "ActiveDirectoryType":{
+          "shape":"ActiveDirectoryType",
+          "documentation":"<p>The type of Active Directory – either a self-managed Active Directory or an Amazon Web Services Managed Active Directory.</p>"
+        },
+        "IsSharedActiveDirectory":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether this directory is shared from an Amazon Web Services Managed Active Directory. The default value is false.</p>"
+        }
+      },
+      "documentation":"<p>Details about an Active Directory identity provider.</p>"
+    },
+    "ActiveDirectorySettings":{
+      "type":"structure",
+      "members":{
+        "DomainName":{
+          "shape":"String",
+          "documentation":"<p>The domain name for the Active Directory.</p>"
+        },
+        "DomainIpv4List":{
+          "shape":"ActiveDirectorySettingsDomainIpv4ListList",
+          "documentation":"<p>A list of domain IPv4 addresses that are used for the Active Directory.</p>"
+        },
+        "DomainCredentialsProvider":{
+          "shape":"CredentialsProvider",
+          "documentation":"<p>Points to the <code>CredentialsProvider</code> resource that contains information about the credential provider for user administration.</p>"
+        },
+        "DomainNetworkSettings":{
+          "shape":"DomainNetworkSettings",
+          "documentation":"<p>The <code>DomainNetworkSettings</code> resource contains an array of subnets that apply for the Active Directory.</p>"
+        }
+      },
+      "documentation":"<p>Contains network access and credential details that are needed for user administration in the Active Directory.</p>"
+    },
+    "ActiveDirectorySettingsDomainIpv4ListList":{
+      "type":"list",
+      "member":{"shape":"IpV4"},
+      "max":2,
+      "min":1
+    },
+    "ActiveDirectoryType":{
+      "type":"string",
+      "enum":[
+        "SELF_MANAGED",
+        "AWS_MANAGED"
+      ]
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"arn:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-zA-Z0-9-\\.]{1,510}/[a-zA-Z0-9-\\.]{1,510}"
+    },
+    "AssociateUserRequest":{
+      "type":"structure",
+      "required":[
+        "Username",
+        "InstanceId",
+        "IdentityProvider"
+      ],
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the identity provider.</p>"
+        },
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 instance that provides the user-based subscription.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>The identity provider for the user.</p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains information for the user to associate.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags that apply for the user association.</p>"
+        }
+      }
+    },
+    "AssociateUserResponse":{
+      "type":"structure",
+      "required":["InstanceUserSummary"],
+      "members":{
+        "InstanceUserSummary":{
+          "shape":"InstanceUserSummary",
+          "documentation":"<p>Metadata that describes the associate user operation.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BoxInteger":{
+      "type":"integer",
+      "box":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request couldn't be completed because it conflicted with the current state of the resource.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "CreateLicenseServerEndpointRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityProviderArn",
+        "LicenseServerSettings"
+      ],
+      "members":{
+        "IdentityProviderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies the <code>IdentityProvider</code> resource that contains details about a registered identity provider. In the case of Active Directory, that can be a self-managed Active Directory or an Amazon Web Services Managed Active Directory that contains user identity details.</p>"
+        },
+        "LicenseServerSettings":{
+          "shape":"LicenseServerSettings",
+          "documentation":"<p>The <code>LicenseServerSettings</code> resource to create for the endpoint. The settings include the type of license server and the Secrets Manager secret that enables administrators to add or remove users associated with the license server.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags that apply for the license server endpoint.</p>"
+        }
+      }
+    },
+    "CreateLicenseServerEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "IdentityProviderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the identity provider specified in the request.</p>"
+        },
+        "LicenseServerEndpointArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the <code>LicenseServerEndpoint</code> resource.</p>"
+        }
+      }
+    },
+    "CredentialsProvider":{
+      "type":"structure",
+      "members":{
+        "SecretsManagerCredentialsProvider":{
+          "shape":"SecretsManagerCredentialsProvider",
+          "documentation":"<p>Identifies the Secrets Manager secret that contains credentials needed for user administration in the Active Directory.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the credential provider for user administration.</p>",
+      "union":true
+    },
+    "DeleteLicenseServerEndpointRequest":{
+      "type":"structure",
+      "required":[
+        "LicenseServerEndpointArn",
+        "ServerType"
+      ],
+      "members":{
+        "LicenseServerEndpointArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies the <code>LicenseServerEndpoint</code> resource to delete.</p>"
+        },
+        "ServerType":{
+          "shape":"ServerType",
+          "documentation":"<p>The type of License Server that the delete request refers to.</p>"
+        }
+      }
+    },
+    "DeleteLicenseServerEndpointResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseServerEndpoint":{
+          "shape":"LicenseServerEndpoint",
+          "documentation":"<p>Shows details from the <code>LicenseServerEndpoint</code> resource that was deleted.</p>"
+        }
+      }
+    },
+    "DeregisterIdentityProviderRequest":{
+      "type":"structure",
+      "members":{
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the Active Directory identity provider.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "IdentityProviderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies the identity provider to deregister.</p>"
+        }
+      }
+    },
+    "DeregisterIdentityProviderResponse":{
+      "type":"structure",
+      "required":["IdentityProviderSummary"],
+      "members":{
+        "IdentityProviderSummary":{
+          "shape":"IdentityProviderSummary",
+          "documentation":"<p>Metadata that describes the results of an identity provider operation.</p>"
+        }
+      }
+    },
+    "Directory":{
+      "type":"string",
+      "pattern":"(d|sd)-[0-9a-f]{10}"
+    },
+    "DisassociateUserRequest":{
+      "type":"structure",
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the Active Directory identity provider for the user.</p>"
+        },
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 instance which provides user-based subscriptions.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the Active Directory identity provider.</p>"
+        },
+        "InstanceUserArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user to disassociate from the EC2 instance.</p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains information for the user to disassociate.</p>"
+        }
+      }
+    },
+    "DisassociateUserResponse":{
+      "type":"structure",
+      "required":["InstanceUserSummary"],
+      "members":{
+        "InstanceUserSummary":{
+          "shape":"InstanceUserSummary",
+          "documentation":"<p>Metadata that describes the associate user operation.</p>"
+        }
+      }
+    },
+    "DomainNetworkSettings":{
+      "type":"structure",
+      "required":["Subnets"],
+      "members":{
+        "Subnets":{
+          "shape":"DomainNetworkSettingsSubnetsList",
+          "documentation":"<p>Contains a list of subnets that apply for the Active Directory domain.</p>"
+        }
+      },
+      "documentation":"<p>Contains network settings for the Active Directory domain.</p>"
+    },
+    "DomainNetworkSettingsSubnetsList":{
+      "type":"list",
+      "member":{"shape":"Subnet"},
+      "min":1
+    },
+    "Filter":{
+      "type":"structure",
+      "members":{
+        "Attribute":{
+          "shape":"String",
+          "documentation":"<p>The name of an attribute to use as a filter.</p>"
+        },
+        "Operation":{
+          "shape":"String",
+          "documentation":"<p>The type of search (For example, eq, geq, leq)</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Value of the filter.</p>"
+        }
+      },
+      "documentation":"<p>A filter name and value pair that is used to return more specific results from a describe or list operation. You can use filters can be used to match a set of resources by specific criteria, such as tags, attributes, or IDs.</p>"
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "IdentityProvider":{
+      "type":"structure",
+      "members":{
+        "ActiveDirectoryIdentityProvider":{
+          "shape":"ActiveDirectoryIdentityProvider",
+          "documentation":"<p>The <code>ActiveDirectoryIdentityProvider</code> resource contains settings and other details about a specific Active Directory identity provider.</p>"
+        }
+      },
+      "documentation":"<p>Refers to an identity provider.</p>",
+      "union":true
+    },
+    "IdentityProviderSummary":{
+      "type":"structure",
+      "required":[
+        "IdentityProvider",
+        "Settings",
+        "Product",
+        "Status"
+      ],
+      "members":{
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>The <code>IdentityProvider</code> resource contains information about an identity provider.</p>"
+        },
+        "Settings":{
+          "shape":"Settings",
+          "documentation":"<p>The <code>Settings</code> resource contains details about the registered identity provider’s product related configuration settings, such as the subnets to provision VPC endpoints.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the identity provider.</p>"
+        },
+        "IdentityProviderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the identity provider.</p>"
+        },
+        "FailureMessage":{
+          "shape":"String",
+          "documentation":"<p>The failure message associated with an identity provider.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"String",
+          "documentation":"<p>The AWS Account ID of the owner of this resource.</p>"
+        }
+      },
+      "documentation":"<p>Describes an identity provider.</p>"
+    },
+    "IdentityProviderSummaryList":{
+      "type":"list",
+      "member":{"shape":"IdentityProviderSummary"}
+    },
+    "InstanceSummary":{
+      "type":"structure",
+      "required":[
+        "InstanceId",
+        "Status",
+        "Products"
+      ],
+      "members":{
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 instance, which provides user-based subscriptions.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of an EC2 instance resource.</p>"
+        },
+        "Products":{
+          "shape":"StringList",
+          "documentation":"<p>A list of provided user-based subscription products.</p>"
+        },
+        "LastStatusCheckDate":{
+          "shape":"String",
+          "documentation":"<p>The date of the last status check.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message for an EC2 instance.</p>"
+        },
+        "OwnerAccountId":{
+          "shape":"String",
+          "documentation":"<p>The AWS Account ID of the owner of this resource.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>The <code>IdentityProvider</code> resource specifies details about the identity provider.</p>"
+        }
+      },
+      "documentation":"<p>Describes an EC2 instance providing user-based subscriptions.</p>"
+    },
+    "InstanceSummaryList":{
+      "type":"list",
+      "member":{"shape":"InstanceSummary"}
+    },
+    "InstanceUserSummary":{
+      "type":"structure",
+      "required":[
+        "Username",
+        "InstanceId",
+        "IdentityProvider",
+        "Status"
+      ],
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the identity provider for the user.</p>"
+        },
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 instance that provides user-based subscriptions.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>The <code>IdentityProvider</code> resource specifies details about the identity provider.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of a user associated with an EC2 instance.</p>"
+        },
+        "InstanceUserArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that identifies the instance user.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message for users of an EC2 instance.</p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains the user information for the product subscription.</p>"
+        },
+        "AssociationDate":{
+          "shape":"String",
+          "documentation":"<p>The date a user was associated with an EC2 instance.</p>"
+        },
+        "DisassociationDate":{
+          "shape":"String",
+          "documentation":"<p>The date a user was disassociated from an EC2 instance.</p>"
+        }
+      },
+      "documentation":"<p>Describes users of an EC2 instance providing user-based subscriptions.</p>"
+    },
+    "InstanceUserSummaryList":{
+      "type":"list",
+      "member":{"shape":"InstanceUserSummary"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An exception occurred with the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "IpV4":{
+      "type":"string",
+      "pattern":"(?:(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(\\.(?!$)|$)){4}"
+    },
+    "LicenseServer":{
+      "type":"structure",
+      "members":{
+        "ProvisioningStatus":{
+          "shape":"LicenseServerEndpointProvisioningStatus",
+          "documentation":"<p>The current state of the provisioning process for the RDS license server.</p>"
+        },
+        "HealthStatus":{
+          "shape":"LicenseServerHealthStatus",
+          "documentation":"<p>The health status of the RDS license server.</p>"
+        },
+        "Ipv4Address":{
+          "shape":"String",
+          "documentation":"<p>A list of domain IPv4 addresses that are used for the RDS license server.</p>"
+        }
+      },
+      "documentation":"<p>Information about a Remote Desktop Services (RDS) license server.</p>"
+    },
+    "LicenseServerEndpoint":{
+      "type":"structure",
+      "members":{
+        "IdentityProviderArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the identity provider that's associated with the RDS license server endpoint.</p>"
+        },
+        "ServerType":{
+          "shape":"ServerType",
+          "documentation":"<p>The type of license server.</p>"
+        },
+        "ServerEndpoint":{
+          "shape":"ServerEndpoint",
+          "documentation":"<p>The <code>ServerEndpoint</code> resource contains the network address of the RDS license server endpoint.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The message associated with the provisioning status, if there is one.</p>"
+        },
+        "LicenseServerEndpointId":{
+          "shape":"LicenseServerEndpointId",
+          "documentation":"<p>The ID of the license server endpoint.</p>"
+        },
+        "LicenseServerEndpointArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the <code>ServerEndpoint</code> resource for the RDS license server.</p>"
+        },
+        "LicenseServerEndpointProvisioningStatus":{
+          "shape":"LicenseServerEndpointProvisioningStatus",
+          "documentation":"<p>The current state of the provisioning process for the RDS license server endpoint</p>"
+        },
+        "LicenseServers":{
+          "shape":"LicenseServerList",
+          "documentation":"<p>An array of <code>LicenseServer</code> resources that represent the license servers that are accessed through this endpoint.</p>"
+        },
+        "CreationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when License Manager created the license server endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about a network endpoint for a Remote Desktop Services (RDS) license server.</p>"
+    },
+    "LicenseServerEndpointId":{"type":"string"},
+    "LicenseServerEndpointList":{
+      "type":"list",
+      "member":{"shape":"LicenseServerEndpoint"}
+    },
+    "LicenseServerEndpointProvisioningStatus":{
+      "type":"string",
+      "enum":[
+        "PROVISIONING",
+        "PROVISIONING_FAILED",
+        "PROVISIONED",
+        "DELETING",
+        "DELETION_FAILED",
+        "DELETED"
+      ]
+    },
+    "LicenseServerHealthStatus":{
+      "type":"string",
+      "enum":[
+        "HEALTHY",
+        "UNHEALTHY",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "LicenseServerList":{
+      "type":"list",
+      "member":{"shape":"LicenseServer"}
+    },
+    "LicenseServerSettings":{
+      "type":"structure",
+      "required":[
+        "ServerType",
+        "ServerSettings"
+      ],
+      "members":{
+        "ServerType":{
+          "shape":"ServerType",
+          "documentation":"<p>The type of license server.</p>"
+        },
+        "ServerSettings":{
+          "shape":"ServerSettings",
+          "documentation":"<p>The <code>ServerSettings</code> resource contains the settings for your server.</p>"
+        }
+      },
+      "documentation":"<p>The settings to configure your license server.</p>"
+    },
+    "ListIdentityProvidersRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum number of results to return from a single request.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>You can use the following filters to streamline results:</p> <ul> <li> <p>Product</p> </li> <li> <p>DirectoryId</p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      }
+    },
+    "ListIdentityProvidersResponse":{
+      "type":"structure",
+      "required":["IdentityProviderSummaries"],
+      "members":{
+        "IdentityProviderSummaries":{
+          "shape":"IdentityProviderSummaryList",
+          "documentation":"<p>An array of <code>IdentityProviderSummary</code> resources that contain details about the Active Directory identity providers that meet the request criteria.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ListInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum number of results to return from a single request.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>You can use the following filters to streamline results:</p> <ul> <li> <p>Status</p> </li> <li> <p>InstanceId</p> </li> </ul>"
+        }
+      }
+    },
+    "ListInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "InstanceSummaries":{
+          "shape":"InstanceSummaryList",
+          "documentation":"<p>An array of <code>InstanceSummary</code> resources that contain details about the instances that provide user-based subscriptions and also meet the request criteria.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ListLicenseServerEndpointsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListLicenseServerEndpointsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to return from a single request.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>You can use the following filters to streamline results:</p> <ul> <li> <p>IdentityProviderArn</p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      }
+    },
+    "ListLicenseServerEndpointsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListLicenseServerEndpointsResponse":{
+      "type":"structure",
+      "members":{
+        "LicenseServerEndpoints":{
+          "shape":"LicenseServerEndpointList",
+          "documentation":"<p>An array of <code>LicenseServerEndpoint</code> resources that contain detailed information about the RDS License Servers that meet the request criteria.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ListProductSubscriptionsRequest":{
+      "type":"structure",
+      "required":["IdentityProvider"],
+      "members":{
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum number of results to return from a single request.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>You can use the following filters to streamline results:</p> <ul> <li> <p>Status</p> </li> <li> <p>Username</p> </li> <li> <p>Domain</p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      }
+    },
+    "ListProductSubscriptionsResponse":{
+      "type":"structure",
+      "members":{
+        "ProductUserSummaries":{
+          "shape":"ProductUserSummaryList",
+          "documentation":"<p>Metadata that describes the list product subscriptions operation.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource whose tags you want to retrieve.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags for the specified resource.</p>"
+        }
+      }
+    },
+    "ListUserAssociationsRequest":{
+      "type":"structure",
+      "required":[
+        "InstanceId",
+        "IdentityProvider"
+      ],
+      "members":{
+        "InstanceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the EC2 instance, which provides user-based subscriptions.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider.</p>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum number of results to return from a single request.</p>"
+        },
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>You can use the following filters to streamline results:</p> <ul> <li> <p>Status</p> </li> <li> <p>Username</p> </li> <li> <p>Domain</p> </li> </ul>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      }
+    },
+    "ListUserAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "InstanceUserSummaries":{
+          "shape":"InstanceUserSummaryList",
+          "documentation":"<p>Metadata that describes the list user association operation.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ProductUserSummary":{
+      "type":"structure",
+      "required":[
+        "Username",
+        "Product",
+        "IdentityProvider",
+        "Status"
+      ],
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the identity provider for this product user.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of a product for this user.</p>"
+        },
+        "ProductUserArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this product user.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message for a product for this user.</p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains the user information for the product subscription.</p>"
+        },
+        "SubscriptionStartDate":{
+          "shape":"String",
+          "documentation":"<p>The start date of a subscription.</p>"
+        },
+        "SubscriptionEndDate":{
+          "shape":"String",
+          "documentation":"<p>The end date of a subscription.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the user-based subscription products for a specific user.</p>"
+    },
+    "ProductUserSummaryList":{
+      "type":"list",
+      "member":{"shape":"ProductUserSummary"}
+    },
+    "RdsSalSettings":{
+      "type":"structure",
+      "required":["RdsSalCredentialsProvider"],
+      "members":{
+        "RdsSalCredentialsProvider":{
+          "shape":"CredentialsProvider",
+          "documentation":"<p>The <code>CredentialsProvider</code> resource contains a reference to the credentials provider that's used for RDS license server user administration.</p>"
+        }
+      },
+      "documentation":"<p>Server settings that are specific to a Remote Desktop Services (RDS) license server.</p>"
+    },
+    "RegisterIdentityProviderRequest":{
+      "type":"structure",
+      "required":[
+        "IdentityProvider",
+        "Product"
+      ],
+      "members":{
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider to register.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "Settings":{
+          "shape":"Settings",
+          "documentation":"<p>The registered identity provider’s product related configuration settings such as the subnets to provision VPC endpoints.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags that apply to the identity provider's registration.</p>"
+        }
+      }
+    },
+    "RegisterIdentityProviderResponse":{
+      "type":"structure",
+      "required":["IdentityProviderSummary"],
+      "members":{
+        "IdentityProviderSummary":{
+          "shape":"IdentityProviderSummary",
+          "documentation":"<p>Metadata that describes the results of an identity provider operation.</p>"
+        }
+      }
+    },
+    "ResourceArn":{
+      "type":"string",
+      "pattern":"arn:([a-z0-9-\\.]{1,63}):([a-z0-9-\\.]{1,63}):([a-z0-9-\\.]{1,63}):([a-z0-9-\\.]{1,63}):([a-z0-9-\\.]{1,510})/([a-z0-9-\\.]{1,510})"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The resource couldn't be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SecretsManagerCredentialsProvider":{
+      "type":"structure",
+      "members":{
+        "SecretId":{
+          "shape":"SecretsManagerCredentialsProviderSecretIdString",
+          "documentation":"<p>The ID of the Secrets Manager secret that contains credentials.</p>"
+        }
+      },
+      "documentation":"<p>Contains a credentials secret that's stored in Secrets Manager.</p>"
+    },
+    "SecretsManagerCredentialsProviderSecretIdString":{
+      "type":"string",
+      "min":1
+    },
+    "SecurityGroup":{
+      "type":"string",
+      "max":200,
+      "min":5,
+      "pattern":"sg-(([0-9a-z]{8})|([0-9a-z]{17}))"
+    },
+    "ServerEndpoint":{
+      "type":"structure",
+      "members":{
+        "Endpoint":{
+          "shape":"String",
+          "documentation":"<p>The network address of the endpoint.</p>"
+        }
+      },
+      "documentation":"<p>A network endpoint through which you can access one or more servers.</p>"
+    },
+    "ServerSettings":{
+      "type":"structure",
+      "members":{
+        "RdsSalSettings":{
+          "shape":"RdsSalSettings",
+          "documentation":"<p>The <code>RdsSalSettings</code> resource contains settings to configure a specific Remote Desktop Services (RDS) license server.</p>"
+        }
+      },
+      "documentation":"<p>Contains settings for a specific server.</p>",
+      "union":true
+    },
+    "ServerType":{
+      "type":"string",
+      "enum":["RDS_SAL"]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request failed because a service quota is exceeded.</p>",
+      "exception":true
+    },
+    "Settings":{
+      "type":"structure",
+      "required":[
+        "Subnets",
+        "SecurityGroupId"
+      ],
+      "members":{
+        "Subnets":{
+          "shape":"SettingsSubnetsList",
+          "documentation":"<p>The subnets defined for the registered identity provider.</p>"
+        },
+        "SecurityGroupId":{
+          "shape":"SecurityGroup",
+          "documentation":"<p>A security group ID that allows inbound TCP port 1688 communication between resources in your VPC and the VPC endpoint for activation servers.</p>"
+        }
+      },
+      "documentation":"<p>The registered identity provider’s product related configuration settings such as the subnets to provision VPC endpoints, and the security group ID that is associated with the VPC endpoints. The security group should permit inbound TCP port 1688 communication from resources in the VPC.</p>"
+    },
+    "SettingsSubnetsList":{
+      "type":"list",
+      "member":{"shape":"Subnet"},
+      "min":1
+    },
+    "StartProductSubscriptionRequest":{
+      "type":"structure",
+      "required":[
+        "Username",
+        "IdentityProvider",
+        "Product"
+      ],
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the identity provider of the user.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains the user for whom to start the product subscription.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags that apply to the product subscription.</p>"
+        }
+      }
+    },
+    "StartProductSubscriptionResponse":{
+      "type":"structure",
+      "required":["ProductUserSummary"],
+      "members":{
+        "ProductUserSummary":{
+          "shape":"ProductUserSummary",
+          "documentation":"<p>Metadata that describes the start product subscription operation.</p>"
+        }
+      }
+    },
+    "StopProductSubscriptionRequest":{
+      "type":"structure",
+      "members":{
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name from the identity provider for the user.</p>"
+        },
+        "IdentityProvider":{
+          "shape":"IdentityProvider",
+          "documentation":"<p>An object that specifies details for the identity provider.</p>"
+        },
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "ProductUserArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the product user.</p>"
+        },
+        "Domain":{
+          "shape":"String",
+          "documentation":"<p>The domain name of the Active Directory that contains the user for whom to stop the product subscription.</p>"
+        }
+      }
+    },
+    "StopProductSubscriptionResponse":{
+      "type":"structure",
+      "required":["ProductUserSummary"],
+      "members":{
+        "ProductUserSummary":{
+          "shape":"ProductUserSummary",
+          "documentation":"<p>Metadata that describes the start product subscription operation.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Subnet":{
+      "type":"string",
+      "pattern":"subnet-[a-z0-9]{8,17}.*"
+    },
+    "Subnets":{
+      "type":"list",
+      "member":{"shape":"Subnet"}
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to tag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags to apply to the specified resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied because of request throttling. Retry the request.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to remove tags from.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys to remove from the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateIdentityProviderSettingsRequest":{
+      "type":"structure",
+      "required":["UpdateSettings"],
+      "members":{
+        "IdentityProvider":{"shape":"IdentityProvider"},
+        "Product":{
+          "shape":"String",
+          "documentation":"<p>The name of the user-based subscription product.</p> <p>Valid values: <code>VISUAL_STUDIO_ENTERPRISE</code> | <code>VISUAL_STUDIO_PROFESSIONAL</code> | <code>OFFICE_PROFESSIONAL_PLUS</code> | <code>REMOTE_DESKTOP_SERVICES</code> </p>"
+        },
+        "IdentityProviderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the identity provider to update.</p>"
+        },
+        "UpdateSettings":{
+          "shape":"UpdateSettings",
+          "documentation":"<p>Updates the registered identity provider’s product related configuration settings. You can update any combination of settings in a single operation such as the:</p> <ul> <li> <p>Subnets which you want to add to provision VPC endpoints.</p> </li> <li> <p>Subnets which you want to remove the VPC endpoints from.</p> </li> <li> <p>Security group ID which permits traffic to the VPC endpoints.</p> </li> </ul>"
+        }
+      }
+    },
+    "UpdateIdentityProviderSettingsResponse":{
+      "type":"structure",
+      "required":["IdentityProviderSummary"],
+      "members":{
+        "IdentityProviderSummary":{"shape":"IdentityProviderSummary"}
+      }
+    },
+    "UpdateSettings":{
+      "type":"structure",
+      "required":[
+        "AddSubnets",
+        "RemoveSubnets"
+      ],
+      "members":{
+        "AddSubnets":{
+          "shape":"Subnets",
+          "documentation":"<p>The ID of one or more subnets in which License Manager will create a VPC endpoint for products that require connectivity to activation servers.</p>"
+        },
+        "RemoveSubnets":{
+          "shape":"Subnets",
+          "documentation":"<p>The ID of one or more subnets to remove.</p>"
+        },
+        "SecurityGroupId":{
+          "shape":"SecurityGroup",
+          "documentation":"<p>A security group ID that allows inbound TCP port 1688 communication between resources in your VPC and the VPC endpoints for activation servers.</p>"
+        }
+      },
+      "documentation":"<p>Updates the registered identity provider’s product related configuration settings such as the subnets to provision VPC endpoints.</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>A parameter is not valid.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>With License Manager, you can create user-based subscriptions to utilize licensed software with a per user subscription fee on Amazon EC2 instances.</p>"
+}

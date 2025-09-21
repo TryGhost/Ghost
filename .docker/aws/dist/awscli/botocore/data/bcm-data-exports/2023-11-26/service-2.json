@@ -1,0 +1,1114 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-11-26",
+    "endpointPrefix":"bcm-data-exports",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "serviceFullName":"AWS Billing and Cost Management Data Exports",
+    "serviceId":"BCM Data Exports",
+    "signatureVersion":"v4",
+    "signingName":"bcm-data-exports",
+    "targetPrefix":"AWSBillingAndCostManagementDataExports",
+    "uid":"bcm-data-exports-2023-11-26"
+  },
+  "operations":{
+    "CreateExport":{
+      "name":"CreateExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateExportRequest"},
+      "output":{"shape":"CreateExportResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a data export and specifies the data query, the delivery preference, and any optional resource tags.</p> <p>A <code>DataQuery</code> consists of both a <code>QueryStatement</code> and <code>TableConfigurations</code>.</p> <p>The <code>QueryStatement</code> is an SQL statement. Data Exports only supports a limited subset of the SQL syntax. For more information on the SQL syntax that is supported, see <a href=\"https://docs.aws.amazon.com/cur/latest/userguide/de-data-query.html\">Data query</a>. To view the available tables and columns, see the <a href=\"https://docs.aws.amazon.com/cur/latest/userguide/de-table-dictionary.html\">Data Exports table dictionary</a>.</p> <p>The <code>TableConfigurations</code> is a collection of specified <code>TableProperties</code> for the table being queried in the <code>QueryStatement</code>. TableProperties are additional configurations you can provide to change the data and schema of a table. Each table can have different TableProperties. However, tables are not required to have any TableProperties. Each table property has a default value that it assumes if not specified. For more information on table configurations, see <a href=\"https://docs.aws.amazon.com/cur/latest/userguide/de-data-query.html\">Data query</a>. To view the table properties available for each table, see the <a href=\"https://docs.aws.amazon.com/cur/latest/userguide/de-table-dictionary.html\">Data Exports table dictionary</a> or use the <code>ListTables</code> API to get a response of all tables and their available properties.</p>"
+    },
+    "DeleteExport":{
+      "name":"DeleteExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteExportRequest"},
+      "output":{"shape":"DeleteExportResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an existing data export.</p>",
+      "idempotent":true
+    },
+    "GetExecution":{
+      "name":"GetExecution",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetExecutionRequest"},
+      "output":{"shape":"GetExecutionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Exports data based on the source data update.</p>"
+    },
+    "GetExport":{
+      "name":"GetExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetExportRequest"},
+      "output":{"shape":"GetExportResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Views the definition of an existing data export.</p>"
+    },
+    "GetTable":{
+      "name":"GetTable",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetTableRequest"},
+      "output":{"shape":"GetTableResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the metadata for the specified table and table properties. This includes the list of columns in the table schema, their data types, and column descriptions.</p>"
+    },
+    "ListExecutions":{
+      "name":"ListExecutions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListExecutionsRequest"},
+      "output":{"shape":"ListExecutionsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the historical executions for the export.</p>"
+    },
+    "ListExports":{
+      "name":"ListExports",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListExportsRequest"},
+      "output":{"shape":"ListExportsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all data export definitions.</p>"
+    },
+    "ListTables":{
+      "name":"ListTables",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTablesRequest"},
+      "output":{"shape":"ListTablesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all available tables in data exports.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List tags associated with an existing data export.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds tags for an existing data export definition.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes tags associated with an existing data export definition.</p>"
+    },
+    "UpdateExport":{
+      "name":"UpdateExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateExportRequest"},
+      "output":{"shape":"UpdateExportResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an existing data export by overwriting all export parameters. All export parameters must be provided in the UpdateExport request.</p>"
+    }
+  },
+  "shapes":{
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:aws[-a-z0-9]*:[-a-z0-9]+:[-a-z0-9]*:[0-9]{12}:[-a-zA-Z0-9/:_]+$"
+    },
+    "Column":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"GenericString",
+          "documentation":"<p>The description for a column.</p>"
+        },
+        "Name":{
+          "shape":"GenericString",
+          "documentation":"<p>The column name.</p>"
+        },
+        "Type":{
+          "shape":"GenericString",
+          "documentation":"<p>The kind of data a column stores.</p>"
+        }
+      },
+      "documentation":"<p>Includes basic information for a data column such as its description, name, and type.</p>"
+    },
+    "ColumnList":{
+      "type":"list",
+      "member":{"shape":"Column"}
+    },
+    "CompressionOption":{
+      "type":"string",
+      "enum":[
+        "GZIP",
+        "PARQUET"
+      ]
+    },
+    "CreateExportRequest":{
+      "type":"structure",
+      "required":["Export"],
+      "members":{
+        "Export":{
+          "shape":"Export",
+          "documentation":"<p>The details of the export, including data query, name, description, and destination configuration.</p>"
+        },
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>An optional list of tags to associate with the specified export. Each tag consists of a key and a value, and each key must be unique for the resource.</p>"
+        }
+      }
+    },
+    "CreateExportResponse":{
+      "type":"structure",
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "DataQuery":{
+      "type":"structure",
+      "required":["QueryStatement"],
+      "members":{
+        "QueryStatement":{
+          "shape":"QueryStatement",
+          "documentation":"<p>The query statement.</p>"
+        },
+        "TableConfigurations":{
+          "shape":"TableConfigurations",
+          "documentation":"<p>The table configuration.</p>"
+        }
+      },
+      "documentation":"<p>The SQL query of column selections and row filters from the data table you want.</p>"
+    },
+    "DeleteExportRequest":{
+      "type":"structure",
+      "required":["ExportArn"],
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "DeleteExportResponse":{
+      "type":"structure",
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "DestinationConfigurations":{
+      "type":"structure",
+      "required":["S3Destination"],
+      "members":{
+        "S3Destination":{
+          "shape":"S3Destination",
+          "documentation":"<p>An object that describes the destination of the data exports file.</p>"
+        }
+      },
+      "documentation":"<p>The destinations used for data exports.</p>"
+    },
+    "ExecutionReference":{
+      "type":"structure",
+      "required":[
+        "ExecutionId",
+        "ExecutionStatus"
+      ],
+      "members":{
+        "ExecutionId":{
+          "shape":"GenericString",
+          "documentation":"<p>The ID for this specific execution.</p>"
+        },
+        "ExecutionStatus":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>The status of this specific execution.</p>"
+        }
+      },
+      "documentation":"<p>The reference for the data export update.</p>"
+    },
+    "ExecutionReferenceList":{
+      "type":"list",
+      "member":{"shape":"ExecutionReference"}
+    },
+    "ExecutionStatus":{
+      "type":"structure",
+      "members":{
+        "CompletedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time when the execution was completed.</p>"
+        },
+        "CreatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time when the execution was created.</p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time when the execution was last updated.</p>"
+        },
+        "StatusCode":{
+          "shape":"ExecutionStatusCode",
+          "documentation":"<p>The code for the status of the execution.</p>"
+        },
+        "StatusReason":{
+          "shape":"ExecutionStatusReason",
+          "documentation":"<p>The reason for the failed status.</p>"
+        }
+      },
+      "documentation":"<p>The status of the execution.</p>"
+    },
+    "ExecutionStatusCode":{
+      "type":"string",
+      "enum":[
+        "INITIATION_IN_PROCESS",
+        "QUERY_QUEUED",
+        "QUERY_IN_PROCESS",
+        "QUERY_FAILURE",
+        "DELIVERY_IN_PROCESS",
+        "DELIVERY_SUCCESS",
+        "DELIVERY_FAILURE"
+      ]
+    },
+    "ExecutionStatusReason":{
+      "type":"string",
+      "enum":[
+        "INSUFFICIENT_PERMISSION",
+        "BILL_OWNER_CHANGED",
+        "INTERNAL_FAILURE"
+      ]
+    },
+    "Export":{
+      "type":"structure",
+      "required":[
+        "DataQuery",
+        "DestinationConfigurations",
+        "Name",
+        "RefreshCadence"
+      ],
+      "members":{
+        "DataQuery":{
+          "shape":"DataQuery",
+          "documentation":"<p>The data query for this specific data export.</p>"
+        },
+        "Description":{
+          "shape":"GenericString",
+          "documentation":"<p>The description for this specific data export.</p>"
+        },
+        "DestinationConfigurations":{
+          "shape":"DestinationConfigurations",
+          "documentation":"<p>The destination configuration for this specific data export.</p>"
+        },
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        },
+        "Name":{
+          "shape":"ExportName",
+          "documentation":"<p>The name of this specific data export.</p>"
+        },
+        "RefreshCadence":{
+          "shape":"RefreshCadence",
+          "documentation":"<p>The cadence for Amazon Web Services to update the export in your S3 bucket.</p>"
+        }
+      },
+      "documentation":"<p>The details that are available for an export.</p>"
+    },
+    "ExportName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[0-9A-Za-z!\\-_.*\\'()]+$"
+    },
+    "ExportReference":{
+      "type":"structure",
+      "required":[
+        "ExportArn",
+        "ExportName",
+        "ExportStatus"
+      ],
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        },
+        "ExportName":{
+          "shape":"ExportName",
+          "documentation":"<p>The name of this specific data export.</p>"
+        },
+        "ExportStatus":{
+          "shape":"ExportStatus",
+          "documentation":"<p>The status of this specific data export.</p>"
+        }
+      },
+      "documentation":"<p>The reference details for a given export.</p>"
+    },
+    "ExportReferenceList":{
+      "type":"list",
+      "member":{"shape":"ExportReference"}
+    },
+    "ExportStatus":{
+      "type":"structure",
+      "members":{
+        "CreatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp of when the export was created.</p>"
+        },
+        "LastRefreshedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp of when the export was last generated.</p>"
+        },
+        "LastUpdatedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp of when the export was updated.</p>"
+        },
+        "StatusCode":{
+          "shape":"ExportStatusCode",
+          "documentation":"<p>The status code for the request.</p>"
+        },
+        "StatusReason":{
+          "shape":"ExecutionStatusReason",
+          "documentation":"<p>The description for the status code.</p>"
+        }
+      },
+      "documentation":"<p>The status of the data export.</p>"
+    },
+    "ExportStatusCode":{
+      "type":"string",
+      "enum":[
+        "HEALTHY",
+        "UNHEALTHY"
+      ]
+    },
+    "FormatOption":{
+      "type":"string",
+      "enum":[
+        "TEXT_OR_CSV",
+        "PARQUET"
+      ]
+    },
+    "FrequencyOption":{
+      "type":"string",
+      "enum":["SYNCHRONOUS"]
+    },
+    "GenericString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"^[\\S\\s]*$"
+    },
+    "GenericStringList":{
+      "type":"list",
+      "member":{"shape":"GenericString"}
+    },
+    "GetExecutionRequest":{
+      "type":"structure",
+      "required":[
+        "ExecutionId",
+        "ExportArn"
+      ],
+      "members":{
+        "ExecutionId":{
+          "shape":"GenericString",
+          "documentation":"<p>The ID for this specific execution.</p>"
+        },
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Export object that generated this specific execution.</p>"
+        }
+      }
+    },
+    "GetExecutionResponse":{
+      "type":"structure",
+      "members":{
+        "ExecutionId":{
+          "shape":"GenericString",
+          "documentation":"<p>The ID for this specific execution.</p>"
+        },
+        "ExecutionStatus":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>The status of this specific execution.</p>"
+        },
+        "Export":{
+          "shape":"Export",
+          "documentation":"<p>The export data for this specific execution. This export data is a snapshot from when the execution was generated. The data could be different from the current export data if the export was updated since the execution was generated.</p>"
+        }
+      }
+    },
+    "GetExportRequest":{
+      "type":"structure",
+      "required":["ExportArn"],
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "GetExportResponse":{
+      "type":"structure",
+      "members":{
+        "Export":{
+          "shape":"Export",
+          "documentation":"<p>The data for this specific export.</p>"
+        },
+        "ExportStatus":{
+          "shape":"ExportStatus",
+          "documentation":"<p>The status of this specific export.</p>"
+        }
+      }
+    },
+    "GetTableRequest":{
+      "type":"structure",
+      "required":["TableName"],
+      "members":{
+        "TableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "TableProperties":{
+          "shape":"TableProperties",
+          "documentation":"<p>TableProperties are additional configurations you can provide to change the data and schema of a table. Each table can have different TableProperties. Tables are not required to have any TableProperties. Each table property has a default value that it assumes if not specified.</p>"
+        }
+      }
+    },
+    "GetTableResponse":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"GenericString",
+          "documentation":"<p>The table description.</p>"
+        },
+        "Schema":{
+          "shape":"ColumnList",
+          "documentation":"<p>The schema of the table.</p>"
+        },
+        "TableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "TableProperties":{
+          "shape":"TableProperties",
+          "documentation":"<p>TableProperties are additional configurations you can provide to change the data and schema of a table. Each table can have different TableProperties. Tables are not required to have any TableProperties. Each table property has a default value that it assumes if not specified.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"GenericString"}
+      },
+      "documentation":"<p>An error on the server occurred during the processing of your request. Try again later.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ListExecutionsRequest":{
+      "type":"structure",
+      "required":["ExportArn"],
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that are returned for the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListExecutionsResponse":{
+      "type":"structure",
+      "members":{
+        "Executions":{
+          "shape":"ExecutionReferenceList",
+          "documentation":"<p>The list of executions.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListExportsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that are returned for the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListExportsResponse":{
+      "type":"structure",
+      "members":{
+        "Exports":{
+          "shape":"ExportReferenceList",
+          "documentation":"<p>The details of the exports, including name and export status.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListTablesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that are returned for the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListTablesResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        },
+        "Tables":{
+          "shape":"TableList",
+          "documentation":"<p>The list of tables.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of objects that are returned for the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextPageToken",
+          "documentation":"<p>The token to retrieve the next set of results.</p>"
+        },
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>An optional list of tags to associate with the specified export. Each tag consists of a key and a value, and each key must be unique for the resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "NextPageToken":{
+      "type":"string",
+      "max":8192,
+      "min":0,
+      "pattern":"^[\\S\\s]*$"
+    },
+    "OverwriteOption":{
+      "type":"string",
+      "enum":[
+        "CREATE_NEW_REPORT",
+        "OVERWRITE_REPORT"
+      ]
+    },
+    "QueryStatement":{
+      "type":"string",
+      "max":36000,
+      "min":1,
+      "pattern":"^[\\S\\s]*$"
+    },
+    "RefreshCadence":{
+      "type":"structure",
+      "required":["Frequency"],
+      "members":{
+        "Frequency":{
+          "shape":"FrequencyOption",
+          "documentation":"<p>The frequency that data exports are updated. The export refreshes each time the source data updates, up to three times daily.</p>"
+        }
+      },
+      "documentation":"<p>The cadence for Amazon Web Services to update the data export in your S3 bucket.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"GenericString"},
+        "ResourceId":{
+          "shape":"GenericString",
+          "documentation":"<p>The identifier of the resource that was not found.</p>"
+        },
+        "ResourceType":{
+          "shape":"GenericString",
+          "documentation":"<p>The type of the resource that was not found.</p>"
+        }
+      },
+      "documentation":"<p>The specified Amazon Resource Name (ARN) in the request doesn't exist.</p>",
+      "exception":true
+    },
+    "ResourceTag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"ResourceTagKey",
+          "documentation":"<p>The key that's associated with the tag.</p>"
+        },
+        "Value":{
+          "shape":"ResourceTagValue",
+          "documentation":"<p>The value that's associated with the tag.</p>"
+        }
+      },
+      "documentation":"<p>The tag structure that contains a tag key and value.</p>"
+    },
+    "ResourceTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ResourceTagKeyList":{
+      "type":"list",
+      "member":{"shape":"ResourceTagKey"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagList":{
+      "type":"list",
+      "member":{"shape":"ResourceTag"},
+      "max":200,
+      "min":0
+    },
+    "ResourceTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "S3Destination":{
+      "type":"structure",
+      "required":[
+        "S3Bucket",
+        "S3OutputConfigurations",
+        "S3Prefix",
+        "S3Region"
+      ],
+      "members":{
+        "S3Bucket":{
+          "shape":"GenericString",
+          "documentation":"<p>The name of the Amazon S3 bucket used as the destination of a data export file.</p>"
+        },
+        "S3OutputConfigurations":{
+          "shape":"S3OutputConfigurations",
+          "documentation":"<p>The output configuration for the data export.</p>"
+        },
+        "S3Prefix":{
+          "shape":"GenericString",
+          "documentation":"<p>The S3 path prefix you want prepended to the name of your data export.</p>"
+        },
+        "S3Region":{
+          "shape":"GenericString",
+          "documentation":"<p>The S3 bucket Region.</p>"
+        }
+      },
+      "documentation":"<p>Describes the destination Amazon Simple Storage Service (Amazon S3) bucket name and object keys of a data exports file.</p>"
+    },
+    "S3OutputConfigurations":{
+      "type":"structure",
+      "required":[
+        "Compression",
+        "Format",
+        "OutputType",
+        "Overwrite"
+      ],
+      "members":{
+        "Compression":{
+          "shape":"CompressionOption",
+          "documentation":"<p>The compression type for the data export.</p>"
+        },
+        "Format":{
+          "shape":"FormatOption",
+          "documentation":"<p>The file format for the data export.</p>"
+        },
+        "OutputType":{
+          "shape":"S3OutputType",
+          "documentation":"<p>The output type for the data export.</p>"
+        },
+        "Overwrite":{
+          "shape":"OverwriteOption",
+          "documentation":"<p>The rule to follow when generating a version of the data export file. You have the choice to overwrite the previous version or to be delivered in addition to the previous versions. Overwriting exports can save on Amazon S3 storage costs. Creating new export versions allows you to track the changes in cost and usage data over time.</p>"
+        }
+      },
+      "documentation":"<p>The compression type, file format, and overwrite preference for the data export.</p>"
+    },
+    "S3OutputType":{
+      "type":"string",
+      "enum":["CUSTOM"]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "QuotaCode",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"GenericString"},
+        "QuotaCode":{
+          "shape":"GenericString",
+          "documentation":"<p>The quota code that was exceeded.</p>"
+        },
+        "ResourceId":{
+          "shape":"GenericString",
+          "documentation":"<p>The identifier of the resource that exceeded quota.</p>"
+        },
+        "ResourceType":{
+          "shape":"GenericString",
+          "documentation":"<p>The type of the resource that exceeded quota.</p>"
+        },
+        "ServiceCode":{
+          "shape":"GenericString",
+          "documentation":"<p>The service code that exceeded quota. It will always be “AWSBillingAndCostManagementDataExports”.</p>"
+        }
+      },
+      "documentation":"<p>You've reached the limit on the number of resources you can create, or exceeded the size of an individual resource.</p>",
+      "exception":true
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "Table":{
+      "type":"structure",
+      "members":{
+        "Description":{
+          "shape":"GenericString",
+          "documentation":"<p>The description for the table.</p>"
+        },
+        "TableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "TableProperties":{
+          "shape":"TablePropertyDescriptionList",
+          "documentation":"<p>The properties for the table.</p>"
+        }
+      },
+      "documentation":"<p>The details for the data export table.</p>"
+    },
+    "TableConfigurations":{
+      "type":"map",
+      "key":{"shape":"TableName"},
+      "value":{"shape":"TableProperties"}
+    },
+    "TableList":{
+      "type":"list",
+      "member":{"shape":"Table"}
+    },
+    "TableName":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"^[\\S\\s]*$"
+    },
+    "TableProperties":{
+      "type":"map",
+      "key":{"shape":"TableProperty"},
+      "value":{"shape":"GenericString"}
+    },
+    "TableProperty":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"^[\\S\\s]*$"
+    },
+    "TablePropertyDescription":{
+      "type":"structure",
+      "members":{
+        "DefaultValue":{
+          "shape":"GenericString",
+          "documentation":"<p>The default value for the table.</p>"
+        },
+        "Description":{
+          "shape":"GenericString",
+          "documentation":"<p>The description for the table.</p>"
+        },
+        "Name":{
+          "shape":"GenericString",
+          "documentation":"<p>The name of the table.</p>"
+        },
+        "ValidValues":{
+          "shape":"GenericStringList",
+          "documentation":"<p>The valid values for the table.</p>"
+        }
+      },
+      "documentation":"<p>The properties for the data export table.</p>"
+    },
+    "TablePropertyDescriptionList":{
+      "type":"list",
+      "member":{"shape":"TablePropertyDescription"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "ResourceTags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        },
+        "ResourceTags":{
+          "shape":"ResourceTagList",
+          "documentation":"<p>The tags to associate with the resource. Each tag consists of a key and a value, and each key must be unique for the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"GenericString"},
+        "QuotaCode":{
+          "shape":"GenericString",
+          "documentation":"<p>The quota code that exceeded the throttling limit.</p>"
+        },
+        "ServiceCode":{
+          "shape":"GenericString",
+          "documentation":"<p>The service code that exceeded the throttling limit. It will always be “AWSBillingAndCostManagementDataExports”.</p>"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "ResourceTagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The unique identifier for the resource.</p>"
+        },
+        "ResourceTagKeys":{
+          "shape":"ResourceTagKeyList",
+          "documentation":"<p>The tag keys that are associated with the resource ARN.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateExportRequest":{
+      "type":"structure",
+      "required":[
+        "Export",
+        "ExportArn"
+      ],
+      "members":{
+        "Export":{
+          "shape":"Export",
+          "documentation":"<p>The name and query details for the export.</p>"
+        },
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "UpdateExportResponse":{
+      "type":"structure",
+      "members":{
+        "ExportArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for this export.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Fields":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The list of fields that are invalid.</p>"
+        },
+        "Message":{"shape":"GenericString"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the validation exception.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "Name"
+      ],
+      "members":{
+        "Message":{
+          "shape":"GenericString",
+          "documentation":"<p>A message with the reason for the validation exception error.</p>"
+        },
+        "Name":{
+          "shape":"GenericString",
+          "documentation":"<p>The field name where the invalid entry was detected.</p>"
+        }
+      },
+      "documentation":"<p>The input failed to meet the constraints specified by the Amazon Web Services service in a specified field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    }
+  },
+  "documentation":"<p>You can use the Data Exports API to create customized exports from multiple Amazon Web Services cost management and billing datasets, such as cost and usage data and cost optimization recommendations.</p> <p>The Data Exports API provides the following endpoint:</p> <ul> <li> <p>https://bcm-data-exports.us-east-1.api.aws</p> </li> </ul>"
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+      "GetAnalysisReportResults": {
+        "non_aggregate_keys": [
+          "EndTime",
+          "ReportTime",
+          "Status",
+          "AnalysisType",
+          "StartTime"
+        ]
+      },
+      "ListFlowOperationResults": {
+        "non_aggregate_keys": [
+          "FirewallArn",
+          "FlowOperationId",
+          "AvailabilityZone",
+          "FlowOperationStatus",
+          "FlowRequestTimestamp",
+          "StatusMessage",
+          "VpcEndpointAssociationArn",
+          "VpcEndpointId"
+        ]
+      }
+    }
+  }
+}

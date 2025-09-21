@@ -1,0 +1,4182 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-01",
+    "endpointPrefix":"chime",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Chime",
+    "serviceId":"Chime",
+    "signatureVersion":"v4",
+    "uid":"chime-2018-05-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AssociatePhoneNumberWithUser":{
+      "name":"AssociatePhoneNumberWithUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users/{userId}?operation=associate-phone-number",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociatePhoneNumberWithUserRequest"},
+      "output":{"shape":"AssociatePhoneNumberWithUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Associates a phone number with the specified Amazon Chime user.</p>"
+    },
+    "AssociateSigninDelegateGroupsWithAccount":{
+      "name":"AssociateSigninDelegateGroupsWithAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}?operation=associate-signin-delegate-groups",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociateSigninDelegateGroupsWithAccountRequest"},
+      "output":{"shape":"AssociateSigninDelegateGroupsWithAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Associates the specified sign-in delegate groups with the specified Amazon Chime account.</p>"
+    },
+    "BatchCreateRoomMembership":{
+      "name":"BatchCreateRoomMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/memberships?operation=batch-create",
+        "responseCode":201
+      },
+      "input":{"shape":"BatchCreateRoomMembershipRequest"},
+      "output":{"shape":"BatchCreateRoomMembershipResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Adds up to 50 members to a chat room in an Amazon Chime Enterprise account. Members can be users or bots. The member role designates whether the member is a chat room administrator or a general chat room member.</p>"
+    },
+    "BatchDeletePhoneNumber":{
+      "name":"BatchDeletePhoneNumber",
+      "http":{
+        "method":"POST",
+        "requestUri":"/phone-numbers?operation=batch-delete",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchDeletePhoneNumberRequest"},
+      "output":{"shape":"BatchDeletePhoneNumberResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p> Moves phone numbers into the <b>Deletion queue</b>. Phone numbers must be disassociated from any users or Amazon Chime Voice Connectors before they can be deleted. </p> <p> Phone numbers remain in the <b>Deletion queue</b> for 7 days before they are deleted permanently. </p>"
+    },
+    "BatchSuspendUser":{
+      "name":"BatchSuspendUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users?operation=suspend",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchSuspendUserRequest"},
+      "output":{"shape":"BatchSuspendUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Suspends up to 50 users from a <code>Team</code> or <code>EnterpriseLWA</code> Amazon Chime account. For more information about different account types, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/manage-chime-account.html\">Managing Your Amazon Chime Accounts</a> in the <i>Amazon Chime Administration Guide</i>.</p> <p>Users suspended from a <code>Team</code> account are disassociated from the account,but they can continue to use Amazon Chime as free users. To remove the suspension from suspended <code>Team</code> account users, invite them to the <code>Team</code> account again. You can use the <a>InviteUsers</a> action to do so.</p> <p>Users suspended from an <code>EnterpriseLWA</code> account are immediately signed out of Amazon Chime and can no longer sign in. To remove the suspension from suspended <code>EnterpriseLWA</code> account users, use the <a>BatchUnsuspendUser</a> action.</p> <p> To sign out users without suspending them, use the <a>LogoutUser</a> action.</p>"
+    },
+    "BatchUnsuspendUser":{
+      "name":"BatchUnsuspendUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users?operation=unsuspend",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchUnsuspendUserRequest"},
+      "output":{"shape":"BatchUnsuspendUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Removes the suspension from up to 50 previously suspended users for the specified Amazon Chime <code>EnterpriseLWA</code> account. Only users on <code>EnterpriseLWA</code> accounts can be unsuspended using this action. For more information about different account types, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/manage-chime-account.html\"> Managing Your Amazon Chime Accounts </a> in the account types, in the <i>Amazon Chime Administration Guide</i>. </p> <p>Previously suspended users who are unsuspended using this action are returned to <code>Registered</code> status. Users who are not previously suspended are ignored.</p>"
+    },
+    "BatchUpdatePhoneNumber":{
+      "name":"BatchUpdatePhoneNumber",
+      "http":{
+        "method":"POST",
+        "requestUri":"/phone-numbers?operation=batch-update",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchUpdatePhoneNumberRequest"},
+      "output":{"shape":"BatchUpdatePhoneNumberResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates phone number product types or calling names. You can update one attribute at a time for each <code>UpdatePhoneNumberRequestItem</code>. For example, you can update the product type or the calling name.</p> <p>For toll-free numbers, you cannot use the Amazon Chime Business Calling product type. For numbers outside the U.S., you must use the Amazon Chime SIP Media Application Dial-In product type.</p> <p>Updates to outbound calling names can take up to 72 hours to complete. Pending updates to outbound calling names must be complete before you can request another update.</p>"
+    },
+    "BatchUpdateUser":{
+      "name":"BatchUpdateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchUpdateUserRequest"},
+      "output":{"shape":"BatchUpdateUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates user details within the <a>UpdateUserRequestItem</a> object for up to 20 users for the specified Amazon Chime account. Currently, only <code>LicenseType</code> updates are supported for this action.</p>"
+    },
+    "CreateAccount":{
+      "name":"CreateAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateAccountRequest"},
+      "output":{"shape":"CreateAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Creates an Amazon Chime account under the administrator's AWS account. Only <code>Team</code> account types are currently supported for this action. For more information about different account types, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/manage-chime-account.html\">Managing Your Amazon Chime Accounts</a> in the <i>Amazon Chime Administration Guide</i>.</p>"
+    },
+    "CreateBot":{
+      "name":"CreateBot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/bots",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateBotRequest"},
+      "output":{"shape":"CreateBotResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ThrottledClientException"}
+      ],
+      "documentation":"<p>Creates a bot for an Amazon Chime Enterprise account.</p>"
+    },
+    "CreateMeetingDialOut":{
+      "name":"CreateMeetingDialOut",
+      "http":{
+        "method":"POST",
+        "requestUri":"/meetings/{meetingId}/dial-outs",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateMeetingDialOutRequest"},
+      "output":{"shape":"CreateMeetingDialOutResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Uses the join token and call metadata in a meeting request (From number, To number, and so forth) to initiate an outbound call to a public switched telephone network (PSTN) and join them into a Chime meeting. Also ensures that the From number belongs to the customer.</p> <p>To play welcome audio or implement an interactive voice response (IVR), use the <code>CreateSipMediaApplicationCall</code> action with the corresponding SIP media application ID.</p> <important> <p> <b>This API is not available in a dedicated namespace.</b> </p> </important>"
+    },
+    "CreatePhoneNumberOrder":{
+      "name":"CreatePhoneNumberOrder",
+      "http":{
+        "method":"POST",
+        "requestUri":"/phone-number-orders",
+        "responseCode":201
+      },
+      "input":{"shape":"CreatePhoneNumberOrderRequest"},
+      "output":{"shape":"CreatePhoneNumberOrderResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Creates an order for phone numbers to be provisioned. For toll-free numbers, you cannot use the Amazon Chime Business Calling product type. For numbers outside the U.S., you must use the Amazon Chime SIP Media Application Dial-In product type.</p>"
+    },
+    "CreateRoom":{
+      "name":"CreateRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateRoomRequest"},
+      "output":{"shape":"CreateRoomResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Creates a chat room for the specified Amazon Chime Enterprise account.</p>"
+    },
+    "CreateRoomMembership":{
+      "name":"CreateRoomMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/memberships",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateRoomMembershipRequest"},
+      "output":{"shape":"CreateRoomMembershipResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Adds a member to a chat room in an Amazon Chime Enterprise account. A member can be either a user or a bot. The member role designates whether the member is a chat room administrator or a general chat room member.</p>"
+    },
+    "CreateUser":{
+      "name":"CreateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users?operation=create",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateUserRequest"},
+      "output":{"shape":"CreateUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Creates a user under the specified Amazon Chime account.</p>"
+    },
+    "DeleteAccount":{
+      "name":"DeleteAccount",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/accounts/{accountId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAccountRequest"},
+      "output":{"shape":"DeleteAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"UnprocessableEntityException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Deletes the specified Amazon Chime account. You must suspend all users before deleting <code>Team</code> account. You can use the <a>BatchSuspendUser</a> action to dodo.</p> <p>For <code>EnterpriseLWA</code> and <code>EnterpriseAD</code> accounts, you must release the claimed domains for your Amazon Chime account before deletion. As soon as you release the domain, all users under that account are suspended.</p> <p>Deleted accounts appear in your <code>Disabled</code> accounts list for 90 days. To restore deleted account from your <code>Disabled</code> accounts list, you must contact AWS Support.</p> <p>After 90 days, deleted accounts are permanently removed from your <code>Disabled</code> accounts list.</p>"
+    },
+    "DeleteEventsConfiguration":{
+      "name":"DeleteEventsConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/accounts/{accountId}/bots/{botId}/events-configuration",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteEventsConfigurationRequest"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ResourceLimitExceededException"}
+      ],
+      "documentation":"<p>Deletes the events configuration that allows a bot to receive outgoing events.</p>"
+    },
+    "DeletePhoneNumber":{
+      "name":"DeletePhoneNumber",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/phone-numbers/{phoneNumberId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeletePhoneNumberRequest"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Moves the specified phone number into the <b>Deletion queue</b>. A phone number must be disassociated from any users or Amazon Chime Voice Connectors before it can be deleted.</p> <p>Deleted phone numbers remain in the <b>Deletion queue</b> for 7 days before they are deleted permanently.</p>"
+    },
+    "DeleteRoom":{
+      "name":"DeleteRoom",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteRoomRequest"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Deletes a chat room in an Amazon Chime Enterprise account.</p>"
+    },
+    "DeleteRoomMembership":{
+      "name":"DeleteRoomMembership",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/memberships/{memberId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteRoomMembershipRequest"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Removes a member from a chat room in an Amazon Chime Enterprise account.</p>"
+    },
+    "DisassociatePhoneNumberFromUser":{
+      "name":"DisassociatePhoneNumberFromUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users/{userId}?operation=disassociate-phone-number",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociatePhoneNumberFromUserRequest"},
+      "output":{"shape":"DisassociatePhoneNumberFromUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Disassociates the primary provisioned phone number from the specified Amazon Chime user.</p>"
+    },
+    "DisassociateSigninDelegateGroupsFromAccount":{
+      "name":"DisassociateSigninDelegateGroupsFromAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}?operation=disassociate-signin-delegate-groups",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociateSigninDelegateGroupsFromAccountRequest"},
+      "output":{"shape":"DisassociateSigninDelegateGroupsFromAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Disassociates the specified sign-in delegate groups from the specified Amazon Chime account.</p>"
+    },
+    "GetAccount":{
+      "name":"GetAccount",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}"
+      },
+      "input":{"shape":"GetAccountRequest"},
+      "output":{"shape":"GetAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves details for the specified Amazon Chime account, such as account type and supported licenses.</p>"
+    },
+    "GetAccountSettings":{
+      "name":"GetAccountSettings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/settings"
+      },
+      "input":{"shape":"GetAccountSettingsRequest"},
+      "output":{"shape":"GetAccountSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves account settings for the specified Amazon Chime account ID, such as remote control and dialout settings. For more information about these settings, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/policies.html\">Use the Policies Page</a> in the <i>Amazon Chime Administration Guide</i>. </p>"
+    },
+    "GetBot":{
+      "name":"GetBot",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/bots/{botId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetBotRequest"},
+      "output":{"shape":"GetBotResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"}
+      ],
+      "documentation":"<p>Retrieves details for the specified bot, such as bot email address, bot type, status, and display name.</p>"
+    },
+    "GetEventsConfiguration":{
+      "name":"GetEventsConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/bots/{botId}/events-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEventsConfigurationRequest"},
+      "output":{"shape":"GetEventsConfigurationResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"NotFoundException"}
+      ],
+      "documentation":"<p>Gets details for an events configuration that allows a bot to receive outgoing events, such as an HTTPS endpoint or Lambda function ARN.</p>"
+    },
+    "GetGlobalSettings":{
+      "name":"GetGlobalSettings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/settings",
+        "responseCode":200
+      },
+      "output":{"shape":"GetGlobalSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves global settings for the administrator's AWS account, such as Amazon Chime Business Calling and Amazon Chime Voice Connector settings.</p>"
+    },
+    "GetPhoneNumber":{
+      "name":"GetPhoneNumber",
+      "http":{
+        "method":"GET",
+        "requestUri":"/phone-numbers/{phoneNumberId}"
+      },
+      "input":{"shape":"GetPhoneNumberRequest"},
+      "output":{"shape":"GetPhoneNumberResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves details for the specified phone number ID, such as associations, capabilities, and product type.</p>"
+    },
+    "GetPhoneNumberOrder":{
+      "name":"GetPhoneNumberOrder",
+      "http":{
+        "method":"GET",
+        "requestUri":"/phone-number-orders/{phoneNumberOrderId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPhoneNumberOrderRequest"},
+      "output":{"shape":"GetPhoneNumberOrderResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves details for the specified phone number order, such as the order creation timestamp, phone numbers in E.164 format, product type, and order status.</p>"
+    },
+    "GetPhoneNumberSettings":{
+      "name":"GetPhoneNumberSettings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/settings/phone-number",
+        "responseCode":200
+      },
+      "output":{"shape":"GetPhoneNumberSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves the phone number settings for the administrator's AWS account, such as the default outbound calling name.</p>"
+    },
+    "GetRetentionSettings":{
+      "name":"GetRetentionSettings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/retention-settings"
+      },
+      "input":{"shape":"GetRetentionSettingsRequest"},
+      "output":{"shape":"GetRetentionSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p> Gets the retention settings for the specified Amazon Chime Enterprise account. For more information about retention settings, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/chat-retention.html\">Managing Chat Retention Policies</a> in the <i>Amazon Chime Administration Guide</i>. </p>"
+    },
+    "GetRoom":{
+      "name":"GetRoom",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRoomRequest"},
+      "output":{"shape":"GetRoomResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves room details, such as the room name, for a room in an Amazon Chime Enterprise account.</p>"
+    },
+    "GetUser":{
+      "name":"GetUser",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/users/{userId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetUserRequest"},
+      "output":{"shape":"GetUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves details for the specified user ID, such as primary email address, license type,and personal meeting PIN.</p> <p> To retrieve user details with an email address instead of a user ID, use the <a>ListUsers</a> action, and then filter by email address. </p>"
+    },
+    "GetUserSettings":{
+      "name":"GetUserSettings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/users/{userId}/settings",
+        "responseCode":200
+      },
+      "input":{"shape":"GetUserSettingsRequest"},
+      "output":{"shape":"GetUserSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Retrieves settings for the specified user ID, such as any associated phone number settings.</p>"
+    },
+    "InviteUsers":{
+      "name":"InviteUsers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users?operation=add",
+        "responseCode":201
+      },
+      "input":{"shape":"InviteUsersRequest"},
+      "output":{"shape":"InviteUsersResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Sends email to a maximum of 50 users, inviting them to the specified Amazon Chime <code>Team</code> account. Only <code>Team</code> account types are currently supported for this action.</p>"
+    },
+    "ListAccounts":{
+      "name":"ListAccounts",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts"
+      },
+      "input":{"shape":"ListAccountsRequest"},
+      "output":{"shape":"ListAccountsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the Amazon Chime accounts under the administrator's AWS account. You can filter accounts by account name prefix. To find out which Amazon Chime account a user belongs to, you can filter by the user's email address, which returns one account result.</p>"
+    },
+    "ListBots":{
+      "name":"ListBots",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/bots",
+        "responseCode":200
+      },
+      "input":{"shape":"ListBotsRequest"},
+      "output":{"shape":"ListBotsResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ThrottledClientException"}
+      ],
+      "documentation":"<p>Lists the bots associated with the administrator's Amazon Chime Enterprise account ID.</p>"
+    },
+    "ListPhoneNumberOrders":{
+      "name":"ListPhoneNumberOrders",
+      "http":{
+        "method":"GET",
+        "requestUri":"/phone-number-orders",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPhoneNumberOrdersRequest"},
+      "output":{"shape":"ListPhoneNumberOrdersResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the phone number orders for the administrator's Amazon Chime account.</p>"
+    },
+    "ListPhoneNumbers":{
+      "name":"ListPhoneNumbers",
+      "http":{
+        "method":"GET",
+        "requestUri":"/phone-numbers"
+      },
+      "input":{"shape":"ListPhoneNumbersRequest"},
+      "output":{"shape":"ListPhoneNumbersResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the phone numbers for the specified Amazon Chime account, Amazon Chime user, Amazon Chime Voice Connector, or Amazon Chime Voice Connector group.</p>"
+    },
+    "ListRoomMemberships":{
+      "name":"ListRoomMemberships",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/memberships",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRoomMembershipsRequest"},
+      "output":{"shape":"ListRoomMembershipsResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the membership details for the specified room in an Amazon Chime Enterprise account, such as the members' IDs, email addresses, and names.</p>"
+    },
+    "ListRooms":{
+      "name":"ListRooms",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/rooms",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRoomsRequest"},
+      "output":{"shape":"ListRoomsResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the room details for the specified Amazon Chime Enterprise account. Optionally, filter the results by a member ID (user ID or bot ID) to see a list of rooms that the member belongs to.</p>"
+    },
+    "ListSupportedPhoneNumberCountries":{
+      "name":"ListSupportedPhoneNumberCountries",
+      "http":{
+        "method":"GET",
+        "requestUri":"/phone-number-countries",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSupportedPhoneNumberCountriesRequest"},
+      "output":{"shape":"ListSupportedPhoneNumberCountriesResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists supported phone number countries.</p>"
+    },
+    "ListUsers":{
+      "name":"ListUsers",
+      "http":{
+        "method":"GET",
+        "requestUri":"/accounts/{accountId}/users",
+        "responseCode":200
+      },
+      "input":{"shape":"ListUsersRequest"},
+      "output":{"shape":"ListUsersResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Lists the users that belong to the specified Amazon Chime account. You can specify an email address to list only the user that the email address belongs to.</p>"
+    },
+    "LogoutUser":{
+      "name":"LogoutUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users/{userId}?operation=logout",
+        "responseCode":204
+      },
+      "input":{"shape":"LogoutUserRequest"},
+      "output":{"shape":"LogoutUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Logs out the specified user from all of the devices they are currently logged into.</p>"
+    },
+    "PutEventsConfiguration":{
+      "name":"PutEventsConfiguration",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/accounts/{accountId}/bots/{botId}/events-configuration",
+        "responseCode":201
+      },
+      "input":{"shape":"PutEventsConfigurationRequest"},
+      "output":{"shape":"PutEventsConfigurationResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"NotFoundException"}
+      ],
+      "documentation":"<p>Creates an events configuration that allows a bot to receive outgoing events sent by Amazon Chime. Choose either an HTTPS endpoint or a Lambda function ARN. For more information, see <a>Bot</a>.</p>"
+    },
+    "PutRetentionSettings":{
+      "name":"PutRetentionSettings",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/accounts/{accountId}/retention-settings",
+        "responseCode":204
+      },
+      "input":{"shape":"PutRetentionSettingsRequest"},
+      "output":{"shape":"PutRetentionSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p> Puts retention settings for the specified Amazon Chime Enterprise account. We recommend using AWS CloudTrail to monitor usage of this API for your account. For more information, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/cloudtrail.html\">Logging Amazon Chime API Calls with AWS CloudTrail</a> in the <i>Amazon Chime Administration Guide</i>.</p> <p> To turn off existing retention settings, remove the number of days from the corresponding <b>RetentionDays</b> field in the <b>RetentionSettings</b> object. For more information about retention settings, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/chat-retention.html\">Managing Chat Retention Policies</a> in the <i>Amazon Chime Administration Guide</i>.</p>"
+    },
+    "RedactConversationMessage":{
+      "name":"RedactConversationMessage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/conversations/{conversationId}/messages/{messageId}?operation=redact",
+        "responseCode":200
+      },
+      "input":{"shape":"RedactConversationMessageRequest"},
+      "output":{"shape":"RedactConversationMessageResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Redacts the specified message from the specified Amazon Chime conversation.</p>"
+    },
+    "RedactRoomMessage":{
+      "name":"RedactRoomMessage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/messages/{messageId}?operation=redact",
+        "responseCode":200
+      },
+      "input":{"shape":"RedactRoomMessageRequest"},
+      "output":{"shape":"RedactRoomMessageResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Redacts the specified message from the specified Amazon Chime channel.</p>"
+    },
+    "RegenerateSecurityToken":{
+      "name":"RegenerateSecurityToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/bots/{botId}?operation=regenerate-security-token",
+        "responseCode":200
+      },
+      "input":{"shape":"RegenerateSecurityTokenRequest"},
+      "output":{"shape":"RegenerateSecurityTokenResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ThrottledClientException"}
+      ],
+      "documentation":"<p>Regenerates the security token for a bot.</p>"
+    },
+    "ResetPersonalPIN":{
+      "name":"ResetPersonalPIN",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users/{userId}?operation=reset-personal-pin",
+        "responseCode":200
+      },
+      "input":{"shape":"ResetPersonalPINRequest"},
+      "output":{"shape":"ResetPersonalPINResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Resets the personal meeting PIN for the specified user on an Amazon Chime account. Returns the <a>User</a> object with the updated personal meeting PIN.</p>"
+    },
+    "RestorePhoneNumber":{
+      "name":"RestorePhoneNumber",
+      "http":{
+        "method":"POST",
+        "requestUri":"/phone-numbers/{phoneNumberId}?operation=restore",
+        "responseCode":200
+      },
+      "input":{"shape":"RestorePhoneNumberRequest"},
+      "output":{"shape":"RestorePhoneNumberResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ResourceLimitExceededException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Moves a phone number from the <b>Deletion queue</b> back into the phone number <b>Inventory</b>.</p>"
+    },
+    "SearchAvailablePhoneNumbers":{
+      "name":"SearchAvailablePhoneNumbers",
+      "http":{
+        "method":"GET",
+        "requestUri":"/search?type=phone-numbers"
+      },
+      "input":{"shape":"SearchAvailablePhoneNumbersRequest"},
+      "output":{"shape":"SearchAvailablePhoneNumbersResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Searches for phone numbers that can be ordered. For US numbers, provide at least one of the following search filters: <code>AreaCode</code>, <code>City</code>, <code>State</code>, or <code>TollFreePrefix</code>. If you provide <code>City</code>, you must also provide <code>State</code>. Numbers outside the US only support the <code>PhoneNumberType</code> filter, which you must use.</p>"
+    },
+    "UpdateAccount":{
+      "name":"UpdateAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateAccountRequest"},
+      "output":{"shape":"UpdateAccountResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates account details for the specified Amazon Chime account. Currently, only account name and default license updates are supported for this action.</p>"
+    },
+    "UpdateAccountSettings":{
+      "name":"UpdateAccountSettings",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/accounts/{accountId}/settings",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateAccountSettingsRequest"},
+      "output":{"shape":"UpdateAccountSettingsResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates the settings for the specified Amazon Chime account. You can update settings for remote control of shared screens, or for the dial-out option. For more information about these settings, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/policies.html\">Use the Policies Page</a> in the <i>Amazon Chime Administration Guide</i>.</p>"
+    },
+    "UpdateBot":{
+      "name":"UpdateBot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/bots/{botId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateBotRequest"},
+      "output":{"shape":"UpdateBotResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ThrottledClientException"}
+      ],
+      "documentation":"<p>Updates the status of the specified bot, such as starting or stopping the bot from running in your Amazon Chime Enterprise account.</p>"
+    },
+    "UpdateGlobalSettings":{
+      "name":"UpdateGlobalSettings",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/settings",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateGlobalSettingsRequest"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates global settings for the administrator's AWS account, such as Amazon Chime Business Calling and Amazon Chime Voice Connector settings.</p>"
+    },
+    "UpdatePhoneNumber":{
+      "name":"UpdatePhoneNumber",
+      "http":{
+        "method":"POST",
+        "requestUri":"/phone-numbers/{phoneNumberId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdatePhoneNumberRequest"},
+      "output":{"shape":"UpdatePhoneNumberResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates phone number details, such as product type or calling name, for the specified phone number ID. You can update one phone number detail at a time. For example, you can update either the product type or the calling name in one action.</p> <p>For toll-free numbers, you cannot use the Amazon Chime Business Calling product type. For numbers outside the U.S., you must use the Amazon Chime SIP Media Application Dial-In product type.</p> <p>Updates to outbound calling names can take 72 hours to complete. Pending updates to outbound calling names must be complete before you can request another update.</p>"
+    },
+    "UpdatePhoneNumberSettings":{
+      "name":"UpdatePhoneNumberSettings",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/settings/phone-number",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdatePhoneNumberSettingsRequest"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates the phone number settings for the administrator's AWS account, such as the default outbound calling name. You can update the default outbound calling name once every seven days. Outbound calling names can take up to 72 hours to update.</p>"
+    },
+    "UpdateRoom":{
+      "name":"UpdateRoom",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRoomRequest"},
+      "output":{"shape":"UpdateRoomResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates room details, such as the room name, for a room in an Amazon Chime Enterprise account.</p>"
+    },
+    "UpdateRoomMembership":{
+      "name":"UpdateRoomMembership",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/rooms/{roomId}/memberships/{memberId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateRoomMembershipRequest"},
+      "output":{"shape":"UpdateRoomMembershipResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates room membership details, such as the member role, for a room in an Amazon Chime Enterprise account. The member role designates whether the member is a chat room administrator or a general chat room member. The member role can be updated only for user IDs.</p>"
+    },
+    "UpdateUser":{
+      "name":"UpdateUser",
+      "http":{
+        "method":"POST",
+        "requestUri":"/accounts/{accountId}/users/{userId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateUserRequest"},
+      "output":{"shape":"UpdateUserResponse"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates user details for a specified user ID. Currently, only <code>LicenseType</code> updates are supported for this action.</p>"
+    },
+    "UpdateUserSettings":{
+      "name":"UpdateUserSettings",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/accounts/{accountId}/users/{userId}/settings",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateUserSettingsRequest"},
+      "errors":[
+        {"shape":"UnauthorizedClientException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ForbiddenException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ThrottledClientException"},
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ServiceFailureException"}
+      ],
+      "documentation":"<p>Updates the settings for the specified user, such as phone number settings.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have permissions to perform the requested operation.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "Account":{
+      "type":"structure",
+      "required":[
+        "AwsAccountId",
+        "AccountId",
+        "Name"
+      ],
+      "members":{
+        "AwsAccountId":{
+          "shape":"String",
+          "documentation":"<p>The AWS account ID.</p>"
+        },
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account name.</p>"
+        },
+        "AccountType":{
+          "shape":"AccountType",
+          "documentation":"<p>The Amazon Chime account type. For more information about different account types, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/manage-chime-account.html\">Managing Your Amazon Chime Accounts</a> in the <i>Amazon Chime Administration Guide</i>.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The Amazon Chime account creation timestamp, in ISO 8601 format.</p>"
+        },
+        "DefaultLicense":{
+          "shape":"License",
+          "documentation":"<p>The default license for the Amazon Chime account.</p>"
+        },
+        "SupportedLicenses":{
+          "shape":"LicenseList",
+          "documentation":"<p>Supported licenses for the Amazon Chime account.</p>"
+        },
+        "AccountStatus":{
+          "shape":"AccountStatus",
+          "documentation":"<p>The status of the account.</p>"
+        },
+        "SigninDelegateGroups":{
+          "shape":"SigninDelegateGroupList",
+          "documentation":"<p>The sign-in delegate groups associated with the account.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Chime account details. An AWS account can have multiple Amazon Chime accounts.</p>"
+    },
+    "AccountList":{
+      "type":"list",
+      "member":{"shape":"Account"}
+    },
+    "AccountName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "AccountSettings":{
+      "type":"structure",
+      "members":{
+        "DisableRemoteControl":{
+          "shape":"Boolean",
+          "documentation":"<p>Setting that stops or starts remote control of shared screens during meetings.</p>"
+        },
+        "EnableDialOut":{
+          "shape":"Boolean",
+          "documentation":"<p>Setting that allows meeting participants to choose the <b>Call me at a phone number</b> option. For more information, see <a href=\"https://docs.aws.amazon.com/chime/latest/ug/chime-join-meeting.html\">Join a Meeting without the Amazon Chime App</a>.</p>"
+        }
+      },
+      "documentation":"<p>Settings related to the Amazon Chime account. This includes settings that start or stop remote control of shared screens, or start or stop the dial-out option in the Amazon Chime web application. For more information about these settings, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/policies.html\">Use the Policies Page</a> in the <i>Amazon Chime Administration Guide</i>.</p>"
+    },
+    "AccountStatus":{
+      "type":"string",
+      "enum":[
+        "Suspended",
+        "Active"
+      ]
+    },
+    "AccountType":{
+      "type":"string",
+      "enum":[
+        "Team",
+        "EnterpriseDirectory",
+        "EnterpriseLWA",
+        "EnterpriseOIDC"
+      ]
+    },
+    "AlexaForBusinessMetadata":{
+      "type":"structure",
+      "members":{
+        "IsAlexaForBusinessEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Starts or stops Alexa for Business.</p>"
+        },
+        "AlexaForBusinessRoomArn":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The ARN of the room resource.</p>"
+        }
+      },
+      "documentation":"<p>The Alexa for Business metadata associated with an Amazon Chime user, used to integrate Alexa for Business with a device.</p>"
+    },
+    "Alpha2CountryCode":{
+      "type":"string",
+      "pattern":"[A-Z]{2}"
+    },
+    "AssociatePhoneNumberWithUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId",
+        "E164PhoneNumber"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        },
+        "E164PhoneNumber":{
+          "shape":"E164PhoneNumber",
+          "documentation":"<p>The phone number, in E.164 format.</p>"
+        }
+      }
+    },
+    "AssociatePhoneNumberWithUserResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "AssociateSigninDelegateGroupsWithAccountRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "SigninDelegateGroups"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "SigninDelegateGroups":{
+          "shape":"SigninDelegateGroupList",
+          "documentation":"<p>The sign-in delegate groups.</p>"
+        }
+      }
+    },
+    "AssociateSigninDelegateGroupsWithAccountResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The input parameters don't match the service's restrictions.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "BatchCreateRoomMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId",
+        "MembershipItemList"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MembershipItemList":{
+          "shape":"MembershipItemList",
+          "documentation":"<p>The list of membership items.</p>"
+        }
+      }
+    },
+    "BatchCreateRoomMembershipResponse":{
+      "type":"structure",
+      "members":{
+        "Errors":{
+          "shape":"MemberErrorList",
+          "documentation":"<p>If the action fails for one or more of the member IDs in the request, a list of the member IDs is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "BatchDeletePhoneNumberRequest":{
+      "type":"structure",
+      "required":["PhoneNumberIds"],
+      "members":{
+        "PhoneNumberIds":{
+          "shape":"NonEmptyStringList",
+          "documentation":"<p>List of phone number IDs.</p>"
+        }
+      }
+    },
+    "BatchDeletePhoneNumberResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberErrors":{
+          "shape":"PhoneNumberErrorList",
+          "documentation":"<p>If the action fails for one or more of the phone numbers in the request, a list of the phone numbers is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "BatchSuspendUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserIdList"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserIdList":{
+          "shape":"UserIdList",
+          "documentation":"<p>The request containing the user IDs to suspend.</p>"
+        }
+      }
+    },
+    "BatchSuspendUserResponse":{
+      "type":"structure",
+      "members":{
+        "UserErrors":{
+          "shape":"UserErrorList",
+          "documentation":"<p>If the <a>BatchSuspendUser</a> action fails for one or more of the user IDs in the request, a list of the user IDs is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "BatchUnsuspendUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserIdList"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserIdList":{
+          "shape":"UserIdList",
+          "documentation":"<p>The request containing the user IDs to unsuspend.</p>"
+        }
+      }
+    },
+    "BatchUnsuspendUserResponse":{
+      "type":"structure",
+      "members":{
+        "UserErrors":{
+          "shape":"UserErrorList",
+          "documentation":"<p>If the <a>BatchUnsuspendUser</a> action fails for one or more of the user IDs in the request, a list of the user IDs is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "BatchUpdatePhoneNumberRequest":{
+      "type":"structure",
+      "required":["UpdatePhoneNumberRequestItems"],
+      "members":{
+        "UpdatePhoneNumberRequestItems":{
+          "shape":"UpdatePhoneNumberRequestItemList",
+          "documentation":"<p>The request containing the phone number IDs and product types or calling names to update.</p>"
+        }
+      }
+    },
+    "BatchUpdatePhoneNumberResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberErrors":{
+          "shape":"PhoneNumberErrorList",
+          "documentation":"<p>If the action fails for one or more of the phone numbers in the request, a list of the phone numbers is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "BatchUpdateUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UpdateUserRequestItems"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UpdateUserRequestItems":{
+          "shape":"UpdateUserRequestItemList",
+          "documentation":"<p>The request containing the user IDs and details to update.</p>"
+        }
+      }
+    },
+    "BatchUpdateUserResponse":{
+      "type":"structure",
+      "members":{
+        "UserErrors":{
+          "shape":"UserErrorList",
+          "documentation":"<p>If the <a>BatchUpdateUser</a> action fails for one or more of the user IDs in the request, a list of the user IDs is returned, along with error codes and error messages.</p>"
+        }
+      }
+    },
+    "Boolean":{"type":"boolean"},
+    "Bot":{
+      "type":"structure",
+      "members":{
+        "BotId":{
+          "shape":"String",
+          "documentation":"<p>The bot ID.</p>"
+        },
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the bot user.</p>"
+        },
+        "DisplayName":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The bot display name.</p>"
+        },
+        "BotType":{
+          "shape":"BotType",
+          "documentation":"<p>The bot type.</p>"
+        },
+        "Disabled":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>When true, the bot is stopped from running in your account.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The bot creation timestamp, in ISO 8601 format.</p>"
+        },
+        "UpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The updated bot timestamp, in ISO 8601 format.</p>"
+        },
+        "BotEmail":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The bot email address.</p>"
+        },
+        "SecurityToken":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The security token used to authenticate Amazon Chime with the outgoing event endpoint.</p>"
+        }
+      },
+      "documentation":"<p>A resource that allows Enterprise account administrators to configure an interface to receive events from Amazon Chime.</p>"
+    },
+    "BotList":{
+      "type":"list",
+      "member":{"shape":"Bot"}
+    },
+    "BotType":{
+      "type":"string",
+      "enum":["ChatBot"]
+    },
+    "BusinessCallingSettings":{
+      "type":"structure",
+      "members":{
+        "CdrBucket":{
+          "shape":"String",
+          "documentation":"<p>The Amazon S3 bucket designated for call detail record storage.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>The Amazon Chime Business Calling settings for the administrator's AWS account. Includes any Amazon S3 buckets designated for storing call detail records.</p>"
+    },
+    "CallingName":{
+      "type":"string",
+      "pattern":"^$|^[a-zA-Z0-9 ]{2,15}$",
+      "sensitive":true
+    },
+    "CallingNameStatus":{
+      "type":"string",
+      "enum":[
+        "Unassigned",
+        "UpdateInProgress",
+        "UpdateSucceeded",
+        "UpdateFailed"
+      ]
+    },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":64,
+      "min":2,
+      "pattern":"[-_a-zA-Z0-9]*",
+      "sensitive":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request could not be processed because of conflict in the current state of the resource.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "ConversationRetentionSettings":{
+      "type":"structure",
+      "members":{
+        "RetentionDays":{
+          "shape":"RetentionDays",
+          "documentation":"<p>The number of days for which to retain conversation messages.</p>"
+        }
+      },
+      "documentation":"<p>The retention settings that determine how long to retain conversation messages for an Amazon Chime Enterprise account.</p>"
+    },
+    "CreateAccountRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"AccountName",
+          "documentation":"<p>The name of the Amazon Chime account.</p>"
+        }
+      }
+    },
+    "CreateAccountResponse":{
+      "type":"structure",
+      "members":{
+        "Account":{
+          "shape":"Account",
+          "documentation":"<p>The Amazon Chime account details.</p>"
+        }
+      }
+    },
+    "CreateBotRequest":{
+      "type":"structure",
+      "required":[
+        "DisplayName",
+        "AccountId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "DisplayName":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The bot display name.</p>"
+        },
+        "Domain":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The domain of the Amazon Chime Enterprise account.</p>"
+        }
+      }
+    },
+    "CreateBotResponse":{
+      "type":"structure",
+      "members":{
+        "Bot":{
+          "shape":"Bot",
+          "documentation":"<p>The bot details.</p>"
+        }
+      }
+    },
+    "CreateMeetingDialOutRequest":{
+      "type":"structure",
+      "required":[
+        "MeetingId",
+        "FromPhoneNumber",
+        "ToPhoneNumber",
+        "JoinToken"
+      ],
+      "members":{
+        "MeetingId":{
+          "shape":"GuidString",
+          "documentation":"<p>The Amazon Chime SDK meeting ID.</p>",
+          "location":"uri",
+          "locationName":"meetingId"
+        },
+        "FromPhoneNumber":{
+          "shape":"E164PhoneNumber",
+          "documentation":"<p>Phone number used as the caller ID when the remote party receives a call.</p>"
+        },
+        "ToPhoneNumber":{
+          "shape":"E164PhoneNumber",
+          "documentation":"<p>Phone number called when inviting someone to a meeting.</p>"
+        },
+        "JoinToken":{
+          "shape":"JoinTokenString",
+          "documentation":"<p>Token used by the Amazon Chime SDK attendee. Call the <a href=\"https://docs.aws.amazon.com/chime/latest/APIReference/API_CreateAttendee.html\">CreateAttendee</a> action to get a join token.</p>"
+        }
+      }
+    },
+    "CreateMeetingDialOutResponse":{
+      "type":"structure",
+      "members":{
+        "TransactionId":{
+          "shape":"GuidString",
+          "documentation":"<p>Unique ID that tracks API calls.</p>"
+        }
+      }
+    },
+    "CreatePhoneNumberOrderRequest":{
+      "type":"structure",
+      "required":[
+        "ProductType",
+        "E164PhoneNumbers"
+      ],
+      "members":{
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The phone number product type.</p>"
+        },
+        "E164PhoneNumbers":{
+          "shape":"E164PhoneNumberList",
+          "documentation":"<p>List of phone numbers, in E.164 format.</p>"
+        }
+      }
+    },
+    "CreatePhoneNumberOrderResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberOrder":{
+          "shape":"PhoneNumberOrder",
+          "documentation":"<p>The phone number order details.</p>"
+        }
+      }
+    },
+    "CreateRoomMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId",
+        "MemberId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime member ID (user ID or bot ID).</p>"
+        },
+        "Role":{
+          "shape":"RoomMembershipRole",
+          "documentation":"<p>The role of the member.</p>"
+        }
+      }
+    },
+    "CreateRoomMembershipResponse":{
+      "type":"structure",
+      "members":{
+        "RoomMembership":{
+          "shape":"RoomMembership",
+          "documentation":"<p>The room membership details.</p>"
+        }
+      }
+    },
+    "CreateRoomRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "Name"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "Name":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The room name.</p>"
+        },
+        "ClientRequestToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>The idempotency token for the request.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateRoomResponse":{
+      "type":"structure",
+      "members":{
+        "Room":{
+          "shape":"Room",
+          "documentation":"<p>The room details.</p>"
+        }
+      }
+    },
+    "CreateUserRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "Username":{
+          "shape":"String",
+          "documentation":"<p>The user name.</p>"
+        },
+        "Email":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The user's email address.</p>"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>"
+        }
+      }
+    },
+    "CreateUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The user on the Amazon Chime account.</p>"
+        }
+      }
+    },
+    "DeleteAccountRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        }
+      }
+    },
+    "DeleteAccountResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteEventsConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        }
+      }
+    },
+    "DeletePhoneNumberRequest":{
+      "type":"structure",
+      "required":["PhoneNumberId"],
+      "members":{
+        "PhoneNumberId":{
+          "shape":"String",
+          "documentation":"<p>The phone number ID.</p>",
+          "location":"uri",
+          "locationName":"phoneNumberId"
+        }
+      }
+    },
+    "DeleteRoomMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId",
+        "MemberId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The member ID (user ID or bot ID).</p>",
+          "location":"uri",
+          "locationName":"memberId"
+        }
+      }
+    },
+    "DeleteRoomRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The chat room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        }
+      }
+    },
+    "DisassociatePhoneNumberFromUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        }
+      }
+    },
+    "DisassociatePhoneNumberFromUserResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DisassociateSigninDelegateGroupsFromAccountRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "GroupNames"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "GroupNames":{
+          "shape":"NonEmptyStringList",
+          "documentation":"<p>The sign-in delegate group names.</p>"
+        }
+      }
+    },
+    "DisassociateSigninDelegateGroupsFromAccountResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "E164PhoneNumber":{
+      "type":"string",
+      "pattern":"^\\+?[1-9]\\d{1,14}$",
+      "sensitive":true
+    },
+    "E164PhoneNumberList":{
+      "type":"list",
+      "member":{"shape":"E164PhoneNumber"}
+    },
+    "EmailAddress":{
+      "type":"string",
+      "pattern":".+@.+\\..+",
+      "sensitive":true
+    },
+    "EmailStatus":{
+      "type":"string",
+      "enum":[
+        "NotSent",
+        "Sent",
+        "Failed"
+      ]
+    },
+    "ErrorCode":{
+      "type":"string",
+      "enum":[
+        "BadRequest",
+        "Conflict",
+        "Forbidden",
+        "NotFound",
+        "PreconditionFailed",
+        "ResourceLimitExceeded",
+        "ServiceFailure",
+        "AccessDenied",
+        "ServiceUnavailable",
+        "Throttled",
+        "Throttling",
+        "Unauthorized",
+        "Unprocessable",
+        "VoiceConnectorGroupAssociationsExist",
+        "PhoneNumberAssociationsExist"
+      ]
+    },
+    "EventsConfiguration":{
+      "type":"structure",
+      "members":{
+        "BotId":{
+          "shape":"String",
+          "documentation":"<p>The bot ID.</p>"
+        },
+        "OutboundEventsHTTPSEndpoint":{
+          "shape":"SensitiveString",
+          "documentation":"<p>HTTPS endpoint that allows a bot to receive outgoing events.</p>"
+        },
+        "LambdaFunctionArn":{
+          "shape":"SensitiveString",
+          "documentation":"<p>Lambda function ARN that allows a bot to receive outgoing events.</p>"
+        }
+      },
+      "documentation":"<p>The configuration that allows a bot to receive outgoing events. Can be either an HTTPS endpoint or a Lambda function ARN.</p>"
+    },
+    "ForbiddenException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The client is permanently forbidden from making the request.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "GetAccountRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        }
+      }
+    },
+    "GetAccountResponse":{
+      "type":"structure",
+      "members":{
+        "Account":{
+          "shape":"Account",
+          "documentation":"<p>The Amazon Chime account details.</p>"
+        }
+      }
+    },
+    "GetAccountSettingsRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        }
+      }
+    },
+    "GetAccountSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "AccountSettings":{
+          "shape":"AccountSettings",
+          "documentation":"<p>The Amazon Chime account settings.</p>"
+        }
+      }
+    },
+    "GetBotRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        }
+      }
+    },
+    "GetBotResponse":{
+      "type":"structure",
+      "members":{
+        "Bot":{
+          "shape":"Bot",
+          "documentation":"<p>The chat bot details.</p>"
+        }
+      }
+    },
+    "GetEventsConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        }
+      }
+    },
+    "GetEventsConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "EventsConfiguration":{
+          "shape":"EventsConfiguration",
+          "documentation":"<p>The events configuration details.</p>"
+        }
+      }
+    },
+    "GetGlobalSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "BusinessCalling":{
+          "shape":"BusinessCallingSettings",
+          "documentation":"<p>The Amazon Chime Business Calling settings.</p>"
+        },
+        "VoiceConnector":{
+          "shape":"VoiceConnectorSettings",
+          "documentation":"<p>The Amazon Chime Voice Connector settings.</p>"
+        }
+      }
+    },
+    "GetPhoneNumberOrderRequest":{
+      "type":"structure",
+      "required":["PhoneNumberOrderId"],
+      "members":{
+        "PhoneNumberOrderId":{
+          "shape":"GuidString",
+          "documentation":"<p>The ID for the phone number order.</p>",
+          "location":"uri",
+          "locationName":"phoneNumberOrderId"
+        }
+      }
+    },
+    "GetPhoneNumberOrderResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberOrder":{
+          "shape":"PhoneNumberOrder",
+          "documentation":"<p>The phone number order details.</p>"
+        }
+      }
+    },
+    "GetPhoneNumberRequest":{
+      "type":"structure",
+      "required":["PhoneNumberId"],
+      "members":{
+        "PhoneNumberId":{
+          "shape":"String",
+          "documentation":"<p>The phone number ID.</p>",
+          "location":"uri",
+          "locationName":"phoneNumberId"
+        }
+      }
+    },
+    "GetPhoneNumberResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number details.</p>"
+        }
+      }
+    },
+    "GetPhoneNumberSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "CallingName":{
+          "shape":"CallingName",
+          "documentation":"<p>The default outbound calling name for the account.</p>"
+        },
+        "CallingNameUpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The updated outbound calling name timestamp, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetRetentionSettingsRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        }
+      }
+    },
+    "GetRetentionSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "RetentionSettings":{
+          "shape":"RetentionSettings",
+          "documentation":"<p>The retention settings.</p>"
+        },
+        "InitiateDeletionTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The timestamp representing the time at which the specified items are permanently deleted, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "GetRoomRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        }
+      }
+    },
+    "GetRoomResponse":{
+      "type":"structure",
+      "members":{
+        "Room":{
+          "shape":"Room",
+          "documentation":"<p>The room details.</p>"
+        }
+      }
+    },
+    "GetUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        }
+      }
+    },
+    "GetUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The user details.</p>"
+        }
+      }
+    },
+    "GetUserSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        }
+      }
+    },
+    "GetUserSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "UserSettings":{
+          "shape":"UserSettings",
+          "documentation":"<p>The user settings.</p>"
+        }
+      }
+    },
+    "GuidString":{
+      "type":"string",
+      "pattern":"[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}"
+    },
+    "Invite":{
+      "type":"structure",
+      "members":{
+        "InviteId":{
+          "shape":"String",
+          "documentation":"<p>The invite ID.</p>"
+        },
+        "Status":{
+          "shape":"InviteStatus",
+          "documentation":"<p>The status of the invite.</p>"
+        },
+        "EmailAddress":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The email address to which the invite is sent.</p>"
+        },
+        "EmailStatus":{
+          "shape":"EmailStatus",
+          "documentation":"<p>The status of the invite email.</p>"
+        }
+      },
+      "documentation":"<p>Invitation object returned after emailing users to invite them to join the Amazon Chime <code>Team</code> account.</p>"
+    },
+    "InviteList":{
+      "type":"list",
+      "member":{"shape":"Invite"}
+    },
+    "InviteStatus":{
+      "type":"string",
+      "enum":[
+        "Pending",
+        "Accepted",
+        "Failed"
+      ]
+    },
+    "InviteUsersRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserEmailList"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserEmailList":{
+          "shape":"UserEmailList",
+          "documentation":"<p>The user email addresses to which to send the email invitation.</p>"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>"
+        }
+      }
+    },
+    "InviteUsersResponse":{
+      "type":"structure",
+      "members":{
+        "Invites":{
+          "shape":"InviteList",
+          "documentation":"<p>The email invitation details.</p>"
+        }
+      }
+    },
+    "Iso8601Timestamp":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "JoinTokenString":{
+      "type":"string",
+      "max":2048,
+      "min":2,
+      "pattern":"^[a-zA-Z0-9+/]+$",
+      "sensitive":true
+    },
+    "License":{
+      "type":"string",
+      "enum":[
+        "Basic",
+        "Plus",
+        "Pro",
+        "ProTrial"
+      ]
+    },
+    "LicenseList":{
+      "type":"list",
+      "member":{"shape":"License"}
+    },
+    "ListAccountsRequest":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"AccountName",
+          "documentation":"<p>Amazon Chime account name prefix with which to filter results.</p>",
+          "location":"querystring",
+          "locationName":"name"
+        },
+        "UserEmail":{
+          "shape":"EmailAddress",
+          "documentation":"<p>User email address with which to filter results.</p>",
+          "location":"querystring",
+          "locationName":"user-email"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        },
+        "MaxResults":{
+          "shape":"ProfileServiceMaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Defaults to 100.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        }
+      }
+    },
+    "ListAccountsResponse":{
+      "type":"structure",
+      "members":{
+        "Accounts":{
+          "shape":"AccountList",
+          "documentation":"<p>List of Amazon Chime accounts and account details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListBotsRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "MaxResults":{
+          "shape":"ResultMax",
+          "documentation":"<p>The maximum number of results to return in a single call. The default is 10.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "ListBotsResponse":{
+      "type":"structure",
+      "members":{
+        "Bots":{
+          "shape":"BotList",
+          "documentation":"<p>List of bots and bot details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListPhoneNumberOrdersRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        },
+        "MaxResults":{
+          "shape":"ResultMax",
+          "documentation":"<p>The maximum number of results to return in a single call.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        }
+      }
+    },
+    "ListPhoneNumberOrdersResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberOrders":{
+          "shape":"PhoneNumberOrderList",
+          "documentation":"<p>The phone number order details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListPhoneNumbersRequest":{
+      "type":"structure",
+      "members":{
+        "Status":{
+          "shape":"PhoneNumberStatus",
+          "documentation":"<p>The phone number status.</p>",
+          "location":"querystring",
+          "locationName":"status"
+        },
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The phone number product type.</p>",
+          "location":"querystring",
+          "locationName":"product-type"
+        },
+        "FilterName":{
+          "shape":"PhoneNumberAssociationName",
+          "documentation":"<p>The filter to use to limit the number of results.</p>",
+          "location":"querystring",
+          "locationName":"filter-name"
+        },
+        "FilterValue":{
+          "shape":"String",
+          "documentation":"<p>The value to use for the filter.</p>",
+          "location":"querystring",
+          "locationName":"filter-value"
+        },
+        "MaxResults":{
+          "shape":"ResultMax",
+          "documentation":"<p>The maximum number of results to return in a single call.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "ListPhoneNumbersResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumbers":{
+          "shape":"PhoneNumberList",
+          "documentation":"<p>The phone number details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListRoomMembershipsRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MaxResults":{
+          "shape":"ResultMax",
+          "documentation":"<p>The maximum number of results to return in a single call.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "ListRoomMembershipsResponse":{
+      "type":"structure",
+      "members":{
+        "RoomMemberships":{
+          "shape":"RoomMembershipList",
+          "documentation":"<p>The room membership details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListRoomsRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "MemberId":{
+          "shape":"String",
+          "documentation":"<p>The member ID (user ID or bot ID).</p>",
+          "location":"querystring",
+          "locationName":"member-id"
+        },
+        "MaxResults":{
+          "shape":"ResultMax",
+          "documentation":"<p>The maximum number of results to return in a single call.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "ListRoomsResponse":{
+      "type":"structure",
+      "members":{
+        "Rooms":{
+          "shape":"RoomList",
+          "documentation":"<p>The room details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListSupportedPhoneNumberCountriesRequest":{
+      "type":"structure",
+      "required":["ProductType"],
+      "members":{
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The phone number product type.</p>",
+          "location":"querystring",
+          "locationName":"product-type"
+        }
+      }
+    },
+    "ListSupportedPhoneNumberCountriesResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberCountries":{
+          "shape":"PhoneNumberCountriesList",
+          "documentation":"<p>The supported phone number countries.</p>"
+        }
+      }
+    },
+    "ListUsersRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserEmail":{
+          "shape":"EmailAddress",
+          "documentation":"<p>Optional. The user email address used to filter results. Maximum 1.</p>",
+          "location":"querystring",
+          "locationName":"user-email"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>",
+          "location":"querystring",
+          "locationName":"user-type"
+        },
+        "MaxResults":{
+          "shape":"ProfileServiceMaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call. Defaults to 100.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "ListUsersResponse":{
+      "type":"structure",
+      "members":{
+        "Users":{
+          "shape":"UserList",
+          "documentation":"<p>List of users and user details.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to use to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "LogoutUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        }
+      }
+    },
+    "LogoutUserResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Member":{
+      "type":"structure",
+      "members":{
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The member ID (user ID or bot ID).</p>"
+        },
+        "MemberType":{
+          "shape":"MemberType",
+          "documentation":"<p>The member type.</p>"
+        },
+        "Email":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The member email address.</p>"
+        },
+        "FullName":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The member name.</p>"
+        },
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>"
+        }
+      },
+      "documentation":"<p>The member details, such as email address, name, member ID, and member type.</p>"
+    },
+    "MemberError":{
+      "type":"structure",
+      "members":{
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The member ID.</p>"
+        },
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>"
+        }
+      },
+      "documentation":"<p>The list of errors returned when a member action results in an error.</p>"
+    },
+    "MemberErrorList":{
+      "type":"list",
+      "member":{"shape":"MemberError"}
+    },
+    "MemberType":{
+      "type":"string",
+      "enum":[
+        "User",
+        "Bot",
+        "Webhook"
+      ]
+    },
+    "MembershipItem":{
+      "type":"structure",
+      "members":{
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The member ID.</p>"
+        },
+        "Role":{
+          "shape":"RoomMembershipRole",
+          "documentation":"<p>The member role.</p>"
+        }
+      },
+      "documentation":"<p>Membership details, such as member ID and member role.</p>"
+    },
+    "MembershipItemList":{
+      "type":"list",
+      "member":{"shape":"MembershipItem"},
+      "max":50
+    },
+    "NonEmptyString":{
+      "type":"string",
+      "pattern":".*\\S.*"
+    },
+    "NonEmptyStringList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "min":1
+    },
+    "NotFoundException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>One or more of the resources in the request does not exist in the system.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "NullableBoolean":{"type":"boolean"},
+    "OrderedPhoneNumber":{
+      "type":"structure",
+      "members":{
+        "E164PhoneNumber":{
+          "shape":"E164PhoneNumber",
+          "documentation":"<p>The phone number, in E.164 format.</p>"
+        },
+        "Status":{
+          "shape":"OrderedPhoneNumberStatus",
+          "documentation":"<p>The phone number status.</p>"
+        }
+      },
+      "documentation":"<p>A phone number for which an order has been placed.</p>"
+    },
+    "OrderedPhoneNumberList":{
+      "type":"list",
+      "member":{"shape":"OrderedPhoneNumber"}
+    },
+    "OrderedPhoneNumberStatus":{
+      "type":"string",
+      "enum":[
+        "Processing",
+        "Acquired",
+        "Failed"
+      ]
+    },
+    "PhoneNumber":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberId":{
+          "shape":"String",
+          "documentation":"<p>The phone number ID.</p>"
+        },
+        "E164PhoneNumber":{
+          "shape":"E164PhoneNumber",
+          "documentation":"<p>The phone number, in E.164 format.</p>"
+        },
+        "Country":{
+          "shape":"Alpha2CountryCode",
+          "documentation":"<p>The phone number country. Format: ISO 3166-1 alpha-2.</p>"
+        },
+        "Type":{
+          "shape":"PhoneNumberType",
+          "documentation":"<p>The phone number type.</p>"
+        },
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The phone number product type.</p>"
+        },
+        "Status":{
+          "shape":"PhoneNumberStatus",
+          "documentation":"<p>The phone number status.</p>"
+        },
+        "Capabilities":{
+          "shape":"PhoneNumberCapabilities",
+          "documentation":"<p>The phone number capabilities.</p>"
+        },
+        "Associations":{
+          "shape":"PhoneNumberAssociationList",
+          "documentation":"<p>The phone number associations.</p>"
+        },
+        "CallingName":{
+          "shape":"CallingName",
+          "documentation":"<p>The outbound calling name associated with the phone number.</p>"
+        },
+        "CallingNameStatus":{
+          "shape":"CallingNameStatus",
+          "documentation":"<p>The outbound calling name status.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The phone number creation timestamp, in ISO 8601 format.</p>"
+        },
+        "UpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The updated phone number timestamp, in ISO 8601 format.</p>"
+        },
+        "DeletionTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The deleted phone number timestamp, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>A phone number used for Amazon Chime Business Calling or an Amazon Chime Voice Connector.</p>"
+    },
+    "PhoneNumberAssociation":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>Contains the ID for the entity specified in Name.</p>"
+        },
+        "Name":{
+          "shape":"PhoneNumberAssociationName",
+          "documentation":"<p>Defines the association with an Amazon Chime account ID, user ID, Amazon Chime Voice Connector ID, or Amazon Chime Voice Connector group ID.</p>"
+        },
+        "AssociatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The timestamp of the phone number association, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The phone number associations, such as Amazon Chime account ID, Amazon Chime user ID, Amazon Chime Voice Connector ID, or Amazon Chime Voice Connector group ID.</p>"
+    },
+    "PhoneNumberAssociationList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumberAssociation"}
+    },
+    "PhoneNumberAssociationName":{
+      "type":"string",
+      "enum":[
+        "AccountId",
+        "UserId",
+        "VoiceConnectorId",
+        "VoiceConnectorGroupId",
+        "SipRuleId"
+      ]
+    },
+    "PhoneNumberCapabilities":{
+      "type":"structure",
+      "members":{
+        "InboundCall":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies inbound calling for the specified phone number.</p>"
+        },
+        "OutboundCall":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies outbound calling for the specified phone number.</p>"
+        },
+        "InboundSMS":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies inbound SMS messaging for the specified phone number.</p>"
+        },
+        "OutboundSMS":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies outbound SMS messaging for the specified phone number.</p>"
+        },
+        "InboundMMS":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies inbound MMS messaging for the specified phone number.</p>"
+        },
+        "OutboundMMS":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>Allows or denies outbound MMS messaging for the specified phone number.</p>"
+        }
+      },
+      "documentation":"<p>The phone number capabilities for Amazon Chime Business Calling phone numbers, such as enabled inbound and outbound calling and text messaging.</p>"
+    },
+    "PhoneNumberCountriesList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumberCountry"}
+    },
+    "PhoneNumberCountry":{
+      "type":"structure",
+      "members":{
+        "CountryCode":{
+          "shape":"Alpha2CountryCode",
+          "documentation":"<p>The phone number country code. Format: ISO 3166-1 alpha-2.</p>"
+        },
+        "SupportedPhoneNumberTypes":{
+          "shape":"PhoneNumberTypeList",
+          "documentation":"<p>The supported phone number types. </p>"
+        }
+      },
+      "documentation":"<p>The phone number country.</p>"
+    },
+    "PhoneNumberError":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The phone number ID for which the action failed.</p>"
+        },
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>"
+        }
+      },
+      "documentation":"<p>If the phone number action fails for one or more of the phone numbers in the request, a list of the phone numbers is returned, along with error codes and error messages.</p>"
+    },
+    "PhoneNumberErrorList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumberError"}
+    },
+    "PhoneNumberList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumber"}
+    },
+    "PhoneNumberMaxResults":{
+      "type":"integer",
+      "max":500,
+      "min":1
+    },
+    "PhoneNumberOrder":{
+      "type":"structure",
+      "members":{
+        "PhoneNumberOrderId":{
+          "shape":"GuidString",
+          "documentation":"<p>The phone number order ID.</p>"
+        },
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The phone number order product type.</p>"
+        },
+        "Status":{
+          "shape":"PhoneNumberOrderStatus",
+          "documentation":"<p>The status of the phone number order.</p>"
+        },
+        "OrderedPhoneNumbers":{
+          "shape":"OrderedPhoneNumberList",
+          "documentation":"<p>The ordered phone number details, such as the phone number in E.164 format and the phone number status.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The phone number order creation time stamp, in ISO 8601 format.</p>"
+        },
+        "UpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The updated phone number order time stamp, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The details of a phone number order created for Amazon Chime.</p>"
+    },
+    "PhoneNumberOrderList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumberOrder"}
+    },
+    "PhoneNumberOrderStatus":{
+      "type":"string",
+      "enum":[
+        "Processing",
+        "Successful",
+        "Failed",
+        "Partial"
+      ]
+    },
+    "PhoneNumberProductType":{
+      "type":"string",
+      "enum":[
+        "BusinessCalling",
+        "VoiceConnector",
+        "SipMediaApplicationDialIn"
+      ]
+    },
+    "PhoneNumberStatus":{
+      "type":"string",
+      "enum":[
+        "AcquireInProgress",
+        "AcquireFailed",
+        "Unassigned",
+        "Assigned",
+        "ReleaseInProgress",
+        "DeleteInProgress",
+        "ReleaseFailed",
+        "DeleteFailed"
+      ]
+    },
+    "PhoneNumberType":{
+      "type":"string",
+      "enum":[
+        "Local",
+        "TollFree"
+      ]
+    },
+    "PhoneNumberTypeList":{
+      "type":"list",
+      "member":{"shape":"PhoneNumberType"}
+    },
+    "ProfileServiceMaxResults":{
+      "type":"integer",
+      "max":200,
+      "min":1
+    },
+    "PutEventsConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        },
+        "OutboundEventsHTTPSEndpoint":{
+          "shape":"SensitiveString",
+          "documentation":"<p>HTTPS endpoint that allows the bot to receive outgoing events.</p>"
+        },
+        "LambdaFunctionArn":{
+          "shape":"SensitiveString",
+          "documentation":"<p>Lambda function ARN that allows the bot to receive outgoing events.</p>"
+        }
+      }
+    },
+    "PutEventsConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "EventsConfiguration":{
+          "shape":"EventsConfiguration",
+          "documentation":"<p>The configuration that allows a bot to receive outgoing events. Can be an HTTPS endpoint or an AWS Lambda function ARN.</p>"
+        }
+      }
+    },
+    "PutRetentionSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RetentionSettings"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RetentionSettings":{
+          "shape":"RetentionSettings",
+          "documentation":"<p>The retention settings.</p>"
+        }
+      }
+    },
+    "PutRetentionSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "RetentionSettings":{
+          "shape":"RetentionSettings",
+          "documentation":"<p>The retention settings.</p>"
+        },
+        "InitiateDeletionTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The timestamp representing the time at which the specified items are permanently deleted, in ISO 8601 format.</p>"
+        }
+      }
+    },
+    "RedactConversationMessageRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "ConversationId",
+        "MessageId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "ConversationId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The conversation ID.</p>",
+          "location":"uri",
+          "locationName":"conversationId"
+        },
+        "MessageId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The message ID.</p>",
+          "location":"uri",
+          "locationName":"messageId"
+        }
+      }
+    },
+    "RedactConversationMessageResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "RedactRoomMessageRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId",
+        "MessageId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MessageId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The message ID.</p>",
+          "location":"uri",
+          "locationName":"messageId"
+        }
+      }
+    },
+    "RedactRoomMessageResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "RegenerateSecurityTokenRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        }
+      }
+    },
+    "RegenerateSecurityTokenResponse":{
+      "type":"structure",
+      "members":{
+        "Bot":{
+          "shape":"Bot",
+          "documentation":"<p>A resource that allows Enterprise account administrators to configure an interface that receives events from Amazon Chime.</p>"
+        }
+      }
+    },
+    "RegistrationStatus":{
+      "type":"string",
+      "enum":[
+        "Unregistered",
+        "Registered",
+        "Suspended"
+      ]
+    },
+    "ResetPersonalPINRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        }
+      }
+    },
+    "ResetPersonalPINResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The user details and new personal meeting PIN.</p>"
+        }
+      }
+    },
+    "ResourceLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request exceeds the resource limit.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "RestorePhoneNumberRequest":{
+      "type":"structure",
+      "required":["PhoneNumberId"],
+      "members":{
+        "PhoneNumberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The phone number.</p>",
+          "location":"uri",
+          "locationName":"phoneNumberId"
+        }
+      }
+    },
+    "RestorePhoneNumberResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number details.</p>"
+        }
+      }
+    },
+    "ResultMax":{
+      "type":"integer",
+      "max":99,
+      "min":1
+    },
+    "RetentionDays":{
+      "type":"integer",
+      "max":5475,
+      "min":1
+    },
+    "RetentionSettings":{
+      "type":"structure",
+      "members":{
+        "RoomRetentionSettings":{
+          "shape":"RoomRetentionSettings",
+          "documentation":"<p>The chat room retention settings.</p>"
+        },
+        "ConversationRetentionSettings":{
+          "shape":"ConversationRetentionSettings",
+          "documentation":"<p>The chat conversation retention settings.</p>"
+        }
+      },
+      "documentation":"<p>The retention settings for an Amazon Chime Enterprise account that determine how long to retain items such as chat-room messages and chat-conversation messages.</p>"
+    },
+    "Room":{
+      "type":"structure",
+      "members":{
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>"
+        },
+        "Name":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The room name.</p>"
+        },
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>"
+        },
+        "CreatedBy":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The identifier of the room creator.</p>"
+        },
+        "CreatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The room creation timestamp, in ISO 8601 format.</p>"
+        },
+        "UpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The room update timestamp, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Chime chat room details.</p>"
+    },
+    "RoomList":{
+      "type":"list",
+      "member":{"shape":"Room"}
+    },
+    "RoomMembership":{
+      "type":"structure",
+      "members":{
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>"
+        },
+        "Member":{
+          "shape":"Member",
+          "documentation":"<p>The member details, such as email address, name, member ID, and member type.</p>"
+        },
+        "Role":{
+          "shape":"RoomMembershipRole",
+          "documentation":"<p>The membership role.</p>"
+        },
+        "InvitedBy":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The identifier of the user that invited the room member.</p>"
+        },
+        "UpdatedTimestamp":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The room membership update timestamp, in ISO 8601 format.</p>"
+        }
+      },
+      "documentation":"<p>The room membership details.</p>"
+    },
+    "RoomMembershipList":{
+      "type":"list",
+      "member":{"shape":"RoomMembership"}
+    },
+    "RoomMembershipRole":{
+      "type":"string",
+      "enum":[
+        "Administrator",
+        "Member"
+      ]
+    },
+    "RoomRetentionSettings":{
+      "type":"structure",
+      "members":{
+        "RetentionDays":{
+          "shape":"RetentionDays",
+          "documentation":"<p>The number of days for which to retain chat-room messages.</p>"
+        }
+      },
+      "documentation":"<p>The retention settings that determine how long to retain chat-room messages for an Amazon Chime Enterprise account.</p>"
+    },
+    "SearchAvailablePhoneNumbersRequest":{
+      "type":"structure",
+      "members":{
+        "AreaCode":{
+          "shape":"String",
+          "documentation":"<p>The area code used to filter results. Only applies to the US.</p>",
+          "location":"querystring",
+          "locationName":"area-code"
+        },
+        "City":{
+          "shape":"String",
+          "documentation":"<p>The city used to filter results. Only applies to the US.</p>",
+          "location":"querystring",
+          "locationName":"city"
+        },
+        "Country":{
+          "shape":"Alpha2CountryCode",
+          "documentation":"<p>The country used to filter results. Defaults to the US Format: ISO 3166-1 alpha-2.</p>",
+          "location":"querystring",
+          "locationName":"country"
+        },
+        "State":{
+          "shape":"String",
+          "documentation":"<p>The state used to filter results. Required only if you provide <code>City</code>. Only applies to the US.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        },
+        "TollFreePrefix":{
+          "shape":"TollFreePrefix",
+          "documentation":"<p>The toll-free prefix that you use to filter results. Only applies to the US.</p>",
+          "location":"querystring",
+          "locationName":"toll-free-prefix"
+        },
+        "PhoneNumberType":{
+          "shape":"PhoneNumberType",
+          "documentation":"<p>The phone number type used to filter results. Required for non-US numbers.</p>",
+          "location":"querystring",
+          "locationName":"phone-number-type"
+        },
+        "MaxResults":{
+          "shape":"PhoneNumberMaxResults",
+          "documentation":"<p>The maximum number of results to return in a single call.</p>",
+          "location":"querystring",
+          "locationName":"max-results"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token used to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"next-token"
+        }
+      }
+    },
+    "SearchAvailablePhoneNumbersResponse":{
+      "type":"structure",
+      "members":{
+        "E164PhoneNumbers":{
+          "shape":"E164PhoneNumberList",
+          "documentation":"<p>List of phone numbers, in E.164 format.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The token used to retrieve the next page of search results.</p>"
+        }
+      }
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceFailureException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The service encountered an unexpected error.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The service is currently unavailable.</p>",
+      "error":{"httpStatusCode":503},
+      "exception":true,
+      "fault":true
+    },
+    "SigninDelegateGroup":{
+      "type":"structure",
+      "members":{
+        "GroupName":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The group name.</p>"
+        }
+      },
+      "documentation":"<p>An Active Directory (AD) group whose members are granted permission to act as delegates.</p>"
+    },
+    "SigninDelegateGroupList":{
+      "type":"list",
+      "member":{"shape":"SigninDelegateGroup"}
+    },
+    "String":{"type":"string"},
+    "TelephonySettings":{
+      "type":"structure",
+      "required":[
+        "InboundCalling",
+        "OutboundCalling",
+        "SMS"
+      ],
+      "members":{
+        "InboundCalling":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows or denies inbound calling.</p>"
+        },
+        "OutboundCalling":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows or denies outbound calling.</p>"
+        },
+        "SMS":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows or denies SMS messaging.</p>"
+        }
+      },
+      "documentation":"<p>Settings that allow management of telephony permissions for an Amazon Chime user, such as inbound and outbound calling and text messaging.</p>"
+    },
+    "ThrottledClientException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The client exceeded its request rate limit.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "TollFreePrefix":{
+      "type":"string",
+      "max":3,
+      "min":3,
+      "pattern":"^8(00|33|44|55|66|77|88)$"
+    },
+    "UnauthorizedClientException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The client is not currently authorized to make the request.</p>",
+      "error":{"httpStatusCode":401},
+      "exception":true
+    },
+    "UnprocessableEntityException":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ErrorCode"},
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was well-formed but was unable to be followed due to semantic errors.</p>",
+      "error":{"httpStatusCode":422},
+      "exception":true
+    },
+    "UpdateAccountRequest":{
+      "type":"structure",
+      "required":["AccountId"],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "Name":{
+          "shape":"AccountName",
+          "documentation":"<p>The new name for the specified Amazon Chime account.</p>"
+        },
+        "DefaultLicense":{
+          "shape":"License",
+          "documentation":"<p>The default license applied when you add users to an Amazon Chime account.</p>"
+        }
+      }
+    },
+    "UpdateAccountResponse":{
+      "type":"structure",
+      "members":{
+        "Account":{
+          "shape":"Account",
+          "documentation":"<p>The updated Amazon Chime account details.</p>"
+        }
+      }
+    },
+    "UpdateAccountSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "AccountSettings"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "AccountSettings":{
+          "shape":"AccountSettings",
+          "documentation":"<p>The Amazon Chime account settings to update.</p>"
+        }
+      }
+    },
+    "UpdateAccountSettingsResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateBotRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "BotId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "BotId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The bot ID.</p>",
+          "location":"uri",
+          "locationName":"botId"
+        },
+        "Disabled":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>When true, stops the specified bot from running in your account.</p>"
+        }
+      }
+    },
+    "UpdateBotResponse":{
+      "type":"structure",
+      "members":{
+        "Bot":{
+          "shape":"Bot",
+          "documentation":"<p>The updated bot details.</p>"
+        }
+      }
+    },
+    "UpdateGlobalSettingsRequest":{
+      "type":"structure",
+      "members":{
+        "BusinessCalling":{
+          "shape":"BusinessCallingSettings",
+          "documentation":"<p>The Amazon Chime Business Calling settings.</p>"
+        },
+        "VoiceConnector":{
+          "shape":"VoiceConnectorSettings",
+          "documentation":"<p>The Amazon Chime Voice Connector settings.</p>"
+        }
+      }
+    },
+    "UpdatePhoneNumberRequest":{
+      "type":"structure",
+      "required":["PhoneNumberId"],
+      "members":{
+        "PhoneNumberId":{
+          "shape":"String",
+          "documentation":"<p>The phone number ID.</p>",
+          "location":"uri",
+          "locationName":"phoneNumberId"
+        },
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The product type.</p>"
+        },
+        "CallingName":{
+          "shape":"CallingName",
+          "documentation":"<p>The outbound calling name associated with the phone number.</p>"
+        }
+      }
+    },
+    "UpdatePhoneNumberRequestItem":{
+      "type":"structure",
+      "required":["PhoneNumberId"],
+      "members":{
+        "PhoneNumberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The phone number ID to update.</p>"
+        },
+        "ProductType":{
+          "shape":"PhoneNumberProductType",
+          "documentation":"<p>The product type to update.</p>"
+        },
+        "CallingName":{
+          "shape":"CallingName",
+          "documentation":"<p>The outbound calling name to update.</p>"
+        }
+      },
+      "documentation":"<p>The phone number ID, product type, or calling name fields to update, used with the <a>BatchUpdatePhoneNumber</a> and <a>UpdatePhoneNumber</a> actions.</p>"
+    },
+    "UpdatePhoneNumberRequestItemList":{
+      "type":"list",
+      "member":{"shape":"UpdatePhoneNumberRequestItem"}
+    },
+    "UpdatePhoneNumberResponse":{
+      "type":"structure",
+      "members":{
+        "PhoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The updated phone number details.</p>"
+        }
+      }
+    },
+    "UpdatePhoneNumberSettingsRequest":{
+      "type":"structure",
+      "required":["CallingName"],
+      "members":{
+        "CallingName":{
+          "shape":"CallingName",
+          "documentation":"<p>The default outbound calling name for the account.</p>"
+        }
+      }
+    },
+    "UpdateRoomMembershipRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId",
+        "MemberId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "MemberId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The member ID.</p>",
+          "location":"uri",
+          "locationName":"memberId"
+        },
+        "Role":{
+          "shape":"RoomMembershipRole",
+          "documentation":"<p>The role of the member.</p>"
+        }
+      }
+    },
+    "UpdateRoomMembershipResponse":{
+      "type":"structure",
+      "members":{
+        "RoomMembership":{
+          "shape":"RoomMembership",
+          "documentation":"<p>The room membership details.</p>"
+        }
+      }
+    },
+    "UpdateRoomRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "RoomId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "RoomId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The room ID.</p>",
+          "location":"uri",
+          "locationName":"roomId"
+        },
+        "Name":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The room name.</p>"
+        }
+      }
+    },
+    "UpdateRoomResponse":{
+      "type":"structure",
+      "members":{
+        "Room":{
+          "shape":"Room",
+          "documentation":"<p>The room details.</p>"
+        }
+      }
+    },
+    "UpdateUserRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        },
+        "LicenseType":{
+          "shape":"License",
+          "documentation":"<p>The user license type to update. This must be a supported license type for the Amazon Chime account that the user belongs to.</p>"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>"
+        },
+        "AlexaForBusinessMetadata":{
+          "shape":"AlexaForBusinessMetadata",
+          "documentation":"<p>The Alexa for Business metadata.</p>"
+        }
+      }
+    },
+    "UpdateUserRequestItem":{
+      "type":"structure",
+      "required":["UserId"],
+      "members":{
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID.</p>"
+        },
+        "LicenseType":{
+          "shape":"License",
+          "documentation":"<p>The user license type.</p>"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>"
+        },
+        "AlexaForBusinessMetadata":{
+          "shape":"AlexaForBusinessMetadata",
+          "documentation":"<p>The Alexa for Business metadata.</p>"
+        }
+      },
+      "documentation":"<p>The user ID and user fields to update, used with the <a>BatchUpdateUser</a> action.</p>"
+    },
+    "UpdateUserRequestItemList":{
+      "type":"list",
+      "member":{"shape":"UpdateUserRequestItem"},
+      "max":20
+    },
+    "UpdateUserResponse":{
+      "type":"structure",
+      "members":{
+        "User":{
+          "shape":"User",
+          "documentation":"<p>The updated user details.</p>"
+        }
+      }
+    },
+    "UpdateUserSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "AccountId",
+        "UserId",
+        "UserSettings"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>",
+          "location":"uri",
+          "locationName":"accountId"
+        },
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The user ID.</p>",
+          "location":"uri",
+          "locationName":"userId"
+        },
+        "UserSettings":{
+          "shape":"UserSettings",
+          "documentation":"<p>The user settings to update.</p>"
+        }
+      }
+    },
+    "User":{
+      "type":"structure",
+      "required":["UserId"],
+      "members":{
+        "UserId":{
+          "shape":"String",
+          "documentation":"<p>The user ID.</p>"
+        },
+        "AccountId":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Chime account ID.</p>"
+        },
+        "PrimaryEmail":{
+          "shape":"EmailAddress",
+          "documentation":"<p>The primary email address of the user.</p>"
+        },
+        "PrimaryProvisionedNumber":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The primary phone number associated with the user.</p>"
+        },
+        "DisplayName":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The display name of the user.</p>"
+        },
+        "LicenseType":{
+          "shape":"License",
+          "documentation":"<p>The license type for the user.</p>"
+        },
+        "UserType":{
+          "shape":"UserType",
+          "documentation":"<p>The user type.</p>"
+        },
+        "UserRegistrationStatus":{
+          "shape":"RegistrationStatus",
+          "documentation":"<p>The user registration status.</p>"
+        },
+        "UserInvitationStatus":{
+          "shape":"InviteStatus",
+          "documentation":"<p>The user invite status.</p>"
+        },
+        "RegisteredOn":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>Date and time when the user is registered, in ISO 8601 format.</p>"
+        },
+        "InvitedOn":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>Date and time when the user is invited to the Amazon Chime account, in ISO 8601 format.</p>"
+        },
+        "AlexaForBusinessMetadata":{
+          "shape":"AlexaForBusinessMetadata",
+          "documentation":"<p>The Alexa for Business metadata.</p>"
+        },
+        "PersonalPIN":{
+          "shape":"String",
+          "documentation":"<p>The user's personal meeting PIN.</p>"
+        }
+      },
+      "documentation":"<p>The user on the Amazon Chime account.</p>"
+    },
+    "UserEmailList":{
+      "type":"list",
+      "member":{"shape":"EmailAddress"},
+      "max":50
+    },
+    "UserError":{
+      "type":"structure",
+      "members":{
+        "UserId":{
+          "shape":"NonEmptyString",
+          "documentation":"<p>The user ID for which the action failed.</p>"
+        },
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>The error message.</p>"
+        }
+      },
+      "documentation":"<p>The list of errors returned when errors are encountered during the <a>BatchSuspendUser</a>, <a>BatchUnsuspendUser</a>, or <a>BatchUpdateUser</a> actions. This includes user IDs, error codes, and error messages.</p>"
+    },
+    "UserErrorList":{
+      "type":"list",
+      "member":{"shape":"UserError"}
+    },
+    "UserIdList":{
+      "type":"list",
+      "member":{"shape":"NonEmptyString"},
+      "max":50
+    },
+    "UserList":{
+      "type":"list",
+      "member":{"shape":"User"}
+    },
+    "UserSettings":{
+      "type":"structure",
+      "required":["Telephony"],
+      "members":{
+        "Telephony":{
+          "shape":"TelephonySettings",
+          "documentation":"<p>The telephony settings associated with the user.</p>"
+        }
+      },
+      "documentation":"<p>Settings associated with an Amazon Chime user, including inbound and outbound calling and text messaging.</p>"
+    },
+    "UserType":{
+      "type":"string",
+      "enum":[
+        "PrivateUser",
+        "SharedDevice"
+      ]
+    },
+    "VoiceConnectorSettings":{
+      "type":"structure",
+      "members":{
+        "CdrBucket":{
+          "shape":"String",
+          "documentation":"<p>The Amazon S3 bucket designated for call detail record storage.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>The Amazon Chime Voice Connector settings. Includes any Amazon S3 buckets designated for storing call detail records.</p>"
+    }
+  },
+  "documentation":"<important> <p> <b>Most of these APIs are no longer supported and will not be updated.</b> We recommend using the latest versions in the <a href=\"https://docs.aws.amazon.com/chime-sdk/latest/APIReference/welcome.html\">Amazon Chime SDK API reference</a>, in the Amazon Chime SDK.</p> <p>Using the latest versions requires migrating to dedicated namespaces. For more information, refer to <a href=\"https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html\">Migrating from the Amazon Chime namespace</a> in the <i>Amazon Chime SDK Developer Guide</i>.</p> </important> <p>The Amazon Chime application programming interface (API) is designed so administrators can perform key tasks, such as creating and managing Amazon Chime accounts, users, and Voice Connectors. This guide provides detailed information about the Amazon Chime API, including operations, types, inputs and outputs, and error codes.</p> <p>You can use an AWS SDK, the AWS Command Line Interface (AWS CLI), or the REST API to make API calls for Amazon Chime. We recommend using an AWS SDK or the AWS CLI. The page for each API action contains a <i>See Also</i> section that includes links to information about using the action with a language-specific AWS SDK or the AWS CLI.</p> <dl> <dt>Using an AWS SDK</dt> <dd> <p> You don't need to write code to calculate a signature for request authentication. The SDK clients authenticate your requests by using access keys that you provide. For more information about AWS SDKs, see the <a href=\"http://aws.amazon.com/developer/\">AWS Developer Center</a>. </p> </dd> <dt>Using the AWS CLI</dt> <dd> <p>Use your access keys with the AWS CLI to make API calls. For information about setting up the AWS CLI, see <a href=\"https://docs.aws.amazon.com/cli/latest/userguide/installing.html\">Installing the AWS Command Line Interface</a> in the <i>AWS Command Line Interface User Guide</i>. For a list of available Amazon Chime commands, see the <a href=\"https://docs.aws.amazon.com/cli/latest/reference/chime/index.html\">Amazon Chime commands</a> in the <i>AWS CLI Command Reference</i>. </p> </dd> <dt>Using REST APIs</dt> <dd> <p>If you use REST to make API calls, you must authenticate your request by providing a signature. Amazon Chime supports Signature Version 4. For more information, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html\">Signature Version 4 Signing Process</a> in the <i>Amazon Web Services General Reference</i>.</p> <p>When making REST API calls, use the service name <code>chime</code> and REST endpoint <code>https://service.chime.aws.amazon.com</code>.</p> </dd> </dl> <p>Administrative permissions are controlled using AWS Identity and Access Management (IAM). For more information, see <a href=\"https://docs.aws.amazon.com/chime/latest/ag/security-iam.html\">Identity and Access Management for Amazon Chime</a> in the <i>Amazon Chime Administration Guide</i>.</p>",
+  "deprecated":true,
+  "deprecatedMessage":"This namespace has been deprecated"
+}

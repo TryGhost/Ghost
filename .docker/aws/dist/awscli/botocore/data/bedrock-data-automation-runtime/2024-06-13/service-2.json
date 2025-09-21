@@ -1,0 +1,620 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-06-13",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"bedrock-data-automation-runtime",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"Runtime for Amazon Bedrock Data Automation",
+    "serviceId":"Bedrock Data Automation Runtime",
+    "signatureVersion":"v4",
+    "signingName":"bedrock",
+    "targetPrefix":"AmazonBedrockKeystoneRuntimeService",
+    "uid":"bedrock-data-automation-runtime-2024-06-13"
+  },
+  "operations":{
+    "GetDataAutomationStatus":{
+      "name":"GetDataAutomationStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetDataAutomationStatusRequest"},
+      "output":{"shape":"GetDataAutomationStatusResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>API used to get data automation status.</p>"
+    },
+    "InvokeDataAutomationAsync":{
+      "name":"InvokeDataAutomationAsync",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"InvokeDataAutomationAsyncRequest"},
+      "output":{"shape":"InvokeDataAutomationAsyncResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Async API: Invoke data automation.</p>",
+      "idempotent":true
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>List tags for an Amazon Bedrock Data Automation resource</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Tag an Amazon Bedrock Data Automation resource</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Untag an Amazon Bedrock Data Automation resource</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception will be thrown when customer does not have access to API.</p>",
+      "exception":true
+    },
+    "AssetProcessingConfiguration":{
+      "type":"structure",
+      "members":{
+        "video":{
+          "shape":"VideoAssetProcessingConfiguration",
+          "documentation":"<p>Video asset processing configuration</p>"
+        }
+      },
+      "documentation":"<p>Config containing asset processing related knobs for all modalities</p>"
+    },
+    "AutomationJobStatus":{
+      "type":"string",
+      "documentation":"<p>List of status supported by automation jobs</p>",
+      "enum":[
+        "Created",
+        "InProgress",
+        "Success",
+        "ServiceError",
+        "ClientError"
+      ]
+    },
+    "Blueprint":{
+      "type":"structure",
+      "required":["blueprintArn"],
+      "members":{
+        "blueprintArn":{
+          "shape":"BlueprintArn",
+          "documentation":"<p>Arn of blueprint.</p>"
+        },
+        "version":{
+          "shape":"BlueprintVersion",
+          "documentation":"<p>Version of blueprint.</p>"
+        },
+        "stage":{
+          "shape":"BlueprintStage",
+          "documentation":"<p>Stage of blueprint.</p>"
+        }
+      },
+      "documentation":"<p>Structure for single blueprint entity.</p>"
+    },
+    "BlueprintArn":{
+      "type":"string",
+      "documentation":"<p>ARN of a Blueprint</p>",
+      "max":128,
+      "min":0,
+      "pattern":"arn:aws(|-cn|-us-gov):bedrock:[a-zA-Z0-9-]*:(aws|[0-9]{12}):blueprint/(bedrock-data-insights-public-[a-zA-Z0-9-_]{1,30}|bedrock-data-automation-public-[a-zA-Z0-9-_]{1,30}|[a-zA-Z0-9-]{12,36})"
+    },
+    "BlueprintList":{
+      "type":"list",
+      "member":{
+        "shape":"Blueprint",
+        "documentation":"<p>Blueprint.</p>"
+      },
+      "documentation":"<p>Blueprint list.</p>",
+      "max":40,
+      "min":1
+    },
+    "BlueprintStage":{
+      "type":"string",
+      "documentation":"<p>Blueprint stage enum.</p>",
+      "enum":[
+        "DEVELOPMENT",
+        "LIVE"
+      ]
+    },
+    "BlueprintVersion":{
+      "type":"string",
+      "documentation":"<p>Blueprint version.</p>",
+      "max":128,
+      "min":1,
+      "pattern":"[0-9]*"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "DataAutomationArn":{
+      "type":"string",
+      "documentation":"<p>Data automation arn.</p>",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws(|-cn|-us-gov):bedrock:[a-zA-Z0-9-]*:(aws|[0-9]{12}):data-automation-project/[a-zA-Z0-9-_]+"
+    },
+    "DataAutomationConfiguration":{
+      "type":"structure",
+      "required":["dataAutomationProjectArn"],
+      "members":{
+        "dataAutomationProjectArn":{
+          "shape":"DataAutomationArn",
+          "documentation":"<p>Data automation project arn.</p>"
+        },
+        "stage":{
+          "shape":"DataAutomationStage",
+          "documentation":"<p>Data automation stage.</p>"
+        }
+      },
+      "documentation":"<p>Data automation configuration.</p>"
+    },
+    "DataAutomationProfileArn":{
+      "type":"string",
+      "documentation":"<p>Data automation profile arn.</p>",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws(|-cn|-us-gov):bedrock:[a-zA-Z0-9-]*:(aws|[0-9]{12}):data-automation-profile/[a-zA-Z0-9-_.]+"
+    },
+    "DataAutomationStage":{
+      "type":"string",
+      "documentation":"<p>Data automation stage.</p>",
+      "enum":[
+        "LIVE",
+        "DEVELOPMENT"
+      ]
+    },
+    "EncryptionConfiguration":{
+      "type":"structure",
+      "required":["kmsKeyId"],
+      "members":{
+        "kmsKeyId":{
+          "shape":"KMSKeyId",
+          "documentation":"<p>Customer KMS key used for encryption</p>"
+        },
+        "kmsEncryptionContext":{
+          "shape":"EncryptionContextMap",
+          "documentation":"<p>KMS encryption context.</p>"
+        }
+      },
+      "documentation":"<p>Encryption configuration.</p>"
+    },
+    "EncryptionContextKey":{
+      "type":"string",
+      "documentation":"<p>Excryption context key.</p>",
+      "max":2000,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "EncryptionContextMap":{
+      "type":"map",
+      "key":{"shape":"EncryptionContextKey"},
+      "value":{"shape":"EncryptionContextValue"},
+      "max":10,
+      "min":1
+    },
+    "EncryptionContextValue":{
+      "type":"string",
+      "documentation":"<p>Encryption context value.</p>",
+      "max":2000,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "EventBridgeConfiguration":{
+      "type":"structure",
+      "required":["eventBridgeEnabled"],
+      "members":{
+        "eventBridgeEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Event bridge flag.</p>"
+        }
+      },
+      "documentation":"<p>Event bridge configuration.</p>"
+    },
+    "GetDataAutomationStatusRequest":{
+      "type":"structure",
+      "required":["invocationArn"],
+      "members":{
+        "invocationArn":{
+          "shape":"InvocationArn",
+          "documentation":"<p>Invocation arn.</p>"
+        }
+      },
+      "documentation":"<p>Structure for request of GetDataAutomationStatus API.</p>"
+    },
+    "GetDataAutomationStatusResponse":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"AutomationJobStatus",
+          "documentation":"<p>Job Status.</p>"
+        },
+        "errorType":{
+          "shape":"String",
+          "documentation":"<p>Error Type.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>Error Message.</p>"
+        },
+        "outputConfiguration":{
+          "shape":"OutputConfiguration",
+          "documentation":"<p>Output configuration.</p>"
+        }
+      },
+      "documentation":"<p>Response of GetDataAutomationStatus API.</p>"
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "documentation":"<p>Client specified token used for idempotency checks</p>",
+      "max":256,
+      "min":1,
+      "pattern":"[a-zA-Z0-9](-*[a-zA-Z0-9])*"
+    },
+    "InputConfiguration":{
+      "type":"structure",
+      "required":["s3Uri"],
+      "members":{
+        "s3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>S3 uri.</p>"
+        },
+        "assetProcessingConfiguration":{
+          "shape":"AssetProcessingConfiguration",
+          "documentation":"<p>Asset processing configuration</p>"
+        }
+      },
+      "documentation":"<p>Input configuration.</p>"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception is for any internal un-expected service errors.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "InvocationArn":{
+      "type":"string",
+      "documentation":"<p>Invocation arn.</p>",
+      "max":128,
+      "min":1,
+      "pattern":"arn:aws(|-cn|-us-gov):bedrock:[a-zA-Z0-9-]*:[0-9]{12}:(insights-invocation|data-automation-invocation)/[a-zA-Z0-9-_]+"
+    },
+    "InvokeDataAutomationAsyncRequest":{
+      "type":"structure",
+      "required":[
+        "inputConfiguration",
+        "outputConfiguration",
+        "dataAutomationProfileArn"
+      ],
+      "members":{
+        "clientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>Idempotency token.</p>",
+          "idempotencyToken":true
+        },
+        "inputConfiguration":{
+          "shape":"InputConfiguration",
+          "documentation":"<p>Input configuration.</p>"
+        },
+        "outputConfiguration":{
+          "shape":"OutputConfiguration",
+          "documentation":"<p>Output configuration.</p>"
+        },
+        "dataAutomationConfiguration":{
+          "shape":"DataAutomationConfiguration",
+          "documentation":"<p>Data automation configuration.</p>"
+        },
+        "encryptionConfiguration":{
+          "shape":"EncryptionConfiguration",
+          "documentation":"<p>Encryption configuration.</p>"
+        },
+        "notificationConfiguration":{
+          "shape":"NotificationConfiguration",
+          "documentation":"<p>Notification configuration.</p>"
+        },
+        "blueprints":{
+          "shape":"BlueprintList",
+          "documentation":"<p>Blueprint list.</p>"
+        },
+        "dataAutomationProfileArn":{
+          "shape":"DataAutomationProfileArn",
+          "documentation":"<p>Data automation profile ARN</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>List of tags.</p>"
+        }
+      },
+      "documentation":"<p>Invoke Data Automation Async Request</p>"
+    },
+    "InvokeDataAutomationAsyncResponse":{
+      "type":"structure",
+      "required":["invocationArn"],
+      "members":{
+        "invocationArn":{
+          "shape":"InvocationArn",
+          "documentation":"<p>ARN of the automation job</p>"
+        }
+      },
+      "documentation":"<p>Invoke Data Automation Async Response</p>"
+    },
+    "KMSKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]+"
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceARN"],
+      "members":{
+        "resourceARN":{"shape":"TaggableResourceArn"}
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "NonBlankString":{
+      "type":"string",
+      "pattern":"[\\s\\S]*"
+    },
+    "NotificationConfiguration":{
+      "type":"structure",
+      "required":["eventBridgeConfiguration"],
+      "members":{
+        "eventBridgeConfiguration":{
+          "shape":"EventBridgeConfiguration",
+          "documentation":"<p>Event bridge configuration.</p>"
+        }
+      },
+      "documentation":"<p>Notification configuration.</p>"
+    },
+    "OutputConfiguration":{
+      "type":"structure",
+      "required":["s3Uri"],
+      "members":{
+        "s3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>S3 uri.</p>"
+        }
+      },
+      "documentation":"<p>Output configuration.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception will be thrown when resource provided from customer not found.</p>",
+      "exception":true
+    },
+    "S3Uri":{
+      "type":"string",
+      "documentation":"<p>A path in S3</p>",
+      "max":1024,
+      "min":1,
+      "pattern":"s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/[^\\x00-\\x1F\\x7F\\{^}%`\\]\">\\[~<#|]*)?"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception will be thrown when service quota is exceeded.</p>",
+      "exception":true
+    },
+    "String":{"type":"string"},
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{"shape":"TagKey"},
+        "value":{"shape":"TagValue"}
+      },
+      "documentation":"<p>Key value pair of a tag</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "documentation":"<p>Defines the context of the tag.</p>",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "documentation":"<p>List of tag keys</p>",
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "documentation":"<p>List of tags</p>",
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tags"
+      ],
+      "members":{
+        "resourceARN":{"shape":"TaggableResourceArn"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "documentation":"<p>Defines the value within the context. e.g. &lt;key=reason, value=training&gt;.</p>",
+      "max":256,
+      "min":0,
+      "pattern":"([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)"
+    },
+    "TaggableResourceArn":{
+      "type":"string",
+      "documentation":"<p>ARN of a taggable resource</p>",
+      "max":1011,
+      "min":20,
+      "pattern":"arn:aws(|-cn|-us-gov):bedrock:[a-zA-Z0-9-]*:[0-9]{12}:data-automation-invocation/[a-zA-Z0-9-_]+"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception will be thrown when customer reached API TPS limit.</p>",
+      "exception":true
+    },
+    "TimestampSegment":{
+      "type":"structure",
+      "required":[
+        "startTimeMillis",
+        "endTimeMillis"
+      ],
+      "members":{
+        "startTimeMillis":{
+          "shape":"TimestampSegmentStartTimeMillisLong",
+          "documentation":"<p>Start timestamp in milliseconds</p>"
+        },
+        "endTimeMillis":{
+          "shape":"TimestampSegmentEndTimeMillisLong",
+          "documentation":"<p>End timestamp in milliseconds</p>"
+        }
+      },
+      "documentation":"<p>Timestamp segment</p>"
+    },
+    "TimestampSegmentEndTimeMillisLong":{
+      "type":"long",
+      "box":true,
+      "min":300000
+    },
+    "TimestampSegmentStartTimeMillisLong":{
+      "type":"long",
+      "box":true,
+      "min":0
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceARN",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceARN":{"shape":"TaggableResourceArn"},
+        "tagKeys":{"shape":"TagKeyList"}
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"NonBlankString"}
+      },
+      "documentation":"<p>This exception will be thrown when customer provided invalid parameters.</p>",
+      "exception":true
+    },
+    "VideoAssetProcessingConfiguration":{
+      "type":"structure",
+      "members":{
+        "segmentConfiguration":{
+          "shape":"VideoSegmentConfiguration",
+          "documentation":"<p>Delimits the segment of the input that will be processed</p>"
+        }
+      },
+      "documentation":"<p>Video asset processing configuration</p>"
+    },
+    "VideoSegmentConfiguration":{
+      "type":"structure",
+      "members":{
+        "timestampSegment":{
+          "shape":"TimestampSegment",
+          "documentation":"<p>Timestamp segment</p>"
+        }
+      },
+      "documentation":"<p>Delimits the segment of the input that will be processed</p>",
+      "union":true
+    }
+  },
+  "documentation":"<p>Amazon Bedrock Data Automation Runtime</p>"
+}

@@ -1,0 +1,2210 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-04-19",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"networkflowmonitor",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Network Flow Monitor",
+    "serviceId":"NetworkFlowMonitor",
+    "signatureVersion":"v4",
+    "signingName":"networkflowmonitor",
+    "uid":"networkflowmonitor-2023-04-19"
+  },
+  "operations":{
+    "CreateMonitor":{
+      "name":"CreateMonitor",
+      "http":{
+        "method":"POST",
+        "requestUri":"/monitors",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateMonitorInput"},
+      "output":{"shape":"CreateMonitorOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Create a monitor for specific network flows between local and remote resources, so that you can monitor network performance for one or several of your workloads. For each monitor, Network Flow Monitor publishes detailed end-to-end performance metrics and a network health indicator (NHI) that informs you whether there were Amazon Web Services network issues for one or more of the network flows tracked by a monitor, during a time period that you choose. </p>",
+      "idempotent":true
+    },
+    "CreateScope":{
+      "name":"CreateScope",
+      "http":{
+        "method":"POST",
+        "requestUri":"/scopes",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateScopeInput"},
+      "output":{"shape":"CreateScopeOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>In Network Flow Monitor, you specify a scope for the service to generate metrics for. By using the scope, Network Flow Monitor can generate a topology of all the resources to measure performance metrics for. When you create a scope, you enable permissions for Network Flow Monitor.</p> <p>A scope is a Region-account pair or multiple Region-account pairs. Network Flow Monitor uses your scope to determine all the resources (the topology) where Network Flow Monitor will gather network flow performance metrics for you. To provide performance metrics, Network Flow Monitor uses the data that is sent by the Network Flow Monitor agents you install on the resources.</p> <p>To define the Region-account pairs for your scope, the Network Flow Monitor API uses the following constucts, which allow for future flexibility in defining scopes:</p> <ul> <li> <p> <i>Targets</i>, which are arrays of targetResources.</p> </li> <li> <p> <i>Target resources</i>, which are Region-targetIdentifier pairs.</p> </li> <li> <p> <i>Target identifiers</i>, made up of a targetID (currently always an account ID) and a targetType (currently always an account). </p> </li> </ul>",
+      "idempotent":true
+    },
+    "DeleteMonitor":{
+      "name":"DeleteMonitor",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteMonitorInput"},
+      "output":{"shape":"DeleteMonitorOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a monitor in Network Flow Monitor.</p>",
+      "idempotent":true
+    },
+    "DeleteScope":{
+      "name":"DeleteScope",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/scopes/{scopeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteScopeInput"},
+      "output":{"shape":"DeleteScopeOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a scope that has been defined.</p>",
+      "idempotent":true
+    },
+    "GetMonitor":{
+      "name":"GetMonitor",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMonitorInput"},
+      "output":{"shape":"GetMonitorOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets information about a monitor in Network Flow Monitor based on a monitor name. The information returned includes the Amazon Resource Name (ARN), create time, modified time, resources included in the monitor, and status information.</p>",
+      "readonly":true
+    },
+    "GetQueryResultsMonitorTopContributors":{
+      "name":"GetQueryResultsMonitorTopContributors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors/{monitorName}/topContributorsQueries/{queryId}/results",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryResultsMonitorTopContributorsInput"},
+      "output":{"shape":"GetQueryResultsMonitorTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Return the data for a query with the Network Flow Monitor query interface. You specify the query that you want to return results for by providing a query ID and a monitor name. This query returns the top contributors for a specific monitor.</p> <p>Create a query ID for this call by calling the corresponding API call to start the query, <code>StartQueryMonitorTopContributors</code>. Use the scope ID that was returned for your account by <code>CreateScope</code>.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "GetQueryResultsWorkloadInsightsTopContributors":{
+      "name":"GetQueryResultsWorkloadInsightsTopContributors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsQueries/{queryId}/results",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryResultsWorkloadInsightsTopContributorsInput"},
+      "output":{"shape":"GetQueryResultsWorkloadInsightsTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Return the data for a query with the Network Flow Monitor query interface. You specify the query that you want to return results for by providing a query ID and a monitor name.</p> <p>This query returns the top contributors for a scope for workload insights. Workload insights provide a high level view of network flow performance data collected by agents. To return the data for the top contributors, see <code>GetQueryResultsWorkloadInsightsTopContributorsData</code>.</p> <p>Create a query ID for this call by calling the corresponding API call to start the query, <code>StartQueryWorkloadInsightsTopContributors</code>. Use the scope ID that was returned for your account by <code>CreateScope</code>.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "GetQueryResultsWorkloadInsightsTopContributorsData":{
+      "name":"GetQueryResultsWorkloadInsightsTopContributorsData",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsDataQueries/{queryId}/results",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryResultsWorkloadInsightsTopContributorsDataInput"},
+      "output":{"shape":"GetQueryResultsWorkloadInsightsTopContributorsDataOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Return the data for a query with the Network Flow Monitor query interface. Specify the query that you want to return results for by providing a query ID and a scope ID.</p> <p>This query returns the data for top contributors for workload insights for a specific scope. Workload insights provide a high level view of network flow performance data collected by agents for a scope. To return just the top contributors, see <code>GetQueryResultsWorkloadInsightsTopContributors</code>.</p> <p>Create a query ID for this call by calling the corresponding API call to start the query, <code>StartQueryWorkloadInsightsTopContributorsData</code>. Use the scope ID that was returned for your account by <code>CreateScope</code>.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p> <p>The top contributor network flows overall are for a specific metric type, for example, the number of retransmissions.</p>",
+      "readonly":true
+    },
+    "GetQueryStatusMonitorTopContributors":{
+      "name":"GetQueryStatusMonitorTopContributors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors/{monitorName}/topContributorsQueries/{queryId}/status",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryStatusMonitorTopContributorsInput"},
+      "output":{"shape":"GetQueryStatusMonitorTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the current status of a query for the Network Flow Monitor query interface, for a specified query ID and monitor. This call returns the query status for the top contributors for a monitor.</p> <p>When you create a query, use this call to check the status of the query to make sure that it has has <code>SUCCEEDED</code> before you review the results. Use the same query ID that you used for the corresponding API call to start (create) the query, <code>StartQueryMonitorTopContributors</code>.</p> <p>When you run a query, use this call to check the status of the query to make sure that the query has <code>SUCCEEDED</code> before you review the results.</p>",
+      "readonly":true
+    },
+    "GetQueryStatusWorkloadInsightsTopContributors":{
+      "name":"GetQueryStatusWorkloadInsightsTopContributors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsQueries/{queryId}/status",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryStatusWorkloadInsightsTopContributorsInput"},
+      "output":{"shape":"GetQueryStatusWorkloadInsightsTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Return the data for a query with the Network Flow Monitor query interface. Specify the query that you want to return results for by providing a query ID and a monitor name. This query returns the top contributors for workload insights.</p> <p>When you start a query, use this call to check the status of the query to make sure that it has has <code>SUCCEEDED</code> before you review the results. Use the same query ID that you used for the corresponding API call to start the query, <code>StartQueryWorkloadInsightsTopContributors</code>.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "GetQueryStatusWorkloadInsightsTopContributorsData":{
+      "name":"GetQueryStatusWorkloadInsightsTopContributorsData",
+      "http":{
+        "method":"GET",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsDataQueries/{queryId}/status",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryStatusWorkloadInsightsTopContributorsDataInput"},
+      "output":{"shape":"GetQueryStatusWorkloadInsightsTopContributorsDataOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the current status of a query for the Network Flow Monitor query interface, for a specified query ID and monitor. This call returns the query status for the top contributors data for workload insights.</p> <p>When you start a query, use this call to check the status of the query to make sure that it has has <code>SUCCEEDED</code> before you review the results. Use the same query ID that you used for the corresponding API call to start the query, <code>StartQueryWorkloadInsightsTopContributorsData</code>.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p> <p>The top contributor network flows overall are for a specific metric type, for example, the number of retransmissions.</p>",
+      "readonly":true
+    },
+    "GetScope":{
+      "name":"GetScope",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scopes/{scopeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetScopeInput"},
+      "output":{"shape":"GetScopeOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets information about a scope, including the name, status, tags, and target details. The scope in Network Flow Monitor is an account.</p>",
+      "readonly":true
+    },
+    "ListMonitors":{
+      "name":"ListMonitors",
+      "http":{
+        "method":"GET",
+        "requestUri":"/monitors",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMonitorsInput"},
+      "output":{"shape":"ListMonitorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List all monitors in an account. Optionally, you can list only monitors that have a specific status, by using the <code>STATUS</code> parameter.</p>",
+      "readonly":true
+    },
+    "ListScopes":{
+      "name":"ListScopes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/scopes",
+        "responseCode":200
+      },
+      "input":{"shape":"ListScopesInput"},
+      "output":{"shape":"ListScopesOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>List all the scopes for an account.</p>",
+      "readonly":true
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns all the tags for a resource.</p>",
+      "readonly":true
+    },
+    "StartQueryMonitorTopContributors":{
+      "name":"StartQueryMonitorTopContributors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/monitors/{monitorName}/topContributorsQueries",
+        "responseCode":200
+      },
+      "input":{"shape":"StartQueryMonitorTopContributorsInput"},
+      "output":{"shape":"StartQueryMonitorTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Create a query that you can use with the Network Flow Monitor query interface to return the top contributors for a monitor. Specify the monitor that you want to create the query for. </p> <p>The call returns a query ID that you can use with <a href=\"https://docs.aws.amazon.com/networkflowmonitor/2.0/APIReference/API_GetQueryResultsMonitorTopContributors.html\"> GetQueryResultsMonitorTopContributors</a> to run the query and return the top contributors for a specific monitor.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable APIs for the top contributors that you want to be returned.</p>"
+    },
+    "StartQueryWorkloadInsightsTopContributors":{
+      "name":"StartQueryWorkloadInsightsTopContributors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsQueries",
+        "responseCode":200
+      },
+      "input":{"shape":"StartQueryWorkloadInsightsTopContributorsInput"},
+      "output":{"shape":"StartQueryWorkloadInsightsTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Create a query with the Network Flow Monitor query interface that you can run to return workload insights top contributors. Specify the scope that you want to create a query for.</p> <p>The call returns a query ID that you can use with <a href=\"https://docs.aws.amazon.com/networkflowmonitor/2.0/APIReference/API_GetQueryResultsWorkloadInsightsTopContributors.html\"> GetQueryResultsWorkloadInsightsTopContributors</a> to run the query and return the top contributors for the workload insights for a scope.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable APIs for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "StartQueryWorkloadInsightsTopContributorsData":{
+      "name":"StartQueryWorkloadInsightsTopContributorsData",
+      "http":{
+        "method":"POST",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsDataQueries",
+        "responseCode":200
+      },
+      "input":{"shape":"StartQueryWorkloadInsightsTopContributorsDataInput"},
+      "output":{"shape":"StartQueryWorkloadInsightsTopContributorsDataOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Create a query with the Network Flow Monitor query interface that you can run to return data for workload insights top contributors. Specify the scope that you want to create a query for.</p> <p>The call returns a query ID that you can use with <a href=\"https://docs.aws.amazon.com/networkflowmonitor/2.0/APIReference/API_GetQueryResultsWorkloadInsightsTopContributorsData.html\"> GetQueryResultsWorkloadInsightsTopContributorsData</a> to run the query and return the data for the top contributors for the workload insights for a scope.</p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "StopQueryMonitorTopContributors":{
+      "name":"StopQueryMonitorTopContributors",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/monitors/{monitorName}/topContributorsQueries/{queryId}",
+        "responseCode":200
+      },
+      "input":{"shape":"StopQueryMonitorTopContributorsInput"},
+      "output":{"shape":"StopQueryMonitorTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stop a top contributors query for a monitor. Specify the query that you want to stop by providing a query ID and a monitor name. </p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "idempotent":true
+    },
+    "StopQueryWorkloadInsightsTopContributors":{
+      "name":"StopQueryWorkloadInsightsTopContributors",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsQueries/{queryId}",
+        "responseCode":200
+      },
+      "input":{"shape":"StopQueryWorkloadInsightsTopContributorsInput"},
+      "output":{"shape":"StopQueryWorkloadInsightsTopContributorsOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stop a top contributors query for workload insights. Specify the query that you want to stop by providing a query ID and a scope ID. </p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "StopQueryWorkloadInsightsTopContributorsData":{
+      "name":"StopQueryWorkloadInsightsTopContributorsData",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/workloadInsights/{scopeId}/topContributorsDataQueries/{queryId}",
+        "responseCode":200
+      },
+      "input":{"shape":"StopQueryWorkloadInsightsTopContributorsDataInput"},
+      "output":{"shape":"StopQueryWorkloadInsightsTopContributorsDataOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stop a top contributors data query for workload insights. Specify the query that you want to stop by providing a query ID and a scope ID. </p> <p>Top contributors in Network Flow Monitor are network flows with the highest values for a specific metric type. Top contributors can be across all workload insights, for a given scope, or for a specific monitor. Use the applicable call for the top contributors that you want to be returned.</p>",
+      "readonly":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a tag to a resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a tag from a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateMonitor":{
+      "name":"UpdateMonitor",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/monitors/{monitorName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateMonitorInput"},
+      "output":{"shape":"UpdateMonitorOutput"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Update a monitor to add or remove local or remote resources.</p>",
+      "idempotent":true
+    },
+    "UpdateScope":{
+      "name":"UpdateScope",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/scopes/{scopeId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateScopeInput"},
+      "output":{"shape":"UpdateScopeOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Update a scope to add or remove resources that you want to be available for Network Flow Monitor to generate metrics for, when you have active agents on those resources sending metrics reports to the Network Flow Monitor backend.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have sufficient permission to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":12,
+      "min":1,
+      "pattern":"[0-9]{12}"
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:.*"
+    },
+    "AvailabilityZone":{"type":"string"},
+    "AwsRegion":{"type":"string"},
+    "Component":{"type":"string"},
+    "ComponentType":{"type":"string"},
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The requested resource is in use.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateMonitorInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "localResources",
+        "scopeArn"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor. </p>"
+        },
+        "localResources":{
+          "shape":"CreateMonitorInputLocalResourcesList",
+          "documentation":"<p>The local resources to monitor. A local resource in a workload is the location of the host, or hosts, where the Network Flow Monitor agent is installed. For example, if a workload consists of an interaction between a web service and a backend database (for example, Amazon Dynamo DB), the subnet with the EC2 instance that hosts the web service, which also runs the agent, is the local resource.</p> <p>Be aware that all local resources must belong to the current Region.</p>"
+        },
+        "remoteResources":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources to monitor. A remote resource is the other endpoint in the bi-directional flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource.</p> <p>When you specify remote resources, be aware that specific combinations of resources are allowed and others are not, including the following constraints:</p> <ul> <li> <p>All remote resources that you specify must all belong to a single Region.</p> </li> <li> <p>If you specify Amazon Web Services services as remote resources, any other remote resources that you specify must be in the current Region.</p> </li> <li> <p>When you specify a remote resource for another Region, you can only specify the <code>Region</code> resource type. You cannot specify a subnet, VPC, or Availability Zone in another Region.</p> </li> <li> <p>If you leave the <code>RemoteResources</code> parameter empty, the monitor will include all network flows that terminate in the current Region.</p> </li> </ul>"
+        },
+        "scopeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scope for the monitor.</p>"
+        },
+        "clientToken":{
+          "shape":"UuidString",
+          "documentation":"<p>A unique, case-sensitive string of up to 64 ASCII characters that you specify to make an idempotent API request. Don't reuse the same client token for other API requests.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a monitor. You can add a maximum of 200 tags.</p>"
+        }
+      }
+    },
+    "CreateMonitorInputLocalResourcesList":{
+      "type":"list",
+      "member":{"shape":"MonitorLocalResource"},
+      "min":1
+    },
+    "CreateMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "monitorStatus",
+        "localResources",
+        "remoteResources",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor. </p>"
+        },
+        "monitorStatus":{
+          "shape":"MonitorStatus",
+          "documentation":"<p>The status of a monitor. The status can be one of the following</p> <ul> <li> <p> <code>PENDING</code>: The monitor is in the process of being created.</p> </li> <li> <p> <code>ACTIVE</code>: The monitor is active.</p> </li> <li> <p> <code>INACTIVE</code>: The monitor is inactive.</p> </li> <li> <p> <code>ERROR</code>: Monitor creation failed due to an error.</p> </li> <li> <p> <code>DELETING</code>: The monitor is in the process of being deleted.</p> </li> </ul>"
+        },
+        "localResources":{
+          "shape":"MonitorLocalResources",
+          "documentation":"<p>The local resources to monitor. A local resource in a workload is the location of hosts where the Network Flow Monitor agent is installed. </p>"
+        },
+        "remoteResources":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources to monitor. A remote resource is the other endpoint specified for the network flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource. </p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The date and time when the monitor was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The last date and time that the monitor was modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a monitor.</p>"
+        }
+      }
+    },
+    "CreateScopeInput":{
+      "type":"structure",
+      "required":["targets"],
+      "members":{
+        "targets":{
+          "shape":"CreateScopeInputTargetsList",
+          "documentation":"<p>The targets to define the scope to be monitored. A target is an array of targetResources, which are currently Region-account pairs, defined by targetResource constructs.</p>"
+        },
+        "clientToken":{
+          "shape":"UuidString",
+          "documentation":"<p>A unique, case-sensitive string of up to 64 ASCII characters that you specify to make an idempotent API request. Don't reuse the same client token for other API requests.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a scope. You can add a maximum of 200 tags.</p>"
+        }
+      }
+    },
+    "CreateScopeInputTargetsList":{
+      "type":"list",
+      "member":{"shape":"TargetResource"},
+      "max":100,
+      "min":1
+    },
+    "CreateScopeOutput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "status",
+        "scopeArn"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get metrics for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>"
+        },
+        "status":{
+          "shape":"ScopeStatus",
+          "documentation":"<p>The status for a scope. The status can be one of the following: <code>SUCCEEDED</code>, <code>IN_PROGRESS</code>, <code>FAILED</code>, <code>DEACTIVATING</code>, or <code>DEACTIVATED</code>.</p> <p>A status of <code>DEACTIVATING</code> means that you've requested a scope to be deactivated and Network Flow Monitor is in the process of deactivating the scope. A status of <code>DEACTIVATED</code> means that the deactivating process is complete.</p>"
+        },
+        "scopeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scope.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a scope.</p>"
+        }
+      }
+    },
+    "DeleteMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor to delete.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        }
+      }
+    },
+    "DeleteMonitorOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteScopeInput":{
+      "type":"structure",
+      "required":["scopeId"],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        }
+      }
+    },
+    "DeleteScopeOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "DestinationCategory":{
+      "type":"string",
+      "enum":[
+        "INTRA_AZ",
+        "INTER_AZ",
+        "INTER_VPC",
+        "UNCLASSIFIED",
+        "AMAZON_S3",
+        "AMAZON_DYNAMODB",
+        "INTER_REGION"
+      ]
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "GetMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        }
+      }
+    },
+    "GetMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "monitorStatus",
+        "localResources",
+        "remoteResources",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>"
+        },
+        "monitorStatus":{
+          "shape":"MonitorStatus",
+          "documentation":"<p>The status of a monitor. The status can be one of the following</p> <ul> <li> <p> <code>PENDING</code>: The monitor is in the process of being created.</p> </li> <li> <p> <code>ACTIVE</code>: The monitor is active.</p> </li> <li> <p> <code>INACTIVE</code>: The monitor is inactive.</p> </li> <li> <p> <code>ERROR</code>: Monitor creation failed due to an error.</p> </li> <li> <p> <code>DELETING</code>: The monitor is in the process of being deleted.</p> </li> </ul>"
+        },
+        "localResources":{
+          "shape":"MonitorLocalResources",
+          "documentation":"<p>The local resources to monitor. A local resource in a workload is the location of the hosts where the Network Flow Monitor agent is installed. </p>"
+        },
+        "remoteResources":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources to monitor. A remote resource is the other endpoint specified for the network flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource. </p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The date and time when the monitor was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The date and time when the monitor was last modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a monitor.</p>"
+        }
+      }
+    },
+    "GetQueryResultsMonitorTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "queryId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"Integer",
+          "documentation":"<p>The number of query results that you want to return with this call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "GetQueryResultsMonitorTopContributorsOutput":{
+      "type":"structure",
+      "members":{
+        "unit":{
+          "shape":"MetricUnit",
+          "documentation":"<p>The units for a metric returned by the query.</p>"
+        },
+        "topContributors":{
+          "shape":"MonitorTopContributorsRowList",
+          "documentation":"<p>The top contributor network flows overall for a specific metric type, for example, the number of retransmissions.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>"
+        }
+      }
+    },
+    "GetQueryResultsWorkloadInsightsTopContributorsDataInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"Integer",
+          "documentation":"<p>The number of query results that you want to return with this call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "GetQueryResultsWorkloadInsightsTopContributorsDataOutput":{
+      "type":"structure",
+      "required":[
+        "unit",
+        "datapoints"
+      ],
+      "members":{
+        "unit":{
+          "shape":"MetricUnit",
+          "documentation":"<p>The units for a metric returned by the query.</p>"
+        },
+        "datapoints":{
+          "shape":"WorkloadInsightsTopContributorsDataPoints",
+          "documentation":"<p>The datapoints returned by the query.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>"
+        }
+      }
+    },
+    "GetQueryResultsWorkloadInsightsTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"Integer",
+          "documentation":"<p>The number of query results that you want to return with this call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "GetQueryResultsWorkloadInsightsTopContributorsOutput":{
+      "type":"structure",
+      "members":{
+        "topContributors":{
+          "shape":"WorkloadInsightsTopContributorsRowList",
+          "documentation":"<p>The top contributor network flows overall for a specific metric type, for example, the number of retransmissions.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>"
+        }
+      }
+    },
+    "GetQueryStatusMonitorTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "queryId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "GetQueryStatusMonitorTopContributorsOutput":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"QueryStatus",
+          "documentation":"<p>When you run a query, use this call to check the status of the query to make sure that the query has <code>SUCCEEDED</code> before you review the results.</p> <ul> <li> <p> <code>QUEUED</code>: The query is scheduled to run.</p> </li> <li> <p> <code>RUNNING</code>: The query is in progress but not complete.</p> </li> <li> <p> <code>SUCCEEDED</code>: The query completed sucessfully.</p> </li> <li> <p> <code>FAILED</code>: The query failed due to an error.</p> </li> <li> <p> <code>CANCELED</code>: The query was canceled.</p> </li> </ul>"
+        }
+      }
+    },
+    "GetQueryStatusWorkloadInsightsTopContributorsDataInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account. A scope ID is returned from a <code>CreateScope</code> API call.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "GetQueryStatusWorkloadInsightsTopContributorsDataOutput":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"QueryStatus",
+          "documentation":"<p>The status of a query for top contributors data.</p> <ul> <li> <p> <code>QUEUED</code>: The query is scheduled to run.</p> </li> <li> <p> <code>RUNNING</code>: The query is in progress but not complete.</p> </li> <li> <p> <code>SUCCEEDED</code>: The query completed sucessfully.</p> </li> <li> <p> <code>FAILED</code>: The query failed due to an error.</p> </li> <li> <p> <code>CANCELED</code>: The query was canceled.</p> </li> </ul>"
+        }
+      }
+    },
+    "GetQueryStatusWorkloadInsightsTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "GetQueryStatusWorkloadInsightsTopContributorsOutput":{
+      "type":"structure",
+      "required":["status"],
+      "members":{
+        "status":{
+          "shape":"QueryStatus",
+          "documentation":"<p>When you run a query, use this call to check the status of the query to make sure that the query has <code>SUCCEEDED</code> before you review the results.</p> <ul> <li> <p> <code>QUEUED</code>: The query is scheduled to run.</p> </li> <li> <p> <code>RUNNING</code>: The query is in progress but not complete.</p> </li> <li> <p> <code>SUCCEEDED</code>: The query completed sucessfully.</p> </li> <li> <p> <code>FAILED</code>: The query failed due to an error.</p> </li> <li> <p> <code>CANCELED</code>: The query was canceled.</p> </li> </ul>"
+        }
+      }
+    },
+    "GetScopeInput":{
+      "type":"structure",
+      "required":["scopeId"],
+      "members":{
+        "scopeId":{
+          "shape":"GetScopeInputScopeIdString",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account. A scope ID is returned from a <code>CreateScope</code> API call.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        }
+      }
+    },
+    "GetScopeInputScopeIdString":{
+      "type":"string",
+      "min":1
+    },
+    "GetScopeOutput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "status",
+        "scopeArn",
+        "targets"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account. A scope ID is returned from a <code>CreateScope</code> API call.</p>"
+        },
+        "status":{
+          "shape":"ScopeStatus",
+          "documentation":"<p>The status for a scope. The status can be one of the following: <code>SUCCEEDED</code>, <code>IN_PROGRESS</code>, <code>FAILED</code>, <code>DEACTIVATING</code>, or <code>DEACTIVATED</code>.</p> <p>A status of <code>DEACTIVATING</code> means that you've requested a scope to be deactivated and Network Flow Monitor is in the process of deactivating the scope. A status of <code>DEACTIVATED</code> means that the deactivating process is complete.</p>"
+        },
+        "scopeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scope.</p>"
+        },
+        "targets":{
+          "shape":"TargetResourceList",
+          "documentation":"<p>The targets to define the scope to be monitored. A target is an array of targetResources, which are currently Region-account pairs, defined by targetResource constructs.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a scope.</p>"
+        }
+      }
+    },
+    "InstanceArn":{"type":"string"},
+    "InstanceId":{
+      "type":"string",
+      "pattern":"i-[a-zA-Z0-9]{8,32}"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An internal error occurred.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "Iso8601Timestamp":{"type":"timestamp"},
+    "KubernetesMetadata":{
+      "type":"structure",
+      "members":{
+        "localServiceName":{
+          "shape":"String",
+          "documentation":"<p>The service name for a local resource.</p>"
+        },
+        "localPodName":{
+          "shape":"String",
+          "documentation":"<p>The name of the pod for a local resource.</p>"
+        },
+        "localPodNamespace":{
+          "shape":"String",
+          "documentation":"<p>The namespace of the pod for a local resource.</p>"
+        },
+        "remoteServiceName":{
+          "shape":"String",
+          "documentation":"<p>The service name for a remote resource.</p>"
+        },
+        "remotePodName":{
+          "shape":"String",
+          "documentation":"<p>The name of the pod for a remote resource.</p>"
+        },
+        "remotePodNamespace":{
+          "shape":"String",
+          "documentation":"<p>The namespace of the pod for a remote resource.</p>"
+        }
+      },
+      "documentation":"<p>Meta data about Kubernetes resources.</p>"
+    },
+    "Limit":{
+      "type":"integer",
+      "box":true,
+      "max":500,
+      "min":1
+    },
+    "ListMonitorsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The number of query results that you want to return with this call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "monitorStatus":{
+          "shape":"MonitorStatus",
+          "documentation":"<p>The status of a monitor. The status can be one of the following</p> <ul> <li> <p> <code>PENDING</code>: The monitor is in the process of being created.</p> </li> <li> <p> <code>ACTIVE</code>: The monitor is active.</p> </li> <li> <p> <code>INACTIVE</code>: The monitor is inactive.</p> </li> <li> <p> <code>ERROR</code>: Monitor creation failed due to an error.</p> </li> <li> <p> <code>DELETING</code>: The monitor is in the process of being deleted.</p> </li> </ul>",
+          "location":"querystring",
+          "locationName":"monitorStatus"
+        }
+      }
+    },
+    "ListMonitorsOutput":{
+      "type":"structure",
+      "required":["monitors"],
+      "members":{
+        "monitors":{
+          "shape":"MonitorList",
+          "documentation":"<p>The monitors that are in an account.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>"
+        }
+      }
+    },
+    "ListScopesInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The number of query results that you want to return with this call.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListScopesOutput":{
+      "type":"structure",
+      "required":["scopes"],
+      "members":{
+        "scopes":{
+          "shape":"ScopeSummaryList",
+          "documentation":"<p>The scopes returned by the call.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of results. You receive this token from a previous call.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a resource.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "MetricUnit":{
+      "type":"string",
+      "enum":[
+        "Seconds",
+        "Microseconds",
+        "Milliseconds",
+        "Bytes",
+        "Kilobytes",
+        "Megabytes",
+        "Gigabytes",
+        "Terabytes",
+        "Bits",
+        "Kilobits",
+        "Megabits",
+        "Gigabits",
+        "Terabits",
+        "Percent",
+        "Count",
+        "Bytes/Second",
+        "Kilobytes/Second",
+        "Megabytes/Second",
+        "Gigabytes/Second",
+        "Terabytes/Second",
+        "Bits/Second",
+        "Kilobits/Second",
+        "Megabits/Second",
+        "Gigabits/Second",
+        "Terabits/Second",
+        "Count/Second",
+        "None"
+      ]
+    },
+    "MonitorArn":{
+      "type":"string",
+      "max":512,
+      "min":20,
+      "pattern":"arn:.*"
+    },
+    "MonitorList":{
+      "type":"list",
+      "member":{"shape":"MonitorSummary"}
+    },
+    "MonitorLocalResource":{
+      "type":"structure",
+      "required":[
+        "type",
+        "identifier"
+      ],
+      "members":{
+        "type":{
+          "shape":"MonitorLocalResourceType",
+          "documentation":"<p>The type of the local resource. Valid values are <code>AWS::EC2::VPC</code> <code>AWS::AvailabilityZone</code>, <code>AWS::EC2::Subnet</code>, or <code>AWS::Region</code>.</p>"
+        },
+        "identifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the local resource. For a VPC or subnet, this identifier is the VPC Amazon Resource Name (ARN) or subnet ARN. For an Availability Zone, this identifier is the AZ name, for example, us-west-2b.</p>"
+        }
+      },
+      "documentation":"<p>A local resource is the host where the agent is installed. Local resources can be a a subnet, a VPC, an Availability Zone, or an Amazon Web Services service.</p>"
+    },
+    "MonitorLocalResourceType":{
+      "type":"string",
+      "enum":[
+        "AWS::EC2::VPC",
+        "AWS::AvailabilityZone",
+        "AWS::EC2::Subnet",
+        "AWS::Region"
+      ]
+    },
+    "MonitorLocalResources":{
+      "type":"list",
+      "member":{"shape":"MonitorLocalResource"}
+    },
+    "MonitorMetric":{
+      "type":"string",
+      "enum":[
+        "ROUND_TRIP_TIME",
+        "TIMEOUTS",
+        "RETRANSMISSIONS",
+        "DATA_TRANSFERRED"
+      ]
+    },
+    "MonitorRemoteResource":{
+      "type":"structure",
+      "required":[
+        "type",
+        "identifier"
+      ],
+      "members":{
+        "type":{
+          "shape":"MonitorRemoteResourceType",
+          "documentation":"<p>The type of the remote resource. Valid values are <code>AWS::EC2::VPC</code> <code>AWS::AvailabilityZone</code>, <code>AWS::EC2::Subnet</code>, <code>AWS::AWSService</code>, or <code>AWS::Region</code>.</p>"
+        },
+        "identifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the remote resource. For a VPC or subnet, this identifier is the VPC Amazon Resource Name (ARN) or subnet ARN. For an Availability Zone, this identifier is the AZ name, for example, us-west-2b. For an Amazon Web Services Region , this identifier is the Region name, for example, us-west-2. </p>"
+        }
+      },
+      "documentation":"<p>A remote resource is the other endpoint in a network flow. That is, one endpoint is the local resource and the other is the remote resource. Remote resources can be a a subnet, a VPC, an Availability Zone, an Amazon Web Services service, or an Amazon Web Services Region.</p> <p>When a remote resource is an Amazon Web Services Region, Network Flow Monitor provides network performance measurements up to the edge of the Region that you specify.</p>"
+    },
+    "MonitorRemoteResourceType":{
+      "type":"string",
+      "enum":[
+        "AWS::EC2::VPC",
+        "AWS::AvailabilityZone",
+        "AWS::EC2::Subnet",
+        "AWS::AWSService",
+        "AWS::Region"
+      ]
+    },
+    "MonitorRemoteResources":{
+      "type":"list",
+      "member":{"shape":"MonitorRemoteResource"}
+    },
+    "MonitorStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "ACTIVE",
+        "INACTIVE",
+        "ERROR",
+        "DELETING"
+      ]
+    },
+    "MonitorSummary":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "monitorStatus"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>"
+        },
+        "monitorStatus":{
+          "shape":"MonitorStatus",
+          "documentation":"<p>The status of a monitor. The status can be one of the following</p> <ul> <li> <p> <code>PENDING</code>: The monitor is in the process of being created.</p> </li> <li> <p> <code>ACTIVE</code>: The monitor is active.</p> </li> <li> <p> <code>INACTIVE</code>: The monitor is inactive.</p> </li> <li> <p> <code>ERROR</code>: Monitor creation failed due to an error.</p> </li> <li> <p> <code>DELETING</code>: The monitor is in the process of being deleted.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>A summary of information about a monitor, including the ARN, the name, and the status.</p>"
+    },
+    "MonitorTopContributorsRow":{
+      "type":"structure",
+      "members":{
+        "localIp":{
+          "shape":"String",
+          "documentation":"<p>The IP address of the local resource for a top contributor network flow.</p>"
+        },
+        "snatIp":{
+          "shape":"String",
+          "documentation":"<p>The secure network address translation (SNAT) IP address for a top contributor network flow.</p>"
+        },
+        "localInstanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The instance identifier for the local resource for a top contributor network flow.</p>"
+        },
+        "localVpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The VPC ID for a top contributor network flow for the local resource.</p>"
+        },
+        "localRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>The Amazon Web Services Region for the local resource for a top contributor network flow.</p>"
+        },
+        "localAz":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p>The Availability Zone for the local resource for a top contributor network flow.</p>"
+        },
+        "localSubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>The subnet ID for the local resource for a top contributor network flow.</p>"
+        },
+        "targetPort":{
+          "shape":"Integer",
+          "documentation":"<p>The target port.</p>"
+        },
+        "destinationCategory":{
+          "shape":"DestinationCategory",
+          "documentation":"<p>The destination category for a top contributors row. Destination categories can be one of the following: </p> <ul> <li> <p> <code>INTRA_AZ</code>: Top contributor network flows within a single Availability Zone</p> </li> <li> <p> <code>INTER_AZ</code>: Top contributor network flows between Availability Zones</p> </li> <li> <p> <code>INTER_REGION</code>: Top contributor network flows between Regions (to the edge of another Region)</p> </li> <li> <p> <code>INTER_VPC</code>: Top contributor network flows between VPCs</p> </li> <li> <p> <code>AWS_SERVICES</code>: Top contributor network flows to or from Amazon Web Services services</p> </li> <li> <p> <code>UNCLASSIFIED</code>: Top contributor network flows that do not have a bucket classification</p> </li> </ul>"
+        },
+        "remoteVpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The VPC ID for a top contributor network flow for the remote resource.</p>"
+        },
+        "remoteRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>The Amazon Web Services Region for the remote resource for a top contributor network flow.</p>"
+        },
+        "remoteAz":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p>The Availability Zone for the remote resource for a top contributor network flow.</p>"
+        },
+        "remoteSubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>The subnet ID for the remote resource for a top contributor network flow.</p>"
+        },
+        "remoteInstanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The instance identifier for the remote resource for a top contributor network flow.</p>"
+        },
+        "remoteIp":{
+          "shape":"String",
+          "documentation":"<p>The IP address of the remote resource for a top contributor network flow.</p>"
+        },
+        "dnatIp":{
+          "shape":"String",
+          "documentation":"<p>The destination network address translation (DNAT) IP address for a top contributor network flow.</p>"
+        },
+        "value":{
+          "shape":"Long",
+          "documentation":"<p>The value of the metric for a top contributor network flow.</p>"
+        },
+        "traversedConstructs":{
+          "shape":"TraversedConstructsList",
+          "documentation":"<p>The constructs traversed by a network flow.</p>"
+        },
+        "kubernetesMetadata":{
+          "shape":"KubernetesMetadata",
+          "documentation":"<p>Meta data about Kubernetes resources.</p>"
+        },
+        "localInstanceArn":{
+          "shape":"InstanceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a local resource.</p>"
+        },
+        "localSubnetArn":{
+          "shape":"SubnetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a local subnet.</p>"
+        },
+        "localVpcArn":{
+          "shape":"VpcArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a local VPC.</p>"
+        },
+        "remoteInstanceArn":{
+          "shape":"InstanceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a remote resource.</p>"
+        },
+        "remoteSubnetArn":{
+          "shape":"SubnetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a remote subnet.</p>"
+        },
+        "remoteVpcArn":{
+          "shape":"VpcArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a remote VPC.</p>"
+        }
+      },
+      "documentation":"<p>A set of information for a top contributor network flow in a monitor. In a monitor, Network Flow Monitor returns information about the network flows for top contributors for each metric. Top contributors are network flows with the top values for each metric type.</p>"
+    },
+    "MonitorTopContributorsRowList":{
+      "type":"list",
+      "member":{"shape":"MonitorTopContributorsRow"}
+    },
+    "QueryStatus":{
+      "type":"string",
+      "enum":[
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELED"
+      ]
+    },
+    "ResourceName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_.-]+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request specifies a resource that doesn't exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ScopeId":{"type":"string"},
+    "ScopeStatus":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "IN_PROGRESS",
+        "FAILED",
+        "DEACTIVATING",
+        "DEACTIVATED"
+      ]
+    },
+    "ScopeSummary":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "status",
+        "scopeArn"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources that you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for the accounts in a scope.</p>"
+        },
+        "status":{
+          "shape":"ScopeStatus",
+          "documentation":"<p>The status for a scope. The status can be one of the following: <code>SUCCEEDED</code>, <code>IN_PROGRESS</code>, <code>FAILED</code>, <code>DEACTIVATING</code>, or <code>DEACTIVATED</code>.</p> <p>A status of <code>DEACTIVATING</code> means that you've requested a scope to be deactivated and Network Flow Monitor is in the process of deactivating the scope. A status of <code>DEACTIVATED</code> means that the deactivating process is complete.</p>"
+        },
+        "scopeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scope.</p>"
+        }
+      },
+      "documentation":"<p>A summary of information about a scope, including the ARN, target ID, and Amazon Web Services Region.</p>"
+    },
+    "ScopeSummaryList":{
+      "type":"list",
+      "member":{"shape":"ScopeSummary"}
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request exceeded a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "StartQueryMonitorTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "startTime",
+        "endTime",
+        "metricName",
+        "destinationCategory"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time that is the beginning of the period that you want to retrieve results for with your query.</p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time end of the period that you want to retrieve results for with your query.</p>"
+        },
+        "metricName":{
+          "shape":"MonitorMetric",
+          "documentation":"<p>The metric that you want to query top contributors for. That is, you can specify a metric with this call and return the top contributor network flows, for that type of metric, for a monitor and (optionally) within a specific category, such as network flows between Availability Zones.</p>"
+        },
+        "destinationCategory":{
+          "shape":"DestinationCategory",
+          "documentation":"<p>The category that you want to query top contributors for, for a specific monitor. Destination categories can be one of the following: </p> <ul> <li> <p> <code>INTRA_AZ</code>: Top contributor network flows within a single Availability Zone</p> </li> <li> <p> <code>INTER_AZ</code>: Top contributor network flows between Availability Zones</p> </li> <li> <p> <code>INTER_REGION</code>: Top contributor network flows between Regions (to the edge of another Region)</p> </li> <li> <p> <code>INTER_VPC</code>: Top contributor network flows between VPCs</p> </li> <li> <p> <code>AMAZON_S3</code>: Top contributor network flows to or from Amazon S3</p> </li> <li> <p> <code>AMAZON_DYNAMODB</code>: Top contributor network flows to or from Amazon Dynamo DB</p> </li> <li> <p> <code>UNCLASSIFIED</code>: Top contributor network flows that do not have a bucket classification</p> </li> </ul>"
+        },
+        "limit":{
+          "shape":"Limit",
+          "documentation":"<p>The maximum number of top contributors to return.</p>"
+        }
+      }
+    },
+    "StartQueryMonitorTopContributorsOutput":{
+      "type":"structure",
+      "required":["queryId"],
+      "members":{
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>"
+        }
+      }
+    },
+    "StartQueryWorkloadInsightsTopContributorsDataInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "startTime",
+        "endTime",
+        "metricName",
+        "destinationCategory"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time that is the beginning of the period that you want to retrieve results for with your query.</p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time end of the period that you want to retrieve results for with your query.</p>"
+        },
+        "metricName":{
+          "shape":"WorkloadInsightsMetric",
+          "documentation":"<p>The metric that you want to query top contributors for. That is, you can specify this metric to return the top contributor network flows, for this type of metric, for a monitor and (optionally) within a specific category, such as network flows between Availability Zones.</p>"
+        },
+        "destinationCategory":{
+          "shape":"DestinationCategory",
+          "documentation":"<p>The destination category for a top contributors. Destination categories can be one of the following: </p> <ul> <li> <p> <code>INTRA_AZ</code>: Top contributor network flows within a single Availability Zone</p> </li> <li> <p> <code>INTER_AZ</code>: Top contributor network flows between Availability Zones</p> </li> <li> <p> <code>INTER_REGION</code>: Top contributor network flows between Regions (to the edge of another Region)</p> </li> <li> <p> <code>INTER_VPC</code>: Top contributor network flows between VPCs</p> </li> <li> <p> <code>AWS_SERVICES</code>: Top contributor network flows to or from Amazon Web Services services</p> </li> <li> <p> <code>UNCLASSIFIED</code>: Top contributor network flows that do not have a bucket classification</p> </li> </ul>"
+        }
+      }
+    },
+    "StartQueryWorkloadInsightsTopContributorsDataOutput":{
+      "type":"structure",
+      "required":["queryId"],
+      "members":{
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>"
+        }
+      }
+    },
+    "StartQueryWorkloadInsightsTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "startTime",
+        "endTime",
+        "metricName",
+        "destinationCategory"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account. A scope ID is returned from a <code>CreateScope</code> API call.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "startTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time that is the beginning of the period that you want to retrieve results for with your query.</p>"
+        },
+        "endTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp that is the date and time end of the period that you want to retrieve results for with your query.</p>"
+        },
+        "metricName":{
+          "shape":"WorkloadInsightsMetric",
+          "documentation":"<p>The metric that you want to query top contributors for. That is, you can specify this metric to return the top contributor network flows, for this type of metric, for a monitor and (optionally) within a specific category, such as network flows between Availability Zones.</p>"
+        },
+        "destinationCategory":{
+          "shape":"DestinationCategory",
+          "documentation":"<p>The destination category for a top contributors row. Destination categories can be one of the following: </p> <ul> <li> <p> <code>INTRA_AZ</code>: Top contributor network flows within a single Availability Zone</p> </li> <li> <p> <code>INTER_AZ</code>: Top contributor network flows between Availability Zones</p> </li> <li> <p> <code>INTER_REGION</code>: Top contributor network flows between Regions (to the edge of another Region)</p> </li> <li> <p> <code>INTER_VPC</code>: Top contributor network flows between VPCs</p> </li> <li> <p> <code>AWS_SERVICES</code>: Top contributor network flows to or from Amazon Web Services services</p> </li> <li> <p> <code>UNCLASSIFIED</code>: Top contributor network flows that do not have a bucket classification</p> </li> </ul>"
+        },
+        "limit":{
+          "shape":"Limit",
+          "documentation":"<p>The maximum number of top contributors to return.</p>"
+        }
+      }
+    },
+    "StartQueryWorkloadInsightsTopContributorsOutput":{
+      "type":"structure",
+      "required":["queryId"],
+      "members":{
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to start a query.</p>"
+        }
+      }
+    },
+    "StopQueryMonitorTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "monitorName",
+        "queryId"
+      ],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "StopQueryMonitorTopContributorsOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "StopQueryWorkloadInsightsTopContributorsDataInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "StopQueryWorkloadInsightsTopContributorsDataOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "StopQueryWorkloadInsightsTopContributorsInput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "queryId"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The identifier for the query. A query ID is an internally-generated identifier for a specific query returned from an API call to create a query.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "StopQueryWorkloadInsightsTopContributorsOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "String":{"type":"string"},
+    "SubnetArn":{"type":"string"},
+    "SubnetId":{
+      "type":"string",
+      "pattern":"subnet-[a-zA-Z0-9]{8,32}"
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TargetId":{
+      "type":"structure",
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The identifier for the account for a target.</p>"
+        }
+      },
+      "documentation":"<p>A target ID is an internally-generated identifier for a target. A target allows you to identify all the resources in a Network Flow Monitor scope. Currently, a target is always an Amazon Web Services account.</p>",
+      "union":true
+    },
+    "TargetIdentifier":{
+      "type":"structure",
+      "required":[
+        "targetId",
+        "targetType"
+      ],
+      "members":{
+        "targetId":{
+          "shape":"TargetId",
+          "documentation":"<p>The identifier for a target, which is currently always an account ID .</p>"
+        },
+        "targetType":{
+          "shape":"TargetType",
+          "documentation":"<p>The type of a target. A target type is currently always <code>ACCOUNT</code>.</p>"
+        }
+      },
+      "documentation":"<p>A target identifier is a pair of identifying information for a scope that is included in a target. A target identifier is made up of a target ID and a target type. Currently the target ID is always an account ID and the target type is always ACCOUNT.</p>"
+    },
+    "TargetResource":{
+      "type":"structure",
+      "required":[
+        "targetIdentifier",
+        "region"
+      ],
+      "members":{
+        "targetIdentifier":{
+          "shape":"TargetIdentifier",
+          "documentation":"<p>A target identifier is a pair of identifying information for a scope. A target identifier is made up of a targetID (currently always an account ID) and a targetType (currently always an account).</p>"
+        },
+        "region":{
+          "shape":"AwsRegion",
+          "documentation":"<p>The Amazon Web Services Region for the scope.</p>"
+        }
+      },
+      "documentation":"<p>A target resource in a scope. The resource is identified by a Region and an account, defined by a target identifier. A target identifier is made up of a target ID (currently always an account ID) and a target type (currently always <code>ACCOUNT</code>).</p>"
+    },
+    "TargetResourceList":{
+      "type":"list",
+      "member":{"shape":"TargetResource"}
+    },
+    "TargetType":{
+      "type":"string",
+      "enum":["ACCOUNT"]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "TraversedComponent":{
+      "type":"structure",
+      "members":{
+        "componentId":{
+          "shape":"Component",
+          "documentation":"<p>The identifier for the traversed component.</p>"
+        },
+        "componentType":{
+          "shape":"ComponentType",
+          "documentation":"<p>The type of component that was traversed.</p>"
+        },
+        "componentArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a traversed component.</p>"
+        },
+        "serviceName":{
+          "shape":"String",
+          "documentation":"<p>The service name for the traversed component.</p>"
+        }
+      },
+      "documentation":"<p>A section of the network that a network flow has traveled through.</p>"
+    },
+    "TraversedConstructsList":{
+      "type":"list",
+      "member":{"shape":"TraversedComponent"}
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Keys that you specified when you tagged a resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateMonitorInput":{
+      "type":"structure",
+      "required":["monitorName"],
+      "members":{
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>",
+          "location":"uri",
+          "locationName":"monitorName"
+        },
+        "localResourcesToAdd":{
+          "shape":"MonitorLocalResources",
+          "documentation":"<p>Additional local resources to specify network flows for a monitor, as an array of resources with identifiers and types. A local resource in a workload is the location of hosts where the Network Flow Monitor agent is installed. </p>"
+        },
+        "localResourcesToRemove":{
+          "shape":"MonitorLocalResources",
+          "documentation":"<p>The local resources to remove, as an array of resources with identifiers and types.</p>"
+        },
+        "remoteResourcesToAdd":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources to add, as an array of resources with identifiers and types.</p> <p>A remote resource is the other endpoint in the flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource. </p>"
+        },
+        "remoteResourcesToRemove":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources to remove, as an array of resources with identifiers and types.</p> <p>A remote resource is the other endpoint specified for the network flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource. </p>"
+        },
+        "clientToken":{
+          "shape":"UuidString",
+          "documentation":"<p>A unique, case-sensitive string of up to 64 ASCII characters that you specify to make an idempotent API request. Don't reuse the same client token for other API requests.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateMonitorOutput":{
+      "type":"structure",
+      "required":[
+        "monitorArn",
+        "monitorName",
+        "monitorStatus",
+        "localResources",
+        "remoteResources",
+        "createdAt",
+        "modifiedAt"
+      ],
+      "members":{
+        "monitorArn":{
+          "shape":"MonitorArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the monitor.</p>"
+        },
+        "monitorName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the monitor.</p>"
+        },
+        "monitorStatus":{
+          "shape":"MonitorStatus",
+          "documentation":"<p>The status of a monitor. The status can be one of the following</p> <ul> <li> <p> <code>PENDING</code>: The monitor is in the process of being created.</p> </li> <li> <p> <code>ACTIVE</code>: The monitor is active.</p> </li> <li> <p> <code>INACTIVE</code>: The monitor is inactive.</p> </li> <li> <p> <code>ERROR</code>: Monitor creation failed due to an error.</p> </li> <li> <p> <code>DELETING</code>: The monitor is in the process of being deleted.</p> </li> </ul>"
+        },
+        "localResources":{
+          "shape":"MonitorLocalResources",
+          "documentation":"<p>The local resources to monitor. A local resource in a workload is the location of hosts where the Network Flow Monitor agent is installed. </p>"
+        },
+        "remoteResources":{
+          "shape":"MonitorRemoteResources",
+          "documentation":"<p>The remote resources updated for a monitor, as an array of resources with identifiers and types.</p> <p>A remote resource is the other endpoint specified for the network flow of a workload, with a local resource. For example, Amazon Dynamo DB can be a remote resource.</p>"
+        },
+        "createdAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The date and time when the monitor was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"Iso8601Timestamp",
+          "documentation":"<p>The last date and time that the monitor was modified.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a monitor.</p>"
+        }
+      }
+    },
+    "UpdateScopeInput":{
+      "type":"structure",
+      "required":["scopeId"],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>",
+          "location":"uri",
+          "locationName":"scopeId"
+        },
+        "resourcesToAdd":{
+          "shape":"UpdateScopeInputResourcesToAddList",
+          "documentation":"<p>A list of resources to add to a scope.</p>"
+        },
+        "resourcesToDelete":{
+          "shape":"UpdateScopeInputResourcesToDeleteList",
+          "documentation":"<p>A list of resources to delete from a scope.</p>"
+        }
+      }
+    },
+    "UpdateScopeInputResourcesToAddList":{
+      "type":"list",
+      "member":{"shape":"TargetResource"},
+      "max":99,
+      "min":1
+    },
+    "UpdateScopeInputResourcesToDeleteList":{
+      "type":"list",
+      "member":{"shape":"TargetResource"},
+      "max":99,
+      "min":1
+    },
+    "UpdateScopeOutput":{
+      "type":"structure",
+      "required":[
+        "scopeId",
+        "status",
+        "scopeArn"
+      ],
+      "members":{
+        "scopeId":{
+          "shape":"ScopeId",
+          "documentation":"<p>The identifier for the scope that includes the resources you want to get data results for. A scope ID is an internally-generated identifier that includes all the resources for a specific root account.</p>"
+        },
+        "status":{
+          "shape":"ScopeStatus",
+          "documentation":"<p>The status for a scope. The status can be one of the following: <code>SUCCEEDED</code>, <code>IN_PROGRESS</code>, <code>FAILED</code>, <code>DEACTIVATING</code>, or <code>DEACTIVATED</code>.</p> <p>A status of <code>DEACTIVATING</code> means that you've requested a scope to be deactivated and Network Flow Monitor is in the process of deactivating the scope. A status of <code>DEACTIVATED</code> means that the deactivating process is complete.</p>"
+        },
+        "scopeArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the scope.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags for a scope.</p>"
+        }
+      }
+    },
+    "UuidString":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Invalid request.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VpcArn":{"type":"string"},
+    "VpcId":{
+      "type":"string",
+      "pattern":"vpc-[a-zA-Z0-9]{8,32}"
+    },
+    "WorkloadInsightsMetric":{
+      "type":"string",
+      "enum":[
+        "TIMEOUTS",
+        "RETRANSMISSIONS",
+        "DATA_TRANSFERRED"
+      ]
+    },
+    "WorkloadInsightsTopContributorsDataPoint":{
+      "type":"structure",
+      "required":[
+        "timestamps",
+        "values",
+        "label"
+      ],
+      "members":{
+        "timestamps":{
+          "shape":"WorkloadInsightsTopContributorsTimestampsList",
+          "documentation":"<p>An array of the timestamps for the data point.</p>"
+        },
+        "values":{
+          "shape":"WorkloadInsightsTopContributorsValuesList",
+          "documentation":"<p>The values for the data point.</p>"
+        },
+        "label":{
+          "shape":"String",
+          "documentation":"<p>The label identifying the data point.</p>"
+        }
+      },
+      "documentation":"<p>A data point for a top contributor network flow in a scope. Network Flow Monitor returns information about the network flows with the top values for each metric type, which are called top contributors.</p>"
+    },
+    "WorkloadInsightsTopContributorsDataPoints":{
+      "type":"list",
+      "member":{"shape":"WorkloadInsightsTopContributorsDataPoint"}
+    },
+    "WorkloadInsightsTopContributorsRow":{
+      "type":"structure",
+      "members":{
+        "accountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The account ID for a specific row of data.</p>"
+        },
+        "localSubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>The subnet identifier for the local resource.</p>"
+        },
+        "localAz":{
+          "shape":"AvailabilityZone",
+          "documentation":"<p>The identifier for the Availability Zone where the local resource is located.</p>"
+        },
+        "localVpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The identifier for the VPC for the local resource.</p>"
+        },
+        "localRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>The Amazon Web Services Region where the local resource is located.</p>"
+        },
+        "remoteIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The identifier of a remote resource. For a VPC or subnet, this identifier is the VPC Amazon Resource Name (ARN) or subnet ARN. For an Availability Zone, this identifier is the AZ name, for example, us-west-2b. For an Amazon Web Services Region , this identifier is the Region name, for example, us-west-2.</p>"
+        },
+        "value":{
+          "shape":"Long",
+          "documentation":"<p>The value for a metric.</p>"
+        },
+        "localSubnetArn":{
+          "shape":"SubnetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a local subnet.</p>"
+        },
+        "localVpcArn":{
+          "shape":"VpcArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a local VPC.</p>"
+        }
+      },
+      "documentation":"<p>A row for a top contributor for a scope.</p>"
+    },
+    "WorkloadInsightsTopContributorsRowList":{
+      "type":"list",
+      "member":{"shape":"WorkloadInsightsTopContributorsRow"}
+    },
+    "WorkloadInsightsTopContributorsTimestampsList":{
+      "type":"list",
+      "member":{"shape":"SyntheticTimestamp_date_time"}
+    },
+    "WorkloadInsightsTopContributorsValuesList":{
+      "type":"list",
+      "member":{"shape":"Double"}
+    }
+  },
+  "documentation":"<p>Network Flow Monitor is a feature of Amazon CloudWatch Network Monitoring that provides visibility into the performance of network flows for your Amazon Web Services workloads, between instances in subnets, as well as to and from Amazon Web Services. Lightweight agents that you install on the instances capture performance metrics for your network flows, such as packet loss and latency, and send them to the Network Flow Monitor backend. Then, you can view and analyze metrics from the top contributors for each metric type, to help troubleshoot issues.</p> <p>In addition, when you create a monitor, Network Flow Monitor provides a network health indicator (NHI) that informs you whether there were Amazon Web Services network issues for one or more of the network flows tracked by a monitor, during a time period that you choose. By using this value, you can independently determine if the Amazon Web Services network is impacting your workload during a specific time frame, to help you focus troubleshooting efforts.</p> <p>To learn more about Network Flow Monitor, see the <a href=\"https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-NetworkFlowMonitor.html\">Network Flow Monitor User Guide</a> in the Amazon CloudWatch User Guide.</p>"
+}

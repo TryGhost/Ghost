@@ -1,0 +1,2283 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-05-19",
+    "endpointPrefix":"appfabric",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"AppFabric",
+    "serviceId":"AppFabric",
+    "signatureVersion":"v4",
+    "signingName":"appfabric",
+    "uid":"appfabric-2023-05-19"
+  },
+  "operations":{
+    "BatchGetUserAccessTasks":{
+      "name":"BatchGetUserAccessTasks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/useraccess/batchget",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchGetUserAccessTasksRequest"},
+      "output":{"shape":"BatchGetUserAccessTasksResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Gets user access details in a batch request.</p> <p>This action polls data from the tasks that are kicked off by the <code>StartUserAccessTasks</code> action.</p>"
+    },
+    "ConnectAppAuthorization":{
+      "name":"ConnectAppAuthorization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations/{appAuthorizationIdentifier}/connect",
+        "responseCode":200
+      },
+      "input":{"shape":"ConnectAppAuthorizationRequest"},
+      "output":{"shape":"ConnectAppAuthorizationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Establishes a connection between Amazon Web Services AppFabric and an application, which allows AppFabric to call the APIs of the application.</p>"
+    },
+    "CreateAppAuthorization":{
+      "name":"CreateAppAuthorization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateAppAuthorizationRequest"},
+      "output":{"shape":"CreateAppAuthorizationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an app authorization within an app bundle, which allows AppFabric to connect to an application.</p>",
+      "idempotent":true
+    },
+    "CreateAppBundle":{
+      "name":"CreateAppBundle",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateAppBundleRequest"},
+      "output":{"shape":"CreateAppBundleResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an app bundle to collect data from an application using AppFabric.</p>",
+      "idempotent":true
+    },
+    "CreateIngestion":{
+      "name":"CreateIngestion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateIngestionRequest"},
+      "output":{"shape":"CreateIngestionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates a data ingestion for an application.</p>",
+      "idempotent":true
+    },
+    "CreateIngestionDestination":{
+      "name":"CreateIngestionDestination",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/ingestiondestinations",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateIngestionDestinationRequest"},
+      "output":{"shape":"CreateIngestionDestinationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an ingestion destination, which specifies how an application's ingested data is processed by Amazon Web Services AppFabric and where it's delivered.</p>",
+      "idempotent":true
+    },
+    "DeleteAppAuthorization":{
+      "name":"DeleteAppAuthorization",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations/{appAuthorizationIdentifier}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAppAuthorizationRequest"},
+      "output":{"shape":"DeleteAppAuthorizationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an app authorization. You must delete the associated ingestion before you can delete an app authorization.</p>",
+      "idempotent":true
+    },
+    "DeleteAppBundle":{
+      "name":"DeleteAppBundle",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/appbundles/{appBundleIdentifier}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteAppBundleRequest"},
+      "output":{"shape":"DeleteAppBundleResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an app bundle. You must delete all associated app authorizations before you can delete an app bundle.</p>",
+      "idempotent":true
+    },
+    "DeleteIngestion":{
+      "name":"DeleteIngestion",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteIngestionRequest"},
+      "output":{"shape":"DeleteIngestionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an ingestion. You must stop (disable) the ingestion and you must delete all associated ingestion destinations before you can delete an app ingestion.</p>",
+      "idempotent":true
+    },
+    "DeleteIngestionDestination":{
+      "name":"DeleteIngestionDestination",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/ingestiondestinations/{ingestionDestinationIdentifier}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteIngestionDestinationRequest"},
+      "output":{"shape":"DeleteIngestionDestinationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes an ingestion destination.</p> <p>This deletes the association between an ingestion and it's destination. It doesn't delete previously ingested data or the storage destination, such as the Amazon S3 bucket where the data is delivered. If the ingestion destination is deleted while the associated ingestion is enabled, the ingestion will fail and is eventually disabled.</p>",
+      "idempotent":true
+    },
+    "GetAppAuthorization":{
+      "name":"GetAppAuthorization",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations/{appAuthorizationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAppAuthorizationRequest"},
+      "output":{"shape":"GetAppAuthorizationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about an app authorization.</p>"
+    },
+    "GetAppBundle":{
+      "name":"GetAppBundle",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAppBundleRequest"},
+      "output":{"shape":"GetAppBundleResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about an app bundle.</p>"
+    },
+    "GetIngestion":{
+      "name":"GetIngestion",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIngestionRequest"},
+      "output":{"shape":"GetIngestionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about an ingestion.</p>"
+    },
+    "GetIngestionDestination":{
+      "name":"GetIngestionDestination",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/ingestiondestinations/{ingestionDestinationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIngestionDestinationRequest"},
+      "output":{"shape":"GetIngestionDestinationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about an ingestion destination.</p>"
+    },
+    "ListAppAuthorizations":{
+      "name":"ListAppAuthorizations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAppAuthorizationsRequest"},
+      "output":{"shape":"ListAppAuthorizationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all app authorizations configured for an app bundle.</p>"
+    },
+    "ListAppBundles":{
+      "name":"ListAppBundles",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAppBundlesRequest"},
+      "output":{"shape":"ListAppBundlesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of app bundles.</p>"
+    },
+    "ListIngestionDestinations":{
+      "name":"ListIngestionDestinations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/ingestiondestinations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIngestionDestinationsRequest"},
+      "output":{"shape":"ListIngestionDestinationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all ingestion destinations configured for an ingestion.</p>"
+    },
+    "ListIngestions":{
+      "name":"ListIngestions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIngestionsRequest"},
+      "output":{"shape":"ListIngestionsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of all ingestions configured for an app bundle.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a list of tags for a resource.</p>"
+    },
+    "StartIngestion":{
+      "name":"StartIngestion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartIngestionRequest"},
+      "output":{"shape":"StartIngestionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts (enables) an ingestion, which collects data from an application.</p>"
+    },
+    "StartUserAccessTasks":{
+      "name":"StartUserAccessTasks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/useraccess/start",
+        "responseCode":201
+      },
+      "input":{"shape":"StartUserAccessTasksRequest"},
+      "output":{"shape":"StartUserAccessTasksResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Starts the tasks to search user access status for a specific email address.</p> <p>The tasks are stopped when the user access status data is found. The tasks are terminated when the API calls to the application time out.</p>"
+    },
+    "StopIngestion":{
+      "name":"StopIngestion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopIngestionRequest"},
+      "output":{"shape":"StopIngestionResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Stops (disables) an ingestion.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Removes a tag or tags from a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateAppAuthorization":{
+      "name":"UpdateAppAuthorization",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/appbundles/{appBundleIdentifier}/appauthorizations/{appAuthorizationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateAppAuthorizationRequest"},
+      "output":{"shape":"UpdateAppAuthorizationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an app authorization within an app bundle, which allows AppFabric to connect to an application.</p> <p>If the app authorization was in a <code>connected</code> state, updating the app authorization will set it back to a <code>PendingConnect</code> state.</p>"
+    },
+    "UpdateIngestionDestination":{
+      "name":"UpdateIngestionDestination",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/appbundles/{appBundleIdentifier}/ingestions/{ingestionIdentifier}/ingestiondestinations/{ingestionDestinationIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateIngestionDestinationRequest"},
+      "output":{"shape":"UpdateIngestionDestinationResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates an ingestion destination, which specifies how an application's ingested data is processed by Amazon Web Services AppFabric and where it's delivered.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You are not authorized to perform this operation.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ApiKeyCredential":{
+      "type":"structure",
+      "required":["apiKey"],
+      "members":{
+        "apiKey":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>An API key for an application.</p>"
+        }
+      },
+      "documentation":"<p>Contains API key credential information.</p>"
+    },
+    "AppAuthorization":{
+      "type":"structure",
+      "required":[
+        "appAuthorizationArn",
+        "appBundleArn",
+        "app",
+        "tenant",
+        "authType",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "appAuthorizationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app authorization.</p>"
+        },
+        "appBundleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app bundle for the app authorization.</p>"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenant":{
+          "shape":"Tenant",
+          "documentation":"<p>Contains information about an application tenant, such as the application display name and identifier.</p>"
+        },
+        "authType":{
+          "shape":"AuthType",
+          "documentation":"<p>The authorization type.</p>"
+        },
+        "status":{
+          "shape":"AppAuthorizationStatus",
+          "documentation":"<p>The state of the app authorization.</p> <p>The following states are possible:</p> <ul> <li> <p> <code>PendingConnect</code>: The initial state of the app authorization. The app authorization is created but not yet connected.</p> </li> <li> <p> <code>Connected</code>: The app authorization is connected to the application, and is ready to be used.</p> </li> <li> <p> <code>ConnectionValidationFailed</code>: The app authorization received a validation exception when trying to connect to the application. If the app authorization is in this state, you should verify the configured credentials and try to connect the app authorization again.</p> </li> <li> <p> <code>TokenAutoRotationFailed</code>: AppFabric failed to refresh the access token. If the app authorization is in this state, you should try to reconnect the app authorization.</p> </li> </ul>"
+        },
+        "createdAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the app authorization was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the app authorization was last updated.</p>"
+        },
+        "persona":{
+          "shape":"Persona",
+          "documentation":"<p>The user persona of the app authorization.</p> <p>This field should always be <code>admin</code>.</p>"
+        },
+        "authUrl":{
+          "shape":"String",
+          "documentation":"<p>The application URL for the OAuth flow.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an app authorization.</p>"
+    },
+    "AppAuthorizationStatus":{
+      "type":"string",
+      "enum":[
+        "PendingConnect",
+        "Connected",
+        "ConnectionValidationFailed",
+        "TokenAutoRotationFailed"
+      ]
+    },
+    "AppAuthorizationSummary":{
+      "type":"structure",
+      "required":[
+        "appAuthorizationArn",
+        "appBundleArn",
+        "app",
+        "tenant",
+        "status",
+        "updatedAt"
+      ],
+      "members":{
+        "appAuthorizationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app authorization.</p>"
+        },
+        "appBundleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app bundle for the app authorization.</p>"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenant":{
+          "shape":"Tenant",
+          "documentation":"<p>Contains information about an application tenant, such as the application display name and identifier.</p>"
+        },
+        "status":{
+          "shape":"AppAuthorizationStatus",
+          "documentation":"<p>The state of the app authorization.</p> <p>The following states are possible:</p> <ul> <li> <p> <code>PendingConnect</code>: The initial state of the app authorization. The app authorization is created but not yet connected.</p> </li> <li> <p> <code>Connected</code>: The app authorization is connected to the application, and is ready to be used.</p> </li> <li> <p> <code>ConnectionValidationFailed</code>: The app authorization received a validation exception when trying to connect to the application. If the app authorization is in this state, you should verify the configured credentials and try to connect the app authorization again.</p> </li> <li> <p> <code>TokenAutoRotationFailed</code>: AppFabric failed to refresh the access token. If the app authorization is in this state, you should try to reconnect the app authorization.</p> </li> </ul>"
+        },
+        "updatedAt":{
+          "shape":"DateTime",
+          "documentation":"<p>Timestamp for when the app authorization was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of an app authorization.</p>"
+    },
+    "AppAuthorizationSummaryList":{
+      "type":"list",
+      "member":{"shape":"AppAuthorizationSummary"}
+    },
+    "AppBundle":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app bundle.</p>"
+        },
+        "customerManagedKeyArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Management Service (KMS) key used to encrypt the application data.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an app bundle.</p>"
+    },
+    "AppBundleSummary":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app bundle.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of an app bundle.</p>"
+    },
+    "AppBundleSummaryList":{
+      "type":"list",
+      "member":{"shape":"AppBundleSummary"}
+    },
+    "Arn":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:.+"
+    },
+    "AuditLogDestinationConfiguration":{
+      "type":"structure",
+      "required":["destination"],
+      "members":{
+        "destination":{
+          "shape":"Destination",
+          "documentation":"<p>Contains information about an audit log destination.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an audit log destination configuration.</p>"
+    },
+    "AuditLogProcessingConfiguration":{
+      "type":"structure",
+      "required":[
+        "schema",
+        "format"
+      ],
+      "members":{
+        "schema":{
+          "shape":"Schema",
+          "documentation":"<p>The event schema in which the audit logs need to be formatted.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>The format in which the audit logs need to be formatted.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an audit log processing configuration.</p>"
+    },
+    "AuthRequest":{
+      "type":"structure",
+      "required":[
+        "redirectUri",
+        "code"
+      ],
+      "members":{
+        "redirectUri":{
+          "shape":"RedirectUri",
+          "documentation":"<p>The redirect URL that is specified in the AuthURL and the application client.</p>"
+        },
+        "code":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The authorization code returned by the application after permission is granted in the application OAuth page (after clicking on the AuthURL).</p>"
+        }
+      },
+      "documentation":"<p>Contains authorization request information, which is required for Amazon Web Services AppFabric to get the OAuth2 access token for an application.</p>"
+    },
+    "AuthType":{
+      "type":"string",
+      "enum":[
+        "oauth2",
+        "apiKey"
+      ]
+    },
+    "BatchGetUserAccessTasksRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "taskIdList"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>"
+        },
+        "taskIdList":{
+          "shape":"TaskIdList",
+          "documentation":"<p>The tasks IDs to use for the request.</p>"
+        }
+      }
+    },
+    "BatchGetUserAccessTasksResponse":{
+      "type":"structure",
+      "members":{
+        "userAccessResultsList":{
+          "shape":"UserAccessResultsList",
+          "documentation":"<p>Contains a list of user access results.</p>"
+        }
+      }
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type.</p>"
+        }
+      },
+      "documentation":"<p>The request has created a conflict. Check the request parameters and try again.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConnectAppAuthorizationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "appAuthorizationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle that contains the app authorization to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "appAuthorizationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app authorization to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appAuthorizationIdentifier"
+        },
+        "authRequest":{
+          "shape":"AuthRequest",
+          "documentation":"<p>Contains OAuth2 authorization information.</p> <p>This is required if the app authorization for the request is configured with an OAuth2 (<code>oauth2</code>) authorization type.</p>"
+        }
+      }
+    },
+    "ConnectAppAuthorizationResponse":{
+      "type":"structure",
+      "required":["appAuthorizationSummary"],
+      "members":{
+        "appAuthorizationSummary":{
+          "shape":"AppAuthorizationSummary",
+          "documentation":"<p>Contains a summary of the app authorization.</p>"
+        }
+      }
+    },
+    "CreateAppAuthorizationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "app",
+        "credential",
+        "tenant",
+        "authType"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p> <p>Valid values are:</p> <ul> <li> <p> <code>SLACK</code> </p> </li> <li> <p> <code>ASANA</code> </p> </li> <li> <p> <code>JIRA</code> </p> </li> <li> <p> <code>M365</code> </p> </li> <li> <p> <code>M365AUDITLOGS</code> </p> </li> <li> <p> <code>ZOOM</code> </p> </li> <li> <p> <code>ZENDESK</code> </p> </li> <li> <p> <code>OKTA</code> </p> </li> <li> <p> <code>GOOGLE</code> </p> </li> <li> <p> <code>DROPBOX</code> </p> </li> <li> <p> <code>SMARTSHEET</code> </p> </li> <li> <p> <code>CISCO</code> </p> </li> </ul>"
+        },
+        "credential":{
+          "shape":"Credential",
+          "documentation":"<p>Contains credentials for the application, such as an API key or OAuth2 client ID and secret.</p> <p>Specify credentials that match the authorization type for your request. For example, if the authorization type for your request is OAuth2 (<code>oauth2</code>), then you should provide only the OAuth2 credentials.</p>"
+        },
+        "tenant":{
+          "shape":"Tenant",
+          "documentation":"<p>Contains information about an application tenant, such as the application display name and identifier.</p>"
+        },
+        "authType":{
+          "shape":"AuthType",
+          "documentation":"<p>The authorization type for the app authorization.</p>"
+        },
+        "clientToken":{
+          "shape":"UUID",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "CreateAppAuthorizationResponse":{
+      "type":"structure",
+      "required":["appAuthorization"],
+      "members":{
+        "appAuthorization":{
+          "shape":"AppAuthorization",
+          "documentation":"<p>Contains information about an app authorization.</p>"
+        }
+      }
+    },
+    "CreateAppBundleRequest":{
+      "type":"structure",
+      "members":{
+        "clientToken":{
+          "shape":"UUID",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        },
+        "customerManagedKeyIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Management Service (KMS) key to use to encrypt the application data. If this is not specified, an Amazon Web Services owned key is used for encryption.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "CreateAppBundleResponse":{
+      "type":"structure",
+      "required":["appBundle"],
+      "members":{
+        "appBundle":{
+          "shape":"AppBundle",
+          "documentation":"<p>Contains information about an app bundle.</p>"
+        }
+      }
+    },
+    "CreateIngestionDestinationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier",
+        "processingConfiguration",
+        "destinationConfiguration"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "processingConfiguration":{
+          "shape":"ProcessingConfiguration",
+          "documentation":"<p>Contains information about how ingested data is processed.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>Contains information about the destination of ingested data.</p>"
+        },
+        "clientToken":{
+          "shape":"UUID",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "CreateIngestionDestinationResponse":{
+      "type":"structure",
+      "required":["ingestionDestination"],
+      "members":{
+        "ingestionDestination":{
+          "shape":"IngestionDestination",
+          "documentation":"<p>Contains information about an ingestion destination.</p>"
+        }
+      }
+    },
+    "CreateIngestionRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "app",
+        "tenantId",
+        "ingestionType"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p> <p>Valid values are:</p> <ul> <li> <p> <code>SLACK</code> </p> </li> <li> <p> <code>ASANA</code> </p> </li> <li> <p> <code>JIRA</code> </p> </li> <li> <p> <code>M365</code> </p> </li> <li> <p> <code>M365AUDITLOGS</code> </p> </li> <li> <p> <code>ZOOM</code> </p> </li> <li> <p> <code>ZENDESK</code> </p> </li> <li> <p> <code>OKTA</code> </p> </li> <li> <p> <code>GOOGLE</code> </p> </li> <li> <p> <code>DROPBOX</code> </p> </li> <li> <p> <code>SMARTSHEET</code> </p> </li> <li> <p> <code>CISCO</code> </p> </li> </ul>"
+        },
+        "tenantId":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "ingestionType":{
+          "shape":"IngestionType",
+          "documentation":"<p>The ingestion type.</p>"
+        },
+        "clientToken":{
+          "shape":"UUID",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "CreateIngestionResponse":{
+      "type":"structure",
+      "required":["ingestion"],
+      "members":{
+        "ingestion":{
+          "shape":"Ingestion",
+          "documentation":"<p>Contains information about an ingestion.</p>"
+        }
+      }
+    },
+    "Credential":{
+      "type":"structure",
+      "members":{
+        "oauth2Credential":{
+          "shape":"Oauth2Credential",
+          "documentation":"<p>Contains OAuth2 client credential information.</p>"
+        },
+        "apiKeyCredential":{
+          "shape":"ApiKeyCredential",
+          "documentation":"<p>Contains API key credential information.</p>"
+        }
+      },
+      "documentation":"<p>Contains credential information for an application.</p>",
+      "union":true
+    },
+    "DateTime":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "DeleteAppAuthorizationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "appAuthorizationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "appAuthorizationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app authorization to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appAuthorizationIdentifier"
+        }
+      }
+    },
+    "DeleteAppAuthorizationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteAppBundleRequest":{
+      "type":"structure",
+      "required":["appBundleIdentifier"],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The ID or Amazon Resource Name (ARN) of the app bundle that needs to be deleted.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        }
+      }
+    },
+    "DeleteAppBundleResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteIngestionDestinationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier",
+        "ingestionDestinationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "ingestionDestinationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion destination to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionDestinationIdentifier"
+        }
+      }
+    },
+    "DeleteIngestionDestinationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteIngestionRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        }
+      }
+    },
+    "DeleteIngestionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Destination":{
+      "type":"structure",
+      "members":{
+        "s3Bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>Contains information about an Amazon S3 bucket.</p>"
+        },
+        "firehoseStream":{
+          "shape":"FirehoseStream",
+          "documentation":"<p>Contains information about an Amazon Kinesis Data Firehose delivery stream.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an audit log destination.</p>",
+      "union":true
+    },
+    "DestinationConfiguration":{
+      "type":"structure",
+      "members":{
+        "auditLog":{
+          "shape":"AuditLogDestinationConfiguration",
+          "documentation":"<p>Contains information about an audit log destination configuration.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about the destination of ingested data.</p>",
+      "union":true
+    },
+    "Email":{
+      "type":"string",
+      "max":320,
+      "min":0,
+      "pattern":"[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*",
+      "sensitive":true
+    },
+    "FirehoseStream":{
+      "type":"structure",
+      "required":["streamName"],
+      "members":{
+        "streamName":{
+          "shape":"String64",
+          "documentation":"<p>The name of the Amazon Kinesis Data Firehose delivery stream.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an Amazon Kinesis Data Firehose delivery stream.</p>"
+    },
+    "Format":{
+      "type":"string",
+      "enum":[
+        "json",
+        "parquet"
+      ]
+    },
+    "GetAppAuthorizationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "appAuthorizationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "appAuthorizationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app authorization to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appAuthorizationIdentifier"
+        }
+      }
+    },
+    "GetAppAuthorizationResponse":{
+      "type":"structure",
+      "required":["appAuthorization"],
+      "members":{
+        "appAuthorization":{
+          "shape":"AppAuthorization",
+          "documentation":"<p>Contains information about an app authorization.</p>"
+        }
+      }
+    },
+    "GetAppBundleRequest":{
+      "type":"structure",
+      "required":["appBundleIdentifier"],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        }
+      }
+    },
+    "GetAppBundleResponse":{
+      "type":"structure",
+      "required":["appBundle"],
+      "members":{
+        "appBundle":{
+          "shape":"AppBundle",
+          "documentation":"<p>Contains information about an app bundle.</p>"
+        }
+      }
+    },
+    "GetIngestionDestinationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier",
+        "ingestionDestinationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "ingestionDestinationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion destination to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionDestinationIdentifier"
+        }
+      }
+    },
+    "GetIngestionDestinationResponse":{
+      "type":"structure",
+      "required":["ingestionDestination"],
+      "members":{
+        "ingestionDestination":{
+          "shape":"IngestionDestination",
+          "documentation":"<p>Contains information about an ingestion destination.</p>"
+        }
+      }
+    },
+    "GetIngestionRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        }
+      }
+    },
+    "GetIngestionResponse":{
+      "type":"structure",
+      "required":["ingestion"],
+      "members":{
+        "ingestion":{
+          "shape":"Ingestion",
+          "documentation":"<p>Contains information about an ingestion.</p>"
+        }
+      }
+    },
+    "Identifier":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:.+$|^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "Ingestion":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "appBundleArn",
+        "app",
+        "tenantId",
+        "createdAt",
+        "updatedAt",
+        "state",
+        "ingestionType"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingestion.</p>"
+        },
+        "appBundleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the app bundle for the ingestion.</p>"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenantId":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the ingestion was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the ingestion was last updated.</p>"
+        },
+        "state":{
+          "shape":"IngestionState",
+          "documentation":"<p>The status of the ingestion.</p>"
+        },
+        "ingestionType":{
+          "shape":"IngestionType",
+          "documentation":"<p>The type of the ingestion.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an ingestion.</p>"
+    },
+    "IngestionDestination":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "ingestionArn",
+        "processingConfiguration",
+        "destinationConfiguration"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingestion destination.</p>"
+        },
+        "ingestionArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingestion.</p>"
+        },
+        "processingConfiguration":{
+          "shape":"ProcessingConfiguration",
+          "documentation":"<p>Contains information about how ingested data is processed.</p>"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>Contains information about the destination of ingested data.</p>"
+        },
+        "status":{
+          "shape":"IngestionDestinationStatus",
+          "documentation":"<p>The state of the ingestion destination.</p> <p>The following states are possible:</p> <ul> <li> <p> <code>Active</code>: The ingestion destination is active and is ready to be used.</p> </li> <li> <p> <code>Failed</code>: The ingestion destination has failed. If the ingestion destination is in this state, you should verify the ingestion destination configuration and try again.</p> </li> </ul>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the current status of the ingestion destination.</p> <p>Only present when the <code>status</code> of ingestion destination is <code>Failed</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the ingestion destination was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"DateTime",
+          "documentation":"<p>The timestamp of when the ingestion destination was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an ingestion destination.</p>"
+    },
+    "IngestionDestinationList":{
+      "type":"list",
+      "member":{"shape":"IngestionDestinationSummary"}
+    },
+    "IngestionDestinationStatus":{
+      "type":"string",
+      "enum":[
+        "Active",
+        "Failed"
+      ]
+    },
+    "IngestionDestinationSummary":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingestion destination.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of an ingestion destination.</p>"
+    },
+    "IngestionList":{
+      "type":"list",
+      "member":{"shape":"IngestionSummary"}
+    },
+    "IngestionState":{
+      "type":"string",
+      "enum":[
+        "enabled",
+        "disabled"
+      ]
+    },
+    "IngestionSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "app",
+        "tenantId",
+        "state"
+      ],
+      "members":{
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ingestion.</p>"
+        },
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenantId":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "state":{
+          "shape":"IngestionState",
+          "documentation":"<p>The status of the ingestion.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of an ingestion.</p>"
+    },
+    "IngestionType":{
+      "type":"string",
+      "enum":["auditLog"]
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The period of time after which you should retry your request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception, or failure with an internal server.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ListAppAuthorizationsRequest":{
+      "type":"structure",
+      "required":["appBundleIdentifier"],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"String2048",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListAppAuthorizationsResponse":{
+      "type":"structure",
+      "required":["appAuthorizationSummaryList"],
+      "members":{
+        "appAuthorizationSummaryList":{
+          "shape":"AppAuthorizationSummaryList",
+          "documentation":"<p>Contains a list of app authorization summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"String2048",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListAppBundlesRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"String2048",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListAppBundlesResponse":{
+      "type":"structure",
+      "required":["appBundleSummaryList"],
+      "members":{
+        "appBundleSummaryList":{
+          "shape":"AppBundleSummaryList",
+          "documentation":"<p>Contains a list of app bundle summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"String2048",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListIngestionDestinationsRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListIngestionDestinationsResponse":{
+      "type":"structure",
+      "required":["ingestionDestinations"],
+      "members":{
+        "ingestionDestinations":{
+          "shape":"IngestionDestinationList",
+          "documentation":"<p>Contains a list of ingestion destination summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListIngestionsRequest":{
+      "type":"structure",
+      "required":["appBundleIdentifier"],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListIngestionsResponse":{
+      "type":"structure",
+      "required":["ingestions"],
+      "members":{
+        "ingestions":{
+          "shape":"IngestionList",
+          "documentation":"<p>Contains a list of ingestion summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which you want to retrieve tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs for the tag or tags assigned to the specified resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "Oauth2Credential":{
+      "type":"structure",
+      "required":[
+        "clientId",
+        "clientSecret"
+      ],
+      "members":{
+        "clientId":{
+          "shape":"String2048",
+          "documentation":"<p>The client ID of the client application.</p>"
+        },
+        "clientSecret":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The client secret of the client application.</p>"
+        }
+      },
+      "documentation":"<p>Contains OAuth2 client credential information.</p>"
+    },
+    "Persona":{
+      "type":"string",
+      "enum":[
+        "admin",
+        "endUser"
+      ]
+    },
+    "ProcessingConfiguration":{
+      "type":"structure",
+      "members":{
+        "auditLog":{
+          "shape":"AuditLogProcessingConfiguration",
+          "documentation":"<p>Contains information about an audit log processing configuration.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about how ingested data is processed.</p>",
+      "union":true
+    },
+    "RedirectUri":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"https://[-a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResultStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED",
+        "EXPIRED"
+      ]
+    },
+    "S3Bucket":{
+      "type":"structure",
+      "required":["bucketName"],
+      "members":{
+        "bucketName":{
+          "shape":"String63",
+          "documentation":"<p>The name of the Amazon S3 bucket.</p>"
+        },
+        "prefix":{
+          "shape":"String120",
+          "documentation":"<p>The object key to use.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an Amazon S3 bucket.</p>"
+    },
+    "Schema":{
+      "type":"string",
+      "enum":[
+        "ocsf",
+        "raw"
+      ]
+    },
+    "SensitiveString2048":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code for the quota exceeded.</p>"
+        }
+      },
+      "documentation":"<p>The request exceeds a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "StartIngestionRequest":{
+      "type":"structure",
+      "required":[
+        "ingestionIdentifier",
+        "appBundleIdentifier"
+      ],
+      "members":{
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        }
+      }
+    },
+    "StartIngestionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StartUserAccessTasksRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "email"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>The email address of the target user.</p>"
+        }
+      }
+    },
+    "StartUserAccessTasksResponse":{
+      "type":"structure",
+      "members":{
+        "userAccessTasksList":{
+          "shape":"UserAccessTasksList",
+          "documentation":"<p>Contains a list of user access task information.</p>"
+        }
+      }
+    },
+    "StopIngestionRequest":{
+      "type":"structure",
+      "required":[
+        "ingestionIdentifier",
+        "appBundleIdentifier"
+      ],
+      "members":{
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        }
+      }
+    },
+    "StopIngestionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "String":{"type":"string"},
+    "String120":{
+      "type":"string",
+      "max":120,
+      "min":1
+    },
+    "String2048":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "String255":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "String63":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "String64":{
+      "type":"string",
+      "max":64,
+      "min":3
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "key",
+        "value"
+      ],
+      "members":{
+        "key":{
+          "shape":"TagKey",
+          "documentation":"<p>Tag key.</p>"
+        },
+        "value":{
+          "shape":"TagValue",
+          "documentation":"<p>Tag value.</p>"
+        }
+      },
+      "documentation":"<p>The key or keys of the key-value pairs for the tag or tags assigned to a resource.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to tag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TaskError":{
+      "type":"structure",
+      "members":{
+        "errorCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the error.</p>"
+        },
+        "errorMessage":{
+          "shape":"String",
+          "documentation":"<p>The message of the error.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an error returned from a user access task.</p>"
+    },
+    "TaskIdList":{
+      "type":"list",
+      "member":{"shape":"UUID"},
+      "max":50,
+      "min":1
+    },
+    "Tenant":{
+      "type":"structure",
+      "required":[
+        "tenantIdentifier",
+        "tenantDisplayName"
+      ],
+      "members":{
+        "tenantIdentifier":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "tenantDisplayName":{
+          "shape":"String2048",
+          "documentation":"<p>The display name of the tenant.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an application tenant.</p>"
+    },
+    "TenantIdentifier":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code of the service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code for the quota exceeded.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The period of time after which you should retry your request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request rate exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "UUID":{
+      "type":"string",
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to untag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The keys of the key-value pairs for the tag or tags you want to remove from the specified resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateAppAuthorizationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "appAuthorizationIdentifier"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "appAuthorizationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app authorization to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appAuthorizationIdentifier"
+        },
+        "credential":{
+          "shape":"Credential",
+          "documentation":"<p>Contains credentials for the application, such as an API key or OAuth2 client ID and secret.</p> <p>Specify credentials that match the authorization type of the app authorization to update. For example, if the authorization type of the app authorization is OAuth2 (<code>oauth2</code>), then you should provide only the OAuth2 credentials.</p>"
+        },
+        "tenant":{
+          "shape":"Tenant",
+          "documentation":"<p>Contains information about an application tenant, such as the application display name and identifier.</p>"
+        }
+      }
+    },
+    "UpdateAppAuthorizationResponse":{
+      "type":"structure",
+      "required":["appAuthorization"],
+      "members":{
+        "appAuthorization":{
+          "shape":"AppAuthorization",
+          "documentation":"<p>Contains information about an app authorization.</p>"
+        }
+      }
+    },
+    "UpdateIngestionDestinationRequest":{
+      "type":"structure",
+      "required":[
+        "appBundleIdentifier",
+        "ingestionIdentifier",
+        "ingestionDestinationIdentifier",
+        "destinationConfiguration"
+      ],
+      "members":{
+        "appBundleIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the app bundle to use for the request.</p>",
+          "location":"uri",
+          "locationName":"appBundleIdentifier"
+        },
+        "ingestionIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionIdentifier"
+        },
+        "ingestionDestinationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The Amazon Resource Name (ARN) or Universal Unique Identifier (UUID) of the ingestion destination to use for the request.</p>",
+          "location":"uri",
+          "locationName":"ingestionDestinationIdentifier"
+        },
+        "destinationConfiguration":{
+          "shape":"DestinationConfiguration",
+          "documentation":"<p>Contains information about the destination of ingested data.</p>"
+        }
+      }
+    },
+    "UpdateIngestionDestinationResponse":{
+      "type":"structure",
+      "required":["ingestionDestination"],
+      "members":{
+        "ingestionDestination":{
+          "shape":"IngestionDestination",
+          "documentation":"<p>Contains information about an ingestion destination.</p>"
+        }
+      }
+    },
+    "UserAccessResultItem":{
+      "type":"structure",
+      "members":{
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenantId":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "tenantDisplayName":{
+          "shape":"String2048",
+          "documentation":"<p>The display name of the tenant.</p>"
+        },
+        "taskId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique ID of the task.</p>"
+        },
+        "resultStatus":{
+          "shape":"ResultStatus",
+          "documentation":"<p>The status of the user access result item.</p> <p>The following states are possible:</p> <ul> <li> <p> <code>IN_PROGRESS</code>: The user access task is in progress.</p> </li> <li> <p> <code>COMPLETED</code>: The user access task completed successfully.</p> </li> <li> <p> <code>FAILED</code>: The user access task failed.</p> </li> <li> <p> <code>EXPIRED</code>: The user access task expired.</p> </li> </ul>"
+        },
+        "email":{
+          "shape":"Email",
+          "documentation":"<p>The email address of the target user.</p>"
+        },
+        "userId":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The unique ID of user.</p>"
+        },
+        "userFullName":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The full name of the user.</p>"
+        },
+        "userFirstName":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The first name of the user.</p>"
+        },
+        "userLastName":{
+          "shape":"SensitiveString2048",
+          "documentation":"<p>The last name of the user.</p>"
+        },
+        "userStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the user returned by the application.</p>"
+        },
+        "taskError":{
+          "shape":"TaskError",
+          "documentation":"<p>Contains information about an error returned from a user access task.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a user's access to an application.</p>"
+    },
+    "UserAccessResultsList":{
+      "type":"list",
+      "member":{"shape":"UserAccessResultItem"}
+    },
+    "UserAccessTaskItem":{
+      "type":"structure",
+      "required":[
+        "app",
+        "tenantId"
+      ],
+      "members":{
+        "app":{
+          "shape":"String255",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "tenantId":{
+          "shape":"TenantIdentifier",
+          "documentation":"<p>The ID of the application tenant.</p>"
+        },
+        "taskId":{
+          "shape":"UUID",
+          "documentation":"<p>The unique ID of the task.</p>"
+        },
+        "error":{
+          "shape":"TaskError",
+          "documentation":"<p>Error from the task, if any.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about a user access task.</p>"
+    },
+    "UserAccessTasksList":{
+      "type":"list",
+      "member":{"shape":"UserAccessTaskItem"}
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the exception.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The field list.</p>"
+        }
+      },
+      "documentation":"<p>The request has invalid or missing parameters.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The field name where the invalid entry was detected.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message about the validation exception.</p>"
+        }
+      },
+      "documentation":"<p>The input failed to meet the constraints specified by the Amazon Web Services service in a specified field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    }
+  },
+  "documentation":"<p>Amazon Web Services AppFabric quickly connects software as a service (SaaS) applications across your organization. This allows IT and security teams to easily manage and secure applications using a standard schema, and employees can complete everyday tasks faster using generative artificial intelligence (AI). You can use these APIs to complete AppFabric tasks, such as setting up audit log ingestions or viewing user access. For more information about AppFabric, including the required permissions to use the service, see the <a href=\"https://docs.aws.amazon.com/appfabric/latest/adminguide/\">Amazon Web Services AppFabric Administration Guide</a>. For more information about using the Command Line Interface (CLI) to manage your AppFabric resources, see the <a href=\"https://docs.aws.amazon.com/cli/latest/reference/appfabric/index.html\">AppFabric section of the CLI Reference</a>.</p>"
+}

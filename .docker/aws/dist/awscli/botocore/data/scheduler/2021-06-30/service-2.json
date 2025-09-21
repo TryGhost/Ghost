@@ -1,0 +1,1574 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-06-30",
+    "endpointPrefix":"scheduler",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon EventBridge Scheduler",
+    "serviceId":"Scheduler",
+    "signatureVersion":"v4",
+    "signingName":"scheduler",
+    "uid":"scheduler-2021-06-30"
+  },
+  "operations":{
+    "CreateSchedule":{
+      "name":"CreateSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/schedules/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateScheduleInput"},
+      "output":{"shape":"CreateScheduleOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates the specified schedule.</p>",
+      "idempotent":true
+    },
+    "CreateScheduleGroup":{
+      "name":"CreateScheduleGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/schedule-groups/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateScheduleGroupInput"},
+      "output":{"shape":"CreateScheduleGroupOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Creates the specified schedule group.</p>",
+      "idempotent":true
+    },
+    "DeleteSchedule":{
+      "name":"DeleteSchedule",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/schedules/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteScheduleInput"},
+      "output":{"shape":"DeleteScheduleOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes the specified schedule.</p>",
+      "idempotent":true
+    },
+    "DeleteScheduleGroup":{
+      "name":"DeleteScheduleGroup",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/schedule-groups/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteScheduleGroupInput"},
+      "output":{"shape":"DeleteScheduleGroupOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Deletes the specified schedule group. Deleting a schedule group results in EventBridge Scheduler deleting all schedules associated with the group. When you delete a group, it remains in a <code>DELETING</code> state until all of its associated schedules are deleted. Schedules associated with the group that are set to run while the schedule group is in the process of being deleted might continue to invoke their targets until the schedule group and its associated schedules are deleted.</p> <note> <p> This operation is eventually consistent. </p> </note>",
+      "idempotent":true
+    },
+    "GetSchedule":{
+      "name":"GetSchedule",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedules/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetScheduleInput"},
+      "output":{"shape":"GetScheduleOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the specified schedule.</p>"
+    },
+    "GetScheduleGroup":{
+      "name":"GetScheduleGroup",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedule-groups/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetScheduleGroupInput"},
+      "output":{"shape":"GetScheduleGroupOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves the specified schedule group.</p>"
+    },
+    "ListScheduleGroups":{
+      "name":"ListScheduleGroups",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedule-groups",
+        "responseCode":200
+      },
+      "input":{"shape":"ListScheduleGroupsInput"},
+      "output":{"shape":"ListScheduleGroupsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a paginated list of your schedule groups.</p>"
+    },
+    "ListSchedules":{
+      "name":"ListSchedules",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedules",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSchedulesInput"},
+      "output":{"shape":"ListSchedulesOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a paginated list of your EventBridge Scheduler schedules.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the tags associated with the Scheduler resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified EventBridge Scheduler resource. You can only assign tags to schedule groups.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes one or more tags from the specified EventBridge Scheduler schedule group.</p>",
+      "idempotent":true
+    },
+    "UpdateSchedule":{
+      "name":"UpdateSchedule",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/schedules/{Name}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateScheduleInput"},
+      "output":{"shape":"UpdateScheduleOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p> Updates the specified schedule. When you call <code>UpdateSchedule</code>, EventBridge Scheduler uses all values, including empty values, specified in the request and overrides the existing schedule. This is by design. This means that if you do not set an optional field in your request, that field will be set to its system-default value after the update. </p> <p> Before calling this operation, we recommend that you call the <code>GetSchedule</code> API operation and make a note of all optional parameters for your <code>UpdateSchedule</code> call. </p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "ActionAfterCompletion":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "DELETE"
+      ]
+    },
+    "AssignPublicIp":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "AwsVpcConfiguration":{
+      "type":"structure",
+      "required":["Subnets"],
+      "members":{
+        "AssignPublicIp":{
+          "shape":"AssignPublicIp",
+          "documentation":"<p>Specifies whether the task's elastic network interface receives a public IP address. You can specify <code>ENABLED</code> only when <code>LaunchType</code> in <code>EcsParameters</code> is set to <code>FARGATE</code>.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroups",
+          "documentation":"<p>Specifies the security groups associated with the task. These security groups must all be in the same VPC. You can specify as many as five security groups. If you do not specify a security group, the default security group for the VPC is used.</p>"
+        },
+        "Subnets":{
+          "shape":"Subnets",
+          "documentation":"<p>Specifies the subnets associated with the task. These subnets must all be in the same VPC. You can specify as many as 16 subnets.</p>"
+        }
+      },
+      "documentation":"<p>This structure specifies the VPC subnets and security groups for the task, and whether a public IP address is to be used. This structure is relevant only for ECS tasks that use the awsvpc network mode.</p>"
+    },
+    "CapacityProvider":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "CapacityProviderStrategy":{
+      "type":"list",
+      "member":{"shape":"CapacityProviderStrategyItem"},
+      "max":6,
+      "min":0
+    },
+    "CapacityProviderStrategyItem":{
+      "type":"structure",
+      "required":["capacityProvider"],
+      "members":{
+        "base":{
+          "shape":"CapacityProviderStrategyItemBase",
+          "documentation":"<p>The base value designates how many tasks, at a minimum, to run on the specified capacity provider. Only one capacity provider in a capacity provider strategy can have a base defined. If no value is specified, the default value of <code>0</code> is used.</p>"
+        },
+        "capacityProvider":{
+          "shape":"CapacityProvider",
+          "documentation":"<p>The short name of the capacity provider.</p>"
+        },
+        "weight":{
+          "shape":"CapacityProviderStrategyItemWeight",
+          "documentation":"<p>The weight value designates the relative percentage of the total number of tasks launched that should use the specified capacity provider. The weight value is taken into consideration after the base value, if defined, is satisfied.</p>"
+        }
+      },
+      "documentation":"<p>The details of a capacity provider strategy.</p>"
+    },
+    "CapacityProviderStrategyItemBase":{
+      "type":"integer",
+      "max":100000,
+      "min":0
+    },
+    "CapacityProviderStrategyItemWeight":{
+      "type":"integer",
+      "max":1000,
+      "min":0
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9-_]+$"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Updating or deleting the resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateScheduleGroupInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, EventBridge Scheduler uses a randomly generated token for the request to ensure idempotency. </p>",
+          "idempotencyToken":true
+        },
+        "Name":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group that you are creating.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags to associate with the schedule group.</p>"
+        }
+      }
+    },
+    "CreateScheduleGroupOutput":{
+      "type":"structure",
+      "required":["ScheduleGroupArn"],
+      "members":{
+        "ScheduleGroupArn":{
+          "shape":"ScheduleGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule group.</p>"
+        }
+      }
+    },
+    "CreateScheduleInput":{
+      "type":"structure",
+      "required":[
+        "FlexibleTimeWindow",
+        "Name",
+        "ScheduleExpression",
+        "Target"
+      ],
+      "members":{
+        "ActionAfterCompletion":{
+          "shape":"ActionAfterCompletion",
+          "documentation":"<p>Specifies the action that EventBridge Scheduler applies to the schedule after the schedule completes invoking the target.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, EventBridge Scheduler uses a randomly generated token for the request to ensure idempotency. </p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description you specify for the schedule.</p>"
+        },
+        "EndDate":{
+          "shape":"EndDate",
+          "documentation":"<p>The date, in UTC, before which the schedule can invoke its target. Depending on the schedule's recurrence expression, invocations might stop on, or before, the <code>EndDate</code> you specify. EventBridge Scheduler ignores <code>EndDate</code> for one-time schedules.</p>"
+        },
+        "FlexibleTimeWindow":{
+          "shape":"FlexibleTimeWindow",
+          "documentation":"<p>Allows you to configure a time window during which EventBridge Scheduler invokes the schedule.</p>"
+        },
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group to associate with this schedule. If you omit this, the default schedule group is used.</p>"
+        },
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the customer managed KMS key that EventBridge Scheduler will use to encrypt and decrypt your data.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule that you are creating.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        },
+        "ScheduleExpression":{
+          "shape":"ScheduleExpression",
+          "documentation":"<p> The expression that defines when the schedule runs. The following formats are supported. </p> <ul> <li> <p> <code>at</code> expression - <code>at(yyyy-mm-ddThh:mm:ss)</code> </p> </li> <li> <p> <code>rate</code> expression - <code>rate(value unit)</code> </p> </li> <li> <p> <code>cron</code> expression - <code>cron(fields)</code> </p> </li> </ul> <p> You can use <code>at</code> expressions to create one-time schedules that invoke a target once, at the time and in the time zone, that you specify. You can use <code>rate</code> and <code>cron</code> expressions to create recurring schedules. Rate-based schedules are useful when you want to invoke a target at regular intervals, such as every 15 minutes or every five days. Cron-based schedules are useful when you want to invoke a target periodically at a specific time, such as at 8:00 am (UTC+0) every 1st day of the month. </p> <p> A <code>cron</code> expression consists of six fields separated by white spaces: <code>(minutes hours day_of_month month day_of_week year)</code>. </p> <p> A <code>rate</code> expression consists of a <i>value</i> as a positive integer, and a <i>unit</i> with the following options: <code>minute</code> | <code>minutes</code> | <code>hour</code> | <code>hours</code> | <code>day</code> | <code>days</code> </p> <p> For more information and examples, see <a href=\"https://docs.aws.amazon.com/scheduler/latest/UserGuide/schedule-types.html\">Schedule types on EventBridge Scheduler</a> in the <i>EventBridge Scheduler User Guide</i>. </p>"
+        },
+        "ScheduleExpressionTimezone":{
+          "shape":"ScheduleExpressionTimezone",
+          "documentation":"<p>The timezone in which the scheduling expression is evaluated.</p>"
+        },
+        "StartDate":{
+          "shape":"StartDate",
+          "documentation":"<p>The date, in UTC, after which the schedule can begin invoking its target. Depending on the schedule's recurrence expression, invocations might occur on, or after, the <code>StartDate</code> you specify. EventBridge Scheduler ignores <code>StartDate</code> for one-time schedules.</p>"
+        },
+        "State":{
+          "shape":"ScheduleState",
+          "documentation":"<p>Specifies whether the schedule is enabled or disabled.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The schedule's target.</p>"
+        }
+      }
+    },
+    "CreateScheduleOutput":{
+      "type":"structure",
+      "required":["ScheduleArn"],
+      "members":{
+        "ScheduleArn":{
+          "shape":"ScheduleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule.</p>"
+        }
+      }
+    },
+    "CreationDate":{"type":"timestamp"},
+    "DeadLetterConfig":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"DeadLetterConfigArnString",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SQS queue specified as the destination for the dead-letter queue.</p>"
+        }
+      },
+      "documentation":"<p>An object that contains information about an Amazon SQS queue that EventBridge Scheduler uses as a dead-letter queue for your schedule. If specified, EventBridge Scheduler delivers failed events that could not be successfully delivered to a target to the queue.</p>"
+    },
+    "DeadLetterConfigArnString":{
+      "type":"string",
+      "max":1600,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:sqs:[a-z0-9\\-]+:\\d{12}:[a-zA-Z0-9\\-_]+$"
+    },
+    "DeleteScheduleGroupInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, EventBridge Scheduler uses a randomly generated token for the request to ensure idempotency. </p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "Name":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group to delete.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "DeleteScheduleGroupOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteScheduleInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, EventBridge Scheduler uses a randomly generated token for the request to ensure idempotency. </p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group associated with this schedule. If you omit this, the default schedule group is used.</p>",
+          "location":"querystring",
+          "locationName":"groupName"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule to delete.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "DeleteScheduleOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":512,
+      "min":0
+    },
+    "DetailType":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "EcsParameters":{
+      "type":"structure",
+      "required":["TaskDefinitionArn"],
+      "members":{
+        "CapacityProviderStrategy":{
+          "shape":"CapacityProviderStrategy",
+          "documentation":"<p>The capacity provider strategy to use for the task.</p>"
+        },
+        "EnableECSManagedTags":{
+          "shape":"EnableECSManagedTags",
+          "documentation":"<p>Specifies whether to enable Amazon ECS managed tags for the task. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-using-tags.html\">Tagging Your Amazon ECS Resources</a> in the <i>Amazon ECS Developer Guide</i>.</p>"
+        },
+        "EnableExecuteCommand":{
+          "shape":"EnableExecuteCommand",
+          "documentation":"<p>Whether or not to enable the execute command functionality for the containers in this task. If true, this enables execute command functionality on all containers in the task.</p>"
+        },
+        "Group":{
+          "shape":"Group",
+          "documentation":"<p>Specifies an ECS task group for the task. The maximum length is 255 characters.</p>"
+        },
+        "LaunchType":{
+          "shape":"LaunchType",
+          "documentation":"<p>Specifies the launch type on which your task is running. The launch type that you specify here must match one of the launch type (compatibilities) of the target task. The <code>FARGATE</code> value is supported only in the Regions where Fargate with Amazon ECS is supported. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html\">AWS Fargate on Amazon ECS</a> in the <i>Amazon ECS Developer Guide</i>.</p>"
+        },
+        "NetworkConfiguration":{
+          "shape":"NetworkConfiguration",
+          "documentation":"<p>This structure specifies the network configuration for an ECS task.</p>"
+        },
+        "PlacementConstraints":{
+          "shape":"PlacementConstraints",
+          "documentation":"<p>An array of placement constraint objects to use for the task. You can specify up to 10 constraints per task (including constraints in the task definition and those specified at runtime).</p>"
+        },
+        "PlacementStrategy":{
+          "shape":"PlacementStrategies",
+          "documentation":"<p>The task placement strategy for a task or service.</p>"
+        },
+        "PlatformVersion":{
+          "shape":"PlatformVersion",
+          "documentation":"<p>Specifies the platform version for the task. Specify only the numeric portion of the platform version, such as <code>1.1.0</code>.</p>"
+        },
+        "PropagateTags":{
+          "shape":"PropagateTags",
+          "documentation":"<p>Specifies whether to propagate the tags from the task definition to the task. If no value is specified, the tags are not propagated. Tags can only be propagated to the task during task creation. To add tags to a task after task creation, use Amazon ECS's <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html\"> <code>TagResource</code> </a> API action. </p>"
+        },
+        "ReferenceId":{
+          "shape":"ReferenceId",
+          "documentation":"<p>The reference ID to use for the task.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The metadata that you apply to the task to help you categorize and organize them. Each tag consists of a key and an optional value, both of which you define. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html\"> <code>RunTask</code> </a> in the <i>Amazon ECS API Reference</i>.</p>"
+        },
+        "TaskCount":{
+          "shape":"TaskCount",
+          "documentation":"<p>The number of tasks to create based on <code>TaskDefinition</code>. The default is <code>1</code>.</p>"
+        },
+        "TaskDefinitionArn":{
+          "shape":"TaskDefinitionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the task definition to use if the event target is an Amazon ECS task.</p>"
+        }
+      },
+      "documentation":"<p>The templated target type for the Amazon ECS <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html\"> <code>RunTask</code> </a> API operation.</p>"
+    },
+    "EnableECSManagedTags":{
+      "type":"boolean",
+      "box":true
+    },
+    "EnableExecuteCommand":{
+      "type":"boolean",
+      "box":true
+    },
+    "EndDate":{"type":"timestamp"},
+    "EventBridgeParameters":{
+      "type":"structure",
+      "required":[
+        "DetailType",
+        "Source"
+      ],
+      "members":{
+        "DetailType":{
+          "shape":"DetailType",
+          "documentation":"<p>A free-form string, with a maximum of 128 characters, used to decide what fields to expect in the event detail.</p>"
+        },
+        "Source":{
+          "shape":"Source",
+          "documentation":"<p>The source of the event.</p>"
+        }
+      },
+      "documentation":"<p>The templated target type for the EventBridge <a href=\"https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html\"> <code>PutEvents</code> </a> API operation.</p>"
+    },
+    "FlexibleTimeWindow":{
+      "type":"structure",
+      "required":["Mode"],
+      "members":{
+        "MaximumWindowInMinutes":{
+          "shape":"MaximumWindowInMinutes",
+          "documentation":"<p>The maximum time window during which a schedule can be invoked.</p>"
+        },
+        "Mode":{
+          "shape":"FlexibleTimeWindowMode",
+          "documentation":"<p>Determines whether the schedule is invoked within a flexible time window.</p>"
+        }
+      },
+      "documentation":"<p>Allows you to configure a time window during which EventBridge Scheduler invokes the schedule.</p>"
+    },
+    "FlexibleTimeWindowMode":{
+      "type":"string",
+      "enum":[
+        "OFF",
+        "FLEXIBLE"
+      ]
+    },
+    "GetScheduleGroupInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group to retrieve.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "GetScheduleGroupOutput":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ScheduleGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule group.</p>"
+        },
+        "CreationDate":{
+          "shape":"CreationDate",
+          "documentation":"<p>The time at which the schedule group was created.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"LastModificationDate",
+          "documentation":"<p>The time at which the schedule group was last modified.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group.</p>"
+        },
+        "State":{
+          "shape":"ScheduleGroupState",
+          "documentation":"<p>Specifies the state of the schedule group.</p>"
+        }
+      }
+    },
+    "GetScheduleInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group associated with this schedule. If you omit this, EventBridge Scheduler assumes that the schedule is associated with the default group.</p>",
+          "location":"querystring",
+          "locationName":"groupName"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule to retrieve.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "GetScheduleOutput":{
+      "type":"structure",
+      "members":{
+        "ActionAfterCompletion":{
+          "shape":"ActionAfterCompletion",
+          "documentation":"<p>Indicates the action that EventBridge Scheduler applies to the schedule after the schedule completes invoking the target.</p>"
+        },
+        "Arn":{
+          "shape":"ScheduleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule.</p>"
+        },
+        "CreationDate":{
+          "shape":"CreationDate",
+          "documentation":"<p>The time at which the schedule was created.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the schedule.</p>"
+        },
+        "EndDate":{
+          "shape":"EndDate",
+          "documentation":"<p>The date, in UTC, before which the schedule can invoke its target. Depending on the schedule's recurrence expression, invocations might stop on, or before, the <code>EndDate</code> you specify. EventBridge Scheduler ignores <code>EndDate</code> for one-time schedules.</p>"
+        },
+        "FlexibleTimeWindow":{
+          "shape":"FlexibleTimeWindow",
+          "documentation":"<p>Allows you to configure a time window during which EventBridge Scheduler invokes the schedule.</p>"
+        },
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group associated with this schedule.</p>"
+        },
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ARN for a customer managed KMS Key that is be used to encrypt and decrypt your data.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"LastModificationDate",
+          "documentation":"<p>The time at which the schedule was last modified.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule.</p>"
+        },
+        "ScheduleExpression":{
+          "shape":"ScheduleExpression",
+          "documentation":"<p> The expression that defines when the schedule runs. The following formats are supported. </p> <ul> <li> <p> <code>at</code> expression - <code>at(yyyy-mm-ddThh:mm:ss)</code> </p> </li> <li> <p> <code>rate</code> expression - <code>rate(value unit)</code> </p> </li> <li> <p> <code>cron</code> expression - <code>cron(fields)</code> </p> </li> </ul> <p> You can use <code>at</code> expressions to create one-time schedules that invoke a target once, at the time and in the time zone, that you specify. You can use <code>rate</code> and <code>cron</code> expressions to create recurring schedules. Rate-based schedules are useful when you want to invoke a target at regular intervals, such as every 15 minutes or every five days. Cron-based schedules are useful when you want to invoke a target periodically at a specific time, such as at 8:00 am (UTC+0) every 1st day of the month. </p> <p> A <code>cron</code> expression consists of six fields separated by white spaces: <code>(minutes hours day_of_month month day_of_week year)</code>. </p> <p> A <code>rate</code> expression consists of a <i>value</i> as a positive integer, and a <i>unit</i> with the following options: <code>minute</code> | <code>minutes</code> | <code>hour</code> | <code>hours</code> | <code>day</code> | <code>days</code> </p> <p> For more information and examples, see <a href=\"https://docs.aws.amazon.com/scheduler/latest/UserGuide/schedule-types.html\">Schedule types on EventBridge Scheduler</a> in the <i>EventBridge Scheduler User Guide</i>. </p>"
+        },
+        "ScheduleExpressionTimezone":{
+          "shape":"ScheduleExpressionTimezone",
+          "documentation":"<p>The timezone in which the scheduling expression is evaluated.</p>"
+        },
+        "StartDate":{
+          "shape":"StartDate",
+          "documentation":"<p>The date, in UTC, after which the schedule can begin invoking its target. Depending on the schedule's recurrence expression, invocations might occur on, or after, the <code>StartDate</code> you specify. EventBridge Scheduler ignores <code>StartDate</code> for one-time schedules.</p>"
+        },
+        "State":{
+          "shape":"ScheduleState",
+          "documentation":"<p>Specifies whether the schedule is enabled or disabled.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The schedule target.</p>"
+        }
+      }
+    },
+    "Group":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>Unexpected error encountered while processing the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "KinesisParameters":{
+      "type":"structure",
+      "required":["PartitionKey"],
+      "members":{
+        "PartitionKey":{
+          "shape":"TargetPartitionKey",
+          "documentation":"<p>Specifies the shard to which EventBridge Scheduler sends the event. For more information, see <a href=\"https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html\">Amazon Kinesis Data Streams terminology and concepts</a> in the <i>Amazon Kinesis Streams Developer Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>The templated target type for the Amazon Kinesis <a href=\"kinesis/latest/APIReference/API_PutRecord.html\"> <code>PutRecord</code> </a> API operation.</p>"
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:kms:[a-z0-9\\-]+:\\d{12}:(key|alias)\\/[0-9a-zA-Z-_]*$"
+    },
+    "LastModificationDate":{"type":"timestamp"},
+    "LaunchType":{
+      "type":"string",
+      "enum":[
+        "EC2",
+        "FARGATE",
+        "EXTERNAL"
+      ]
+    },
+    "ListScheduleGroupsInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>If specified, limits the number of results returned by this operation. The operation also returns a <code>NextToken</code> which you can use in a subsequent operation to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NamePrefix":{
+          "shape":"ScheduleGroupNamePrefix",
+          "documentation":"<p>The name prefix that you can use to return a filtered list of your schedule groups.</p>",
+          "location":"querystring",
+          "locationName":"NamePrefix"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListScheduleGroupsOutput":{
+      "type":"structure",
+      "required":["ScheduleGroups"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Indicates whether there are additional results to retrieve. If the value is null, there are no more results.</p>"
+        },
+        "ScheduleGroups":{
+          "shape":"ScheduleGroupList",
+          "documentation":"<p>The schedule groups that match the specified criteria.</p>"
+        }
+      }
+    },
+    "ListSchedulesInput":{
+      "type":"structure",
+      "members":{
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>If specified, only lists the schedules whose associated schedule group matches the given filter.</p>",
+          "location":"querystring",
+          "locationName":"ScheduleGroup"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>If specified, limits the number of results returned by this operation. The operation also returns a <code>NextToken</code> which you can use in a subsequent operation to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NamePrefix":{
+          "shape":"NamePrefix",
+          "documentation":"<p>Schedule name prefix to return the filtered list of resources.</p>",
+          "location":"querystring",
+          "locationName":"NamePrefix"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "State":{
+          "shape":"ScheduleState",
+          "documentation":"<p>If specified, only lists the schedules whose current state matches the given filter.</p>",
+          "location":"querystring",
+          "locationName":"State"
+        }
+      }
+    },
+    "ListSchedulesOutput":{
+      "type":"structure",
+      "required":["Schedules"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Indicates whether there are additional results to retrieve. If the value is null, there are no more results.</p>"
+        },
+        "Schedules":{
+          "shape":"ScheduleList",
+          "documentation":"<p>The schedules that match the specified criteria.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagResourceArn",
+          "documentation":"<p>The ARN of the EventBridge Scheduler resource for which you want to view tags.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags associated with the specified resource.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaximumEventAgeInSeconds":{
+      "type":"integer",
+      "box":true,
+      "max":86400,
+      "min":60
+    },
+    "MaximumRetryAttempts":{
+      "type":"integer",
+      "box":true,
+      "max":185,
+      "min":0
+    },
+    "MaximumWindowInMinutes":{
+      "type":"integer",
+      "box":true,
+      "max":1440,
+      "min":1
+    },
+    "MessageGroupId":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "Name":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z-_.]+$"
+    },
+    "NamePrefix":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z-_.]+$"
+    },
+    "NetworkConfiguration":{
+      "type":"structure",
+      "members":{
+        "awsvpcConfiguration":{
+          "shape":"AwsVpcConfiguration",
+          "documentation":"<p>Specifies the Amazon VPC subnets and security groups for the task, and whether a public IP address is to be used. This structure is relevant only for ECS tasks that use the awsvpc network mode.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the network configuration for an ECS task.</p>"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PlacementConstraint":{
+      "type":"structure",
+      "members":{
+        "expression":{
+          "shape":"PlacementConstraintExpression",
+          "documentation":"<p>A cluster query language expression to apply to the constraint. You cannot specify an expression if the constraint type is <code>distinctInstance</code>. For more information, see <a href=\"https://docs.aws.amazon.com/latest/developerguide/cluster-query-language.html\">Cluster query language</a> in the <i>Amazon ECS Developer Guide</i>.</p>"
+        },
+        "type":{
+          "shape":"PlacementConstraintType",
+          "documentation":"<p>The type of constraint. Use <code>distinctInstance</code> to ensure that each task in a particular group is running on a different container instance. Use <code>memberOf</code> to restrict the selection to a group of valid candidates.</p>"
+        }
+      },
+      "documentation":"<p>An object representing a constraint on task placement.</p>"
+    },
+    "PlacementConstraintExpression":{
+      "type":"string",
+      "max":2000,
+      "min":0
+    },
+    "PlacementConstraintType":{
+      "type":"string",
+      "enum":[
+        "distinctInstance",
+        "memberOf"
+      ]
+    },
+    "PlacementConstraints":{
+      "type":"list",
+      "member":{"shape":"PlacementConstraint"},
+      "max":10,
+      "min":0
+    },
+    "PlacementStrategies":{
+      "type":"list",
+      "member":{"shape":"PlacementStrategy"},
+      "max":5,
+      "min":0
+    },
+    "PlacementStrategy":{
+      "type":"structure",
+      "members":{
+        "field":{
+          "shape":"PlacementStrategyField",
+          "documentation":"<p>The field to apply the placement strategy against. For the spread placement strategy, valid values are <code>instanceId</code> (or <code>instanceId</code>, which has the same effect), or any platform or custom attribute that is applied to a container instance, such as <code>attribute:ecs.availability-zone</code>. For the binpack placement strategy, valid values are <code>cpu</code> and <code>memory</code>. For the random placement strategy, this field is not used.</p>"
+        },
+        "type":{
+          "shape":"PlacementStrategyType",
+          "documentation":"<p>The type of placement strategy. The random placement strategy randomly places tasks on available candidates. The spread placement strategy spreads placement across available candidates evenly based on the field parameter. The binpack strategy places tasks on available candidates that have the least available amount of the resource that is specified with the field parameter. For example, if you binpack on memory, a task is placed on the instance with the least amount of remaining memory (but still enough to run the task).</p>"
+        }
+      },
+      "documentation":"<p>The task placement strategy for a task or service.</p>"
+    },
+    "PlacementStrategyField":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "PlacementStrategyType":{
+      "type":"string",
+      "enum":[
+        "random",
+        "spread",
+        "binpack"
+      ]
+    },
+    "PlatformVersion":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "PropagateTags":{
+      "type":"string",
+      "enum":["TASK_DEFINITION"]
+    },
+    "ReferenceId":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request references a resource which does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RetryPolicy":{
+      "type":"structure",
+      "members":{
+        "MaximumEventAgeInSeconds":{
+          "shape":"MaximumEventAgeInSeconds",
+          "documentation":"<p>The maximum amount of time, in seconds, to continue to make retry attempts.</p>"
+        },
+        "MaximumRetryAttempts":{
+          "shape":"MaximumRetryAttempts",
+          "documentation":"<p>The maximum number of retry attempts to make before the request fails. Retry attempts with exponential backoff continue until either the maximum number of attempts is made or until the duration of the <code>MaximumEventAgeInSeconds</code> is reached.</p>"
+        }
+      },
+      "documentation":"<p>A <code>RetryPolicy</code> object that includes information about the retry policy settings, including the maximum age of an event, and the maximum number of times EventBridge Scheduler will try to deliver the event to a target.</p>"
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":1600,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:iam::\\d{12}:role\\/[\\w+=,.@\\/-]+$"
+    },
+    "SageMakerPipelineParameter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Value"
+      ],
+      "members":{
+        "Name":{
+          "shape":"SageMakerPipelineParameterName",
+          "documentation":"<p>Name of parameter to start execution of a SageMaker Model Building Pipeline.</p>"
+        },
+        "Value":{
+          "shape":"SageMakerPipelineParameterValue",
+          "documentation":"<p>Value of parameter to start execution of a SageMaker Model Building Pipeline.</p>"
+        }
+      },
+      "documentation":"<p>The name and value pair of a parameter to use to start execution of a SageMaker Model Building Pipeline.</p>"
+    },
+    "SageMakerPipelineParameterList":{
+      "type":"list",
+      "member":{"shape":"SageMakerPipelineParameter"},
+      "max":200,
+      "min":0
+    },
+    "SageMakerPipelineParameterName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[A-Za-z0-9\\-_]*$"
+    },
+    "SageMakerPipelineParameterValue":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "SageMakerPipelineParameters":{
+      "type":"structure",
+      "members":{
+        "PipelineParameterList":{
+          "shape":"SageMakerPipelineParameterList",
+          "documentation":"<p>List of parameter names and values to use when executing the SageMaker Model Building Pipeline.</p>"
+        }
+      },
+      "documentation":"<p>The templated target type for the Amazon SageMaker <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_StartPipelineExecution.html\"> <code>StartPipelineExecution</code> </a> API operation.</p>"
+    },
+    "ScheduleArn":{
+      "type":"string",
+      "max":1224,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:scheduler:[a-z0-9\\-]+:\\d{12}:schedule\\/[0-9a-zA-Z-_.]+\\/[0-9a-zA-Z-_.]+$"
+    },
+    "ScheduleExpression":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "ScheduleExpressionTimezone":{
+      "type":"string",
+      "max":50,
+      "min":1
+    },
+    "ScheduleGroupArn":{
+      "type":"string",
+      "max":1224,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:scheduler:[a-z0-9\\-]+:\\d{12}:schedule-group\\/[0-9a-zA-Z-_.]+$"
+    },
+    "ScheduleGroupList":{
+      "type":"list",
+      "member":{"shape":"ScheduleGroupSummary"}
+    },
+    "ScheduleGroupName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z-_.]+$"
+    },
+    "ScheduleGroupNamePrefix":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-zA-Z-_.]+$"
+    },
+    "ScheduleGroupState":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "DELETING"
+      ]
+    },
+    "ScheduleGroupSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ScheduleGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule group.</p>"
+        },
+        "CreationDate":{
+          "shape":"CreationDate",
+          "documentation":"<p>The time at which the schedule group was created.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"LastModificationDate",
+          "documentation":"<p>The time at which the schedule group was last modified.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group.</p>"
+        },
+        "State":{
+          "shape":"ScheduleGroupState",
+          "documentation":"<p>Specifies the state of the schedule group.</p>"
+        }
+      },
+      "documentation":"<p>The details of a schedule group.</p>"
+    },
+    "ScheduleList":{
+      "type":"list",
+      "member":{"shape":"ScheduleSummary"}
+    },
+    "ScheduleState":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "ScheduleSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"ScheduleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule.</p>"
+        },
+        "CreationDate":{
+          "shape":"CreationDate",
+          "documentation":"<p>The time at which the schedule was created.</p>"
+        },
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group associated with this schedule.</p>"
+        },
+        "LastModificationDate":{
+          "shape":"LastModificationDate",
+          "documentation":"<p>The time at which the schedule was last modified.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule.</p>"
+        },
+        "State":{
+          "shape":"ScheduleState",
+          "documentation":"<p>Specifies whether the schedule is enabled or disabled.</p>"
+        },
+        "Target":{
+          "shape":"TargetSummary",
+          "documentation":"<p>The schedule's target details.</p>"
+        }
+      },
+      "documentation":"<p>The details of a schedule.</p>"
+    },
+    "SecurityGroup":{
+      "type":"string",
+      "max":1000,
+      "min":1
+    },
+    "SecurityGroups":{
+      "type":"list",
+      "member":{"shape":"SecurityGroup"},
+      "max":5,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request exceeds a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Source":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^(?=[/\\.\\-_A-Za-z0-9]+)((?!aws\\.).*)|(\\$(\\.[\\w_-]+(\\[(\\d+|\\*)\\])*)*)$"
+    },
+    "SqsParameters":{
+      "type":"structure",
+      "members":{
+        "MessageGroupId":{
+          "shape":"MessageGroupId",
+          "documentation":"<p>The FIFO message group ID to use as the target.</p>"
+        }
+      },
+      "documentation":"<p>The templated target type for the Amazon SQS <a href=\"https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html\"> <code>SendMessage</code> </a> API operation. Contains the message group ID to use when the target is a FIFO queue. If you specify an Amazon SQS FIFO queue as a target, the queue must have content-based deduplication enabled. For more information, see <a href=\"https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html\">Using the Amazon SQS message deduplication ID</a> in the <i>Amazon SQS Developer Guide</i>. </p>"
+    },
+    "StartDate":{"type":"timestamp"},
+    "String":{"type":"string"},
+    "Subnet":{
+      "type":"string",
+      "max":1000,
+      "min":1
+    },
+    "Subnets":{
+      "type":"list",
+      "member":{"shape":"Subnet"},
+      "max":16,
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key for the tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value for the tag.</p>"
+        }
+      },
+      "documentation":"<p>Tag to associate with a schedule group.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "TagResourceArn":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^arn:aws(-[a-z]+)?:scheduler:[a-z0-9\\-]+:\\d{12}:schedule-group\\/[0-9a-zA-Z-_.]+$"
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule group that you are adding tags to.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The list of tags to associate with the schedule group.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Tags":{
+      "type":"list",
+      "member":{"shape":"TagMap"},
+      "max":50,
+      "min":0
+    },
+    "Target":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "RoleArn"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"TargetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target.</p>"
+        },
+        "DeadLetterConfig":{
+          "shape":"DeadLetterConfig",
+          "documentation":"<p>An object that contains information about an Amazon SQS queue that EventBridge Scheduler uses as a dead-letter queue for your schedule. If specified, EventBridge Scheduler delivers failed events that could not be successfully delivered to a target to the queue.</p>"
+        },
+        "EcsParameters":{
+          "shape":"EcsParameters",
+          "documentation":"<p>The templated target type for the Amazon ECS <a href=\"https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html\"> <code>RunTask</code> </a> API operation.</p>"
+        },
+        "EventBridgeParameters":{
+          "shape":"EventBridgeParameters",
+          "documentation":"<p>The templated target type for the EventBridge <a href=\"https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html\"> <code>PutEvents</code> </a> API operation.</p>"
+        },
+        "Input":{
+          "shape":"TargetInput",
+          "documentation":"<p>The text, or well-formed JSON, passed to the target. If you are configuring a templated Lambda, AWS Step Functions, or Amazon EventBridge target, the input must be a well-formed JSON. For all other target types, a JSON is not required. If you do not specify anything for this field, EventBridge Scheduler delivers a default notification to the target.</p>"
+        },
+        "KinesisParameters":{
+          "shape":"KinesisParameters",
+          "documentation":"<p>The templated target type for the Amazon Kinesis <a href=\"kinesis/latest/APIReference/API_PutRecord.html\"> <code>PutRecord</code> </a> API operation.</p>"
+        },
+        "RetryPolicy":{
+          "shape":"RetryPolicy",
+          "documentation":"<p>A <code>RetryPolicy</code> object that includes information about the retry policy settings, including the maximum age of an event, and the maximum number of times EventBridge Scheduler will try to deliver the event to a target.</p>"
+        },
+        "RoleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that EventBridge Scheduler will use for this target when the schedule is invoked.</p>"
+        },
+        "SageMakerPipelineParameters":{
+          "shape":"SageMakerPipelineParameters",
+          "documentation":"<p>The templated target type for the Amazon SageMaker <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_StartPipelineExecution.html\"> <code>StartPipelineExecution</code> </a> API operation.</p>"
+        },
+        "SqsParameters":{
+          "shape":"SqsParameters",
+          "documentation":"<p>The templated target type for the Amazon SQS <a href=\"https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html\"> <code>SendMessage</code> </a> API operation. Contains the message group ID to use when the target is a FIFO queue. If you specify an Amazon SQS FIFO queue as a target, the queue must have content-based deduplication enabled. For more information, see <a href=\"https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html\">Using the Amazon SQS message deduplication ID</a> in the <i>Amazon SQS Developer Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>The schedule's target. EventBridge Scheduler supports templated target that invoke common API operations, as well as universal targets that you can customize to invoke over 6,000 API operations across more than 270 services. You can only specify one templated or universal target for a schedule.</p>"
+    },
+    "TargetArn":{
+      "type":"string",
+      "max":1600,
+      "min":1
+    },
+    "TargetInput":{
+      "type":"string",
+      "min":1
+    },
+    "TargetPartitionKey":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "TargetSummary":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"TargetArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target.</p>"
+        }
+      },
+      "documentation":"<p>The details of a target.</p>"
+    },
+    "TaskCount":{
+      "type":"integer",
+      "box":true,
+      "max":10,
+      "min":1
+    },
+    "TaskDefinitionArn":{
+      "type":"string",
+      "max":1600,
+      "min":1
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"TagResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule group from which you are removing tags.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of tag keys to remove from the resource.</p>",
+          "location":"querystring",
+          "locationName":"TagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateScheduleInput":{
+      "type":"structure",
+      "required":[
+        "FlexibleTimeWindow",
+        "Name",
+        "ScheduleExpression",
+        "Target"
+      ],
+      "members":{
+        "ActionAfterCompletion":{
+          "shape":"ActionAfterCompletion",
+          "documentation":"<p>Specifies the action that EventBridge Scheduler applies to the schedule after the schedule completes invoking the target.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p> Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, EventBridge Scheduler uses a randomly generated token for the request to ensure idempotency. </p>",
+          "idempotencyToken":true
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description you specify for the schedule.</p>"
+        },
+        "EndDate":{
+          "shape":"EndDate",
+          "documentation":"<p>The date, in UTC, before which the schedule can invoke its target. Depending on the schedule's recurrence expression, invocations might stop on, or before, the <code>EndDate</code> you specify. EventBridge Scheduler ignores <code>EndDate</code> for one-time schedules.</p>"
+        },
+        "FlexibleTimeWindow":{
+          "shape":"FlexibleTimeWindow",
+          "documentation":"<p>Allows you to configure a time window during which EventBridge Scheduler invokes the schedule.</p>"
+        },
+        "GroupName":{
+          "shape":"ScheduleGroupName",
+          "documentation":"<p>The name of the schedule group with which the schedule is associated. You must provide this value in order for EventBridge Scheduler to find the schedule you want to update. If you omit this value, EventBridge Scheduler assumes the group is associated to the default group.</p>"
+        },
+        "KmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ARN for the customer managed KMS key that that you want EventBridge Scheduler to use to encrypt and decrypt your data.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the schedule that you are updating.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        },
+        "ScheduleExpression":{
+          "shape":"ScheduleExpression",
+          "documentation":"<p> The expression that defines when the schedule runs. The following formats are supported. </p> <ul> <li> <p> <code>at</code> expression - <code>at(yyyy-mm-ddThh:mm:ss)</code> </p> </li> <li> <p> <code>rate</code> expression - <code>rate(value unit)</code> </p> </li> <li> <p> <code>cron</code> expression - <code>cron(fields)</code> </p> </li> </ul> <p> You can use <code>at</code> expressions to create one-time schedules that invoke a target once, at the time and in the time zone, that you specify. You can use <code>rate</code> and <code>cron</code> expressions to create recurring schedules. Rate-based schedules are useful when you want to invoke a target at regular intervals, such as every 15 minutes or every five days. Cron-based schedules are useful when you want to invoke a target periodically at a specific time, such as at 8:00 am (UTC+0) every 1st day of the month. </p> <p> A <code>cron</code> expression consists of six fields separated by white spaces: <code>(minutes hours day_of_month month day_of_week year)</code>. </p> <p> A <code>rate</code> expression consists of a <i>value</i> as a positive integer, and a <i>unit</i> with the following options: <code>minute</code> | <code>minutes</code> | <code>hour</code> | <code>hours</code> | <code>day</code> | <code>days</code> </p> <p> For more information and examples, see <a href=\"https://docs.aws.amazon.com/scheduler/latest/UserGuide/schedule-types.html\">Schedule types on EventBridge Scheduler</a> in the <i>EventBridge Scheduler User Guide</i>. </p>"
+        },
+        "ScheduleExpressionTimezone":{
+          "shape":"ScheduleExpressionTimezone",
+          "documentation":"<p>The timezone in which the scheduling expression is evaluated.</p>"
+        },
+        "StartDate":{
+          "shape":"StartDate",
+          "documentation":"<p>The date, in UTC, after which the schedule can begin invoking its target. Depending on the schedule's recurrence expression, invocations might occur on, or after, the <code>StartDate</code> you specify. EventBridge Scheduler ignores <code>StartDate</code> for one-time schedules.</p>"
+        },
+        "State":{
+          "shape":"ScheduleState",
+          "documentation":"<p>Specifies whether the schedule is enabled or disabled.</p>"
+        },
+        "Target":{
+          "shape":"Target",
+          "documentation":"<p>The schedule target. You can use this operation to change the target that your schedule invokes.</p>"
+        }
+      }
+    },
+    "UpdateScheduleOutput":{
+      "type":"structure",
+      "required":["ScheduleArn"],
+      "members":{
+        "ScheduleArn":{
+          "shape":"ScheduleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule that you updated.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    }
+  },
+  "documentation":"<p> Amazon EventBridge Scheduler is a serverless scheduler that allows you to create, run, and manage tasks from one central, managed service. EventBridge Scheduler delivers your tasks reliably, with built-in mechanisms that adjust your schedules based on the availability of downstream targets. The following reference lists the available API actions, and data types for EventBridge Scheduler. </p>"
+}

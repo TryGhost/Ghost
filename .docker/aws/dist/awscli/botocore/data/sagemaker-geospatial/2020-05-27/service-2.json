@@ -1,0 +1,2899 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-05-27",
+    "endpointPrefix":"sagemaker-geospatial",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"Amazon SageMaker geospatial capabilities",
+    "serviceId":"SageMaker Geospatial",
+    "signatureVersion":"v4",
+    "signingName":"sagemaker-geospatial",
+    "uid":"sagemaker-geospatial-2020-05-27"
+  },
+  "operations":{
+    "DeleteEarthObservationJob":{
+      "name":"DeleteEarthObservationJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/earth-observation-jobs/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteEarthObservationJobInput"},
+      "output":{"shape":"DeleteEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to delete an Earth Observation job.</p>",
+      "idempotent":true
+    },
+    "DeleteVectorEnrichmentJob":{
+      "name":"DeleteVectorEnrichmentJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/vector-enrichment-jobs/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteVectorEnrichmentJobInput"},
+      "output":{"shape":"DeleteVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to delete a Vector Enrichment job.</p>",
+      "idempotent":true
+    },
+    "ExportEarthObservationJob":{
+      "name":"ExportEarthObservationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/export-earth-observation-job",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportEarthObservationJobInput"},
+      "output":{"shape":"ExportEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to export results of an Earth Observation job and optionally source images used as input to the EOJ to an Amazon S3 location.</p>"
+    },
+    "ExportVectorEnrichmentJob":{
+      "name":"ExportVectorEnrichmentJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/export-vector-enrichment-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportVectorEnrichmentJobInput"},
+      "output":{"shape":"ExportVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to copy results of a Vector Enrichment job to an Amazon S3 location.</p>"
+    },
+    "GetEarthObservationJob":{
+      "name":"GetEarthObservationJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/earth-observation-jobs/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEarthObservationJobInput"},
+      "output":{"shape":"GetEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Get the details for a previously initiated Earth Observation job.</p>"
+    },
+    "GetRasterDataCollection":{
+      "name":"GetRasterDataCollection",
+      "http":{
+        "method":"GET",
+        "requestUri":"/raster-data-collection/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRasterDataCollectionInput"},
+      "output":{"shape":"GetRasterDataCollectionOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation to get details of a specific raster data collection.</p>"
+    },
+    "GetTile":{
+      "name":"GetTile",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tile/{z}/{x}/{y}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTileInput"},
+      "output":{"shape":"GetTileOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets a web mercator tile for the given Earth Observation job.</p>"
+    },
+    "GetVectorEnrichmentJob":{
+      "name":"GetVectorEnrichmentJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/vector-enrichment-jobs/{Arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetVectorEnrichmentJobInput"},
+      "output":{"shape":"GetVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves details of a Vector Enrichment Job for a given job Amazon Resource Name (ARN).</p>"
+    },
+    "ListEarthObservationJobs":{
+      "name":"ListEarthObservationJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-earth-observation-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEarthObservationJobInput"},
+      "output":{"shape":"ListEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation to get a list of the Earth Observation jobs associated with the calling Amazon Web Services account.</p>"
+    },
+    "ListRasterDataCollections":{
+      "name":"ListRasterDataCollections",
+      "http":{
+        "method":"GET",
+        "requestUri":"/raster-data-collections",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRasterDataCollectionsInput"},
+      "output":{"shape":"ListRasterDataCollectionsOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Use this operation to get raster data collections.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the tags attached to the resource.</p>"
+    },
+    "ListVectorEnrichmentJobs":{
+      "name":"ListVectorEnrichmentJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-vector-enrichment-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListVectorEnrichmentJobInput"},
+      "output":{"shape":"ListVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves a list of vector enrichment jobs.</p>"
+    },
+    "SearchRasterDataCollection":{
+      "name":"SearchRasterDataCollection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/search-raster-data-collection",
+        "responseCode":200
+      },
+      "input":{"shape":"SearchRasterDataCollectionInput"},
+      "output":{"shape":"SearchRasterDataCollectionOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Allows you run image query on a specific raster data collection to get a list of the satellite imagery matching the selected filters.</p>"
+    },
+    "StartEarthObservationJob":{
+      "name":"StartEarthObservationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/earth-observation-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartEarthObservationJobInput"},
+      "output":{"shape":"StartEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to create an Earth observation job.</p>",
+      "idempotent":true
+    },
+    "StartVectorEnrichmentJob":{
+      "name":"StartVectorEnrichmentJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/vector-enrichment-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartVectorEnrichmentJobInput"},
+      "output":{"shape":"StartVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Creates a Vector Enrichment job for the supplied job type. Currently, there are two supported job types: reverse geocoding and map matching.</p>",
+      "idempotent":true
+    },
+    "StopEarthObservationJob":{
+      "name":"StopEarthObservationJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/earth-observation-jobs/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopEarthObservationJobInput"},
+      "output":{"shape":"StopEarthObservationJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Use this operation to stop an existing earth observation job.</p>"
+    },
+    "StopVectorEnrichmentJob":{
+      "name":"StopVectorEnrichmentJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/vector-enrichment-jobs/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopVectorEnrichmentJobInput"},
+      "output":{"shape":"StopVectorEnrichmentJobOutput"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Stops the Vector Enrichment job for a given job ARN.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The resource you want to tag.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>The resource you want to untag.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AlgorithmNameCloudRemoval":{
+      "type":"string",
+      "enum":["INTERPOLATION"]
+    },
+    "AlgorithmNameGeoMosaic":{
+      "type":"string",
+      "enum":[
+        "NEAR",
+        "BILINEAR",
+        "CUBIC",
+        "CUBICSPLINE",
+        "LANCZOS",
+        "AVERAGE",
+        "RMS",
+        "MODE",
+        "MAX",
+        "MIN",
+        "MED",
+        "Q1",
+        "Q3",
+        "SUM"
+      ]
+    },
+    "AlgorithmNameResampling":{
+      "type":"string",
+      "enum":[
+        "NEAR",
+        "BILINEAR",
+        "CUBIC",
+        "CUBICSPLINE",
+        "LANCZOS",
+        "AVERAGE",
+        "RMS",
+        "MODE",
+        "MAX",
+        "MIN",
+        "MED",
+        "Q1",
+        "Q3",
+        "SUM"
+      ]
+    },
+    "AreaOfInterest":{
+      "type":"structure",
+      "members":{
+        "AreaOfInterestGeometry":{
+          "shape":"AreaOfInterestGeometry",
+          "documentation":"<p>A GeoJSON object representing the geographic extent in the coordinate space.</p>"
+        }
+      },
+      "documentation":"<p>The geographic extent of the Earth Observation job.</p>",
+      "union":true
+    },
+    "AreaOfInterestGeometry":{
+      "type":"structure",
+      "members":{
+        "MultiPolygonGeometry":{
+          "shape":"MultiPolygonGeometryInput",
+          "documentation":"<p>The structure representing the MultiPolygon Geometry.</p>"
+        },
+        "PolygonGeometry":{
+          "shape":"PolygonGeometryInput",
+          "documentation":"<p>The structure representing Polygon Geometry.</p>"
+        }
+      },
+      "documentation":"<p>A GeoJSON object representing the geographic extent in the coordinate space.</p>",
+      "union":true
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "AssetValue":{
+      "type":"structure",
+      "members":{
+        "Href":{
+          "shape":"String",
+          "documentation":"<p>Link to the asset object.</p>"
+        }
+      },
+      "documentation":"<p>The structure containing the asset properties.</p>"
+    },
+    "AssetsMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"AssetValue"}
+    },
+    "BandMathConfigInput":{
+      "type":"structure",
+      "members":{
+        "CustomIndices":{
+          "shape":"CustomIndicesInput",
+          "documentation":"<p>CustomIndices that are computed.</p>"
+        },
+        "PredefinedIndices":{
+          "shape":"StringListInput",
+          "documentation":"<p>One or many of the supported predefined indices to compute. Allowed values: <code>NDVI</code>, <code>EVI2</code>, <code>MSAVI</code>, <code>NDWI</code>, <code>NDMI</code>, <code>NDSI</code>, and <code>WDRVI</code>.</p>"
+        }
+      },
+      "documentation":"<p>Input structure for the BandMath operation type. Defines Predefined and CustomIndices to be computed using BandMath.</p>"
+    },
+    "BinaryFile":{
+      "type":"blob",
+      "streaming":true
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CloudMaskingConfigInput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Input structure for CloudMasking operation type.</p>"
+    },
+    "CloudRemovalConfigInput":{
+      "type":"structure",
+      "members":{
+        "AlgorithmName":{
+          "shape":"AlgorithmNameCloudRemoval",
+          "documentation":"<p>The name of the algorithm used for cloud removal.</p>"
+        },
+        "InterpolationValue":{
+          "shape":"String",
+          "documentation":"<p>The interpolation value you provide for cloud removal.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>TargetBands to be returned in the output of CloudRemoval operation.</p>"
+        }
+      },
+      "documentation":"<p>Input structure for Cloud Removal Operation type</p>"
+    },
+    "ComparisonOperator":{
+      "type":"string",
+      "enum":[
+        "EQUALS",
+        "NOT_EQUALS",
+        "STARTS_WITH"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CustomIndicesInput":{
+      "type":"structure",
+      "members":{
+        "Operations":{
+          "shape":"OperationsListInput",
+          "documentation":"<p>A list of BandMath indices to compute.</p>"
+        }
+      },
+      "documentation":"<p>Input object defining the custom BandMath indices to compute.</p>"
+    },
+    "DataCollectionArn":{
+      "type":"string",
+      "pattern":"^arn:aws[a-z-]{0,12}:sagemaker-geospatial:[a-z0-9-]{1,25}:[0-9]{12}:raster-data-collection/(public|premium|user)/[a-z0-9]{12,}$"
+    },
+    "DataCollectionType":{
+      "type":"string",
+      "enum":[
+        "PUBLIC",
+        "PREMIUM",
+        "USER"
+      ]
+    },
+    "DataCollectionsList":{
+      "type":"list",
+      "member":{"shape":"RasterDataCollectionMetadata"}
+    },
+    "DeleteEarthObservationJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Earth Observation job being deleted.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "DeleteEarthObservationJobOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteVectorEnrichmentJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job being deleted.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "DeleteVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Double":{
+      "type":"double",
+      "box":true
+    },
+    "EarthObservationJobArn":{
+      "type":"string",
+      "pattern":"^arn:aws[a-z-]{0,12}:sagemaker-geospatial:[a-z0-9-]{1,25}:[0-9]{12}:earth-observation-job/[a-z0-9]{12,}$"
+    },
+    "EarthObservationJobErrorDetails":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>A detailed message describing the error in an Earth Observation job.</p>"
+        },
+        "Type":{
+          "shape":"EarthObservationJobErrorType",
+          "documentation":"<p>The type of error in an Earth Observation job.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the errors in an EarthObservationJob.</p>"
+    },
+    "EarthObservationJobErrorType":{
+      "type":"string",
+      "enum":[
+        "CLIENT_ERROR",
+        "SERVER_ERROR"
+      ]
+    },
+    "EarthObservationJobExportStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "EarthObservationJobList":{
+      "type":"list",
+      "member":{"shape":"ListEarthObservationJobOutputConfig"}
+    },
+    "EarthObservationJobOutputBands":{
+      "type":"list",
+      "member":{"shape":"OutputBand"}
+    },
+    "EarthObservationJobStatus":{
+      "type":"string",
+      "enum":[
+        "INITIALIZING",
+        "IN_PROGRESS",
+        "STOPPING",
+        "COMPLETED",
+        "STOPPED",
+        "FAILED",
+        "DELETING",
+        "DELETED"
+      ]
+    },
+    "EoCloudCoverInput":{
+      "type":"structure",
+      "required":[
+        "LowerBound",
+        "UpperBound"
+      ],
+      "members":{
+        "LowerBound":{
+          "shape":"Float",
+          "documentation":"<p>Lower bound for EoCloudCover.</p>"
+        },
+        "UpperBound":{
+          "shape":"Float",
+          "documentation":"<p>Upper bound for EoCloudCover.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the EoCloudCover filter.</p>"
+    },
+    "ExecutionRoleArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:(aws[a-z-]*):iam::([0-9]{12}):role/[a-zA-Z0-9+=,.@_/-]+$"
+    },
+    "ExportEarthObservationJobInput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "ExecutionRoleArn",
+        "OutputConfig"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The input Amazon Resource Name (ARN) of the Earth Observation job being exported.</p>"
+        },
+        "ClientToken":{
+          "shape":"ExportEarthObservationJobInputClientTokenString",
+          "documentation":"<p>A unique token that guarantees that the call to this API is idempotent.</p>",
+          "idempotencyToken":true
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "ExportSourceImages":{
+          "shape":"Boolean",
+          "documentation":"<p>The source images provided to the Earth Observation job being exported.</p>"
+        },
+        "OutputConfig":{
+          "shape":"OutputConfigInput",
+          "documentation":"<p>An object containing information about the output file.</p>"
+        }
+      }
+    },
+    "ExportEarthObservationJobInputClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":36
+    },
+    "ExportEarthObservationJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "ExecutionRoleArn",
+        "ExportStatus",
+        "OutputConfig"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The output Amazon Resource Name (ARN) of the Earth Observation job being exported.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "ExportSourceImages":{
+          "shape":"Boolean",
+          "documentation":"<p>The source images provided to the Earth Observation job being exported.</p>"
+        },
+        "ExportStatus":{
+          "shape":"EarthObservationJobExportStatus",
+          "documentation":"<p>The status of the results of the Earth Observation job being exported.</p>"
+        },
+        "OutputConfig":{
+          "shape":"OutputConfigInput",
+          "documentation":"<p>An object containing information about the output file.</p>"
+        }
+      }
+    },
+    "ExportErrorDetails":{
+      "type":"structure",
+      "members":{
+        "ExportResults":{
+          "shape":"ExportErrorDetailsOutput",
+          "documentation":"<p>The structure for returning the export error details while exporting results of an Earth Observation job.</p>"
+        },
+        "ExportSourceImages":{
+          "shape":"ExportErrorDetailsOutput",
+          "documentation":"<p>The structure for returning the export error details while exporting the source images of an Earth Observation job.</p>"
+        }
+      },
+      "documentation":"<p>The structure for returning the export error details in a GetEarthObservationJob.</p>"
+    },
+    "ExportErrorDetailsOutput":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>A detailed message describing the error in an export EarthObservationJob operation.</p>"
+        },
+        "Type":{
+          "shape":"ExportErrorType",
+          "documentation":"<p>The type of error in an export EarthObservationJob operation.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the errors in an export EarthObservationJob operation.</p>"
+    },
+    "ExportErrorType":{
+      "type":"string",
+      "enum":[
+        "CLIENT_ERROR",
+        "SERVER_ERROR"
+      ]
+    },
+    "ExportS3DataInput":{
+      "type":"structure",
+      "required":["S3Uri"],
+      "members":{
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The URL to the Amazon S3 data input.</p>"
+        }
+      },
+      "documentation":"<p>The structure containing the Amazon S3 path to export the Earth Observation job output.</p>"
+    },
+    "ExportVectorEnrichmentJobInput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "ExecutionRoleArn",
+        "OutputConfig"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job.</p>"
+        },
+        "ClientToken":{
+          "shape":"ExportVectorEnrichmentJobInputClientTokenString",
+          "documentation":"<p>A unique token that guarantees that the call to this API is idempotent.</p>",
+          "idempotencyToken":true
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM rolewith permission to upload to the location in OutputConfig.</p>"
+        },
+        "OutputConfig":{
+          "shape":"ExportVectorEnrichmentJobOutputConfig",
+          "documentation":"<p>Output location information for exporting Vector Enrichment Job results. </p>"
+        }
+      }
+    },
+    "ExportVectorEnrichmentJobInputClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":36
+    },
+    "ExportVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "ExecutionRoleArn",
+        "ExportStatus",
+        "OutputConfig"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job being exported.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role with permission to upload to the location in OutputConfig.</p>"
+        },
+        "ExportStatus":{
+          "shape":"VectorEnrichmentJobExportStatus",
+          "documentation":"<p>The status of the results the Vector Enrichment job being exported.</p>"
+        },
+        "OutputConfig":{
+          "shape":"ExportVectorEnrichmentJobOutputConfig",
+          "documentation":"<p>Output location information for exporting Vector Enrichment Job results. </p>"
+        }
+      }
+    },
+    "ExportVectorEnrichmentJobOutputConfig":{
+      "type":"structure",
+      "required":["S3Data"],
+      "members":{
+        "S3Data":{
+          "shape":"VectorEnrichmentJobS3Data",
+          "documentation":"<p>The input structure for Amazon S3 data; representing the Amazon S3 location of the input data objects.</p>"
+        }
+      },
+      "documentation":"<p>An object containing information about the output file.</p>"
+    },
+    "Filter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Type"
+      ],
+      "members":{
+        "Maximum":{
+          "shape":"Float",
+          "documentation":"<p>The maximum value of the filter.</p>"
+        },
+        "Minimum":{
+          "shape":"Float",
+          "documentation":"<p>The minimum value of the filter.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the filter.</p>"
+        },
+        "Type":{
+          "shape":"String",
+          "documentation":"<p>The type of the filter being used.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the filters supported by a RasterDataCollection.</p>"
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "Float":{
+      "type":"float",
+      "box":true
+    },
+    "GeoMosaicConfigInput":{
+      "type":"structure",
+      "members":{
+        "AlgorithmName":{
+          "shape":"AlgorithmNameGeoMosaic",
+          "documentation":"<p>The name of the algorithm being used for geomosaic.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>The target bands for geomosaic.</p>"
+        }
+      },
+      "documentation":"<p>Input configuration information for the geomosaic.</p>"
+    },
+    "Geometry":{
+      "type":"structure",
+      "required":[
+        "Coordinates",
+        "Type"
+      ],
+      "members":{
+        "Coordinates":{
+          "shape":"LinearRings",
+          "documentation":"<p>The coordinates of the GeoJson Geometry.</p>"
+        },
+        "Type":{
+          "shape":"String",
+          "documentation":"<p>GeoJson Geometry types like Polygon and MultiPolygon.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing a Geometry in terms of Type and Coordinates as per GeoJson spec.</p>"
+    },
+    "GetEarthObservationJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Earth Observation job.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "GetEarthObservationJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "InputConfig",
+        "JobConfig",
+        "Name",
+        "Status"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Earth Observation job.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time of the initiated Earth Observation job.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of Earth Observation job, in seconds.</p>"
+        },
+        "ErrorDetails":{
+          "shape":"EarthObservationJobErrorDetails",
+          "documentation":"<p>Details about the errors generated during the Earth Observation job.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "ExportErrorDetails":{
+          "shape":"ExportErrorDetails",
+          "documentation":"<p>Details about the errors generated during ExportEarthObservationJob.</p>"
+        },
+        "ExportStatus":{
+          "shape":"EarthObservationJobExportStatus",
+          "documentation":"<p>The status of the Earth Observation job.</p>"
+        },
+        "InputConfig":{
+          "shape":"InputConfigOutput",
+          "documentation":"<p>Input data for the Earth Observation job.</p>"
+        },
+        "JobConfig":{
+          "shape":"JobConfigInput",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Earth Observation job.</p>"
+        },
+        "OutputBands":{
+          "shape":"EarthObservationJobOutputBands",
+          "documentation":"<p>Bands available in the output of an operation.</p>"
+        },
+        "Status":{
+          "shape":"EarthObservationJobStatus",
+          "documentation":"<p>The status of a previously initiated Earth Observation job.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "GetRasterDataCollectionInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the raster data collection.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "GetRasterDataCollectionOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Description",
+        "DescriptionPageUrl",
+        "ImageSourceBands",
+        "Name",
+        "SupportedFilters",
+        "Type"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the raster data collection.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the raster data collection.</p>"
+        },
+        "DescriptionPageUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL of the description page.</p>"
+        },
+        "ImageSourceBands":{
+          "shape":"ImageSourceBandList",
+          "documentation":"<p>The list of image source bands in the raster data collection.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the raster data collection.</p>"
+        },
+        "SupportedFilters":{
+          "shape":"FilterList",
+          "documentation":"<p>The filters supported by the raster data collection.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        },
+        "Type":{
+          "shape":"DataCollectionType",
+          "documentation":"<p>The raster data collection type.</p>"
+        }
+      }
+    },
+    "GetTileInput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "ImageAssets",
+        "Target",
+        "x",
+        "y",
+        "z"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the tile operation.</p>",
+          "location":"querystring",
+          "locationName":"Arn"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specify.</p>",
+          "location":"querystring",
+          "locationName":"ExecutionRoleArn"
+        },
+        "ImageAssets":{
+          "shape":"StringListInput",
+          "documentation":"<p>The particular assets or bands to tile.</p>",
+          "location":"querystring",
+          "locationName":"ImageAssets"
+        },
+        "ImageMask":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines whether or not to return a valid data mask.</p>",
+          "location":"querystring",
+          "locationName":"ImageMask"
+        },
+        "OutputDataType":{
+          "shape":"OutputType",
+          "documentation":"<p>The output data type of the tile operation.</p>",
+          "location":"querystring",
+          "locationName":"OutputDataType"
+        },
+        "OutputFormat":{
+          "shape":"String",
+          "documentation":"<p>The data format of the output tile. The formats include .npy, .png and .jpg.</p>",
+          "location":"querystring",
+          "locationName":"OutputFormat"
+        },
+        "PropertyFilters":{
+          "shape":"String",
+          "documentation":"<p>Property filters for the imagery to tile.</p>",
+          "location":"querystring",
+          "locationName":"PropertyFilters"
+        },
+        "Target":{
+          "shape":"TargetOptions",
+          "documentation":"<p>Determines what part of the Earth Observation job to tile. 'INPUT' or 'OUTPUT' are the valid options.</p>",
+          "location":"querystring",
+          "locationName":"Target"
+        },
+        "TimeRangeFilter":{
+          "shape":"String",
+          "documentation":"<p>Time range filter applied to imagery to find the images to tile.</p>",
+          "location":"querystring",
+          "locationName":"TimeRangeFilter"
+        },
+        "x":{
+          "shape":"Integer",
+          "documentation":"<p>The x coordinate of the tile input.</p>",
+          "location":"uri",
+          "locationName":"x"
+        },
+        "y":{
+          "shape":"Integer",
+          "documentation":"<p>The y coordinate of the tile input.</p>",
+          "location":"uri",
+          "locationName":"y"
+        },
+        "z":{
+          "shape":"Integer",
+          "documentation":"<p>The z coordinate of the tile input.</p>",
+          "location":"uri",
+          "locationName":"z"
+        }
+      }
+    },
+    "GetTileOutput":{
+      "type":"structure",
+      "members":{
+        "BinaryFile":{
+          "shape":"BinaryFile",
+          "documentation":"<p>The output binary file.</p>"
+        }
+      },
+      "payload":"BinaryFile"
+    },
+    "GetVectorEnrichmentJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job.</p>",
+          "location":"uri",
+          "locationName":"Arn"
+        }
+      }
+    },
+    "GetVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "ExecutionRoleArn",
+        "InputConfig",
+        "JobConfig",
+        "Name",
+        "Status",
+        "Type"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the Vector Enrichment job, in seconds.</p>"
+        },
+        "ErrorDetails":{
+          "shape":"VectorEnrichmentJobErrorDetails",
+          "documentation":"<p>Details about the errors generated during the Vector Enrichment job.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "ExportErrorDetails":{
+          "shape":"VectorEnrichmentJobExportErrorDetails",
+          "documentation":"<p>Details about the errors generated during the ExportVectorEnrichmentJob.</p>"
+        },
+        "ExportStatus":{
+          "shape":"VectorEnrichmentJobExportStatus",
+          "documentation":"<p>The export status of the Vector Enrichment job being initiated.</p>"
+        },
+        "InputConfig":{
+          "shape":"VectorEnrichmentJobInputConfig",
+          "documentation":"<p>Input configuration information for the Vector Enrichment job.</p>"
+        },
+        "JobConfig":{
+          "shape":"VectorEnrichmentJobConfig",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Vector Enrichment job.</p>"
+        },
+        "Status":{
+          "shape":"VectorEnrichmentJobStatus",
+          "documentation":"<p>The status of the initiated Vector Enrichment job.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        },
+        "Type":{
+          "shape":"VectorEnrichmentJobType",
+          "documentation":"<p>The type of the Vector Enrichment job being initiated.</p>"
+        }
+      }
+    },
+    "GroupBy":{
+      "type":"string",
+      "enum":[
+        "ALL",
+        "YEARLY"
+      ]
+    },
+    "ImageSourceBandList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "InputConfigInput":{
+      "type":"structure",
+      "members":{
+        "PreviousEarthObservationJobArn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the previous Earth Observation job.</p>"
+        },
+        "RasterDataCollectionQuery":{
+          "shape":"RasterDataCollectionQueryInput",
+          "documentation":"<p>The structure representing the RasterDataCollection Query consisting of the Area of Interest, RasterDataCollectionArn,TimeRange and Property Filters.</p>"
+        }
+      },
+      "documentation":"<p>Input configuration information.</p>"
+    },
+    "InputConfigOutput":{
+      "type":"structure",
+      "members":{
+        "PreviousEarthObservationJobArn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the previous Earth Observation job.</p>"
+        },
+        "RasterDataCollectionQuery":{
+          "shape":"RasterDataCollectionQueryOutput",
+          "documentation":"<p>The structure representing the RasterDataCollection Query consisting of the Area of Interest, RasterDataCollectionArn, RasterDataCollectionName, TimeRange, and Property Filters.</p>"
+        }
+      },
+      "documentation":"<p>The InputConfig for an EarthObservationJob response.</p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception, or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ItemSource":{
+      "type":"structure",
+      "required":[
+        "DateTime",
+        "Geometry",
+        "Id"
+      ],
+      "members":{
+        "Assets":{
+          "shape":"AssetsMap",
+          "documentation":"<p>This is a dictionary of Asset Objects data associated with the Item that can be downloaded or streamed, each with a unique key.</p>"
+        },
+        "DateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The searchable date and time of the item, in UTC.</p>"
+        },
+        "Geometry":{
+          "shape":"Geometry",
+          "documentation":"<p>The item Geometry in GeoJson format.</p>"
+        },
+        "Id":{
+          "shape":"String",
+          "documentation":"<p>A unique Id for the source item.</p>"
+        },
+        "Properties":{
+          "shape":"Properties",
+          "documentation":"<p>This field contains additional properties of the item.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the items in the response for SearchRasterDataCollection.</p>"
+    },
+    "ItemSourceList":{
+      "type":"list",
+      "member":{"shape":"ItemSource"}
+    },
+    "JobConfigInput":{
+      "type":"structure",
+      "members":{
+        "BandMathConfig":{
+          "shape":"BandMathConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for BandMath.</p>"
+        },
+        "CloudMaskingConfig":{
+          "shape":"CloudMaskingConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for cloud masking.</p>"
+        },
+        "CloudRemovalConfig":{
+          "shape":"CloudRemovalConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for cloud removal.</p>"
+        },
+        "GeoMosaicConfig":{
+          "shape":"GeoMosaicConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for geomosaic.</p>"
+        },
+        "LandCoverSegmentationConfig":{
+          "shape":"LandCoverSegmentationConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for land cover segmentation.</p>"
+        },
+        "ResamplingConfig":{
+          "shape":"ResamplingConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for resampling.</p>"
+        },
+        "StackConfig":{
+          "shape":"StackConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for a Stacking Earth Observation job.</p>"
+        },
+        "TemporalStatisticsConfig":{
+          "shape":"TemporalStatisticsConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for temporal statistics.</p>"
+        },
+        "ZonalStatisticsConfig":{
+          "shape":"ZonalStatisticsConfigInput",
+          "documentation":"<p>An object containing information about the job configuration for zonal statistics.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for the JobConfig in an EarthObservationJob.</p>",
+      "union":true
+    },
+    "KmsKey":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "LandCoverSegmentationConfigInput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>The input structure for Land Cover Operation type.</p>"
+    },
+    "LandsatCloudCoverLandInput":{
+      "type":"structure",
+      "required":[
+        "LowerBound",
+        "UpperBound"
+      ],
+      "members":{
+        "LowerBound":{
+          "shape":"Float",
+          "documentation":"<p>The minimum value for Land Cloud Cover property filter. This will filter items having Land Cloud Cover greater than or equal to this value.</p>"
+        },
+        "UpperBound":{
+          "shape":"Float",
+          "documentation":"<p>The maximum value for Land Cloud Cover property filter. This will filter items having Land Cloud Cover less than or equal to this value.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing Land Cloud Cover property for Landsat data collection.</p>"
+    },
+    "LinearRing":{
+      "type":"list",
+      "member":{"shape":"Position"},
+      "min":4
+    },
+    "LinearRings":{
+      "type":"list",
+      "member":{"shape":"LinearRing"},
+      "min":1
+    },
+    "LinearRingsList":{
+      "type":"list",
+      "member":{"shape":"LinearRings"}
+    },
+    "ListEarthObservationJobInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListEarthObservationJobInputMaxResultsInteger",
+          "documentation":"<p>The total number of items to return.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        },
+        "SortBy":{
+          "shape":"String",
+          "documentation":"<p>The parameter by which to sort the results.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>An optional value that specifies whether you want the results sorted in <code>Ascending</code> or <code>Descending</code> order.</p>"
+        },
+        "StatusEquals":{
+          "shape":"EarthObservationJobStatus",
+          "documentation":"<p>A filter that retrieves only jobs with a specific status.</p>"
+        }
+      }
+    },
+    "ListEarthObservationJobInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "ListEarthObservationJobOutput":{
+      "type":"structure",
+      "required":["EarthObservationJobSummaries"],
+      "members":{
+        "EarthObservationJobSummaries":{
+          "shape":"EarthObservationJobList",
+          "documentation":"<p>Contains summary information about the Earth Observation jobs.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        }
+      }
+    },
+    "ListEarthObservationJobOutputConfig":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "Name",
+        "OperationType",
+        "Status"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the list of the Earth Observation jobs.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the session, in seconds.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The names of the Earth Observation jobs in the list.</p>"
+        },
+        "OperationType":{
+          "shape":"String",
+          "documentation":"<p>The operation type for an Earth Observation job.</p>"
+        },
+        "Status":{
+          "shape":"EarthObservationJobStatus",
+          "documentation":"<p>The status of the list of the Earth Observation jobs.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      },
+      "documentation":"<p>An object containing information about the output file.</p>"
+    },
+    "ListRasterDataCollectionsInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListRasterDataCollectionsInputMaxResultsInteger",
+          "documentation":"<p>The total number of items to return.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListRasterDataCollectionsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "ListRasterDataCollectionsOutput":{
+      "type":"structure",
+      "required":["RasterDataCollectionSummaries"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        },
+        "RasterDataCollectionSummaries":{
+          "shape":"DataCollectionsList",
+          "documentation":"<p>Contains summary information about the raster data collection.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource you want to tag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "ListVectorEnrichmentJobInput":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListVectorEnrichmentJobInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of items to return.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        },
+        "SortBy":{
+          "shape":"String",
+          "documentation":"<p>The parameter by which to sort the results.</p>"
+        },
+        "SortOrder":{
+          "shape":"SortOrder",
+          "documentation":"<p>An optional value that specifies whether you want the results sorted in <code>Ascending</code> or <code>Descending</code> order.</p>"
+        },
+        "StatusEquals":{
+          "shape":"String",
+          "documentation":"<p>A filter that retrieves only jobs with a specific status.</p>"
+        }
+      }
+    },
+    "ListVectorEnrichmentJobInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":20,
+      "min":1
+    },
+    "ListVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "required":["VectorEnrichmentJobSummaries"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        },
+        "VectorEnrichmentJobSummaries":{
+          "shape":"VectorEnrichmentJobList",
+          "documentation":"<p>Contains summary information about the Vector Enrichment jobs.</p>"
+        }
+      }
+    },
+    "ListVectorEnrichmentJobOutputConfig":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "Name",
+        "Status",
+        "Type"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the list of the Vector Enrichment jobs.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the session, in seconds.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The names of the Vector Enrichment jobs in the list.</p>"
+        },
+        "Status":{
+          "shape":"VectorEnrichmentJobStatus",
+          "documentation":"<p>The status of the Vector Enrichment jobs list. </p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        },
+        "Type":{
+          "shape":"VectorEnrichmentJobType",
+          "documentation":"<p>The type of the list of Vector Enrichment jobs.</p>"
+        }
+      },
+      "documentation":"<p>An object containing information about the output file.</p>"
+    },
+    "LogicalOperator":{
+      "type":"string",
+      "enum":["AND"]
+    },
+    "MapMatchingConfig":{
+      "type":"structure",
+      "required":[
+        "IdAttributeName",
+        "TimestampAttributeName",
+        "XAttributeName",
+        "YAttributeName"
+      ],
+      "members":{
+        "IdAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The field name for the data that describes the identifier representing a collection of GPS points belonging to an individual trace.</p>"
+        },
+        "TimestampAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The name of the timestamp attribute.</p>"
+        },
+        "XAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The name of the X-attribute</p>"
+        },
+        "YAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The name of the Y-attribute</p>"
+        }
+      },
+      "documentation":"<p>The input structure for Map Matching operation type.</p>"
+    },
+    "MultiPolygonGeometryInput":{
+      "type":"structure",
+      "required":["Coordinates"],
+      "members":{
+        "Coordinates":{
+          "shape":"LinearRingsList",
+          "documentation":"<p>The coordinates of the multipolygon geometry.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing Polygon Geometry based on the <a href=\"https://www.rfc-editor.org/rfc/rfc7946#section-3.1.6\">GeoJson spec</a>.</p>"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":8192,
+      "min":0,
+      "sensitive":true
+    },
+    "Operation":{
+      "type":"structure",
+      "required":[
+        "Equation",
+        "Name"
+      ],
+      "members":{
+        "Equation":{
+          "shape":"String",
+          "documentation":"<p>Textual representation of the math operation; Equation used to compute the spectral index.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the operation.</p>"
+        },
+        "OutputType":{
+          "shape":"OutputType",
+          "documentation":"<p>The type of the operation.</p>"
+        }
+      },
+      "documentation":"<p>Represents an arithmetic operation to compute spectral index.</p>"
+    },
+    "OperationsListInput":{
+      "type":"list",
+      "member":{"shape":"Operation"},
+      "min":1
+    },
+    "OutputBand":{
+      "type":"structure",
+      "required":[
+        "BandName",
+        "OutputDataType"
+      ],
+      "members":{
+        "BandName":{
+          "shape":"String",
+          "documentation":"<p>The name of the band.</p>"
+        },
+        "OutputDataType":{
+          "shape":"OutputType",
+          "documentation":"<p>The datatype of the output band.</p>"
+        }
+      },
+      "documentation":"<p>A single EarthObservationJob output band.</p>"
+    },
+    "OutputConfigInput":{
+      "type":"structure",
+      "required":["S3Data"],
+      "members":{
+        "S3Data":{
+          "shape":"ExportS3DataInput",
+          "documentation":"<p>Path to Amazon S3 storage location for the output configuration file.</p>"
+        }
+      },
+      "documentation":"<p>The response structure for an OutputConfig returned by an ExportEarthObservationJob.</p>"
+    },
+    "OutputResolutionResamplingInput":{
+      "type":"structure",
+      "required":["UserDefined"],
+      "members":{
+        "UserDefined":{
+          "shape":"UserDefined",
+          "documentation":"<p>User Defined Resolution for the output of Resampling operation defined by value and unit.</p>"
+        }
+      },
+      "documentation":"<p>OutputResolution Configuration indicating the target resolution for the output of Resampling operation.</p>"
+    },
+    "OutputResolutionStackInput":{
+      "type":"structure",
+      "members":{
+        "Predefined":{
+          "shape":"PredefinedResolution",
+          "documentation":"<p>A string value representing Predefined Output Resolution for a stacking operation. Allowed values are <code>HIGHEST</code>, <code>LOWEST</code>, and <code>AVERAGE</code>.</p>"
+        },
+        "UserDefined":{
+          "shape":"UserDefined",
+          "documentation":"<p>The structure representing User Output Resolution for a Stacking operation defined as a value and unit.</p>"
+        }
+      },
+      "documentation":"<p>The input structure representing Output Resolution for Stacking Operation.</p>"
+    },
+    "OutputType":{
+      "type":"string",
+      "enum":[
+        "INT32",
+        "FLOAT32",
+        "INT16",
+        "FLOAT64",
+        "UINT16"
+      ]
+    },
+    "PlatformInput":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "ComparisonOperator":{
+          "shape":"ComparisonOperator",
+          "documentation":"<p>The ComparisonOperator to use with PlatformInput.</p>"
+        },
+        "Value":{
+          "shape":"String",
+          "documentation":"<p>The value of the platform.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for specifying Platform. Platform refers to the unique name of the specific platform the instrument is attached to. For satellites it is the name of the satellite, eg. landsat-8 (Landsat-8), sentinel-2a.</p>"
+    },
+    "PolygonGeometryInput":{
+      "type":"structure",
+      "required":["Coordinates"],
+      "members":{
+        "Coordinates":{
+          "shape":"LinearRings",
+          "documentation":"<p>Coordinates representing a Polygon based on the <a href=\"https://www.rfc-editor.org/rfc/rfc7946#section-3.1.6\">GeoJson spec</a>.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing Polygon Geometry based on the <a href=\"https://www.rfc-editor.org/rfc/rfc7946#section-3.1.6\">GeoJson spec</a>.</p>"
+    },
+    "Position":{
+      "type":"list",
+      "member":{"shape":"Double"},
+      "max":2,
+      "min":2,
+      "sensitive":true
+    },
+    "PredefinedResolution":{
+      "type":"string",
+      "enum":[
+        "HIGHEST",
+        "LOWEST",
+        "AVERAGE"
+      ]
+    },
+    "Properties":{
+      "type":"structure",
+      "members":{
+        "EoCloudCover":{
+          "shape":"Float",
+          "documentation":"<p>Estimate of cloud cover.</p>"
+        },
+        "LandsatCloudCoverLand":{
+          "shape":"Float",
+          "documentation":"<p>Land cloud cover for Landsat Data Collection.</p>"
+        },
+        "Platform":{
+          "shape":"String",
+          "documentation":"<p>Platform property. Platform refers to the unique name of the specific platform the instrument is attached to. For satellites it is the name of the satellite, eg. landsat-8 (Landsat-8), sentinel-2a.</p>"
+        },
+        "ViewOffNadir":{
+          "shape":"Float",
+          "documentation":"<p>The angle from the sensor between nadir (straight down) and the scene center. Measured in degrees (0-90).</p>"
+        },
+        "ViewSunAzimuth":{
+          "shape":"Float",
+          "documentation":"<p>The sun azimuth angle. From the scene center point on the ground, this is the angle between truth north and the sun. Measured clockwise in degrees (0-360).</p>"
+        },
+        "ViewSunElevation":{
+          "shape":"Float",
+          "documentation":"<p>The sun elevation angle. The angle from the tangent of the scene center point to the sun. Measured from the horizon in degrees (-90-90). Negative values indicate the sun is below the horizon, e.g. sun elevation of -10° means the data was captured during <a href=\"https://www.timeanddate.com/astronomy/different-types-twilight.html\">nautical twilight</a>.</p>"
+        }
+      },
+      "documentation":"<p>Properties associated with the Item.</p>"
+    },
+    "Property":{
+      "type":"structure",
+      "members":{
+        "EoCloudCover":{
+          "shape":"EoCloudCoverInput",
+          "documentation":"<p>The structure representing EoCloudCover property filter containing a lower bound and upper bound.</p>"
+        },
+        "LandsatCloudCoverLand":{
+          "shape":"LandsatCloudCoverLandInput",
+          "documentation":"<p>The structure representing Land Cloud Cover property filter for Landsat collection containing a lower bound and upper bound.</p>"
+        },
+        "Platform":{
+          "shape":"PlatformInput",
+          "documentation":"<p>The structure representing Platform property filter consisting of value and comparison operator.</p>"
+        },
+        "ViewOffNadir":{
+          "shape":"ViewOffNadirInput",
+          "documentation":"<p>The structure representing ViewOffNadir property filter containing a lower bound and upper bound.</p>"
+        },
+        "ViewSunAzimuth":{
+          "shape":"ViewSunAzimuthInput",
+          "documentation":"<p>The structure representing ViewSunAzimuth property filter containing a lower bound and upper bound.</p>"
+        },
+        "ViewSunElevation":{
+          "shape":"ViewSunElevationInput",
+          "documentation":"<p>The structure representing ViewSunElevation property filter containing a lower bound and upper bound.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single searchable property to search on.</p>",
+      "union":true
+    },
+    "PropertyFilter":{
+      "type":"structure",
+      "required":["Property"],
+      "members":{
+        "Property":{
+          "shape":"Property",
+          "documentation":"<p>Represents a single property to match with when searching a raster data collection.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing a single PropertyFilter.</p>"
+    },
+    "PropertyFilters":{
+      "type":"structure",
+      "members":{
+        "LogicalOperator":{
+          "shape":"LogicalOperator",
+          "documentation":"<p>The Logical Operator used to combine the Property Filters.</p>"
+        },
+        "Properties":{
+          "shape":"PropertyFiltersList",
+          "documentation":"<p>A list of Property Filters.</p>"
+        }
+      },
+      "documentation":"<p>A list of PropertyFilter objects.</p>"
+    },
+    "PropertyFiltersList":{
+      "type":"list",
+      "member":{"shape":"PropertyFilter"}
+    },
+    "RasterDataCollectionMetadata":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Description",
+        "Name",
+        "SupportedFilters",
+        "Type"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the raster data collection.</p>"
+        },
+        "Description":{
+          "shape":"String",
+          "documentation":"<p>A description of the raster data collection.</p>"
+        },
+        "DescriptionPageUrl":{
+          "shape":"String",
+          "documentation":"<p>The description URL of the raster data collection.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the raster data collection.</p>"
+        },
+        "SupportedFilters":{
+          "shape":"FilterList",
+          "documentation":"<p>The list of filters supported by the raster data collection.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        },
+        "Type":{
+          "shape":"DataCollectionType",
+          "documentation":"<p>The type of raster data collection.</p>"
+        }
+      },
+      "documentation":"<p>Response object containing details for a specific RasterDataCollection.</p>"
+    },
+    "RasterDataCollectionQueryInput":{
+      "type":"structure",
+      "required":[
+        "RasterDataCollectionArn",
+        "TimeRangeFilter"
+      ],
+      "members":{
+        "AreaOfInterest":{
+          "shape":"AreaOfInterest",
+          "documentation":"<p>The area of interest being queried for the raster data collection.</p>"
+        },
+        "PropertyFilters":{
+          "shape":"PropertyFilters",
+          "documentation":"<p>The list of Property filters used in the Raster Data Collection Query.</p>"
+        },
+        "RasterDataCollectionArn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the raster data collection.</p>"
+        },
+        "TimeRangeFilter":{
+          "shape":"TimeRangeFilterInput",
+          "documentation":"<p>The TimeRange Filter used in the RasterDataCollection Query.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for Raster Data Collection Query containing the Area of Interest, TimeRange Filters, and Property Filters.</p>"
+    },
+    "RasterDataCollectionQueryOutput":{
+      "type":"structure",
+      "required":[
+        "RasterDataCollectionArn",
+        "RasterDataCollectionName",
+        "TimeRangeFilter"
+      ],
+      "members":{
+        "AreaOfInterest":{
+          "shape":"AreaOfInterest",
+          "documentation":"<p>The Area of Interest used in the search.</p>"
+        },
+        "PropertyFilters":{
+          "shape":"PropertyFilters",
+          "documentation":"<p>Property filters used in the search.</p>"
+        },
+        "RasterDataCollectionArn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The ARN of the Raster Data Collection against which the search is done.</p>"
+        },
+        "RasterDataCollectionName":{
+          "shape":"String",
+          "documentation":"<p>The name of the raster data collection.</p>"
+        },
+        "TimeRangeFilter":{
+          "shape":"TimeRangeFilterOutput",
+          "documentation":"<p>The TimeRange filter used in the search.</p>"
+        }
+      },
+      "documentation":"<p>The output structure contains the Raster Data Collection Query input along with some additional metadata.</p>"
+    },
+    "RasterDataCollectionQueryWithBandFilterInput":{
+      "type":"structure",
+      "required":["TimeRangeFilter"],
+      "members":{
+        "AreaOfInterest":{
+          "shape":"AreaOfInterest",
+          "documentation":"<p>The Area of interest to be used in the search query.</p>"
+        },
+        "BandFilter":{
+          "shape":"StringListInput",
+          "documentation":"<p>The list of Bands to be displayed in the result for each item.</p>"
+        },
+        "PropertyFilters":{
+          "shape":"PropertyFilters",
+          "documentation":"<p>The Property Filters used in the search query.</p>"
+        },
+        "TimeRangeFilter":{
+          "shape":"TimeRangeFilterInput",
+          "documentation":"<p>The TimeRange Filter used in the search query.</p>"
+        }
+      },
+      "documentation":"<p>This is a RasterDataCollectionQueryInput containing AreaOfInterest, Time Range filter and Property filters.</p>"
+    },
+    "ResamplingConfigInput":{
+      "type":"structure",
+      "required":["OutputResolution"],
+      "members":{
+        "AlgorithmName":{
+          "shape":"AlgorithmNameResampling",
+          "documentation":"<p>The name of the algorithm used for resampling.</p>"
+        },
+        "OutputResolution":{
+          "shape":"OutputResolutionResamplingInput",
+          "documentation":"<p>The structure representing output resolution (in target georeferenced units) of the result of resampling operation.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>Bands used in the operation. If no target bands are specified, it uses all bands available in the input.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing input for resampling operation.</p>"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource that was not found.</p>"
+        }
+      },
+      "documentation":"<p>The request references a resource which does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ReverseGeocodingConfig":{
+      "type":"structure",
+      "required":[
+        "XAttributeName",
+        "YAttributeName"
+      ],
+      "members":{
+        "XAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The field name for the data that describes x-axis coordinate, eg. longitude of a point.</p>"
+        },
+        "YAttributeName":{
+          "shape":"String",
+          "documentation":"<p>The field name for the data that describes y-axis coordinate, eg. latitude of a point.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for Reverse Geocoding operation type.</p>"
+    },
+    "S3Uri":{
+      "type":"string",
+      "pattern":"^s3://([^/]+)/?(.*)$"
+    },
+    "SearchRasterDataCollectionInput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "RasterDataCollectionQuery"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"DataCollectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the raster data collection.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        },
+        "RasterDataCollectionQuery":{
+          "shape":"RasterDataCollectionQueryWithBandFilterInput",
+          "documentation":"<p>RasterDataCollectionQuery consisting of <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_geospatial_AreaOfInterest.html\">AreaOfInterest(AOI)</a>, <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_geospatial_PropertyFilter.html\">PropertyFilters</a> and <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_geospatial_TimeRangeFilterInput.html\">TimeRangeFilterInput</a> used in <a href=\"https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_geospatial_SearchRasterDataCollection.html\">SearchRasterDataCollection</a>.</p>"
+        }
+      }
+    },
+    "SearchRasterDataCollectionOutput":{
+      "type":"structure",
+      "required":["ApproximateResultCount"],
+      "members":{
+        "ApproximateResultCount":{
+          "shape":"Integer",
+          "documentation":"<p>Approximate number of results in the response.</p>"
+        },
+        "Items":{
+          "shape":"ItemSourceList",
+          "documentation":"<p>List of items matching the Raster DataCollectionQuery.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the previous response was truncated, you receive this token. Use it in your next request to receive the next set of results.</p>"
+        }
+      }
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p>Identifier of the resource affected.</p>"
+        }
+      },
+      "documentation":"<p>You have exceeded the service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SortOrder":{
+      "type":"string",
+      "enum":[
+        "ASCENDING",
+        "DESCENDING"
+      ]
+    },
+    "StackConfigInput":{
+      "type":"structure",
+      "members":{
+        "OutputResolution":{
+          "shape":"OutputResolutionStackInput",
+          "documentation":"<p>The structure representing output resolution (in target georeferenced units) of the result of stacking operation.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>A list of bands to be stacked in the specified order. When the parameter is not provided, all the available bands in the data collection are stacked in the alphabetical order of their asset names.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for Stacking Operation.</p>"
+    },
+    "StartEarthObservationJobInput":{
+      "type":"structure",
+      "required":[
+        "ExecutionRoleArn",
+        "InputConfig",
+        "JobConfig",
+        "Name"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"StartEarthObservationJobInputClientTokenString",
+          "documentation":"<p>A unique token that guarantees that the call to this API is idempotent.</p>",
+          "idempotencyToken":true
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "InputConfig":{
+          "shape":"InputConfigInput",
+          "documentation":"<p>Input configuration information for the Earth Observation job.</p>"
+        },
+        "JobConfig":{
+          "shape":"JobConfigInput",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"StartEarthObservationJobInputNameString",
+          "documentation":"<p>The name of the Earth Observation job.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "StartEarthObservationJobInputClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":36
+    },
+    "StartEarthObservationJobInputNameString":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "StartEarthObservationJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "ExecutionRoleArn",
+        "JobConfig",
+        "Name",
+        "Status"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Earth Observation job.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the session, in seconds.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "InputConfig":{
+          "shape":"InputConfigOutput",
+          "documentation":"<p>Input configuration information for the Earth Observation job.</p>"
+        },
+        "JobConfig":{
+          "shape":"JobConfigInput",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Earth Observation job.</p>"
+        },
+        "Status":{
+          "shape":"EarthObservationJobStatus",
+          "documentation":"<p>The status of the Earth Observation job.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "StartVectorEnrichmentJobInput":{
+      "type":"structure",
+      "required":[
+        "ExecutionRoleArn",
+        "InputConfig",
+        "JobConfig",
+        "Name"
+      ],
+      "members":{
+        "ClientToken":{
+          "shape":"StartVectorEnrichmentJobInputClientTokenString",
+          "documentation":"<p>A unique token that guarantees that the call to this API is idempotent.</p>",
+          "idempotencyToken":true
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "InputConfig":{
+          "shape":"VectorEnrichmentJobInputConfig",
+          "documentation":"<p>Input configuration information for the Vector Enrichment job.</p>"
+        },
+        "JobConfig":{
+          "shape":"VectorEnrichmentJobConfig",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"StartVectorEnrichmentJobInputNameString",
+          "documentation":"<p>The name of the Vector Enrichment job.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "StartVectorEnrichmentJobInputClientTokenString":{
+      "type":"string",
+      "max":64,
+      "min":36
+    },
+    "StartVectorEnrichmentJobInputNameString":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "StartVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "CreationTime",
+        "DurationInSeconds",
+        "ExecutionRoleArn",
+        "InputConfig",
+        "JobConfig",
+        "Name",
+        "Status",
+        "Type"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job.</p>"
+        },
+        "CreationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The creation time.</p>"
+        },
+        "DurationInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The duration of the Vector Enrichment job, in seconds.</p>"
+        },
+        "ExecutionRoleArn":{
+          "shape":"ExecutionRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role that you specified for the job.</p>"
+        },
+        "InputConfig":{
+          "shape":"VectorEnrichmentJobInputConfig",
+          "documentation":"<p>Input configuration information for starting the Vector Enrichment job.</p>"
+        },
+        "JobConfig":{
+          "shape":"VectorEnrichmentJobConfig",
+          "documentation":"<p>An object containing information about the job configuration.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the Vector Enrichment job.</p>"
+        },
+        "Status":{
+          "shape":"VectorEnrichmentJobStatus",
+          "documentation":"<p>The status of the Vector Enrichment job being started.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        },
+        "Type":{
+          "shape":"VectorEnrichmentJobType",
+          "documentation":"<p>The type of the Vector Enrichment job.</p>"
+        }
+      }
+    },
+    "StopEarthObservationJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"EarthObservationJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Earth Observation job being stopped.</p>"
+        }
+      }
+    },
+    "StopEarthObservationJobOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StopVectorEnrichmentJobInput":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"VectorEnrichmentJobArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Vector Enrichment job.</p>"
+        }
+      }
+    },
+    "StopVectorEnrichmentJobOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "String":{"type":"string"},
+    "StringListInput":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "min":1
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource you want to tag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>Each tag consists of a key and a value.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "TargetOptions":{
+      "type":"string",
+      "enum":[
+        "INPUT",
+        "OUTPUT"
+      ]
+    },
+    "TemporalStatistics":{
+      "type":"string",
+      "enum":[
+        "MEAN",
+        "MEDIAN",
+        "STANDARD_DEVIATION"
+      ]
+    },
+    "TemporalStatisticsConfigInput":{
+      "type":"structure",
+      "required":["Statistics"],
+      "members":{
+        "GroupBy":{
+          "shape":"GroupBy",
+          "documentation":"<p>The input for the temporal statistics grouping by time frequency option.</p>"
+        },
+        "Statistics":{
+          "shape":"TemporalStatisticsListInput",
+          "documentation":"<p>The list of the statistics method options.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>The list of target band names for the temporal statistic to calculate.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing the configuration for Temporal Statistics operation.</p>"
+    },
+    "TemporalStatisticsListInput":{
+      "type":"list",
+      "member":{"shape":"TemporalStatistics"},
+      "min":1
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "TimeRangeFilterInput":{
+      "type":"structure",
+      "required":[
+        "EndTime",
+        "StartTime"
+      ],
+      "members":{
+        "EndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The end time for the time-range filter.</p>"
+        },
+        "StartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time for the time-range filter.</p>"
+        }
+      },
+      "documentation":"<p>The input for the time-range filter.</p>",
+      "sensitive":true
+    },
+    "TimeRangeFilterOutput":{
+      "type":"structure",
+      "required":[
+        "EndTime",
+        "StartTime"
+      ],
+      "members":{
+        "EndTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The ending time for the time range filter.</p>"
+        },
+        "StartTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The starting time for the time range filter.</p>"
+        }
+      },
+      "documentation":"<p>The output structure of the time range filter.</p>",
+      "sensitive":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Unit":{
+      "type":"string",
+      "enum":["METERS"]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource you want to untag.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Keys of the tags you want to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UserDefined":{
+      "type":"structure",
+      "required":[
+        "Unit",
+        "Value"
+      ],
+      "members":{
+        "Unit":{
+          "shape":"Unit",
+          "documentation":"<p>The units for output resolution of the result.</p>"
+        },
+        "Value":{
+          "shape":"Float",
+          "documentation":"<p>The value for output resolution of the result.</p>"
+        }
+      },
+      "documentation":"<p>The output resolution (in target georeferenced units) of the result of the operation</p>"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VectorEnrichmentJobArn":{
+      "type":"string",
+      "pattern":"^arn:aws[a-z-]{0,12}:sagemaker-geospatial:[a-z0-9-]{1,25}:[0-9]{12}:vector-enrichment-job/[a-z0-9]{12,}$"
+    },
+    "VectorEnrichmentJobConfig":{
+      "type":"structure",
+      "members":{
+        "MapMatchingConfig":{
+          "shape":"MapMatchingConfig",
+          "documentation":"<p>The input structure for Map Matching operation type.</p>"
+        },
+        "ReverseGeocodingConfig":{
+          "shape":"ReverseGeocodingConfig",
+          "documentation":"<p>The input structure for Reverse Geocoding operation type.</p>"
+        }
+      },
+      "documentation":"<p>It contains configs such as ReverseGeocodingConfig and MapMatchingConfig.</p>",
+      "union":true
+    },
+    "VectorEnrichmentJobDataSourceConfigInput":{
+      "type":"structure",
+      "members":{
+        "S3Data":{
+          "shape":"VectorEnrichmentJobS3Data",
+          "documentation":"<p>The input structure for the Amazon S3 data that represents the Amazon S3 location of the input data objects.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for the data source that represents the storage type of the input data objects.</p>",
+      "union":true
+    },
+    "VectorEnrichmentJobDocumentType":{
+      "type":"string",
+      "enum":["CSV"]
+    },
+    "VectorEnrichmentJobErrorDetails":{
+      "type":"structure",
+      "members":{
+        "ErrorMessage":{
+          "shape":"String",
+          "documentation":"<p>A message that you define and then is processed and rendered by the Vector Enrichment job when the error occurs.</p>"
+        },
+        "ErrorType":{
+          "shape":"VectorEnrichmentJobErrorType",
+          "documentation":"<p>The type of error generated during the Vector Enrichment job.</p>"
+        }
+      },
+      "documentation":"<p>VectorEnrichmentJob error details in response from GetVectorEnrichmentJob.</p>"
+    },
+    "VectorEnrichmentJobErrorType":{
+      "type":"string",
+      "enum":[
+        "CLIENT_ERROR",
+        "SERVER_ERROR"
+      ]
+    },
+    "VectorEnrichmentJobExportErrorDetails":{
+      "type":"structure",
+      "members":{
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>The message providing details about the errors generated during the Vector Enrichment job.</p>"
+        },
+        "Type":{
+          "shape":"VectorEnrichmentJobExportErrorType",
+          "documentation":"<p>The output error details for an Export operation on a Vector Enrichment job.</p>"
+        }
+      },
+      "documentation":"<p>VectorEnrichmentJob export error details in response from GetVectorEnrichmentJob.</p>"
+    },
+    "VectorEnrichmentJobExportErrorType":{
+      "type":"string",
+      "enum":[
+        "CLIENT_ERROR",
+        "SERVER_ERROR"
+      ]
+    },
+    "VectorEnrichmentJobExportStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "VectorEnrichmentJobInputConfig":{
+      "type":"structure",
+      "required":[
+        "DataSourceConfig",
+        "DocumentType"
+      ],
+      "members":{
+        "DataSourceConfig":{
+          "shape":"VectorEnrichmentJobDataSourceConfigInput",
+          "documentation":"<p>The input structure for the data source that represents the storage type of the input data objects.</p>"
+        },
+        "DocumentType":{
+          "shape":"VectorEnrichmentJobDocumentType",
+          "documentation":"<p>The input structure that defines the data source file type.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for the InputConfig in a VectorEnrichmentJob.</p>"
+    },
+    "VectorEnrichmentJobList":{
+      "type":"list",
+      "member":{"shape":"ListVectorEnrichmentJobOutputConfig"}
+    },
+    "VectorEnrichmentJobS3Data":{
+      "type":"structure",
+      "required":["S3Uri"],
+      "members":{
+        "KmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Key Management Service key ID for server-side encryption.</p>"
+        },
+        "S3Uri":{
+          "shape":"S3Uri",
+          "documentation":"<p>The URL to the Amazon S3 data for the Vector Enrichment job.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 data for the Vector Enrichment job.</p>"
+    },
+    "VectorEnrichmentJobStatus":{
+      "type":"string",
+      "enum":[
+        "INITIALIZING",
+        "IN_PROGRESS",
+        "STOPPING",
+        "STOPPED",
+        "COMPLETED",
+        "FAILED",
+        "DELETING",
+        "DELETED"
+      ]
+    },
+    "VectorEnrichmentJobType":{
+      "type":"string",
+      "enum":[
+        "REVERSE_GEOCODING",
+        "MAP_MATCHING"
+      ]
+    },
+    "ViewOffNadirInput":{
+      "type":"structure",
+      "required":[
+        "LowerBound",
+        "UpperBound"
+      ],
+      "members":{
+        "LowerBound":{
+          "shape":"Float",
+          "documentation":"<p>The minimum value for ViewOffNadir property filter. This filters items having ViewOffNadir greater than or equal to this value. </p>"
+        },
+        "UpperBound":{
+          "shape":"Float",
+          "documentation":"<p>The maximum value for ViewOffNadir property filter. This filters items having ViewOffNadir lesser than or equal to this value.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for specifying ViewOffNadir property filter. ViewOffNadir refers to the angle from the sensor between nadir (straight down) and the scene center. Measured in degrees (0-90).</p>"
+    },
+    "ViewSunAzimuthInput":{
+      "type":"structure",
+      "required":[
+        "LowerBound",
+        "UpperBound"
+      ],
+      "members":{
+        "LowerBound":{
+          "shape":"Float",
+          "documentation":"<p>The minimum value for ViewSunAzimuth property filter. This filters items having ViewSunAzimuth greater than or equal to this value.</p>"
+        },
+        "UpperBound":{
+          "shape":"Float",
+          "documentation":"<p>The maximum value for ViewSunAzimuth property filter. This filters items having ViewSunAzimuth lesser than or equal to this value.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for specifying ViewSunAzimuth property filter. ViewSunAzimuth refers to the Sun azimuth angle. From the scene center point on the ground, this is the angle between truth north and the sun. Measured clockwise in degrees (0-360).</p>"
+    },
+    "ViewSunElevationInput":{
+      "type":"structure",
+      "required":[
+        "LowerBound",
+        "UpperBound"
+      ],
+      "members":{
+        "LowerBound":{
+          "shape":"Float",
+          "documentation":"<p>The lower bound to view the sun elevation.</p>"
+        },
+        "UpperBound":{
+          "shape":"Float",
+          "documentation":"<p>The upper bound to view the sun elevation.</p>"
+        }
+      },
+      "documentation":"<p>The input structure for specifying ViewSunElevation angle property filter. </p>"
+    },
+    "ZonalStatistics":{
+      "type":"string",
+      "enum":[
+        "MEAN",
+        "MEDIAN",
+        "STANDARD_DEVIATION",
+        "MAX",
+        "MIN",
+        "SUM"
+      ]
+    },
+    "ZonalStatisticsConfigInput":{
+      "type":"structure",
+      "required":[
+        "Statistics",
+        "ZoneS3Path"
+      ],
+      "members":{
+        "Statistics":{
+          "shape":"ZonalStatisticsListInput",
+          "documentation":"<p>List of zonal statistics to compute.</p>"
+        },
+        "TargetBands":{
+          "shape":"StringListInput",
+          "documentation":"<p>Bands used in the operation. If no target bands are specified, it uses all bands available input.</p>"
+        },
+        "ZoneS3Path":{
+          "shape":"S3Uri",
+          "documentation":"<p>The Amazon S3 path pointing to the GeoJSON containing the polygonal zones.</p>"
+        },
+        "ZoneS3PathKmsKeyId":{
+          "shape":"KmsKey",
+          "documentation":"<p>The Amazon Resource Name (ARN) or an ID of a Amazon Web Services Key Management Service (Amazon Web Services KMS) key that Amazon SageMaker uses to decrypt your output artifacts with Amazon S3 server-side encryption. The SageMaker execution role must have <code>kms:GenerateDataKey</code> permission.</p> <p>The <code>KmsKeyId</code> can be any of the following formats:</p> <ul> <li> <p>// KMS Key ID</p> <p> <code>\"1234abcd-12ab-34cd-56ef-1234567890ab\"</code> </p> </li> <li> <p>// Amazon Resource Name (ARN) of a KMS Key</p> <p> <code>\"arn:aws:kms:&lt;region&gt;:&lt;account&gt;:key/&lt;key-id-12ab-34cd-56ef-1234567890ab&gt;\"</code> </p> </li> </ul> <p>For more information about key identifiers, see <a href=\"https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-id\">Key identifiers (KeyID)</a> in the Amazon Web Services Key Management Service (Amazon Web Services KMS) documentation.</p>"
+        }
+      },
+      "documentation":"<p>The structure representing input configuration of ZonalStatistics operation.</p>"
+    },
+    "ZonalStatisticsListInput":{
+      "type":"list",
+      "member":{"shape":"ZonalStatistics"},
+      "min":1
+    }
+  },
+  "documentation":"<p>Provides APIs for creating and managing SageMaker geospatial resources.</p>"
+}

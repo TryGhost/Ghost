@@ -1,0 +1,33 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+      "GetPlanEvaluationStatus": {
+        "non_aggregate_keys": [
+          "lastEvaluatedVersion", 
+          "planArn",
+          "lastEvaluationTime",
+          "evaluationState",
+          "region"
+        ]
+      },
+      "GetPlanExecution": {
+         "non_aggregate_keys": [
+           "comment",
+           "executionRegion",
+           "endTime",
+           "startTime",
+           "executionState",
+           "executionAction",
+           "plan",
+           "executionId",
+           "updatedAt",
+           "planArn",
+           "actualRecoveryTime",
+           "version",
+           "mode"
+         ]
+      }
+    }
+  }
+}

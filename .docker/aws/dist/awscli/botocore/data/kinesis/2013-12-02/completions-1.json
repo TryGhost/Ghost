@@ -1,0 +1,248 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Shard": {
+      "operation": "ListShards",
+      "resourceIdentifier": {
+        "ShardId": "Shards[].ShardId"
+      }
+    },
+    "Stream": {
+      "operation": "ListStreams",
+      "resourceIdentifier": {
+        "StreamName": "StreamNames[]"
+      }
+    }
+  },
+  "operations": {
+    "AddTagsToStream": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "DecreaseStreamRetentionPeriod": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "DeleteStream": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "DescribeStream": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "DescribeStreamSummary": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "DisableEnhancedMonitoring": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "EnableEnhancedMonitoring": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "GetShardIterator": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      },
+      "ShardId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Shard",
+            "resourceIdentifier": "ShardId"
+          }
+        ]
+      }
+    },
+    "IncreaseStreamRetentionPeriod": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "ListShards": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "ListTagsForStream": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "MergeShards": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "PutRecord": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "PutRecords": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "RemoveTagsFromStream": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "SplitShard": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "StartStreamEncryption": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "StopStreamEncryption": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    },
+    "SubscribeToShard": {
+      "ShardId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Shard",
+            "resourceIdentifier": "ShardId"
+          }
+        ]
+      }
+    },
+    "UpdateShardCount": {
+      "StreamName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Stream",
+            "resourceIdentifier": "StreamName"
+          }
+        ]
+      }
+    }
+  }
+}

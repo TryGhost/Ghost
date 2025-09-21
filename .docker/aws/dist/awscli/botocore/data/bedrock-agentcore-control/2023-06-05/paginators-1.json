@@ -1,0 +1,70 @@
+{
+  "pagination": {
+    "ListAgentRuntimeEndpoints": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "runtimeEndpoints"
+    },
+    "ListAgentRuntimeVersions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "agentRuntimes"
+    },
+    "ListAgentRuntimes": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "agentRuntimes"
+    },
+    "ListApiKeyCredentialProviders": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "credentialProviders"
+    },
+    "ListBrowsers": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "browserSummaries"
+    },
+    "ListCodeInterpreters": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "codeInterpreterSummaries"
+    },
+    "ListGatewayTargets": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "items"
+    },
+    "ListGateways": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "items"
+    },
+    "ListMemories": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "memories"
+    },
+    "ListOauth2CredentialProviders": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "credentialProviders"
+    },
+    "ListWorkloadIdentities": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "workloadIdentities"
+    }
+  }
+}

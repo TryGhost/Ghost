@@ -1,0 +1,3880 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-08-11",
+    "endpointPrefix":"amplifyuibuilder",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceFullName":"AWS Amplify UI Builder",
+    "serviceId":"AmplifyUIBuilder",
+    "signatureVersion":"v4",
+    "signingName":"amplifyuibuilder",
+    "uid":"amplifyuibuilder-2021-08-11"
+  },
+  "operations":{
+    "CreateComponent":{
+      "name":"CreateComponent",
+      "http":{
+        "method":"POST",
+        "requestUri":"/app/{appId}/environment/{environmentName}/components",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateComponentRequest"},
+      "output":{"shape":"CreateComponentResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Creates a new component for an Amplify app.</p>",
+      "idempotent":true
+    },
+    "CreateForm":{
+      "name":"CreateForm",
+      "http":{
+        "method":"POST",
+        "requestUri":"/app/{appId}/environment/{environmentName}/forms",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateFormRequest"},
+      "output":{"shape":"CreateFormResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Creates a new form for an Amplify app.</p>",
+      "idempotent":true
+    },
+    "CreateTheme":{
+      "name":"CreateTheme",
+      "http":{
+        "method":"POST",
+        "requestUri":"/app/{appId}/environment/{environmentName}/themes",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateThemeRequest"},
+      "output":{"shape":"CreateThemeResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Creates a theme to apply to the components in an Amplify app.</p>",
+      "idempotent":true
+    },
+    "DeleteComponent":{
+      "name":"DeleteComponent",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/app/{appId}/environment/{environmentName}/components/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteComponentRequest"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a component from an Amplify app.</p>",
+      "idempotent":true
+    },
+    "DeleteForm":{
+      "name":"DeleteForm",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/app/{appId}/environment/{environmentName}/forms/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteFormRequest"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a form from an Amplify app.</p>",
+      "idempotent":true
+    },
+    "DeleteTheme":{
+      "name":"DeleteTheme",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/app/{appId}/environment/{environmentName}/themes/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteThemeRequest"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a theme from an Amplify app.</p>",
+      "idempotent":true
+    },
+    "ExchangeCodeForToken":{
+      "name":"ExchangeCodeForToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tokens/{provider}",
+        "responseCode":200
+      },
+      "input":{"shape":"ExchangeCodeForTokenRequest"},
+      "output":{"shape":"ExchangeCodeForTokenResponse"},
+      "errors":[
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<note> <p>This is for internal use.</p> </note> <p>Amplify uses this action to exchange an access code for a token.</p>"
+    },
+    "ExportComponents":{
+      "name":"ExportComponents",
+      "http":{
+        "method":"GET",
+        "requestUri":"/export/app/{appId}/environment/{environmentName}/components",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportComponentsRequest"},
+      "output":{"shape":"ExportComponentsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Exports component configurations to code that is ready to integrate into an Amplify app.</p>"
+    },
+    "ExportForms":{
+      "name":"ExportForms",
+      "http":{
+        "method":"GET",
+        "requestUri":"/export/app/{appId}/environment/{environmentName}/forms",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportFormsRequest"},
+      "output":{"shape":"ExportFormsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Exports form configurations to code that is ready to integrate into an Amplify app.</p>"
+    },
+    "ExportThemes":{
+      "name":"ExportThemes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/export/app/{appId}/environment/{environmentName}/themes",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportThemesRequest"},
+      "output":{"shape":"ExportThemesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Exports theme configurations to code that is ready to integrate into an Amplify app.</p>"
+    },
+    "GetCodegenJob":{
+      "name":"GetCodegenJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/codegen-jobs/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetCodegenJobRequest"},
+      "output":{"shape":"GetCodegenJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns an existing code generation job.</p>"
+    },
+    "GetComponent":{
+      "name":"GetComponent",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/components/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetComponentRequest"},
+      "output":{"shape":"GetComponentResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns an existing component for an Amplify app.</p>"
+    },
+    "GetForm":{
+      "name":"GetForm",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/forms/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetFormRequest"},
+      "output":{"shape":"GetFormResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns an existing form for an Amplify app.</p>"
+    },
+    "GetMetadata":{
+      "name":"GetMetadata",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/metadata",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMetadataRequest"},
+      "output":{"shape":"GetMetadataResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Returns existing metadata for an Amplify app.</p>"
+    },
+    "GetTheme":{
+      "name":"GetTheme",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/themes/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetThemeRequest"},
+      "output":{"shape":"GetThemeResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns an existing theme for an Amplify app.</p>"
+    },
+    "ListCodegenJobs":{
+      "name":"ListCodegenJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/codegen-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListCodegenJobsRequest"},
+      "output":{"shape":"ListCodegenJobsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Retrieves a list of code generation jobs for a specified Amplify app and backend environment.</p>"
+    },
+    "ListComponents":{
+      "name":"ListComponents",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/components",
+        "responseCode":200
+      },
+      "input":{"shape":"ListComponentsRequest"},
+      "output":{"shape":"ListComponentsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Retrieves a list of components for a specified Amplify app and backend environment.</p>"
+    },
+    "ListForms":{
+      "name":"ListForms",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/forms",
+        "responseCode":200
+      },
+      "input":{"shape":"ListFormsRequest"},
+      "output":{"shape":"ListFormsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Retrieves a list of forms for a specified Amplify app and backend environment.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of tags for a specified Amazon Resource Name (ARN).</p>"
+    },
+    "ListThemes":{
+      "name":"ListThemes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/app/{appId}/environment/{environmentName}/themes",
+        "responseCode":200
+      },
+      "input":{"shape":"ListThemesRequest"},
+      "output":{"shape":"ListThemesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Retrieves a list of themes for a specified Amplify app and backend environment.</p>"
+    },
+    "PutMetadataFlag":{
+      "name":"PutMetadataFlag",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/app/{appId}/environment/{environmentName}/metadata/features/{featureName}",
+        "responseCode":200
+      },
+      "input":{"shape":"PutMetadataFlagRequest"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Stores the metadata information about a feature on a form.</p>",
+      "idempotent":true
+    },
+    "RefreshToken":{
+      "name":"RefreshToken",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tokens/{provider}/refresh",
+        "responseCode":200
+      },
+      "input":{"shape":"RefreshTokenRequest"},
+      "output":{"shape":"RefreshTokenResponse"},
+      "errors":[
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<note> <p>This is for internal use.</p> </note> <p>Amplify uses this action to refresh a previously issued access token that might have expired.</p>"
+    },
+    "StartCodegenJob":{
+      "name":"StartCodegenJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/app/{appId}/environment/{environmentName}/codegen-jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartCodegenJobRequest"},
+      "output":{"shape":"StartCodegenJobResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Starts a code generation job for a specified Amplify app and backend environment.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Tags the resource with a tag key and value.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Untags a resource with a specified Amazon Resource Name (ARN).</p>",
+      "idempotent":true
+    },
+    "UpdateComponent":{
+      "name":"UpdateComponent",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/app/{appId}/environment/{environmentName}/components/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateComponentRequest"},
+      "output":{"shape":"UpdateComponentResponse"},
+      "errors":[
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Updates an existing component.</p>",
+      "idempotent":true
+    },
+    "UpdateForm":{
+      "name":"UpdateForm",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/app/{appId}/environment/{environmentName}/forms/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateFormRequest"},
+      "output":{"shape":"UpdateFormResponse"},
+      "errors":[
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Updates an existing form.</p>",
+      "idempotent":true
+    },
+    "UpdateTheme":{
+      "name":"UpdateTheme",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/app/{appId}/environment/{environmentName}/themes/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateThemeRequest"},
+      "output":{"shape":"UpdateThemeResponse"},
+      "errors":[
+        {"shape":"ResourceConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidParameterException"}
+      ],
+      "documentation":"<p>Updates an existing theme.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "ActionParameters":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The type of navigation action. Valid values are <code>url</code> and <code>anchor</code>. This value is required for a navigation action.</p>"
+        },
+        "url":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The URL to the location to open. Specify this value for a navigation action.</p>"
+        },
+        "anchor":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The HTML anchor link to the location to open. Specify this value for a navigation action.</p>"
+        },
+        "target":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The element within the same component to modify when the action occurs.</p>"
+        },
+        "global":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>Specifies whether the user should be signed out globally. Specify this value for an auth sign out action.</p>"
+        },
+        "model":{
+          "shape":"String",
+          "documentation":"<p>The name of the data model. Use when the action performs an operation on an Amplify DataStore model.</p>"
+        },
+        "id":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The unique ID of the component that the <code>ActionParameters</code> apply to.</p>"
+        },
+        "fields":{
+          "shape":"ComponentProperties",
+          "documentation":"<p>A dictionary of key-value pairs mapping Amplify Studio properties to fields in a data model. Use when the action performs an operation on an Amplify DataStore model.</p>"
+        },
+        "state":{
+          "shape":"MutationActionSetStateParameter",
+          "documentation":"<p>A key-value pair that specifies the state property name and its initial value.</p>"
+        }
+      },
+      "documentation":"<p>Represents the event action configuration for an element of a <code>Component</code> or <code>ComponentChild</code>. Use for the workflow feature in Amplify Studio that allows you to bind events and actions to components. <code>ActionParameters</code> defines the action that is performed when an event occurs on the component.</p>"
+    },
+    "ApiConfiguration":{
+      "type":"structure",
+      "members":{
+        "graphQLConfig":{
+          "shape":"GraphQLRenderConfig",
+          "documentation":"<p>The configuration for an application using GraphQL APIs.</p>"
+        },
+        "dataStoreConfig":{
+          "shape":"DataStoreRenderConfig",
+          "documentation":"<p>The configuration for an application using DataStore APIs.</p>"
+        },
+        "noApiConfig":{
+          "shape":"NoApiRenderConfig",
+          "documentation":"<p>The configuration for an application with no API being used.</p>"
+        }
+      },
+      "documentation":"<p>Describes the API configuration for a code generation job.</p>",
+      "union":true
+    },
+    "AppId":{
+      "type":"string",
+      "max":20,
+      "min":1,
+      "pattern":"d[a-z0-9]+"
+    },
+    "AssociatedFieldsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CodegenDependencies":{
+      "type":"list",
+      "member":{"shape":"CodegenDependency"}
+    },
+    "CodegenDependency":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>Name of the dependency package.</p>"
+        },
+        "supportedVersion":{
+          "shape":"String",
+          "documentation":"<p>Indicates the version of the supported dependency package.</p>"
+        },
+        "isSemVer":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines if the dependency package is using Semantic versioning. If set to true, it indicates that the dependency package uses Semantic versioning.</p>"
+        },
+        "reason":{
+          "shape":"String",
+          "documentation":"<p>Indicates the reason to include the dependency package in your project code.</p>"
+        }
+      },
+      "documentation":"<p>Dependency package that may be required for the project code to run.</p>"
+    },
+    "CodegenFeatureFlags":{
+      "type":"structure",
+      "members":{
+        "isRelationshipSupported":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifes whether a code generation job supports data relationships.</p>"
+        },
+        "isNonModelSupported":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether a code generation job supports non models.</p>"
+        }
+      },
+      "documentation":"<p>Describes the feature flags that you can specify for a code generation job.</p>"
+    },
+    "CodegenGenericDataEnum":{
+      "type":"structure",
+      "required":["values"],
+      "members":{
+        "values":{
+          "shape":"CodegenGenericDataEnumValuesList",
+          "documentation":"<p>The list of enum values in the generic data schema.</p>"
+        }
+      },
+      "documentation":"<p>Describes the enums in a generic data schema.</p>"
+    },
+    "CodegenGenericDataEnumValuesList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "CodegenGenericDataEnums":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CodegenGenericDataEnum"}
+    },
+    "CodegenGenericDataField":{
+      "type":"structure",
+      "required":[
+        "dataType",
+        "dataTypeValue",
+        "required",
+        "readOnly",
+        "isArray"
+      ],
+      "members":{
+        "dataType":{
+          "shape":"CodegenGenericDataFieldDataType",
+          "documentation":"<p>The data type for the generic data field.</p>"
+        },
+        "dataTypeValue":{
+          "shape":"String",
+          "documentation":"<p>The value of the data type for the generic data field.</p>"
+        },
+        "required":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the generic data field is required.</p>"
+        },
+        "readOnly":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the generic data field is read-only.</p>"
+        },
+        "isArray":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the generic data field is an array.</p>"
+        },
+        "relationship":{
+          "shape":"CodegenGenericDataRelationshipType",
+          "documentation":"<p>The relationship of the generic data schema.</p>"
+        }
+      },
+      "documentation":"<p>Describes a field in a generic data schema.</p>"
+    },
+    "CodegenGenericDataFieldDataType":{
+      "type":"string",
+      "enum":[
+        "ID",
+        "String",
+        "Int",
+        "Float",
+        "AWSDate",
+        "AWSTime",
+        "AWSDateTime",
+        "AWSTimestamp",
+        "AWSEmail",
+        "AWSURL",
+        "AWSIPAddress",
+        "Boolean",
+        "AWSJSON",
+        "AWSPhone",
+        "Enum",
+        "Model",
+        "NonModel"
+      ]
+    },
+    "CodegenGenericDataFields":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CodegenGenericDataField"}
+    },
+    "CodegenGenericDataModel":{
+      "type":"structure",
+      "required":[
+        "fields",
+        "primaryKeys"
+      ],
+      "members":{
+        "fields":{
+          "shape":"CodegenGenericDataFields",
+          "documentation":"<p>The fields in the generic data model.</p>"
+        },
+        "isJoinTable":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the generic data model is a join table.</p>"
+        },
+        "primaryKeys":{
+          "shape":"CodegenPrimaryKeysList",
+          "documentation":"<p>The primary keys of the generic data model.</p>"
+        }
+      },
+      "documentation":"<p>Describes a model in a generic data schema.</p>"
+    },
+    "CodegenGenericDataModels":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CodegenGenericDataModel"}
+    },
+    "CodegenGenericDataNonModel":{
+      "type":"structure",
+      "required":["fields"],
+      "members":{
+        "fields":{
+          "shape":"CodegenGenericDataNonModelFields",
+          "documentation":"<p>The fields in a generic data schema non model.</p>"
+        }
+      },
+      "documentation":"<p>Describes a non-model in a generic data schema.</p>"
+    },
+    "CodegenGenericDataNonModelFields":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CodegenGenericDataField"}
+    },
+    "CodegenGenericDataNonModels":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"CodegenGenericDataNonModel"}
+    },
+    "CodegenGenericDataRelationshipType":{
+      "type":"structure",
+      "required":[
+        "type",
+        "relatedModelName"
+      ],
+      "members":{
+        "type":{
+          "shape":"GenericDataRelationshipType",
+          "documentation":"<p>The data relationship type.</p>"
+        },
+        "relatedModelName":{
+          "shape":"String",
+          "documentation":"<p>The name of the related model in the data relationship.</p>"
+        },
+        "relatedModelFields":{
+          "shape":"RelatedModelFieldsList",
+          "documentation":"<p>The related model fields in the data relationship.</p>"
+        },
+        "canUnlinkAssociatedModel":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the relationship can unlink the associated model.</p>"
+        },
+        "relatedJoinFieldName":{
+          "shape":"String",
+          "documentation":"<p>The name of the related join field in the data relationship.</p>"
+        },
+        "relatedJoinTableName":{
+          "shape":"String",
+          "documentation":"<p>The name of the related join table in the data relationship.</p>"
+        },
+        "belongsToFieldOnRelatedModel":{
+          "shape":"String",
+          "documentation":"<p>The value of the <code>belongsTo</code> field on the related data model. </p>"
+        },
+        "associatedFields":{
+          "shape":"AssociatedFieldsList",
+          "documentation":"<p>The associated fields of the data relationship.</p>"
+        },
+        "isHasManyIndex":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the <code>@index</code> directive is supported for a <code>hasMany</code> data relationship.</p>"
+        }
+      },
+      "documentation":"<p>Describes the relationship between generic data models.</p>"
+    },
+    "CodegenJob":{
+      "type":"structure",
+      "required":[
+        "id",
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the code generation job.</p>"
+        },
+        "appId":{
+          "shape":"AppId",
+          "documentation":"<p>The ID of the Amplify app associated with the code generation job.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment associated with the code generation job.</p>"
+        },
+        "renderConfig":{"shape":"CodegenJobRenderConfig"},
+        "genericDataSchema":{"shape":"CodegenJobGenericDataSchema"},
+        "autoGenerateForms":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to autogenerate forms in the code generation job.</p>"
+        },
+        "features":{"shape":"CodegenFeatureFlags"},
+        "status":{
+          "shape":"CodegenJobStatus",
+          "documentation":"<p>The status of the code generation job.</p>"
+        },
+        "statusMessage":{
+          "shape":"String",
+          "documentation":"<p>The customized status message for the code generation job.</p>"
+        },
+        "asset":{
+          "shape":"CodegenJobAsset",
+          "documentation":"<p>The <code>CodegenJobAsset</code> to use for the code generation job.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the code generation job.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the code generation job was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the code generation job was modified.</p>"
+        },
+        "dependencies":{
+          "shape":"CodegenDependencies",
+          "documentation":"<p>Lists the dependency packages that may be required for the project code to run.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for a code generation job that is associated with an Amplify app.</p>"
+    },
+    "CodegenJobAsset":{
+      "type":"structure",
+      "members":{
+        "downloadUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL to use to access the asset.</p>"
+        }
+      },
+      "documentation":"<p>Describes an asset for a code generation job.</p>"
+    },
+    "CodegenJobGenericDataSchema":{
+      "type":"structure",
+      "required":[
+        "dataSourceType",
+        "models",
+        "enums",
+        "nonModels"
+      ],
+      "members":{
+        "dataSourceType":{
+          "shape":"CodegenJobGenericDataSourceType",
+          "documentation":"<p>The type of the data source for the schema. Currently, the only valid value is an Amplify <code>DataStore</code>.</p>"
+        },
+        "models":{
+          "shape":"CodegenGenericDataModels",
+          "documentation":"<p>The name of a <code>CodegenGenericDataModel</code>.</p>"
+        },
+        "enums":{
+          "shape":"CodegenGenericDataEnums",
+          "documentation":"<p>The name of a <code>CodegenGenericDataEnum</code>.</p>"
+        },
+        "nonModels":{
+          "shape":"CodegenGenericDataNonModels",
+          "documentation":"<p>The name of a <code>CodegenGenericDataNonModel</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes the data schema for a code generation job.</p>"
+    },
+    "CodegenJobGenericDataSourceType":{
+      "type":"string",
+      "enum":["DataStore"]
+    },
+    "CodegenJobRenderConfig":{
+      "type":"structure",
+      "members":{
+        "react":{
+          "shape":"ReactStartCodegenJobData",
+          "documentation":"<p>The name of the <code>ReactStartCodegenJobData</code> object.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration information for rendering the UI component associated with the code generation job.</p>",
+      "union":true
+    },
+    "CodegenJobStatus":{
+      "type":"string",
+      "enum":[
+        "in_progress",
+        "failed",
+        "succeeded"
+      ]
+    },
+    "CodegenJobSummary":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"AppId",
+          "documentation":"<p>The unique ID of the Amplify app associated with the code generation job.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment associated with the code generation job.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the code generation job summary.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the code generation job summary was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the code generation job summary was modified.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the basic information about the code generation job.</p>"
+    },
+    "CodegenJobSummaryList":{
+      "type":"list",
+      "member":{"shape":"CodegenJobSummary"}
+    },
+    "CodegenPrimaryKeysList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Component":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "name",
+        "componentType",
+        "properties",
+        "variants",
+        "overrides",
+        "bindingProperties",
+        "createdAt"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the component.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>"
+        },
+        "sourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the component in its original source system, such as Figma.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the component.</p>"
+        },
+        "name":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "componentType":{
+          "shape":"ComponentType",
+          "documentation":"<p>The type of the component. This can be an Amplify custom UI component or another custom component.</p>"
+        },
+        "properties":{
+          "shape":"ComponentProperties",
+          "documentation":"<p>Describes the component's properties. You can't specify <code>tags</code> as a valid property for <code>properties</code>.</p>"
+        },
+        "children":{
+          "shape":"ComponentChildList",
+          "documentation":"<p>A list of the component's <code>ComponentChild</code> instances.</p>"
+        },
+        "variants":{
+          "shape":"ComponentVariants",
+          "documentation":"<p>A list of the component's variants. A variant is a unique style configuration of a main component.</p>"
+        },
+        "overrides":{
+          "shape":"ComponentOverrides",
+          "documentation":"<p>Describes the component's properties that can be overriden in a customized instance of the component. You can't specify <code>tags</code> as a valid property for <code>overrides</code>.</p>"
+        },
+        "bindingProperties":{
+          "shape":"ComponentBindingProperties",
+          "documentation":"<p>The information to connect a component's properties to data at runtime. You can't specify <code>tags</code> as a valid property for <code>bindingProperties</code>.</p> <p/>"
+        },
+        "collectionProperties":{
+          "shape":"ComponentCollectionProperties",
+          "documentation":"<p>The data binding configuration for the component's properties. Use this for a collection component. You can't specify <code>tags</code> as a valid property for <code>collectionProperties</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the component was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the component was modified.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the component.</p>"
+        },
+        "events":{
+          "shape":"ComponentEvents",
+          "documentation":"<p>Describes the events that can be raised on the component. Use for the workflow feature in Amplify Studio that allows you to bind events and actions to components.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the component when it was imported.</p>"
+        }
+      },
+      "documentation":"<p>Contains the configuration settings for a user interface (UI) element for an Amplify app. A component is configured as a primary, stand-alone UI element. Use <code>ComponentChild</code> to configure an instance of a <code>Component</code>. A <code>ComponentChild</code> instance inherits the configuration of the main <code>Component</code>.</p>"
+    },
+    "ComponentBindingProperties":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ComponentBindingPropertiesValue"}
+    },
+    "ComponentBindingPropertiesValue":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The property type.</p>"
+        },
+        "bindingProperties":{
+          "shape":"ComponentBindingPropertiesValueProperties",
+          "documentation":"<p>Describes the properties to customize with data at runtime.</p>"
+        },
+        "defaultValue":{
+          "shape":"String",
+          "documentation":"<p>The default value of the property.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data binding configuration for a component at runtime. You can use <code>ComponentBindingPropertiesValue</code> to add exposed properties to a component to allow different values to be entered when a component is reused in different places in an app.</p>"
+    },
+    "ComponentBindingPropertiesValueProperties":{
+      "type":"structure",
+      "members":{
+        "model":{
+          "shape":"String",
+          "documentation":"<p>An Amplify DataStore model.</p>"
+        },
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The field to bind the data to.</p>"
+        },
+        "predicates":{
+          "shape":"PredicateList",
+          "documentation":"<p>A list of predicates for binding a component's properties to data.</p>"
+        },
+        "userAttribute":{
+          "shape":"String",
+          "documentation":"<p>An authenticated user attribute.</p>"
+        },
+        "bucket":{
+          "shape":"String",
+          "documentation":"<p>An Amazon S3 bucket.</p>"
+        },
+        "key":{
+          "shape":"String",
+          "documentation":"<p>The storage key for an Amazon S3 bucket.</p>"
+        },
+        "defaultValue":{
+          "shape":"String",
+          "documentation":"<p>The default value to assign to the property.</p>"
+        },
+        "slotName":{
+          "shape":"String",
+          "documentation":"<p>The name of a component slot.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data binding configuration for a specific property using data stored in Amazon Web Services. For Amazon Web Services connected properties, you can bind a property to data stored in an Amazon S3 bucket, an Amplify DataStore model or an authenticated user attribute.</p>"
+    },
+    "ComponentChild":{
+      "type":"structure",
+      "required":[
+        "componentType",
+        "name",
+        "properties"
+      ],
+      "members":{
+        "componentType":{
+          "shape":"String",
+          "documentation":"<p>The type of the child component. </p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the child component.</p>"
+        },
+        "properties":{
+          "shape":"ComponentProperties",
+          "documentation":"<p>Describes the properties of the child component. You can't specify <code>tags</code> as a valid property for <code>properties</code>.</p>"
+        },
+        "children":{
+          "shape":"ComponentChildList",
+          "documentation":"<p>The list of <code>ComponentChild</code> instances for this component.</p>"
+        },
+        "events":{
+          "shape":"ComponentEvents",
+          "documentation":"<p>Describes the events that can be raised on the child component. Use for the workflow feature in Amplify Studio that allows you to bind events and actions to components.</p>"
+        },
+        "sourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the child component in its original source system, such as Figma.</p>"
+        }
+      },
+      "documentation":"<p>A nested UI configuration within a parent <code>Component</code>.</p>"
+    },
+    "ComponentChildList":{
+      "type":"list",
+      "member":{"shape":"ComponentChild"}
+    },
+    "ComponentCollectionProperties":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ComponentDataConfiguration"}
+    },
+    "ComponentConditionProperty":{
+      "type":"structure",
+      "members":{
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The name of the conditional property.</p>"
+        },
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The name of a field. Specify this when the property is a data model.</p>"
+        },
+        "operator":{
+          "shape":"String",
+          "documentation":"<p>The operator to use to perform the evaluation, such as <code>eq</code> to represent equals.</p>"
+        },
+        "operand":{
+          "shape":"String",
+          "documentation":"<p>The value of the property to evaluate.</p>"
+        },
+        "then":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The value to assign to the property if the condition is met.</p>"
+        },
+        "else":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The value to assign to the property if the condition is not met.</p>"
+        },
+        "operandType":{
+          "shape":"String",
+          "documentation":"<p>The type of the property to evaluate.</p>"
+        }
+      },
+      "documentation":"<p>Represents a conditional expression to set a component property. Use <code>ComponentConditionProperty</code> to set a property to different values conditionally, based on the value of another property.</p>"
+    },
+    "ComponentDataConfiguration":{
+      "type":"structure",
+      "required":["model"],
+      "members":{
+        "model":{
+          "shape":"String",
+          "documentation":"<p>The name of the data model to use to bind data to a component.</p>"
+        },
+        "sort":{
+          "shape":"SortPropertyList",
+          "documentation":"<p>Describes how to sort the component's properties.</p>"
+        },
+        "predicate":{
+          "shape":"Predicate",
+          "documentation":"<p>Represents the conditional logic to use when binding data to a component. Use this property to retrieve only a subset of the data in a collection.</p>"
+        },
+        "identifiers":{
+          "shape":"IdentifierList",
+          "documentation":"<p>A list of IDs to use to bind data to a component. Use this property to bind specifically chosen data, rather than data retrieved from a query.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for binding a component's properties to data.</p>"
+    },
+    "ComponentEvent":{
+      "type":"structure",
+      "members":{
+        "action":{
+          "shape":"String",
+          "documentation":"<p>The action to perform when a specific event is raised.</p>"
+        },
+        "parameters":{
+          "shape":"ActionParameters",
+          "documentation":"<p>Describes information about the action.</p>"
+        },
+        "bindingEvent":{
+          "shape":"String",
+          "documentation":"<p>Binds an event to an action on a component. When you specify a <code>bindingEvent</code>, the event is called when the action is performed.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration of an event. You can bind an event and a corresponding action to a <code>Component</code> or a <code>ComponentChild</code>. A button click is an example of an event. </p>"
+    },
+    "ComponentEvents":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ComponentEvent"}
+    },
+    "ComponentList":{
+      "type":"list",
+      "member":{"shape":"Component"}
+    },
+    "ComponentName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ComponentOverrides":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ComponentOverridesValue"}
+    },
+    "ComponentOverridesValue":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "ComponentProperties":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ComponentProperty"}
+    },
+    "ComponentProperty":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value to assign to the component property.</p>"
+        },
+        "bindingProperties":{
+          "shape":"ComponentPropertyBindingProperties",
+          "documentation":"<p>The information to bind the component property to data at runtime.</p>"
+        },
+        "collectionBindingProperties":{
+          "shape":"ComponentPropertyBindingProperties",
+          "documentation":"<p>The information to bind the component property to data at runtime. Use this for collection components.</p>"
+        },
+        "defaultValue":{
+          "shape":"String",
+          "documentation":"<p>The default value to assign to the component property.</p>"
+        },
+        "model":{
+          "shape":"String",
+          "documentation":"<p>The data model to use to assign a value to the component property.</p>"
+        },
+        "bindings":{
+          "shape":"FormBindings",
+          "documentation":"<p>The information to bind the component property to form data.</p>"
+        },
+        "event":{
+          "shape":"String",
+          "documentation":"<p>An event that occurs in your app. Use this for workflow data binding.</p>"
+        },
+        "userAttribute":{
+          "shape":"String",
+          "documentation":"<p>An authenticated user attribute to use to assign a value to the component property.</p>"
+        },
+        "concat":{
+          "shape":"ComponentPropertyList",
+          "documentation":"<p>A list of component properties to concatenate to create the value to assign to this component property.</p>"
+        },
+        "condition":{
+          "shape":"ComponentConditionProperty",
+          "documentation":"<p>The conditional expression to use to assign a value to the component property.</p>"
+        },
+        "configured":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the user configured the property in Amplify Studio after importing it.</p>"
+        },
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The component type.</p>"
+        },
+        "importedValue":{
+          "shape":"String",
+          "documentation":"<p>The default value assigned to the property when the component is imported into an app.</p>"
+        },
+        "componentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the component that is affected by an event.</p>"
+        },
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The name of the component's property that is affected by an event.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for all of a component's properties. Use <code>ComponentProperty</code> to specify the values to render or bind by default.</p>"
+    },
+    "ComponentPropertyBindingProperties":{
+      "type":"structure",
+      "required":["property"],
+      "members":{
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The component property to bind to the data field.</p>"
+        },
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The data field to bind the property to.</p>"
+        }
+      },
+      "documentation":"<p>Associates a component property to a binding property. This enables exposed properties on the top level component to propagate data to the component's property values.</p>"
+    },
+    "ComponentPropertyList":{
+      "type":"list",
+      "member":{"shape":"ComponentProperty"}
+    },
+    "ComponentSummary":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "name",
+        "componentType"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the component.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the component.</p>"
+        },
+        "name":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component.</p>"
+        },
+        "componentType":{
+          "shape":"ComponentType",
+          "documentation":"<p>The component type.</p>"
+        }
+      },
+      "documentation":"<p>Contains a summary of a component. This is a read-only data type that is returned by <code>ListComponents</code>.</p>"
+    },
+    "ComponentSummaryList":{
+      "type":"list",
+      "member":{"shape":"ComponentSummary"}
+    },
+    "ComponentType":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ComponentVariant":{
+      "type":"structure",
+      "members":{
+        "variantValues":{
+          "shape":"ComponentVariantValues",
+          "documentation":"<p>The combination of variants that comprise this variant. You can't specify <code>tags</code> as a valid property for <code>variantValues</code>.</p>"
+        },
+        "overrides":{
+          "shape":"ComponentOverrides",
+          "documentation":"<p>The properties of the component variant that can be overriden when customizing an instance of the component. You can't specify <code>tags</code> as a valid property for <code>overrides</code>.</p>"
+        }
+      },
+      "documentation":"<p>Describes the style configuration of a unique variation of a main component.</p>"
+    },
+    "ComponentVariantValues":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "ComponentVariants":{
+      "type":"list",
+      "member":{"shape":"ComponentVariant"}
+    },
+    "CreateComponentData":{
+      "type":"structure",
+      "required":[
+        "name",
+        "componentType",
+        "properties",
+        "variants",
+        "overrides",
+        "bindingProperties"
+      ],
+      "members":{
+        "name":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component</p>"
+        },
+        "sourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the component in its original source system, such as Figma.</p>"
+        },
+        "componentType":{
+          "shape":"ComponentType",
+          "documentation":"<p>The component type. This can be an Amplify custom UI component or another custom component.</p>"
+        },
+        "properties":{
+          "shape":"ComponentProperties",
+          "documentation":"<p>Describes the component's properties.</p>"
+        },
+        "children":{
+          "shape":"ComponentChildList",
+          "documentation":"<p>A list of child components that are instances of the main component.</p>"
+        },
+        "variants":{
+          "shape":"ComponentVariants",
+          "documentation":"<p>A list of the unique variants of this component.</p>"
+        },
+        "overrides":{
+          "shape":"ComponentOverrides",
+          "documentation":"<p>Describes the component properties that can be overriden to customize an instance of the component.</p>"
+        },
+        "bindingProperties":{
+          "shape":"ComponentBindingProperties",
+          "documentation":"<p>The data binding information for the component's properties.</p>"
+        },
+        "collectionProperties":{
+          "shape":"ComponentCollectionProperties",
+          "documentation":"<p>The data binding configuration for customizing a component's properties. Use this for a collection component.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the component data.</p>"
+        },
+        "events":{
+          "shape":"ComponentEvents",
+          "documentation":"<p>The event configuration for the component. Use for the workflow feature in Amplify Studio that allows you to bind events and actions to components.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the component when it was imported.</p>"
+        }
+      },
+      "documentation":"<p>Represents all of the information that is required to create a component.</p>"
+    },
+    "CreateComponentRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "componentToCreate"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app to associate with the component.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "componentToCreate":{
+          "shape":"CreateComponentData",
+          "documentation":"<p>Represents the configuration of the component to create.</p>"
+        }
+      },
+      "payload":"componentToCreate"
+    },
+    "CreateComponentResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Component",
+          "documentation":"<p>Describes the configuration of the new component.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "CreateFormData":{
+      "type":"structure",
+      "required":[
+        "name",
+        "dataType",
+        "formActionType",
+        "fields",
+        "style",
+        "sectionalElements",
+        "schemaVersion"
+      ],
+      "members":{
+        "name":{
+          "shape":"FormName",
+          "documentation":"<p>The name of the form.</p>"
+        },
+        "dataType":{
+          "shape":"FormDataTypeConfig",
+          "documentation":"<p>The type of data source to use to create the form.</p>"
+        },
+        "formActionType":{
+          "shape":"FormActionType",
+          "documentation":"<p>Specifies whether to perform a create or update action on the form.</p>"
+        },
+        "fields":{
+          "shape":"FieldsMap",
+          "documentation":"<p>The configuration information for the form's fields.</p>"
+        },
+        "style":{
+          "shape":"FormStyle",
+          "documentation":"<p>The configuration for the form's style.</p>"
+        },
+        "sectionalElements":{
+          "shape":"SectionalElementMap",
+          "documentation":"<p>The configuration information for the visual helper elements for the form. These elements are not associated with any data.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the form.</p>"
+        },
+        "cta":{
+          "shape":"FormCTA",
+          "documentation":"<p>The <code>FormCTA</code> object that stores the call to action configuration for the form.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the form data.</p>"
+        },
+        "labelDecorator":{
+          "shape":"LabelDecorator",
+          "documentation":"<p>Specifies an icon or decoration to display on the form.</p>"
+        }
+      },
+      "documentation":"<p>Represents all of the information that is required to create a form.</p>"
+    },
+    "CreateFormRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "formToCreate"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app to associate with the form.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "formToCreate":{
+          "shape":"CreateFormData",
+          "documentation":"<p>Represents the configuration of the form to create.</p>"
+        }
+      },
+      "payload":"formToCreate"
+    },
+    "CreateFormResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Form",
+          "documentation":"<p>Describes the configuration of the new form.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "CreateThemeData":{
+      "type":"structure",
+      "required":[
+        "name",
+        "values"
+      ],
+      "members":{
+        "name":{
+          "shape":"ThemeName",
+          "documentation":"<p>The name of the theme.</p>"
+        },
+        "values":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>A list of key-value pairs that deﬁnes the properties of the theme.</p>"
+        },
+        "overrides":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>Describes the properties that can be overriden to customize an instance of the theme.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the theme data.</p>"
+        }
+      },
+      "documentation":"<p>Represents all of the information that is required to create a theme.</p>"
+    },
+    "CreateThemeRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "themeToCreate"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the theme.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "themeToCreate":{
+          "shape":"CreateThemeData",
+          "documentation":"<p>Represents the configuration of the theme to create.</p>"
+        }
+      },
+      "payload":"themeToCreate"
+    },
+    "CreateThemeResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Theme",
+          "documentation":"<p>Describes the configuration of the new theme.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "DataStoreRenderConfig":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Describes the DataStore configuration for an API for a code generation job.</p>"
+    },
+    "DeleteComponentRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the component to delete.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the component to delete.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "DeleteFormRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the form to delete.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the form to delete.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "DeleteThemeRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the theme to delete.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the theme to delete.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "ExchangeCodeForTokenRequest":{
+      "type":"structure",
+      "required":[
+        "provider",
+        "request"
+      ],
+      "members":{
+        "provider":{
+          "shape":"TokenProviders",
+          "documentation":"<p>The third-party provider for the token. The only valid value is <code>figma</code>.</p>",
+          "location":"uri",
+          "locationName":"provider"
+        },
+        "request":{
+          "shape":"ExchangeCodeForTokenRequestBody",
+          "documentation":"<p>Describes the configuration of the request.</p>"
+        }
+      },
+      "payload":"request"
+    },
+    "ExchangeCodeForTokenRequestBody":{
+      "type":"structure",
+      "required":[
+        "code",
+        "redirectUri"
+      ],
+      "members":{
+        "code":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The access code to send in the request.</p>"
+        },
+        "redirectUri":{
+          "shape":"String",
+          "documentation":"<p>The location of the application that will receive the access code.</p>"
+        },
+        "clientId":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The ID of the client to request the token from.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration of a request to exchange an access code for a token.</p>"
+    },
+    "ExchangeCodeForTokenResponse":{
+      "type":"structure",
+      "required":[
+        "accessToken",
+        "expiresIn",
+        "refreshToken"
+      ],
+      "members":{
+        "accessToken":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The access token.</p>"
+        },
+        "expiresIn":{
+          "shape":"Integer",
+          "documentation":"<p>The date and time when the new access token expires.</p>"
+        },
+        "refreshToken":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The token to use to refresh a previously issued access token that might have expired.</p>"
+        }
+      }
+    },
+    "ExportComponentsRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app to export components to.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ExportComponentsResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"ComponentList",
+          "documentation":"<p>Represents the configuration of the exported components.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ExportFormsRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app to export forms to.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ExportFormsResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"FormList",
+          "documentation":"<p>Represents the configuration of the exported forms.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ExportThemesRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app to export the themes to.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ExportThemesResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"ThemeList",
+          "documentation":"<p>Represents the configuration of the exported themes.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "FeaturesMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "FieldConfig":{
+      "type":"structure",
+      "members":{
+        "label":{
+          "shape":"String",
+          "documentation":"<p>The label for the field.</p>"
+        },
+        "position":{
+          "shape":"FieldPosition",
+          "documentation":"<p>Specifies the field position.</p>"
+        },
+        "excluded":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to hide a field.</p>"
+        },
+        "inputType":{
+          "shape":"FieldInputConfig",
+          "documentation":"<p>Describes the configuration for the default input value to display for a field.</p>"
+        },
+        "validations":{
+          "shape":"ValidationsList",
+          "documentation":"<p>The validations to perform on the value in the field.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration information for a field in a table.</p>"
+    },
+    "FieldInputConfig":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The input type for the field. </p>"
+        },
+        "required":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies a field that requires input.</p>"
+        },
+        "readOnly":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies a read only field.</p>"
+        },
+        "placeholder":{
+          "shape":"String",
+          "documentation":"<p>The text to display as a placeholder for the field.</p>"
+        },
+        "defaultValue":{
+          "shape":"String",
+          "documentation":"<p>The default value for the field.</p>"
+        },
+        "descriptiveText":{
+          "shape":"String",
+          "documentation":"<p>The text to display to describe the field.</p>"
+        },
+        "defaultChecked":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether a field has a default value.</p>"
+        },
+        "defaultCountryCode":{
+          "shape":"String",
+          "documentation":"<p>The default country code for a phone number.</p>"
+        },
+        "valueMappings":{
+          "shape":"ValueMappings",
+          "documentation":"<p>The information to use to customize the input fields with data at runtime.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the field.</p>"
+        },
+        "minValue":{
+          "shape":"Float",
+          "documentation":"<p>The minimum value to display for the field.</p>"
+        },
+        "maxValue":{
+          "shape":"Float",
+          "documentation":"<p>The maximum value to display for the field.</p>"
+        },
+        "step":{
+          "shape":"Float",
+          "documentation":"<p>The stepping increment for a numeric value in a field.</p>"
+        },
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value for the field.</p>"
+        },
+        "isArray":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to render the field as an array. This property is ignored if the <code>dataSourceType</code> for the form is a Data Store.</p>"
+        },
+        "fileUploaderConfig":{
+          "shape":"FileUploaderFieldConfig",
+          "documentation":"<p>The configuration for the file uploader field.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for the default input values to display for a field.</p>"
+    },
+    "FieldPosition":{
+      "type":"structure",
+      "members":{
+        "fixed":{
+          "shape":"FixedPosition",
+          "documentation":"<p>The field position is fixed and doesn't change in relation to other fields.</p>"
+        },
+        "rightOf":{
+          "shape":"String",
+          "documentation":"<p>The field position is to the right of the field specified by the string.</p>"
+        },
+        "below":{
+          "shape":"String",
+          "documentation":"<p>The field position is below the field specified by the string.</p>"
+        }
+      },
+      "documentation":"<p>Describes the field position.</p>",
+      "union":true
+    },
+    "FieldValidationConfiguration":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The validation to perform on an object type.<code/> </p>"
+        },
+        "strValues":{
+          "shape":"StrValues",
+          "documentation":"<p>The validation to perform on a string value.</p>"
+        },
+        "numValues":{
+          "shape":"NumValues",
+          "documentation":"<p>The validation to perform on a number value.</p>"
+        },
+        "validationMessage":{
+          "shape":"String",
+          "documentation":"<p>The validation message to display.</p>"
+        }
+      },
+      "documentation":"<p>Describes the validation configuration for a field.</p>"
+    },
+    "FieldsMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"FieldConfig"}
+    },
+    "FileUploaderFieldConfig":{
+      "type":"structure",
+      "required":[
+        "accessLevel",
+        "acceptedFileTypes"
+      ],
+      "members":{
+        "accessLevel":{
+          "shape":"StorageAccessLevel",
+          "documentation":"<p>The access level to assign to the uploaded files in the Amazon S3 bucket where they are stored. The valid values for this property are <code>private</code>, <code>protected</code>, or <code>public</code>. For detailed information about the permissions associated with each access level, see <a href=\"https://docs.amplify.aws/lib/storage/configureaccess/q/platform/js/\">File access levels</a> in the <i>Amplify documentation</i>.</p>"
+        },
+        "acceptedFileTypes":{
+          "shape":"StrValues",
+          "documentation":"<p>The file types that are allowed to be uploaded by the file uploader. Provide this information in an array of strings specifying the valid file extensions.</p>"
+        },
+        "showThumbnails":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to display or hide the image preview after selecting a file for upload. The default value is <code>true</code> to display the image preview.</p>"
+        },
+        "isResumable":{
+          "shape":"Boolean",
+          "documentation":"<p>Allows the file upload operation to be paused and resumed. The default value is <code>false</code>.</p> <p>When <code>isResumable</code> is set to <code>true</code>, the file uploader uses a multipart upload to break the files into chunks before upload. The progress of the upload isn't continuous, because the file uploader uploads a chunk at a time.</p>"
+        },
+        "maxFileCount":{
+          "shape":"Integer",
+          "documentation":"<p>Specifies the maximum number of files that can be selected to upload. The default value is an unlimited number of files.</p>"
+        },
+        "maxSize":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum file size in bytes that the file uploader will accept. The default value is an unlimited file size.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for the file uploader field.</p>"
+    },
+    "FixedPosition":{
+      "type":"string",
+      "enum":["first"]
+    },
+    "Float":{
+      "type":"float",
+      "box":true
+    },
+    "Form":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "name",
+        "formActionType",
+        "style",
+        "dataType",
+        "fields",
+        "sectionalElements",
+        "schemaVersion"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app associated with the form.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the form.</p>"
+        },
+        "name":{
+          "shape":"FormName",
+          "documentation":"<p>The name of the form.</p>"
+        },
+        "formActionType":{
+          "shape":"FormActionType",
+          "documentation":"<p>The operation to perform on the specified form.</p>"
+        },
+        "style":{
+          "shape":"FormStyle",
+          "documentation":"<p>Stores the configuration for the form's style.</p>"
+        },
+        "dataType":{
+          "shape":"FormDataTypeConfig",
+          "documentation":"<p>The type of data source to use to create the form.</p>"
+        },
+        "fields":{
+          "shape":"FieldsMap",
+          "documentation":"<p>Stores the information about the form's fields.</p>"
+        },
+        "sectionalElements":{
+          "shape":"SectionalElementMap",
+          "documentation":"<p>Stores the visual helper elements for the form that are not associated with any data.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the form when it was imported.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the form.</p>"
+        },
+        "cta":{
+          "shape":"FormCTA",
+          "documentation":"<p>Stores the call to action configuration for the form.</p>"
+        },
+        "labelDecorator":{
+          "shape":"LabelDecorator",
+          "documentation":"<p>Specifies an icon or decoration to display on the form.</p>"
+        }
+      },
+      "documentation":"<p>Contains the configuration settings for a <code>Form</code> user interface (UI) element for an Amplify app. A form is a component you can add to your project by specifying a data source as the default configuration for the form.</p>"
+    },
+    "FormActionType":{
+      "type":"string",
+      "enum":[
+        "create",
+        "update"
+      ]
+    },
+    "FormBindingElement":{
+      "type":"structure",
+      "required":[
+        "element",
+        "property"
+      ],
+      "members":{
+        "element":{
+          "shape":"String",
+          "documentation":"<p>The name of the component to retrieve a value from.</p>"
+        },
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The property to retrieve a value from.</p>"
+        }
+      },
+      "documentation":"<p>Describes how to bind a component property to form data.</p>"
+    },
+    "FormBindings":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"FormBindingElement"}
+    },
+    "FormButton":{
+      "type":"structure",
+      "members":{
+        "excluded":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the button is visible on the form.</p>"
+        },
+        "children":{
+          "shape":"String",
+          "documentation":"<p>Describes the button's properties.</p>"
+        },
+        "position":{
+          "shape":"FieldPosition",
+          "documentation":"<p>The position of the button.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for a button UI element that is a part of a form.</p>"
+    },
+    "FormButtonsPosition":{
+      "type":"string",
+      "enum":[
+        "top",
+        "bottom",
+        "top_and_bottom"
+      ]
+    },
+    "FormCTA":{
+      "type":"structure",
+      "members":{
+        "position":{
+          "shape":"FormButtonsPosition",
+          "documentation":"<p>The position of the button.</p>"
+        },
+        "clear":{
+          "shape":"FormButton",
+          "documentation":"<p>Displays a clear button.</p>"
+        },
+        "cancel":{
+          "shape":"FormButton",
+          "documentation":"<p>Displays a cancel button.</p>"
+        },
+        "submit":{
+          "shape":"FormButton",
+          "documentation":"<p>Displays a submit button.</p>"
+        }
+      },
+      "documentation":"<p>Describes the call to action button configuration for the form.</p>"
+    },
+    "FormDataSourceType":{
+      "type":"string",
+      "enum":[
+        "DataStore",
+        "Custom"
+      ]
+    },
+    "FormDataTypeConfig":{
+      "type":"structure",
+      "required":[
+        "dataSourceType",
+        "dataTypeName"
+      ],
+      "members":{
+        "dataSourceType":{
+          "shape":"FormDataSourceType",
+          "documentation":"<p>The data source type, either an Amplify DataStore model or a custom data type.</p>"
+        },
+        "dataTypeName":{
+          "shape":"String",
+          "documentation":"<p>The unique name of the data type you are using as the data source for the form.</p>"
+        }
+      },
+      "documentation":"<p>Describes the data type configuration for the data source associated with a form.</p>"
+    },
+    "FormInputBindingProperties":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"FormInputBindingPropertiesValue"}
+    },
+    "FormInputBindingPropertiesValue":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The property type.</p>"
+        },
+        "bindingProperties":{
+          "shape":"FormInputBindingPropertiesValueProperties",
+          "documentation":"<p>Describes the properties to customize with data at runtime.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data binding configuration for a form's input fields at runtime.You can use <code>FormInputBindingPropertiesValue</code> to add exposed properties to a form to allow different values to be entered when a form is reused in different places in an app.</p>"
+    },
+    "FormInputBindingPropertiesValueProperties":{
+      "type":"structure",
+      "members":{
+        "model":{
+          "shape":"String",
+          "documentation":"<p>An Amplify DataStore model.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data binding configuration for a specific property using data stored in Amazon Web Services. For Amazon Web Services connected properties, you can bind a property to data stored in an Amplify DataStore model.</p>"
+    },
+    "FormInputValueProperty":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value to assign to the input field.</p>"
+        },
+        "bindingProperties":{
+          "shape":"FormInputValuePropertyBindingProperties",
+          "documentation":"<p>The information to bind fields to data at runtime.</p>"
+        },
+        "concat":{
+          "shape":"FormInputValuePropertyList",
+          "documentation":"<p>A list of form properties to concatenate to create the value to assign to this field property.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for an input field on a form. Use <code>FormInputValueProperty</code> to specify the values to render or bind by default.</p>"
+    },
+    "FormInputValuePropertyBindingProperties":{
+      "type":"structure",
+      "required":["property"],
+      "members":{
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The form property to bind to the data field.</p>"
+        },
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The data field to bind the property to.</p>"
+        }
+      },
+      "documentation":"<p>Associates a form property to a binding property. This enables exposed properties on the top level form to propagate data to the form's property values.</p>"
+    },
+    "FormInputValuePropertyList":{
+      "type":"list",
+      "member":{"shape":"FormInputValueProperty"}
+    },
+    "FormList":{
+      "type":"list",
+      "member":{"shape":"Form"}
+    },
+    "FormName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "FormStyle":{
+      "type":"structure",
+      "members":{
+        "horizontalGap":{
+          "shape":"FormStyleConfig",
+          "documentation":"<p>The spacing for the horizontal gap.</p>"
+        },
+        "verticalGap":{
+          "shape":"FormStyleConfig",
+          "documentation":"<p>The spacing for the vertical gap.</p>"
+        },
+        "outerPadding":{
+          "shape":"FormStyleConfig",
+          "documentation":"<p>The size of the outer padding for the form.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration for the form's style.</p>"
+    },
+    "FormStyleConfig":{
+      "type":"structure",
+      "members":{
+        "tokenReference":{
+          "shape":"String",
+          "documentation":"<p>A reference to a design token to use to bind the form's style properties to an existing theme.</p>"
+        },
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value of the style setting.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration settings for the form's style properties.</p>",
+      "union":true
+    },
+    "FormSummary":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "dataType",
+        "environmentName",
+        "formActionType",
+        "id",
+        "name"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the app associated with the form summary.</p>"
+        },
+        "dataType":{
+          "shape":"FormDataTypeConfig",
+          "documentation":"<p>The form's data source type.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>"
+        },
+        "formActionType":{
+          "shape":"FormActionType",
+          "documentation":"<p>The type of operation to perform on the form.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the form.</p>"
+        },
+        "name":{
+          "shape":"FormName",
+          "documentation":"<p>The name of the form.</p>"
+        }
+      },
+      "documentation":"<p>Describes the basic information about a form.</p>"
+    },
+    "FormSummaryList":{
+      "type":"list",
+      "member":{"shape":"FormSummary"}
+    },
+    "GenericDataRelationshipType":{
+      "type":"string",
+      "enum":[
+        "HAS_MANY",
+        "HAS_ONE",
+        "BELONGS_TO"
+      ]
+    },
+    "GetCodegenJobRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"AppId",
+          "documentation":"<p>The unique ID of the Amplify app associated with the code generation job.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app associated with the code generation job.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the code generation job.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetCodegenJobResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"CodegenJob",
+          "documentation":"<p>The configuration settings for the code generation job.</p>"
+        }
+      },
+      "payload":"job"
+    },
+    "GetComponentRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the component.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetComponentResponse":{
+      "type":"structure",
+      "members":{
+        "component":{
+          "shape":"Component",
+          "documentation":"<p>Represents the configuration settings for the component.</p>"
+        }
+      },
+      "payload":"component"
+    },
+    "GetFormRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the form.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetFormResponse":{
+      "type":"structure",
+      "members":{
+        "form":{
+          "shape":"Form",
+          "documentation":"<p>Represents the configuration settings for the form.</p>"
+        }
+      },
+      "payload":"form"
+    },
+    "GetMetadataRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        }
+      }
+    },
+    "GetMetadataResponse":{
+      "type":"structure",
+      "required":["features"],
+      "members":{
+        "features":{
+          "shape":"FeaturesMap",
+          "documentation":"<p>Represents the configuration settings for the features metadata.</p>"
+        }
+      }
+    },
+    "GetThemeRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the theme.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetThemeResponse":{
+      "type":"structure",
+      "members":{
+        "theme":{
+          "shape":"Theme",
+          "documentation":"<p>Represents the configuration settings for the theme.</p>"
+        }
+      },
+      "payload":"theme"
+    },
+    "GraphQLRenderConfig":{
+      "type":"structure",
+      "required":[
+        "typesFilePath",
+        "queriesFilePath",
+        "mutationsFilePath",
+        "subscriptionsFilePath",
+        "fragmentsFilePath"
+      ],
+      "members":{
+        "typesFilePath":{
+          "shape":"String",
+          "documentation":"<p>The path to the GraphQL types file, relative to the component output directory.</p>"
+        },
+        "queriesFilePath":{
+          "shape":"String",
+          "documentation":"<p>The path to the GraphQL queries file, relative to the component output directory.</p>"
+        },
+        "mutationsFilePath":{
+          "shape":"String",
+          "documentation":"<p>The path to the GraphQL mutations file, relative to the component output directory.</p>"
+        },
+        "subscriptionsFilePath":{
+          "shape":"String",
+          "documentation":"<p>The path to the GraphQL subscriptions file, relative to the component output directory.</p>"
+        },
+        "fragmentsFilePath":{
+          "shape":"String",
+          "documentation":"<p>The path to the GraphQL fragments file, relative to the component output directory.</p>"
+        }
+      },
+      "documentation":"<p>Describes the GraphQL configuration for an API for a code generation job.</p>"
+    },
+    "IdentifierList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An internal error has occurred. Please retry your request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidParameterException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An invalid or out-of-range value was supplied for the input parameter.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "JSModule":{
+      "type":"string",
+      "enum":[
+        "es2020",
+        "esnext"
+      ]
+    },
+    "JSScript":{
+      "type":"string",
+      "enum":[
+        "jsx",
+        "tsx",
+        "js"
+      ]
+    },
+    "JSTarget":{
+      "type":"string",
+      "enum":[
+        "es2015",
+        "es2020"
+      ]
+    },
+    "LabelDecorator":{
+      "type":"string",
+      "enum":[
+        "required",
+        "optional",
+        "none"
+      ]
+    },
+    "ListCodegenJobsLimit":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListCodegenJobsRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"AppId",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListCodegenJobsLimit",
+          "documentation":"<p>The maximum number of jobs to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListCodegenJobsResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"CodegenJobSummaryList",
+          "documentation":"<p>The list of code generation jobs for the Amplify app.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListComponentsRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListEntityLimit",
+          "documentation":"<p>The maximum number of components to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListComponentsResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"ComponentSummaryList",
+          "documentation":"<p>The list of components for the Amplify app.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListEntityLimit":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListFormsRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListEntityLimit",
+          "documentation":"<p>The maximum number of forms to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListFormsResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"FormSummaryList",
+          "documentation":"<p>The list of forms for the Amplify app.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's included if more results are available.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) to use to list tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>A list of tag key value pairs for a specified Amazon Resource Name (ARN).</p>"
+        }
+      }
+    },
+    "ListThemesRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token to request the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListEntityLimit",
+          "documentation":"<p>The maximum number of theme results to return in the response.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListThemesResponse":{
+      "type":"structure",
+      "required":["entities"],
+      "members":{
+        "entities":{
+          "shape":"ThemeSummaryList",
+          "documentation":"<p>The list of themes for the Amplify app.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The pagination token that's returned if more results are available.</p>"
+        }
+      }
+    },
+    "MutationActionSetStateParameter":{
+      "type":"structure",
+      "required":[
+        "componentName",
+        "property",
+        "set"
+      ],
+      "members":{
+        "componentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the component that is being modified.</p>"
+        },
+        "property":{
+          "shape":"String",
+          "documentation":"<p>The name of the component property to apply the state configuration to.</p>"
+        },
+        "set":{
+          "shape":"ComponentProperty",
+          "documentation":"<p>The state configuration to assign to the property.</p>"
+        }
+      },
+      "documentation":"<p>Represents the state configuration when an action modifies a property of another element within the same component.</p>"
+    },
+    "NoApiRenderConfig":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Describes the configuration for an application with no API being used.</p>"
+    },
+    "NumValues":{
+      "type":"list",
+      "member":{"shape":"Integer"}
+    },
+    "OperandType":{
+      "type":"string",
+      "pattern":"boolean|string|number"
+    },
+    "Predicate":{
+      "type":"structure",
+      "members":{
+        "or":{
+          "shape":"PredicateList",
+          "documentation":"<p>A list of predicates to combine logically.</p>"
+        },
+        "and":{
+          "shape":"PredicateList",
+          "documentation":"<p>A list of predicates to combine logically.</p>"
+        },
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The field to query.</p>"
+        },
+        "operator":{
+          "shape":"String",
+          "documentation":"<p>The operator to use to perform the evaluation.</p>"
+        },
+        "operand":{
+          "shape":"String",
+          "documentation":"<p>The value to use when performing the evaluation.</p>"
+        },
+        "operandType":{
+          "shape":"OperandType",
+          "documentation":"<p>The type of value to use when performing the evaluation.</p>"
+        }
+      },
+      "documentation":"<p>Stores information for generating Amplify DataStore queries. Use a <code>Predicate</code> to retrieve a subset of the data in a collection.</p>"
+    },
+    "PredicateList":{
+      "type":"list",
+      "member":{"shape":"Predicate"}
+    },
+    "PutMetadataFlagBody":{
+      "type":"structure",
+      "required":["newValue"],
+      "members":{
+        "newValue":{
+          "shape":"String",
+          "documentation":"<p>The new information to store.</p>"
+        }
+      },
+      "documentation":"<p>Stores the metadata information about a feature on a form.</p>"
+    },
+    "PutMetadataFlagRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "featureName",
+        "body"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "featureName":{
+          "shape":"String",
+          "documentation":"<p>The name of the feature associated with the metadata.</p>",
+          "location":"uri",
+          "locationName":"featureName"
+        },
+        "body":{
+          "shape":"PutMetadataFlagBody",
+          "documentation":"<p>The metadata information to store.</p>"
+        }
+      },
+      "payload":"body"
+    },
+    "ReactCodegenDependencies":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"},
+      "documentation":"<p>Indicates the dependency version of the project code to be generated by Amazon Web Services Amplify. The version of the generated code output is determined by the version number contained in <code>aws-amplify</code>.</p>"
+    },
+    "ReactStartCodegenJobData":{
+      "type":"structure",
+      "members":{
+        "module":{
+          "shape":"JSModule",
+          "documentation":"<p>The JavaScript module type.</p>"
+        },
+        "target":{
+          "shape":"JSTarget",
+          "documentation":"<p>The ECMAScript specification to use.</p>"
+        },
+        "script":{
+          "shape":"JSScript",
+          "documentation":"<p>The file type to use for a JavaScript project.</p>"
+        },
+        "renderTypeDeclarations":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the code generation job should render type declaration files.</p>"
+        },
+        "inlineSourceMap":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the code generation job should render inline source maps.</p>"
+        },
+        "apiConfiguration":{
+          "shape":"ApiConfiguration",
+          "documentation":"<p>The API configuration for the code generation job.</p>"
+        },
+        "dependencies":{
+          "shape":"ReactCodegenDependencies",
+          "documentation":"<p>Lists the dependency packages that may be required for the project code to run.</p>"
+        }
+      },
+      "documentation":"<p>Describes the code generation job configuration for a React project.</p>"
+    },
+    "RefreshTokenRequest":{
+      "type":"structure",
+      "required":[
+        "provider",
+        "refreshTokenBody"
+      ],
+      "members":{
+        "provider":{
+          "shape":"TokenProviders",
+          "documentation":"<p>The third-party provider for the token. The only valid value is <code>figma</code>.</p>",
+          "location":"uri",
+          "locationName":"provider"
+        },
+        "refreshTokenBody":{
+          "shape":"RefreshTokenRequestBody",
+          "documentation":"<p>Information about the refresh token request.</p>"
+        }
+      },
+      "payload":"refreshTokenBody"
+    },
+    "RefreshTokenRequestBody":{
+      "type":"structure",
+      "required":["token"],
+      "members":{
+        "token":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The token to use to refresh a previously issued access token that might have expired.</p>"
+        },
+        "clientId":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The ID of the client to request the token from.</p>"
+        }
+      },
+      "documentation":"<p>Describes a refresh token.</p>"
+    },
+    "RefreshTokenResponse":{
+      "type":"structure",
+      "required":[
+        "accessToken",
+        "expiresIn"
+      ],
+      "members":{
+        "accessToken":{
+          "shape":"SensitiveString",
+          "documentation":"<p>The access token.</p>"
+        },
+        "expiresIn":{
+          "shape":"Integer",
+          "documentation":"<p>The date and time when the new access token expires.</p>"
+        }
+      }
+    },
+    "RelatedModelFieldsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ResourceConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The resource specified in the request conflicts with an existing resource.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The requested resource does not exist, or access was denied.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SectionalElement":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"String",
+          "documentation":"<p>The type of sectional element. Valid values are <code>Heading</code>, <code>Text</code>, and <code>Divider</code>.</p>"
+        },
+        "position":{
+          "shape":"FieldPosition",
+          "documentation":"<p>Specifies the position of the text in a field for a <code>Text</code> sectional element.</p>"
+        },
+        "text":{
+          "shape":"String",
+          "documentation":"<p>The text for a <code>Text</code> sectional element.</p>"
+        },
+        "level":{
+          "shape":"Integer",
+          "documentation":"<p>Specifies the size of the font for a <code>Heading</code> sectional element. Valid values are <code>1 | 2 | 3 | 4 | 5 | 6</code>.</p>"
+        },
+        "orientation":{
+          "shape":"String",
+          "documentation":"<p>Specifies the orientation for a <code>Divider</code> sectional element. Valid values are <code>horizontal</code> or <code>vertical</code>.</p>"
+        },
+        "excluded":{
+          "shape":"Boolean",
+          "documentation":"<p>Excludes a sectional element that was generated by default for a specified data model.</p>"
+        }
+      },
+      "documentation":"<p>Stores the configuration information for a visual helper element for a form. A sectional element can be a header, a text block, or a divider. These elements are static and not associated with any data.</p>"
+    },
+    "SectionalElementMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"SectionalElement"}
+    },
+    "SensitiveString":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You exceeded your service quota. Service quotas, also referred to as limits, are the maximum number of service resources or operations for your Amazon Web Services account. </p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SortDirection":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "SortProperty":{
+      "type":"structure",
+      "required":[
+        "field",
+        "direction"
+      ],
+      "members":{
+        "field":{
+          "shape":"String",
+          "documentation":"<p>The field to perform the sort on.</p>"
+        },
+        "direction":{
+          "shape":"SortDirection",
+          "documentation":"<p>The direction of the sort, either ascending or descending.</p>"
+        }
+      },
+      "documentation":"<p>Describes how to sort the data that you bind to a component.</p>"
+    },
+    "SortPropertyList":{
+      "type":"list",
+      "member":{"shape":"SortProperty"}
+    },
+    "StartCodegenJobData":{
+      "type":"structure",
+      "required":["renderConfig"],
+      "members":{
+        "renderConfig":{
+          "shape":"CodegenJobRenderConfig",
+          "documentation":"<p>The code generation configuration for the codegen job.</p>"
+        },
+        "genericDataSchema":{
+          "shape":"CodegenJobGenericDataSchema",
+          "documentation":"<p>The data schema to use for a code generation job.</p>"
+        },
+        "autoGenerateForms":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether to autogenerate forms in the code generation job.</p>"
+        },
+        "features":{
+          "shape":"CodegenFeatureFlags",
+          "documentation":"<p>The feature flags for a code generation job.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the code generation job data.</p>"
+        }
+      },
+      "documentation":"<p>The code generation job resource configuration.</p>"
+    },
+    "StartCodegenJobRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "codegenJobToCreate"
+      ],
+      "members":{
+        "appId":{
+          "shape":"AppId",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The idempotency token used to ensure that the code generation job request completes only once.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "codegenJobToCreate":{
+          "shape":"StartCodegenJobData",
+          "documentation":"<p>The code generation job resource configuration.</p>"
+        }
+      },
+      "payload":"codegenJobToCreate"
+    },
+    "StartCodegenJobResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"CodegenJob",
+          "documentation":"<p>The code generation job for a UI component that is associated with an Amplify app.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "StorageAccessLevel":{
+      "type":"string",
+      "enum":[
+        "public",
+        "protected",
+        "private"
+      ]
+    },
+    "StrValues":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "String":{"type":"string"},
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[a-zA-Z+-=._:/]+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) to use to tag a resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>A list of tag key value pairs for a specified Amazon Resource Name (ARN).</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
+    "Theme":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "name",
+        "createdAt",
+        "values"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app associated with the theme.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is a part of the Amplify app.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID for the theme.</p>"
+        },
+        "name":{
+          "shape":"ThemeName",
+          "documentation":"<p>The name of the theme.</p>"
+        },
+        "createdAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the theme was created.</p>"
+        },
+        "modifiedAt":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The time that the theme was modified.</p>"
+        },
+        "values":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>A list of key-value pairs that defines the properties of the theme.</p>"
+        },
+        "overrides":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>Describes the properties that can be overriden to customize a theme.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more key-value pairs to use when tagging the theme.</p>"
+        }
+      },
+      "documentation":"<p>A theme is a collection of style settings that apply globally to the components associated with an Amplify application.</p>"
+    },
+    "ThemeList":{
+      "type":"list",
+      "member":{"shape":"Theme"}
+    },
+    "ThemeName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ThemeSummary":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "name"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the app associated with the theme summary.</p>"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The ID of the theme.</p>"
+        },
+        "name":{
+          "shape":"ThemeName",
+          "documentation":"<p>The name of the theme.</p>"
+        }
+      },
+      "documentation":"<p>Describes the basic information about a theme.</p>"
+    },
+    "ThemeSummaryList":{
+      "type":"list",
+      "member":{"shape":"ThemeSummary"}
+    },
+    "ThemeValue":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value of a theme property.</p>"
+        },
+        "children":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>A list of key-value pairs that define the theme's properties.</p>"
+        }
+      },
+      "documentation":"<p>Describes the configuration of a theme's properties.</p>"
+    },
+    "ThemeValues":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"String",
+          "documentation":"<p>The name of the property.</p>"
+        },
+        "value":{
+          "shape":"ThemeValue",
+          "documentation":"<p>The value of the property.</p>"
+        }
+      },
+      "documentation":"<p>A key-value pair that defines a property of a theme.</p>"
+    },
+    "ThemeValuesList":{
+      "type":"list",
+      "member":{"shape":"ThemeValues"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "TokenProviders":{
+      "type":"string",
+      "enum":["figma"]
+    },
+    "UnauthorizedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have permission to perform this operation.</p>",
+      "error":{
+        "httpStatusCode":401,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) to use to untag a resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys to use to untag a resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateComponentData":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the component to update.</p>"
+        },
+        "name":{
+          "shape":"ComponentName",
+          "documentation":"<p>The name of the component to update.</p>"
+        },
+        "sourceId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID of the component in its original source system, such as Figma.</p>"
+        },
+        "componentType":{
+          "shape":"ComponentType",
+          "documentation":"<p>The type of the component. This can be an Amplify custom UI component or another custom component.</p>"
+        },
+        "properties":{
+          "shape":"ComponentProperties",
+          "documentation":"<p>Describes the component's properties.</p>"
+        },
+        "children":{
+          "shape":"ComponentChildList",
+          "documentation":"<p>The components that are instances of the main component.</p>"
+        },
+        "variants":{
+          "shape":"ComponentVariants",
+          "documentation":"<p>A list of the unique variants of the main component being updated.</p>"
+        },
+        "overrides":{
+          "shape":"ComponentOverrides",
+          "documentation":"<p>Describes the properties that can be overriden to customize the component.</p>"
+        },
+        "bindingProperties":{
+          "shape":"ComponentBindingProperties",
+          "documentation":"<p>The data binding information for the component's properties.</p>"
+        },
+        "collectionProperties":{
+          "shape":"ComponentCollectionProperties",
+          "documentation":"<p>The configuration for binding a component's properties to a data model. Use this for a collection component.</p>"
+        },
+        "events":{
+          "shape":"ComponentEvents",
+          "documentation":"<p>The event configuration for the component. Use for the workflow feature in Amplify Studio that allows you to bind events and actions to components.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the component when it was imported.</p>"
+        }
+      },
+      "documentation":"<p>Updates and saves all of the information about a component, based on component ID.</p>"
+    },
+    "UpdateComponentRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "updatedComponent"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the component.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "updatedComponent":{
+          "shape":"UpdateComponentData",
+          "documentation":"<p>The configuration of the updated component.</p>"
+        }
+      },
+      "payload":"updatedComponent"
+    },
+    "UpdateComponentResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Component",
+          "documentation":"<p>Describes the configuration of the updated component.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "UpdateFormData":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"FormName",
+          "documentation":"<p>The name of the form.</p>"
+        },
+        "dataType":{
+          "shape":"FormDataTypeConfig",
+          "documentation":"<p>The type of data source to use to create the form.</p>"
+        },
+        "formActionType":{
+          "shape":"FormActionType",
+          "documentation":"<p>Specifies whether to perform a create or update action on the form.</p>"
+        },
+        "fields":{
+          "shape":"FieldsMap",
+          "documentation":"<p>The configuration information for the form's fields.</p>"
+        },
+        "style":{
+          "shape":"FormStyle",
+          "documentation":"<p>The configuration for the form's style.</p>"
+        },
+        "sectionalElements":{
+          "shape":"SectionalElementMap",
+          "documentation":"<p>The configuration information for the visual helper elements for the form. These elements are not associated with any data.</p>"
+        },
+        "schemaVersion":{
+          "shape":"String",
+          "documentation":"<p>The schema version of the form.</p>"
+        },
+        "cta":{
+          "shape":"FormCTA",
+          "documentation":"<p>The <code>FormCTA</code> object that stores the call to action configuration for the form.</p>"
+        },
+        "labelDecorator":{
+          "shape":"LabelDecorator",
+          "documentation":"<p>Specifies an icon or decoration to display on the form.</p>"
+        }
+      },
+      "documentation":"<p>Updates and saves all of the information about a form, based on form ID.</p>"
+    },
+    "UpdateFormRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "updatedForm"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the form.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "updatedForm":{
+          "shape":"UpdateFormData",
+          "documentation":"<p>The request accepts the following data in JSON format.</p>"
+        }
+      },
+      "payload":"updatedForm"
+    },
+    "UpdateFormResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Form",
+          "documentation":"<p>Describes the configuration of the updated form.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "UpdateThemeData":{
+      "type":"structure",
+      "required":["values"],
+      "members":{
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID of the theme to update.</p>"
+        },
+        "name":{
+          "shape":"ThemeName",
+          "documentation":"<p>The name of the theme to update.</p>"
+        },
+        "values":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>A list of key-value pairs that define the theme's properties.</p>"
+        },
+        "overrides":{
+          "shape":"ThemeValuesList",
+          "documentation":"<p>Describes the properties that can be overriden to customize the theme.</p>"
+        }
+      },
+      "documentation":"<p>Saves the data binding information for a theme.</p>"
+    },
+    "UpdateThemeRequest":{
+      "type":"structure",
+      "required":[
+        "appId",
+        "environmentName",
+        "id",
+        "updatedTheme"
+      ],
+      "members":{
+        "appId":{
+          "shape":"String",
+          "documentation":"<p>The unique ID for the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"appId"
+        },
+        "environmentName":{
+          "shape":"String",
+          "documentation":"<p>The name of the backend environment that is part of the Amplify app.</p>",
+          "location":"uri",
+          "locationName":"environmentName"
+        },
+        "id":{
+          "shape":"Uuid",
+          "documentation":"<p>The unique ID for the theme.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "clientToken":{
+          "shape":"String",
+          "documentation":"<p>The unique client token.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        },
+        "updatedTheme":{
+          "shape":"UpdateThemeData",
+          "documentation":"<p>The configuration of the updated theme.</p>"
+        }
+      },
+      "payload":"updatedTheme"
+    },
+    "UpdateThemeResponse":{
+      "type":"structure",
+      "members":{
+        "entity":{
+          "shape":"Theme",
+          "documentation":"<p>Describes the configuration of the updated theme.</p>"
+        }
+      },
+      "payload":"entity"
+    },
+    "Uuid":{"type":"string"},
+    "ValidationsList":{
+      "type":"list",
+      "member":{"shape":"FieldValidationConfiguration"}
+    },
+    "ValueMapping":{
+      "type":"structure",
+      "required":["value"],
+      "members":{
+        "displayValue":{
+          "shape":"FormInputValueProperty",
+          "documentation":"<p>The value to display for the complex object.</p>"
+        },
+        "value":{
+          "shape":"FormInputValueProperty",
+          "documentation":"<p>The complex object.</p>"
+        }
+      },
+      "documentation":"<p>Associates a complex object with a display value. Use <code>ValueMapping</code> to store how to represent complex objects when they are displayed.</p>"
+    },
+    "ValueMappingList":{
+      "type":"list",
+      "member":{"shape":"ValueMapping"}
+    },
+    "ValueMappings":{
+      "type":"structure",
+      "required":["values"],
+      "members":{
+        "values":{
+          "shape":"ValueMappingList",
+          "documentation":"<p>The value and display value pairs.</p>"
+        },
+        "bindingProperties":{
+          "shape":"FormInputBindingProperties",
+          "documentation":"<p>The information to bind fields to data at runtime.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data binding configuration for a value map.</p>"
+    }
+  },
+  "documentation":"<p>The Amplify UI Builder API provides a programmatic interface for creating and configuring user interface (UI) component libraries and themes for use in your Amplify applications. You can then connect these UI components to an application's backend Amazon Web Services resources.</p> <p>You can also use the Amplify Studio visual designer to create UI components and model data for an app. For more information, see <a href=\"https://docs.amplify.aws/console/adminui/intro\">Introduction</a> in the <i>Amplify Docs</i>.</p> <p>The Amplify Framework is a comprehensive set of SDKs, libraries, tools, and documentation for client app development. For more information, see the <a href=\"https://docs.amplify.aws/\">Amplify Framework</a>. For more information about deploying an Amplify application to Amazon Web Services, see the <a href=\"https://docs.aws.amazon.com/amplify/latest/userguide/welcome.html\">Amplify User Guide</a>.</p>"
+}

@@ -1,0 +1,18 @@
+{
+  "version": 1.0,
+  "merge": {
+    "pagination": {
+      "GetOutpostInstanceTypes": {
+        "non_aggregate_keys": [
+          "OutpostArn",
+          "OutpostId"
+        ]
+      },
+      "GetOutpostBillingInformation": {
+        "non_aggregate_keys": [
+          "ContractEndDate"
+        ]
+      }
+    }
+  }
+}

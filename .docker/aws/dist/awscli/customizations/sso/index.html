@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>AWS Authentication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        html {
+            height: 100%;
+        }
+        body {
+            box-sizing: border-box;
+            min-height: 100%;
+            margin: 0;
+            padding: 15px 30px;
+            display: flex;
+            flex-direction: column;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 0.9rem;
+            background-color: #f2f3f3;
+            justify-content: center;
+            min-width: 400px;
+        }
+
+        .flex-container {
+            background-color: #ffffff;
+            width: 30%;
+            margin: 0 auto;
+            padding: 2% 2% 1% 2%;
+            max-width: 400px;
+            box-shadow: 0px 1px 1px 1px #8a969a;
+        }
+
+        .request {
+            border-block: 1px solid;
+            border-inline: 1px solid;
+            border-end-end-radius: 3px;
+            border-end-start-radius: 3px;
+            border-start-end-radius: 3px;
+            border-start-start-radius: 3px;
+            margin-top: 5%;
+            padding: 5%;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .request h4 {
+            margin: 1% 1% 1% 0%;
+        }
+
+        .request p {
+            margin-bottom: 0;
+            margin-top: 2%;
+        }
+
+        .approval {
+            background-color: #f2f8f0;
+            border-color: #1d8102;
+        }
+
+        .denial {
+            background-color: #fff7f7;
+            border-color: #d91515;
+        }
+
+        .request-container {
+            width: 100%;
+        }
+
+        .success-icon {
+            color: #1d8102;
+            padding-right: 5px;
+        }
+
+        .denial-icon {
+            color: #d91515;
+            padding-right: 5px;
+        }
+
+        .center-icon {
+            width: 100%;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+            visibility: none;
+        }
+
+        .hint {
+            color: #545b64;
+        }
+
+        .aws-icon {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center-wrapper">
+        <div style="font-size: 3rem" class="center-icon aws-icon">
+            <svg id="Layer_1"
+                 data-name="Layer 1"
+                 xmlns="http://www.w3.org/2000/svg"
+                 width="6rem"
+                 :height="`${6 * 0.61}rem`"
+                 viewBox="0 0 50 30">
+                <path id="logo-text"
+                      d="M14.09,10.85a4.7,4.7,0,0,0,.19,1.48,7.73,7.73,0,0,0,.54,1.19.77.77,0,0,1,.12.38.64.64,0,0,1-.32.49l-1,.7a.83.83,0,0,1-.44.15.69.69,0,0,1-.49-.23,3.8,3.8,0,0,1-.6-.77q-.25-.42-.51-1a6.14,6.14,0,0,1-4.89,2.3,4.54,4.54,0,0,1-3.32-1.19,4.27,4.27,0,0,1-1.22-3.2A4.28,4.28,0,0,1,3.61,7.75,6.06,6.06,0,0,1,7.69,6.46a12.47,12.47,0,0,1,1.76.13q.92.13,1.91.36V5.73a3.65,3.65,0,0,0-.79-2.66A3.81,3.81,0,0,0,7.86,2.3a7.71,7.71,0,0,0-1.79.22,12.78,12.78,0,0,0-1.79.57,4.55,4.55,0,0,1-.58.22l-.26,0q-.35,0-.35-.52V2a1.09,1.09,0,0,1,.12-.58,1.2,1.2,0,0,1,.47-.35A10.88,10.88,0,0,1,5.77.32,10.19,10.19,0,0,1,8.36,0a6,6,0,0,1,4.35,1.35,5.49,5.49,0,0,1,1.38,4.09ZM7.34,13.38a5.36,5.36,0,0,0,1.72-.31A3.63,3.63,0,0,0,10.63,12,2.62,2.62,0,0,0,11.19,11a5.63,5.63,0,0,0,.16-1.44v-.7a14.35,14.35,0,0,0-1.53-.28,12.37,12.37,0,0,0-1.56-.1,3.84,3.84,0,0,0-2.47.67A2.34,2.34,0,0,0,5,11a2.35,2.35,0,0,0,.61,1.76A2.4,2.4,0,0,0,7.34,13.38Zm13.35,1.8a1,1,0,0,1-.64-.16,1.3,1.3,0,0,1-.35-.65L15.81,1.51a3,3,0,0,1-.15-.67.36.36,0,0,1,.41-.41H17.7a1,1,0,0,1,.65.16,1.4,1.4,0,0,1,.33.65l2.79,11,2.59-11A1.17,1.17,0,0,1,24.39.6a1.1,1.1,0,0,1,.67-.16H26.4a1.1,1.1,0,0,1,.67.16,1.17,1.17,0,0,1,.32.65L30,12.39,32.88,1.25A1.39,1.39,0,0,1,33.22.6a1,1,0,0,1,.65-.16h1.54a.36.36,0,0,1,.41.41,1.36,1.36,0,0,1,0,.26,3.64,3.64,0,0,1-.12.41l-4,12.86a1.3,1.3,0,0,1-.35.65,1,1,0,0,1-.64.16H29.25a1,1,0,0,1-.67-.17,1.26,1.26,0,0,1-.32-.67L25.67,3.64,23.11,14.34a1.26,1.26,0,0,1-.32.67,1,1,0,0,1-.67.17Zm21.36.44a11.28,11.28,0,0,1-2.56-.29,7.44,7.44,0,0,1-1.92-.67,1,1,0,0,1-.61-.93v-.84q0-.52.38-.52a.9.9,0,0,1,.31.06l.42.17a8.77,8.77,0,0,0,1.83.58,9.78,9.78,0,0,0,2,.2,4.48,4.48,0,0,0,2.43-.55,1.76,1.76,0,0,0,.86-1.57,1.61,1.61,0,0,0-.45-1.16A4.29,4.29,0,0,0,43,9.22l-2.41-.76A5.15,5.15,0,0,1,38,6.78a3.94,3.94,0,0,1-.83-2.41,3.7,3.7,0,0,1,.45-1.85,4.47,4.47,0,0,1,1.19-1.37A5.27,5.27,0,0,1,40.51.29,7.4,7.4,0,0,1,42.6,0a8.87,8.87,0,0,1,1.12.07q.57.07,1.08.19t.95.26a4.27,4.27,0,0,1,.7.29,1.59,1.59,0,0,1,.49.41.94.94,0,0,1,.15.55v.79q0,.52-.38.52a1.76,1.76,0,0,1-.64-.2,7.74,7.74,0,0,0-3.2-.64,4.37,4.37,0,0,0-2.21.47,1.6,1.6,0,0,0-.79,1.48,1.58,1.58,0,0,0,.49,1.18,4.94,4.94,0,0,0,1.83.92L44.55,7a5.08,5.08,0,0,1,2.57,1.6A3.76,3.76,0,0,1,47.9,11a4.21,4.21,0,0,1-.44,1.93,4.4,4.4,0,0,1-1.21,1.47,5.43,5.43,0,0,1-1.85.93A8.25,8.25,0,0,1,42.05,15.62Z" />
+                <path fill="#FF9900"
+                      class="cls-1"
+                      d="M45.19,23.81C39.72,27.85,31.78,30,25,30A36.64,36.64,0,0,1,.22,20.57c-.51-.46-.06-1.09.56-.74A49.78,49.78,0,0,0,25.53,26.4,49.23,49.23,0,0,0,44.4,22.53C45.32,22.14,46.1,23.14,45.19,23.81Z" />
+                <path fill="#FF9900"
+                      class="cls-1"
+                      d="M47.47,21.21c-.7-.9-4.63-.42-6.39-.21-.53.06-.62-.4-.14-.74,3.13-2.2,8.27-1.57,8.86-.83s-.16,5.89-3.09,8.35c-.45.38-.88.18-.68-.32C46.69,25.8,48.17,22.11,47.47,21.21Z" />
+            </svg>
+        </div>
+        <div class="flex-container">
+            <!-- Section for request approval -->
+            <div id="approved-auth">
+                <div class="request approval">
+                    <span class="pass-icon icon-2x icon icon-vscode-pass success-icon"></span>
+                    <div class="request-container">
+                        <h4>Request approved</h4>
+                        <p id="approvalMessage" class="hint"></p>
+                    </div>
+                </div>
+                <p id="footerText" class="hint"></p>
+            </div>
+
+            <!-- Section for request denial -->
+            <div id="denied-auth" class="hidden">
+                <div class="request denial">
+                    <span class="icon-2x icon icon-vscode-error denial-icon"></span>
+                    <div class="request-container">
+                        <h4>Request denied</h4>
+                        <p id="errorMessage" class="hint"></p>
+                    </div>
+                </div>
+                <p class="hint">You can close this window and re-start the authorization flow.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+            window.onload = () => {
+                const params = new URLSearchParams(window.location.search)
+
+                const error = params.get('error')
+                if (error) {
+                    showErrorMessage(error)
+                    return
+                }
+
+                const productName = 'AWS CLI'
+                document.getElementById(
+                    'approvalMessage'
+                ).innerText = `${productName} has been given requested permissions`
+                document.getElementById(
+                    'footerText'
+                ).innerText = `You can close this window and start using the ${productName}.`
+
+                function showErrorMessage(errorText) {
+                    document.getElementById('approved-auth').classList.add('hidden')
+                    document.getElementById('denied-auth').classList.remove('hidden')
+                    document.getElementById('errorMessage').innerText = errorText
+                }
+            }
+    </script>
+</body>
+</html>

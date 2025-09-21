@@ -1,0 +1,437 @@
+{
+  "version": "1.0",
+  "resources": {
+    "SentimentDetectionJob": {
+      "operation": "ListSentimentDetectionJobs",
+      "resourceIdentifier": {
+        "LanguageCode": "SentimentDetectionJobPropertiesList[].LanguageCode",
+        "DataAccessRoleArn": "SentimentDetectionJobPropertiesList[].DataAccessRoleArn"
+      }
+    },
+    "TopicsDetectionJob": {
+      "operation": "ListTopicsDetectionJobs",
+      "resourceIdentifier": {
+        "JobId": "TopicsDetectionJobPropertiesList[].JobId",
+        "JobName": "TopicsDetectionJobPropertiesList[].JobName",
+        "InputDataConfig": "TopicsDetectionJobPropertiesList[].InputDataConfig",
+        "OutputDataConfig": "TopicsDetectionJobPropertiesList[].OutputDataConfig",
+        "NumberOfTopics": "TopicsDetectionJobPropertiesList[].NumberOfTopics"
+      }
+    }
+  },
+  "operations": {
+    "BatchDetectEntities": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "BatchDetectKeyPhrases": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "BatchDetectSentiment": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "BatchDetectSyntax": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "DescribeDominantLanguageDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "DescribeEntitiesDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "DescribeKeyPhrasesDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "DescribeSentimentDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "DescribeTopicsDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "DetectEntities": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "DetectKeyPhrases": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "DetectSentiment": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "DetectSyntax": {
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "StartDominantLanguageDetectionJob": {
+      "InputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "InputDataConfig"
+          }
+        ]
+      },
+      "OutputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "OutputDataConfig"
+          }
+        ]
+      },
+      "DataAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "DataAccessRoleArn"
+          }
+        ]
+      },
+      "JobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobName"
+          }
+        ]
+      }
+    },
+    "StartEntitiesDetectionJob": {
+      "InputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "InputDataConfig"
+          }
+        ]
+      },
+      "OutputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "OutputDataConfig"
+          }
+        ]
+      },
+      "DataAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "DataAccessRoleArn"
+          }
+        ]
+      },
+      "JobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobName"
+          }
+        ]
+      },
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "StartKeyPhrasesDetectionJob": {
+      "InputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "InputDataConfig"
+          }
+        ]
+      },
+      "OutputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "OutputDataConfig"
+          }
+        ]
+      },
+      "DataAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "DataAccessRoleArn"
+          }
+        ]
+      },
+      "JobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobName"
+          }
+        ]
+      },
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "StartSentimentDetectionJob": {
+      "InputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "InputDataConfig"
+          }
+        ]
+      },
+      "OutputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "OutputDataConfig"
+          }
+        ]
+      },
+      "DataAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "DataAccessRoleArn"
+          }
+        ]
+      },
+      "JobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobName"
+          }
+        ]
+      },
+      "LanguageCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "LanguageCode"
+          }
+        ]
+      }
+    },
+    "StartTopicsDetectionJob": {
+      "InputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "InputDataConfig"
+          }
+        ]
+      },
+      "OutputDataConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "OutputDataConfig"
+          }
+        ]
+      },
+      "DataAccessRoleArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SentimentDetectionJob",
+            "resourceIdentifier": "DataAccessRoleArn"
+          }
+        ]
+      },
+      "JobName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobName"
+          }
+        ]
+      },
+      "NumberOfTopics": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "NumberOfTopics"
+          }
+        ]
+      }
+    },
+    "StopDominantLanguageDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "StopEntitiesDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "StopKeyPhrasesDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    },
+    "StopSentimentDetectionJob": {
+      "JobId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TopicsDetectionJob",
+            "resourceIdentifier": "JobId"
+          }
+        ]
+      }
+    }
+  }
+}

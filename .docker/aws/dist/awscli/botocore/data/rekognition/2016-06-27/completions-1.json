@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "resources": {
+    "StreamProcessor": {
+      "operation": "ListStreamProcessors",
+      "resourceIdentifier": {
+        "Name": "StreamProcessors[].Name"
+      }
+    }
+  },
+  "operations": {
+    "DeleteStreamProcessor": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StreamProcessor",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DescribeStreamProcessor": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StreamProcessor",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "StartStreamProcessor": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StreamProcessor",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "StopStreamProcessor": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "StreamProcessor",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    }
+  }
+}

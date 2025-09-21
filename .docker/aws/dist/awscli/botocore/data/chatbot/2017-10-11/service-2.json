@@ -1,0 +1,2673 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-10-11",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"chatbot",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Chatbot",
+    "serviceId":"chatbot",
+    "signatureVersion":"v4",
+    "signingName":"chatbot",
+    "uid":"chatbot-2017-10-11"
+  },
+  "operations":{
+    "AssociateToConfiguration":{
+      "name":"AssociateToConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/associate-to-configuration",
+        "responseCode":201
+      },
+      "input":{"shape":"AssociateToConfigurationRequest"},
+      "output":{"shape":"AssociateToConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Links a resource (for example, a custom action) to a channel configuration.</p>",
+      "idempotent":true
+    },
+    "CreateChimeWebhookConfiguration":{
+      "name":"CreateChimeWebhookConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/create-chime-webhook-configuration",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateChimeWebhookConfigurationRequest"},
+      "output":{"shape":"CreateChimeWebhookConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"CreateChimeWebhookConfigurationException"}
+      ],
+      "documentation":"<p>Creates an AWS Chatbot configuration for Amazon Chime.</p>"
+    },
+    "CreateCustomAction":{
+      "name":"CreateCustomAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/create-custom-action",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateCustomActionRequest"},
+      "output":{"shape":"CreateCustomActionResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Creates a custom action that can be invoked as an alias or as a button on a notification.</p>",
+      "idempotent":true
+    },
+    "CreateMicrosoftTeamsChannelConfiguration":{
+      "name":"CreateMicrosoftTeamsChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/create-ms-teams-channel-configuration",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateTeamsChannelConfigurationRequest"},
+      "output":{"shape":"CreateTeamsChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"CreateTeamsChannelConfigurationException"}
+      ],
+      "documentation":"<p>Creates an AWS Chatbot configuration for Microsoft Teams.</p>"
+    },
+    "CreateSlackChannelConfiguration":{
+      "name":"CreateSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/create-slack-channel-configuration",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSlackChannelConfigurationRequest"},
+      "output":{"shape":"CreateSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"CreateSlackChannelConfigurationException"}
+      ],
+      "documentation":"<p>Creates an AWS Chatbot confugration for Slack.</p>"
+    },
+    "DeleteChimeWebhookConfiguration":{
+      "name":"DeleteChimeWebhookConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-chime-webhook-configuration",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteChimeWebhookConfigurationRequest"},
+      "output":{"shape":"DeleteChimeWebhookConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DeleteChimeWebhookConfigurationException"}
+      ],
+      "documentation":"<p>Deletes a Amazon Chime webhook configuration for AWS Chatbot.</p>"
+    },
+    "DeleteCustomAction":{
+      "name":"DeleteCustomAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-custom-action",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteCustomActionRequest"},
+      "output":{"shape":"DeleteCustomActionResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Deletes a custom action.</p>",
+      "idempotent":true
+    },
+    "DeleteMicrosoftTeamsChannelConfiguration":{
+      "name":"DeleteMicrosoftTeamsChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-ms-teams-channel-configuration",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTeamsChannelConfigurationRequest"},
+      "output":{"shape":"DeleteTeamsChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DeleteTeamsChannelConfigurationException"}
+      ],
+      "documentation":"<p>Deletes a Microsoft Teams channel configuration for AWS Chatbot</p>"
+    },
+    "DeleteMicrosoftTeamsConfiguredTeam":{
+      "name":"DeleteMicrosoftTeamsConfiguredTeam",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-ms-teams-configured-teams",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTeamsConfiguredTeamRequest"},
+      "output":{"shape":"DeleteTeamsConfiguredTeamResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"DeleteTeamsConfiguredTeamException"}
+      ],
+      "documentation":"<p>Deletes the Microsoft Teams team authorization allowing for channels to be configured in that Microsoft Teams team. Note that the Microsoft Teams team must have no channels configured to remove it. </p>"
+    },
+    "DeleteMicrosoftTeamsUserIdentity":{
+      "name":"DeleteMicrosoftTeamsUserIdentity",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-ms-teams-user-identity",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteMicrosoftTeamsUserIdentityRequest"},
+      "output":{"shape":"DeleteMicrosoftTeamsUserIdentityResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"DeleteMicrosoftTeamsUserIdentityException"}
+      ],
+      "documentation":"<p>Identifes a user level permission for a channel configuration.</p>"
+    },
+    "DeleteSlackChannelConfiguration":{
+      "name":"DeleteSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-slack-channel-configuration",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSlackChannelConfigurationRequest"},
+      "output":{"shape":"DeleteSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"DeleteSlackChannelConfigurationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a Slack channel configuration for AWS Chatbot</p>"
+    },
+    "DeleteSlackUserIdentity":{
+      "name":"DeleteSlackUserIdentity",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-slack-user-identity",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSlackUserIdentityRequest"},
+      "output":{"shape":"DeleteSlackUserIdentityResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"DeleteSlackUserIdentityException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a user level permission for a Slack channel configuration.</p>"
+    },
+    "DeleteSlackWorkspaceAuthorization":{
+      "name":"DeleteSlackWorkspaceAuthorization",
+      "http":{
+        "method":"POST",
+        "requestUri":"/delete-slack-workspace-authorization",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSlackWorkspaceAuthorizationRequest"},
+      "output":{"shape":"DeleteSlackWorkspaceAuthorizationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"DeleteSlackWorkspaceAuthorizationFault"}
+      ],
+      "documentation":"<p>Deletes the Slack workspace authorization that allows channels to be configured in that workspace. This requires all configured channels in the workspace to be deleted. </p>"
+    },
+    "DescribeChimeWebhookConfigurations":{
+      "name":"DescribeChimeWebhookConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/describe-chime-webhook-configurations",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeChimeWebhookConfigurationsRequest"},
+      "output":{"shape":"DescribeChimeWebhookConfigurationsResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"DescribeChimeWebhookConfigurationsException"}
+      ],
+      "documentation":"<p>Lists Amazon Chime webhook configurations optionally filtered by ChatConfigurationArn</p>"
+    },
+    "DescribeSlackChannelConfigurations":{
+      "name":"DescribeSlackChannelConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/describe-slack-channel-configurations",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeSlackChannelConfigurationsRequest"},
+      "output":{"shape":"DescribeSlackChannelConfigurationsResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"DescribeSlackChannelConfigurationsException"}
+      ],
+      "documentation":"<p>Lists Slack channel configurations optionally filtered by ChatConfigurationArn</p>"
+    },
+    "DescribeSlackUserIdentities":{
+      "name":"DescribeSlackUserIdentities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/describe-slack-user-identities",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeSlackUserIdentitiesRequest"},
+      "output":{"shape":"DescribeSlackUserIdentitiesResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"DescribeSlackUserIdentitiesException"}
+      ],
+      "documentation":"<p>Lists all Slack user identities with a mapped role.</p>"
+    },
+    "DescribeSlackWorkspaces":{
+      "name":"DescribeSlackWorkspaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/describe-slack-workspaces",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeSlackWorkspacesRequest"},
+      "output":{"shape":"DescribeSlackWorkspacesResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"DescribeSlackWorkspacesException"},
+        {"shape":"InvalidRequestException"}
+      ],
+      "documentation":"<p>List all authorized Slack workspaces connected to the AWS Account onboarded with AWS Chatbot.</p>"
+    },
+    "DisassociateFromConfiguration":{
+      "name":"DisassociateFromConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/disassociate-from-configuration",
+        "responseCode":204
+      },
+      "input":{"shape":"DisassociateFromConfigurationRequest"},
+      "output":{"shape":"DisassociateFromConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Unlink a resource, for example a custom action, from a channel configuration.</p>",
+      "idempotent":true
+    },
+    "GetAccountPreferences":{
+      "name":"GetAccountPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-account-preferences",
+        "responseCode":200
+      },
+      "input":{"shape":"GetAccountPreferencesRequest"},
+      "output":{"shape":"GetAccountPreferencesResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"GetAccountPreferencesException"}
+      ],
+      "documentation":"<p>Returns AWS Chatbot account preferences.</p>"
+    },
+    "GetCustomAction":{
+      "name":"GetCustomAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-custom-action",
+        "responseCode":200
+      },
+      "input":{"shape":"GetCustomActionRequest"},
+      "output":{"shape":"GetCustomActionResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Returns a custom action.</p>"
+    },
+    "GetMicrosoftTeamsChannelConfiguration":{
+      "name":"GetMicrosoftTeamsChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/get-ms-teams-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTeamsChannelConfigurationRequest"},
+      "output":{"shape":"GetTeamsChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"GetTeamsChannelConfigurationException"}
+      ],
+      "documentation":"<p>Returns a Microsoft Teams channel configuration in an AWS account.</p>"
+    },
+    "ListAssociations":{
+      "name":"ListAssociations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-associations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListAssociationsRequest"},
+      "output":{"shape":"ListAssociationsResult"},
+      "documentation":"<p>Lists resources associated with a channel configuration.</p>"
+    },
+    "ListCustomActions":{
+      "name":"ListCustomActions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-custom-actions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListCustomActionsRequest"},
+      "output":{"shape":"ListCustomActionsResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Lists custom actions defined in this account.</p>"
+    },
+    "ListMicrosoftTeamsChannelConfigurations":{
+      "name":"ListMicrosoftTeamsChannelConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-ms-teams-channel-configurations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTeamsChannelConfigurationsRequest"},
+      "output":{"shape":"ListTeamsChannelConfigurationsResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"ListTeamsChannelConfigurationsException"},
+        {"shape":"InvalidRequestException"}
+      ],
+      "documentation":"<p>Lists all AWS Chatbot Microsoft Teams channel configurations in an AWS account.</p>"
+    },
+    "ListMicrosoftTeamsConfiguredTeams":{
+      "name":"ListMicrosoftTeamsConfiguredTeams",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-ms-teams-configured-teams",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMicrosoftTeamsConfiguredTeamsRequest"},
+      "output":{"shape":"ListMicrosoftTeamsConfiguredTeamsResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ListMicrosoftTeamsConfiguredTeamsException"}
+      ],
+      "documentation":"<p>Lists all authorized Microsoft Teams for an AWS Account</p>"
+    },
+    "ListMicrosoftTeamsUserIdentities":{
+      "name":"ListMicrosoftTeamsUserIdentities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-ms-teams-user-identities",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMicrosoftTeamsUserIdentitiesRequest"},
+      "output":{"shape":"ListMicrosoftTeamsUserIdentitiesResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ListMicrosoftTeamsUserIdentitiesException"}
+      ],
+      "documentation":"<p>A list all Microsoft Teams user identities with a mapped role.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/list-tags-for-resource",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"}
+      ],
+      "documentation":"<p>Lists all of the tags associated with the Amazon Resource Name (ARN) that you specify. The resource can be a user, server, or role.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tag-resource",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"TooManyTagsException"}
+      ],
+      "documentation":"<p>Attaches a key-value pair to a resource, as identified by its Amazon Resource Name (ARN). Resources are users, servers, roles, and other entities.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/untag-resource",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceUnavailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"}
+      ],
+      "documentation":"<p>Detaches a key-value pair from a resource, as identified by its Amazon Resource Name (ARN). Resources are users, servers, roles, and other entities.</p>"
+    },
+    "UpdateAccountPreferences":{
+      "name":"UpdateAccountPreferences",
+      "http":{
+        "method":"POST",
+        "requestUri":"/update-account-preferences",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateAccountPreferencesRequest"},
+      "output":{"shape":"UpdateAccountPreferencesResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"UpdateAccountPreferencesException"}
+      ],
+      "documentation":"<p>Updates AWS Chatbot account preferences.</p>"
+    },
+    "UpdateChimeWebhookConfiguration":{
+      "name":"UpdateChimeWebhookConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/update-chime-webhook-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateChimeWebhookConfigurationRequest"},
+      "output":{"shape":"UpdateChimeWebhookConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"UpdateChimeWebhookConfigurationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates a Amazon Chime webhook configuration.</p>"
+    },
+    "UpdateCustomAction":{
+      "name":"UpdateCustomAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/update-custom-action",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateCustomActionRequest"},
+      "output":{"shape":"UpdateCustomActionResult"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"UnauthorizedException"}
+      ],
+      "documentation":"<p>Updates a custom action.</p>"
+    },
+    "UpdateMicrosoftTeamsChannelConfiguration":{
+      "name":"UpdateMicrosoftTeamsChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/update-ms-teams-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTeamsChannelConfigurationRequest"},
+      "output":{"shape":"UpdateTeamsChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"UpdateTeamsChannelConfigurationException"}
+      ],
+      "documentation":"<p>Updates an Microsoft Teams channel configuration.</p>"
+    },
+    "UpdateSlackChannelConfiguration":{
+      "name":"UpdateSlackChannelConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/update-slack-channel-configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSlackChannelConfigurationRequest"},
+      "output":{"shape":"UpdateSlackChannelConfigurationResult"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"UpdateSlackChannelConfigurationException"}
+      ],
+      "documentation":"<p>Updates a Slack channel configuration.</p>"
+    }
+  },
+  "shapes":{
+    "AccountPreferences":{
+      "type":"structure",
+      "members":{
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "TrainingDataCollectionEnabled":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Turns on training data collection.</p> <p>This helps improve the AWS Chatbot experience by allowing AWS Chatbot to store and use your customer information, such as AWS Chatbot configurations, notifications, user inputs, AWS Chatbot generated responses, and interaction data. This data helps us to continuously improve and develop Artificial Intelligence (AI) technologies. Your data is not shared with any third parties and is protected using sophisticated controls to prevent unauthorized access and misuse. AWS Chatbot does not store or use interactions in chat channels with Amazon Q for training AI technologies for AWS Chatbot. </p>"
+        }
+      },
+      "documentation":"<p>Preferences related to AWS Chatbot usage in the calling AWS account.</p>"
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:aws:(wheatley|chatbot):[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}"
+    },
+    "Arn":{
+      "type":"string",
+      "max":1224,
+      "min":12,
+      "pattern":"arn:aws:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}"
+    },
+    "AssociateToConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "Resource",
+        "ChatConfiguration"
+      ],
+      "members":{
+        "Resource":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The resource Amazon Resource Name (ARN) to link.</p>"
+        },
+        "ChatConfiguration":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The channel configuration to associate with the resource.</p>"
+        }
+      }
+    },
+    "AssociateToConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "AssociationList":{
+      "type":"list",
+      "member":{"shape":"AssociationListing"}
+    },
+    "AssociationListing":{
+      "type":"structure",
+      "required":["Resource"],
+      "members":{
+        "Resource":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource (for example, a custom action).</p>"
+        }
+      },
+      "documentation":"<p>A listing of an association with a channel configuration.</p>"
+    },
+    "AwsUserIdentity":{
+      "type":"string",
+      "max":1101,
+      "min":15,
+      "pattern":"arn:aws:(iam|sts)::[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}"
+    },
+    "BooleanAccountPreference":{
+      "type":"boolean",
+      "box":true
+    },
+    "ChatConfigurationArn":{
+      "type":"string",
+      "max":1169,
+      "min":19,
+      "pattern":"arn:aws:(wheatley|chatbot):[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}"
+    },
+    "ChimeWebhookConfiguration":{
+      "type":"structure",
+      "required":[
+        "WebhookDescription",
+        "ChatConfigurationArn",
+        "IamRoleArn",
+        "SnsTopicArns"
+      ],
+      "members":{
+        "WebhookDescription":{
+          "shape":"ChimeWebhookDescription",
+          "documentation":"<p>A description of the webhook. We recommend using the convention <code>RoomName/WebhookName</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chime-setup.html\">Tutorial: Get started with Amazon Chime</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ChimeWebhookConfiguration.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        },
+        "State":{
+          "shape":"ResourceState",
+          "documentation":"<p>Either <code>ENABLED</code> or <code>DISABLED</code>. The resource returns <code>DISABLED</code> if the organization's AWS Chatbot policy has explicitly denied that configuration. For example, if Amazon Chime is disabled.</p>"
+        },
+        "StateReason":{
+          "shape":"String",
+          "documentation":"<p>Provided if State is <code>DISABLED</code>. Provides context as to why the resource is disabled.</p>"
+        }
+      },
+      "documentation":"<p>An AWS Chatbot configuration for Amazon Chime.</p>"
+    },
+    "ChimeWebhookConfigurationList":{
+      "type":"list",
+      "member":{"shape":"ChimeWebhookConfiguration"}
+    },
+    "ChimeWebhookDescription":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "sensitive":true
+    },
+    "ChimeWebhookUrl":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"https://hooks\\.chime\\.aws/incomingwebhooks/[A-Za-z0-9\\-]+?\\?token=[A-Za-z0-9\\-]+",
+      "sensitive":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":126,
+      "min":33,
+      "pattern":"[\\x21-\\x7F]+"
+    },
+    "ConfigurationName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[A-Za-z0-9-_]+"
+    },
+    "ConfiguredTeam":{
+      "type":"structure",
+      "required":[
+        "TenantId",
+        "TeamId"
+      ],
+      "members":{
+        "TenantId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Microsoft Teams tenant.</p>"
+        },
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p> The ID of the Microsoft Teams authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "TeamName":{
+          "shape":"UUID",
+          "documentation":"<p>The name of the Microsoft Teams Team.</p>"
+        },
+        "State":{
+          "shape":"ResourceState",
+          "documentation":"<p>Either <code>ENABLED</code> or <code>DISABLED</code>. The resource returns <code>DISABLED</code> if the organization's AWS Chatbot policy has explicitly denied that configuration. For example, if Amazon Chime is disabled.</p>"
+        },
+        "StateReason":{
+          "shape":"String",
+          "documentation":"<p>Provided if State is <code>DISABLED</code>. Provides context as to why the resource is disabled.</p>"
+        }
+      },
+      "documentation":"<p>A Microsoft Teams team that is authorized with AWS Chatbot.</p>"
+    },
+    "ConfiguredTeamsList":{
+      "type":"list",
+      "member":{"shape":"ConfiguredTeam"}
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>There was an issue processing your request.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateChimeWebhookConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "CreateChimeWebhookConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "WebhookDescription",
+        "WebhookUrl",
+        "SnsTopicArns",
+        "IamRoleArn",
+        "ConfigurationName"
+      ],
+      "members":{
+        "WebhookDescription":{
+          "shape":"ChimeWebhookDescription",
+          "documentation":"<p>A description of the webhook. We recommend using the convention <code>RoomName/WebhookName</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chime-setup.html\">Tutorial: Get started with Amazon Chime</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "WebhookUrl":{
+          "shape":"ChimeWebhookUrl",
+          "documentation":"<p>The URL for the Amazon Chime webhook.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        }
+      }
+    },
+    "CreateChimeWebhookConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "WebhookConfiguration":{
+          "shape":"ChimeWebhookConfiguration",
+          "documentation":"<p>An Amazon Chime webhook configuration.</p>"
+        }
+      }
+    },
+    "CreateCustomActionRequest":{
+      "type":"structure",
+      "required":[
+        "Definition",
+        "ActionName"
+      ],
+      "members":{
+        "Definition":{
+          "shape":"CustomActionDefinition",
+          "documentation":"<p>The definition of the command to run when invoked as an alias or as an action button.</p>"
+        },
+        "AliasName":{
+          "shape":"CustomActionAliasName",
+          "documentation":"<p>The name used to invoke this action in a chat channel. For example, <code>@aws run my-alias</code>.</p>"
+        },
+        "Attachments":{
+          "shape":"CustomActionAttachmentList",
+          "documentation":"<p>Defines when this custom action button should be attached to a notification.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. Idempotency ensures that an API request completes only once. With an idempotent request, if the original request completes successfully, subsequent retries with the same client token returns the result from the original successful request.</p> <p>If you do not specify a client token, one is automatically generated by the SDK.</p>",
+          "idempotencyToken":true
+        },
+        "ActionName":{
+          "shape":"CustomActionName",
+          "documentation":"<p>The name of the custom action. This name is included in the Amazon Resource Name (ARN).</p>"
+        }
+      }
+    },
+    "CreateCustomActionResult":{
+      "type":"structure",
+      "required":["CustomActionArn"],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>The fully defined ARN of the custom action.</p>"
+        }
+      }
+    },
+    "CreateSlackChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "CreateSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "SlackTeamId",
+        "SlackChannelId",
+        "IamRoleArn",
+        "ConfigurationName"
+      ],
+      "members":{
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with AWS Chatbot.</p>"
+        },
+        "SlackChannelId":{
+          "shape":"SlackChannelId",
+          "documentation":"<p>The ID of the Slack channel.</p> <p>To get this ID, open Slack, right click on the channel name in the left pane, then choose Copy Link. The channel ID is the 9-character string at the end of the URL. For example, ABCBBLZZZ. </p>"
+        },
+        "SlackChannelName":{
+          "shape":"SlackChannelDisplayName",
+          "documentation":"<p>The name of the Slack channel.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        }
+      }
+    },
+    "CreateSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "ChannelConfiguration":{
+          "shape":"SlackChannelConfiguration",
+          "documentation":"<p>The configuration for a Slack channel configured with AWS Chatbot.</p>"
+        }
+      }
+    },
+    "CreateTeamsChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "CreateTeamsChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "ChannelId",
+        "TeamId",
+        "TenantId",
+        "IamRoleArn",
+        "ConfigurationName"
+      ],
+      "members":{
+        "ChannelId":{
+          "shape":"TeamsChannelId",
+          "documentation":"<p>The ID of the Microsoft Teams channel.</p>"
+        },
+        "ChannelName":{
+          "shape":"TeamsChannelName",
+          "documentation":"<p>The name of the Microsoft Teams channel.</p>"
+        },
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p> The ID of the Microsoft Teams authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "TeamName":{
+          "shape":"TeamName",
+          "documentation":"<p>The name of the Microsoft Teams Team.</p>"
+        },
+        "TenantId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Microsoft Teams tenant.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        }
+      }
+    },
+    "CreateTeamsChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "ChannelConfiguration":{
+          "shape":"TeamsChannelConfiguration",
+          "documentation":"<p>The configuration for a Microsoft Teams channel configured with AWS Chatbot.</p>"
+        }
+      }
+    },
+    "CustomAction":{
+      "type":"structure",
+      "required":[
+        "CustomActionArn",
+        "Definition"
+      ],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>The fully defined Amazon Resource Name (ARN) of the custom action.</p>"
+        },
+        "Definition":{
+          "shape":"CustomActionDefinition",
+          "documentation":"<p>The definition of the command to run when invoked an alias or as an action button.</p>"
+        },
+        "AliasName":{
+          "shape":"CustomActionAliasName",
+          "documentation":"<p>The name used to invoke this action in the chat channel. For example, <code>@aws run my-alias</code>.</p>"
+        },
+        "Attachments":{
+          "shape":"CustomActionAttachmentList",
+          "documentation":"<p>Defines when this custom action button should be attached to a notification.</p>"
+        },
+        "ActionName":{
+          "shape":"CustomActionName",
+          "documentation":"<p>The name of the custom action that is included in the ARN.</p>"
+        }
+      },
+      "documentation":"<p>Represents a parameterized command that can be invoked as an alias or as a notification button in the chat client.</p>"
+    },
+    "CustomActionAliasName":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "pattern":"[A-Za-z0-9-_]+"
+    },
+    "CustomActionArn":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:aws:chatbot:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:custom-action/[a-zA-Z0-9_-]{1,64}"
+    },
+    "CustomActionArnList":{
+      "type":"list",
+      "member":{"shape":"CustomActionArn"}
+    },
+    "CustomActionAttachment":{
+      "type":"structure",
+      "members":{
+        "NotificationType":{
+          "shape":"CustomActionAttachmentNotificationType",
+          "documentation":"<p>The type of notification that the custom action should be attached to.</p>"
+        },
+        "ButtonText":{
+          "shape":"CustomActionButtonText",
+          "documentation":"<p>The text of the button that appears on the notification.</p>"
+        },
+        "Criteria":{
+          "shape":"CustomActionAttachmentCriteriaList",
+          "documentation":"<p>The criteria for when a button should be shown based on values in the notification.</p>"
+        },
+        "Variables":{
+          "shape":"CustomActionAttachmentVariables",
+          "documentation":"<p>The variables to extract from the notification.</p>"
+        }
+      },
+      "documentation":"<p>Defines when a custom action button should be attached to a notification.</p>"
+    },
+    "CustomActionAttachmentCriteria":{
+      "type":"structure",
+      "required":[
+        "Operator",
+        "VariableName"
+      ],
+      "members":{
+        "Operator":{
+          "shape":"CustomActionAttachmentCriteriaOperator",
+          "documentation":"<p>The operation to perform on the named variable.</p>"
+        },
+        "VariableName":{
+          "shape":"CustomActionAttachmentCriteriaVariableNameString",
+          "documentation":"<p>The name of the variable to operate on.</p>"
+        },
+        "Value":{
+          "shape":"CustomActionAttachmentCriteriaValueString",
+          "documentation":"<p>A value that is compared with the actual value of the variable based on the behavior of the operator.</p>"
+        }
+      },
+      "documentation":"<p>A criteria for when a button should be shown based on values in the notification</p>"
+    },
+    "CustomActionAttachmentCriteriaList":{
+      "type":"list",
+      "member":{"shape":"CustomActionAttachmentCriteria"},
+      "max":5,
+      "min":1
+    },
+    "CustomActionAttachmentCriteriaOperator":{
+      "type":"string",
+      "enum":[
+        "HAS_VALUE",
+        "EQUALS"
+      ]
+    },
+    "CustomActionAttachmentCriteriaValueString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\S\\s]+"
+    },
+    "CustomActionAttachmentCriteriaVariableNameString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[A-Za-z0-9-_]+"
+    },
+    "CustomActionAttachmentList":{
+      "type":"list",
+      "member":{"shape":"CustomActionAttachment"}
+    },
+    "CustomActionAttachmentNotificationType":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "CustomActionAttachmentVariables":{
+      "type":"map",
+      "key":{"shape":"CustomActionAttachmentVariablesKeyString"},
+      "value":{"shape":"CustomActionAttachmentVariablesValueString"},
+      "max":5,
+      "min":1
+    },
+    "CustomActionAttachmentVariablesKeyString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[A-Za-z0-9-_]+"
+    },
+    "CustomActionAttachmentVariablesValueString":{
+      "type":"string",
+      "max":1024,
+      "min":0,
+      "pattern":"[\\x21-\\x7F]+"
+    },
+    "CustomActionButtonText":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"[\\S\\s]+"
+    },
+    "CustomActionDefinition":{
+      "type":"structure",
+      "required":["CommandText"],
+      "members":{
+        "CommandText":{
+          "shape":"CustomActionDefinitionCommandTextString",
+          "documentation":"<p>The command string to run which may include variables by prefixing with a dollar sign ($).</p>"
+        }
+      },
+      "documentation":"<p>The definition of the command to run when invoked as an alias or as an action button.</p>"
+    },
+    "CustomActionDefinitionCommandTextString":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[\\S\\s]+"
+    },
+    "CustomActionName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]{1,64}"
+    },
+    "CustomerCwLogLevel":{
+      "type":"string",
+      "max":5,
+      "min":4,
+      "pattern":"(ERROR|INFO|NONE)"
+    },
+    "DeleteChimeWebhookConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteChimeWebhookConfigurationRequest":{
+      "type":"structure",
+      "required":["ChatConfigurationArn"],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ChimeWebhookConfiguration to delete.</p>"
+        }
+      }
+    },
+    "DeleteChimeWebhookConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteCustomActionRequest":{
+      "type":"structure",
+      "required":["CustomActionArn"],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>The fully defined ARN of the custom action.</p>"
+        }
+      }
+    },
+    "DeleteCustomActionResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteMicrosoftTeamsUserIdentityException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteMicrosoftTeamsUserIdentityRequest":{
+      "type":"structure",
+      "required":[
+        "ChatConfigurationArn",
+        "UserId"
+      ],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The ARN of the MicrosoftTeamsChannelConfiguration associated with the user identity to delete.</p>"
+        },
+        "UserId":{
+          "shape":"UUID",
+          "documentation":"<p>The Microsoft Teams user ID.</p>"
+        }
+      }
+    },
+    "DeleteMicrosoftTeamsUserIdentityResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSlackChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":["ChatConfigurationArn"],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SlackChannelConfiguration to delete.</p>"
+        }
+      }
+    },
+    "DeleteSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSlackUserIdentityException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteSlackUserIdentityRequest":{
+      "type":"structure",
+      "required":[
+        "ChatConfigurationArn",
+        "SlackTeamId",
+        "SlackUserId"
+      ],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The ARN of the SlackChannelConfiguration associated with the user identity to delete.</p>"
+        },
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with AWS Chatbot.</p>"
+        },
+        "SlackUserId":{
+          "shape":"SlackUserId",
+          "documentation":"<p>The ID of the user in Slack</p>"
+        }
+      }
+    },
+    "DeleteSlackUserIdentityResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSlackWorkspaceAuthorizationFault":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>There was an issue deleting your Slack workspace.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteSlackWorkspaceAuthorizationRequest":{
+      "type":"structure",
+      "required":["SlackTeamId"],
+      "members":{
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with AWS Chatbot.</p>"
+        }
+      }
+    },
+    "DeleteSlackWorkspaceAuthorizationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTeamsChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteTeamsChannelConfigurationRequest":{
+      "type":"structure",
+      "required":["ChatConfigurationArn"],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the MicrosoftTeamsChannelConfiguration associated with the user identity to delete.</p>"
+        }
+      }
+    },
+    "DeleteTeamsChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTeamsConfiguredTeamException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DeleteTeamsConfiguredTeamRequest":{
+      "type":"structure",
+      "required":["TeamId"],
+      "members":{
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Microsoft Teams team authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        }
+      }
+    },
+    "DeleteTeamsConfiguredTeamResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeChimeWebhookConfigurationsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DescribeChimeWebhookConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>An optional Amazon Resource Name (ARN) of a ChimeWebhookConfiguration to describe.</p>"
+        }
+      }
+    },
+    "DescribeChimeWebhookConfigurationsResult":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "WebhookConfigurations":{
+          "shape":"ChimeWebhookConfigurationList",
+          "documentation":"<p>A list of Amazon Chime webhooks associated with the account.</p>"
+        }
+      }
+    },
+    "DescribeSlackChannelConfigurationsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DescribeSlackChannelConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>An optional Amazon Resource Name (ARN) of a SlackChannelConfiguration to describe.</p>"
+        }
+      }
+    },
+    "DescribeSlackChannelConfigurationsResult":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "SlackChannelConfigurations":{
+          "shape":"SlackChannelConfigurationList",
+          "documentation":"<p>A list of Slack channel configurations.</p>"
+        }
+      }
+    },
+    "DescribeSlackUserIdentitiesException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DescribeSlackUserIdentitiesRequest":{
+      "type":"structure",
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SlackChannelConfiguration associated with the user identities to describe.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved. </p>"
+        }
+      }
+    },
+    "DescribeSlackUserIdentitiesResult":{
+      "type":"structure",
+      "members":{
+        "SlackUserIdentities":{
+          "shape":"SlackUserIdentitiesList",
+          "documentation":"<p>A list of Slack User Identities.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        }
+      }
+    },
+    "DescribeSlackWorkspacesException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "DescribeSlackWorkspacesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        }
+      }
+    },
+    "DescribeSlackWorkspacesResult":{
+      "type":"structure",
+      "members":{
+        "SlackWorkspaces":{
+          "shape":"SlackWorkspacesList",
+          "documentation":"<p>A list of Slack workspaces registered with AWS Chatbot.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        }
+      }
+    },
+    "DisassociateFromConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "Resource",
+        "ChatConfiguration"
+      ],
+      "members":{
+        "Resource":{
+          "shape":"ResourceIdentifier",
+          "documentation":"<p>The resource (for example, a custom action) Amazon Resource Name (ARN) to unlink.</p>"
+        },
+        "ChatConfiguration":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The channel configuration the resource is being disassociated from.</p>"
+        }
+      }
+    },
+    "DisassociateFromConfigurationResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ErrorMessage":{"type":"string"},
+    "GetAccountPreferencesException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "GetAccountPreferencesRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetAccountPreferencesResult":{
+      "type":"structure",
+      "members":{
+        "AccountPreferences":{
+          "shape":"AccountPreferences",
+          "documentation":"<p>The preferences related to AWS Chatbot usage in the calling AWS account.</p>"
+        }
+      }
+    },
+    "GetCustomActionRequest":{
+      "type":"structure",
+      "required":["CustomActionArn"],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>Returns the fully defined Amazon Resource Name (ARN) of the custom action.</p>"
+        }
+      }
+    },
+    "GetCustomActionResult":{
+      "type":"structure",
+      "members":{
+        "CustomAction":{
+          "shape":"CustomAction",
+          "documentation":"<p>Returns the custom action.</p>"
+        }
+      }
+    },
+    "GetTeamsChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "GetTeamsChannelConfigurationRequest":{
+      "type":"structure",
+      "required":["ChatConfigurationArn"],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the MicrosoftTeamsChannelConfiguration to retrieve.</p>"
+        }
+      }
+    },
+    "GetTeamsChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "ChannelConfiguration":{
+          "shape":"TeamsChannelConfiguration",
+          "documentation":"<p>The configuration for a Microsoft Teams channel configured with AWS Chatbot.</p>"
+        }
+      }
+    },
+    "GuardrailPolicyArn":{
+      "type":"string",
+      "max":1163,
+      "min":11,
+      "pattern":"(^$|(?!.*\\/aws-service-role\\/.*)arn:aws:iam:[A-Za-z0-9_\\/.-]{0,63}:[A-Za-z0-9_\\/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_\\/+=,@.-]{0,1023})"
+    },
+    "GuardrailPolicyArnList":{
+      "type":"list",
+      "member":{"shape":"GuardrailPolicyArn"}
+    },
+    "InternalServiceError":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Unexpected error during processing of request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidParameterException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Your request input doesn't meet the constraints required by AWS Chatbot.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Your request input doesn't meet the constraints required by AWS Chatbot.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You have exceeded a service limit for AWS Chatbot.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ListAssociationsRequest":{
+      "type":"structure",
+      "required":["ChatConfiguration"],
+      "members":{
+        "ChatConfiguration":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The channel configuration to list associations for.</p>"
+        },
+        "MaxResults":{
+          "shape":"ListAssociationsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"ListAssociationsRequestNextTokenString",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListAssociationsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListAssociationsRequestNextTokenString":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\x20-\\x7F]+"
+    },
+    "ListAssociationsResult":{
+      "type":"structure",
+      "required":["Associations"],
+      "members":{
+        "Associations":{
+          "shape":"AssociationList",
+          "documentation":"<p>The resources associated with this channel configuration.</p>"
+        },
+        "NextToken":{
+          "shape":"ListAssociationsResultNextTokenString",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListAssociationsResultNextTokenString":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\x20-\\x7F]+"
+    },
+    "ListCustomActionsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListCustomActionsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"ListCustomActionsRequestNextTokenString",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListCustomActionsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListCustomActionsRequestNextTokenString":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\x20-\\x7F]+"
+    },
+    "ListCustomActionsResult":{
+      "type":"structure",
+      "required":["CustomActions"],
+      "members":{
+        "CustomActions":{
+          "shape":"CustomActionArnList",
+          "documentation":"<p>A list of custom actions.</p>"
+        },
+        "NextToken":{
+          "shape":"ListCustomActionsResultNextTokenString",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListCustomActionsResultNextTokenString":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[\\x20-\\x7F]+"
+    },
+    "ListMicrosoftTeamsConfiguredTeamsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ListMicrosoftTeamsConfiguredTeamsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListMicrosoftTeamsConfiguredTeamsResult":{
+      "type":"structure",
+      "members":{
+        "ConfiguredTeams":{
+          "shape":"ConfiguredTeamsList",
+          "documentation":"<p>A list of teams in Microsoft Teams that are configured with AWS Chatbot.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        }
+      }
+    },
+    "ListMicrosoftTeamsUserIdentitiesException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ListMicrosoftTeamsUserIdentitiesRequest":{
+      "type":"structure",
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the MicrosoftTeamsChannelConfiguration associated with the user identities to list.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved. </p>"
+        }
+      }
+    },
+    "ListMicrosoftTeamsUserIdentitiesResult":{
+      "type":"structure",
+      "members":{
+        "TeamsUserIdentities":{
+          "shape":"TeamsUserIdentitiesList",
+          "documentation":"<p>User level permissions associated to a channel configuration.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN of the resource to list tags for.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Key-value pairs that are assigned to a resource, usually for the purpose of grouping and searching for items. Tags are metadata that you define.</p>"
+        }
+      }
+    },
+    "ListTeamsChannelConfigurationsException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ListTeamsChannelConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to include in the response. If more results exist than the specified MaxResults value, a token is included in the response so that the remaining results can be retrieved.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        },
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p> The ID of the Microsoft Teams authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        }
+      }
+    },
+    "ListTeamsChannelConfigurationsResult":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>An optional token returned from a prior request. Use this token for pagination of results from this action. If this parameter is specified, the response includes only results beyond the token, up to the value specified by MaxResults.</p>"
+        },
+        "TeamChannelConfigurations":{
+          "shape":"TeamChannelConfigurationsList",
+          "documentation":"<p>A list of AWS Chatbot channel configurations for Microsoft Teams.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":1276,
+      "min":1,
+      "pattern":"[a-zA-Z0-9=\\/+_.\\-,#:\\\\\"{}]{4,1276}"
+    },
+    "ResourceIdentifier":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:aws:chatbot:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:custom-action/[a-zA-Z0-9_-]{1,64}"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We were unable to find the resource for your request</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceState":{
+      "type":"string",
+      "pattern":"(ENABLED|DISABLED)"
+    },
+    "ServiceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SlackChannelConfiguration":{
+      "type":"structure",
+      "required":[
+        "SlackTeamName",
+        "SlackTeamId",
+        "SlackChannelId",
+        "SlackChannelName",
+        "ChatConfigurationArn",
+        "IamRoleArn",
+        "SnsTopicArns"
+      ],
+      "members":{
+        "SlackTeamName":{
+          "shape":"SlackTeamName",
+          "documentation":"<p>Name of the Slack workspace.</p>"
+        },
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with Amazon Chime.</p>"
+        },
+        "SlackChannelId":{
+          "shape":"SlackChannelId",
+          "documentation":"<p>The ID of the Slack channel.</p> <p>To get this ID, open Slack, right click on the channel name in the left pane, then choose Copy Link. The channel ID is the 9-character string at the end of the URL. For example, ABCBBLZZZ. </p>"
+        },
+        "SlackChannelName":{
+          "shape":"SlackChannelDisplayName",
+          "documentation":"<p>The name of the Slack channel.</p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SlackChannelConfiguration.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The ARNs of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        },
+        "State":{
+          "shape":"ResourceState",
+          "documentation":"<p>Either <code>ENABLED</code> or <code>DISABLED</code>. The resource returns <code>DISABLED</code> if the organization's AWS Chatbot policy has explicitly denied that configuration. For example, if Amazon Chime is disabled.</p>"
+        },
+        "StateReason":{
+          "shape":"String",
+          "documentation":"<p>Provided if State is <code>DISABLED</code>. Provides context as to why the resource is disabled.</p>"
+        }
+      },
+      "documentation":"<p>An AWS Chatbot configuration for Slack.</p>"
+    },
+    "SlackChannelConfigurationList":{
+      "type":"list",
+      "member":{"shape":"SlackChannelConfiguration"}
+    },
+    "SlackChannelDisplayName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "sensitive":true
+    },
+    "SlackChannelId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[A-Za-z0-9]+"
+    },
+    "SlackTeamId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[0-9A-Z]{1,255}"
+    },
+    "SlackTeamName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "SlackUserId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"(.*)"
+    },
+    "SlackUserIdentitiesList":{
+      "type":"list",
+      "member":{"shape":"SlackUserIdentity"}
+    },
+    "SlackUserIdentity":{
+      "type":"structure",
+      "required":[
+        "IamRoleArn",
+        "ChatConfigurationArn",
+        "SlackTeamId",
+        "SlackUserId"
+      ],
+      "members":{
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SlackChannelConfiguration associated with the user identity to delete.</p>"
+        },
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with AWS Chatbot.</p>"
+        },
+        "SlackUserId":{
+          "shape":"SlackUserId",
+          "documentation":"<p>The ID of the user in Slack</p>"
+        },
+        "AwsUserIdentity":{
+          "shape":"AwsUserIdentity",
+          "documentation":"<p>The AWS user identity ARN used to associate a Slack user ID with an IAM Role.</p>"
+        }
+      },
+      "documentation":"<p>Identifes a user level permission for a channel configuration. </p>"
+    },
+    "SlackWorkspace":{
+      "type":"structure",
+      "required":[
+        "SlackTeamId",
+        "SlackTeamName"
+      ],
+      "members":{
+        "SlackTeamId":{
+          "shape":"SlackTeamId",
+          "documentation":"<p>The ID of the Slack workspace authorized with AWS Chatbot.</p>"
+        },
+        "SlackTeamName":{
+          "shape":"SlackTeamName",
+          "documentation":"<p>The name of the Slack workspace.</p>"
+        },
+        "State":{
+          "shape":"ResourceState",
+          "documentation":"<p>Either <code>ENABLED</code> or <code>DISABLED</code>. The resource returns <code>DISABLED</code> if the organization's AWS Chatbot policy has explicitly denied that configuration. For example, if Amazon Chime is disabled.</p>"
+        },
+        "StateReason":{
+          "shape":"String",
+          "documentation":"<p>Provided if State is <code>DISABLED</code>. Provides context as to why the resource is disabled.</p>"
+        }
+      },
+      "documentation":"<p>A Slack workspace. </p>"
+    },
+    "SlackWorkspacesList":{
+      "type":"list",
+      "member":{"shape":"SlackWorkspace"}
+    },
+    "SnsTopicArnList":{
+      "type":"list",
+      "member":{"shape":"Arn"}
+    },
+    "String":{"type":"string"},
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "TagKey",
+        "TagValue"
+      ],
+      "members":{
+        "TagKey":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag.</p>"
+        },
+        "TagValue":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>A key-value pair. A tag consists of a tag key and a tag value. Tag keys and tag values are both required, but tag values can be empty (null) strings.</p> <important> <p>Do not include confidential or sensitive information in this field. </p> </important> <p>For more information, see <a href=\"https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html\">User-Defined Tag Restrictions</a> in the <i>AWS Billing and Cost Management User Guide</i>.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN of the configuration.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags to apply to the configuration.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TeamChannelConfigurationsList":{
+      "type":"list",
+      "member":{"shape":"TeamsChannelConfiguration"}
+    },
+    "TeamName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"(.*)",
+      "sensitive":true
+    },
+    "TeamsChannelConfiguration":{
+      "type":"structure",
+      "required":[
+        "ChannelId",
+        "TeamId",
+        "TenantId",
+        "ChatConfigurationArn",
+        "IamRoleArn",
+        "SnsTopicArns"
+      ],
+      "members":{
+        "ChannelId":{
+          "shape":"TeamsChannelId",
+          "documentation":"<p>The ID of the Microsoft Teams channel.</p>"
+        },
+        "ChannelName":{
+          "shape":"TeamsChannelName",
+          "documentation":"<p>The name of the Microsoft Teams channel.</p>"
+        },
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p> The ID of the Microsoft Teams authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "TeamName":{
+          "shape":"TeamName",
+          "documentation":"<p>The name of the Microsoft Teams Team.</p>"
+        },
+        "TenantId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Microsoft Teams tenant.</p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the MicrosoftTeamsChannelConfiguration associated with the user identity to delete.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "ConfigurationName":{
+          "shape":"ConfigurationName",
+          "documentation":"<p>The name of the configuration.</p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>A map of tags assigned to a resource. A tag is a string-to-string map of key-value pairs.</p>"
+        },
+        "State":{
+          "shape":"ResourceState",
+          "documentation":"<p>Either <code>ENABLED</code> or <code>DISABLED</code>. The resource returns <code>DISABLED</code> if the organization's AWS Chatbot policy has explicitly denied that configuration. For example, if Amazon Chime is disabled.</p>"
+        },
+        "StateReason":{
+          "shape":"String",
+          "documentation":"<p>Provided if State is <code>DISABLED</code>. Provides context as to why the resource is disabled.</p>"
+        }
+      },
+      "documentation":"<p>An AWS Chatbot configuration for Microsoft Teams.</p>"
+    },
+    "TeamsChannelId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"([a-zA-Z0-9-_=+\\/.,])*%3[aA]([a-zA-Z0-9-_=+\\/.,])*%40([a-zA-Z0-9-_=+\\/.,])*"
+    },
+    "TeamsChannelName":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"(.*)",
+      "sensitive":true
+    },
+    "TeamsUserIdentitiesList":{
+      "type":"list",
+      "member":{"shape":"TeamsUserIdentity"}
+    },
+    "TeamsUserIdentity":{
+      "type":"structure",
+      "required":[
+        "IamRoleArn",
+        "ChatConfigurationArn",
+        "TeamId"
+      ],
+      "members":{
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the MicrosoftTeamsChannelConfiguration associated with the user identity to delete.</p>"
+        },
+        "TeamId":{
+          "shape":"UUID",
+          "documentation":"<p> The ID of the Microsoft Teams authorized with AWS Chatbot.</p> <p>To get the team ID, you must perform the initial authorization flow with Microsoft Teams in the AWS Chatbot console. Then you can copy and paste the team ID from the console. For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/teams-setup.html#teams-client-setup\">Step 1: Configure a Microsoft Teams client</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "UserId":{
+          "shape":"UUID",
+          "documentation":"<p>The Microsoft Teams user ID.</p>"
+        },
+        "AwsUserIdentity":{
+          "shape":"AwsUserIdentity",
+          "documentation":"<p>The AWS user identity ARN used to associate a Microsoft Teams user Identity with an IAM Role.</p>"
+        },
+        "TeamsChannelId":{
+          "shape":"TeamsChannelId",
+          "documentation":"<p>The ID of the Microsoft Teams channel.</p>"
+        },
+        "TeamsTenantId":{
+          "shape":"UUID",
+          "documentation":"<p>The ID of the Microsoft Teams tenant.</p>"
+        }
+      },
+      "documentation":"<p>Identifes a user level permission for a channel configuration.</p>"
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The supplied list of tags contains too many tags.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UUID":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}"
+    },
+    "UnauthorizedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was rejected because it doesn't have valid credentials for the target resource.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The value of the resource that will have the tag removed. An Amazon Resource Name (ARN) is an identifier for a specific AWS resource, such as a server, user, or role.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>TagKeys are key-value pairs assigned to ARNs that can be used to group and search for resources by type. This metadata can be attached to resources for any purpose.</p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateAccountPreferencesException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "UpdateAccountPreferencesRequest":{
+      "type":"structure",
+      "members":{
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        },
+        "TrainingDataCollectionEnabled":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Turns on training data collection.</p> <p>This helps improve the AWS Chatbot experience by allowing AWS Chatbot to store and use your customer information, such as AWS Chatbot configurations, notifications, user inputs, AWS Chatbot generated responses, and interaction data. This data helps us to continuously improve and develop Artificial Intelligence (AI) technologies. Your data is not shared with any third parties and is protected using sophisticated controls to prevent unauthorized access and misuse. AWS Chatbot does not store or use interactions in chat channels with Amazon Q for training AI technologies for AWS Chatbot. </p>"
+        }
+      }
+    },
+    "UpdateAccountPreferencesResult":{
+      "type":"structure",
+      "members":{
+        "AccountPreferences":{
+          "shape":"AccountPreferences",
+          "documentation":"<p>Preferences related to AWS Chatbot usage in the calling AWS account.</p>"
+        }
+      }
+    },
+    "UpdateChimeWebhookConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "UpdateChimeWebhookConfigurationRequest":{
+      "type":"structure",
+      "required":["ChatConfigurationArn"],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ChimeWebhookConfiguration to update.</p>"
+        },
+        "WebhookDescription":{
+          "shape":"ChimeWebhookDescription",
+          "documentation":"<p>A description of the webhook. We recommend using the convention <code>RoomName/WebhookName</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chime-setup.html\">Tutorial: Get started with Amazon Chime</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "WebhookUrl":{
+          "shape":"ChimeWebhookUrl",
+          "documentation":"<p>The URL for the Amazon Chime webhook.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The ARNs of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        }
+      }
+    },
+    "UpdateChimeWebhookConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "WebhookConfiguration":{
+          "shape":"ChimeWebhookConfiguration",
+          "documentation":"<p>A Amazon Chime webhook configuration.</p>"
+        }
+      }
+    },
+    "UpdateCustomActionRequest":{
+      "type":"structure",
+      "required":[
+        "CustomActionArn",
+        "Definition"
+      ],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>The fully defined Amazon Resource Name (ARN) of the custom action.</p>"
+        },
+        "Definition":{
+          "shape":"CustomActionDefinition",
+          "documentation":"<p>The definition of the command to run when invoked as an alias or as an action button.</p>"
+        },
+        "AliasName":{
+          "shape":"CustomActionAliasName",
+          "documentation":"<p>The name used to invoke this action in the chat channel. For example, <code>@aws run my-alias</code>.</p>"
+        },
+        "Attachments":{
+          "shape":"CustomActionAttachmentList",
+          "documentation":"<p>Defines when this custom action button should be attached to a notification.</p>"
+        }
+      }
+    },
+    "UpdateCustomActionResult":{
+      "type":"structure",
+      "required":["CustomActionArn"],
+      "members":{
+        "CustomActionArn":{
+          "shape":"CustomActionArn",
+          "documentation":"<p>The fully defined ARN of the custom action.</p>"
+        }
+      }
+    },
+    "UpdateSlackChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "UpdateSlackChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "ChatConfigurationArn",
+        "SlackChannelId"
+      ],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the SlackChannelConfiguration to update.</p>"
+        },
+        "SlackChannelId":{
+          "shape":"SlackChannelId",
+          "documentation":"<p>The ID of the Slack channel.</p> <p>To get this ID, open Slack, right click on the channel name in the left pane, then choose Copy Link. The channel ID is the 9-character string at the end of the URL. For example, ABCBBLZZZ. </p>"
+        },
+        "SlackChannelName":{
+          "shape":"SlackChannelDisplayName",
+          "documentation":"<p>The name of the Slack channel.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        }
+      }
+    },
+    "UpdateSlackChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "ChannelConfiguration":{
+          "shape":"SlackChannelConfiguration",
+          "documentation":"<p>The configuration for a Slack channel configured with AWS Chatbot.</p>"
+        }
+      }
+    },
+    "UpdateTeamsChannelConfigurationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>We can’t process your request right now because of a server issue. Try again later.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "UpdateTeamsChannelConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "ChatConfigurationArn",
+        "ChannelId"
+      ],
+      "members":{
+        "ChatConfigurationArn":{
+          "shape":"ChatConfigurationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the TeamsChannelConfiguration to update.</p>"
+        },
+        "ChannelId":{
+          "shape":"TeamsChannelId",
+          "documentation":"<p>The ID of the Microsoft Teams channel.</p>"
+        },
+        "ChannelName":{
+          "shape":"TeamsChannelName",
+          "documentation":"<p>The name of the Microsoft Teams channel.</p>"
+        },
+        "SnsTopicArns":{
+          "shape":"SnsTopicArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the SNS topics that deliver notifications to AWS Chatbot.</p>"
+        },
+        "IamRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>A user-defined role that AWS Chatbot assumes. This is not the service-linked role.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/chatbot/latest/adminguide/chatbot-iam-policies.html\">IAM policies for AWS Chatbot</a> in the <i> AWS Chatbot Administrator Guide</i>. </p>"
+        },
+        "LoggingLevel":{
+          "shape":"CustomerCwLogLevel",
+          "documentation":"<p>Logging levels include <code>ERROR</code>, <code>INFO</code>, or <code>NONE</code>.</p>"
+        },
+        "GuardrailPolicyArns":{
+          "shape":"GuardrailPolicyArnList",
+          "documentation":"<p>The list of IAM policy ARNs that are applied as channel guardrails. The AWS managed <code>AdministratorAccess</code> policy is applied by default if this is not set. </p>"
+        },
+        "UserAuthorizationRequired":{
+          "shape":"BooleanAccountPreference",
+          "documentation":"<p>Enables use of a user role requirement in your chat configuration.</p>"
+        }
+      }
+    },
+    "UpdateTeamsChannelConfigurationResult":{
+      "type":"structure",
+      "members":{
+        "ChannelConfiguration":{
+          "shape":"TeamsChannelConfiguration",
+          "documentation":"<p>The configuration for a Microsoft Teams channel configured with AWS Chatbot.</p>"
+        }
+      }
+    }
+  },
+  "documentation":"<p>The <i>AWS Chatbot API Reference</i> provides descriptions, API request parameters, and the XML response for each of the AWS Chatbot API actions.</p> <p>AWS Chatbot APIs are currently available in the following Regions:</p> <ul> <li> <p>US East (Ohio) - <code>us-east-2</code> </p> </li> <li> <p>US West (Oregon) - <code>us-west-2</code> </p> </li> <li> <p>Asia Pacific (Singapore) - <code>ap-southeast-1</code> </p> </li> <li> <p>Europe (Ireland) - <code>eu-west-1</code> </p> </li> </ul> <p>The AWS Chatbot console can only be used in US East (Ohio). Your configuration data however, is stored in each of the relevant available Regions.</p> <note> <p>Your AWS CloudTrail events are logged in whatever Region you call from, not US East (N. Virginia) by default.</p> </note>"
+}

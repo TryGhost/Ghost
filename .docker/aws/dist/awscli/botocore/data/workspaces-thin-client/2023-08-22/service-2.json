@@ -1,0 +1,1645 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-08-22",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"thinclient",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon WorkSpaces Thin Client",
+    "serviceId":"WorkSpaces Thin Client",
+    "signatureVersion":"v4",
+    "signingName":"thinclient",
+    "uid":"workspaces-thin-client-2023-08-22"
+  },
+  "operations":{
+    "CreateEnvironment":{
+      "name":"CreateEnvironment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/environments",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateEnvironmentRequest"},
+      "output":{"shape":"CreateEnvironmentResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates an environment for your thin client devices.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "DeleteDevice":{
+      "name":"DeleteDevice",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/devices/{id}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteDeviceRequest"},
+      "output":{"shape":"DeleteDeviceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a thin client device.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "DeleteEnvironment":{
+      "name":"DeleteEnvironment",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/environments/{id}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteEnvironmentRequest"},
+      "output":{"shape":"DeleteEnvironmentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes an environment.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "DeregisterDevice":{
+      "name":"DeregisterDevice",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deregister-device/{id}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeregisterDeviceRequest"},
+      "output":{"shape":"DeregisterDeviceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deregisters a thin client device.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "GetDevice":{
+      "name":"GetDevice",
+      "http":{
+        "method":"GET",
+        "requestUri":"/devices/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDeviceRequest"},
+      "output":{"shape":"GetDeviceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information for a thin client device.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetEnvironment":{
+      "name":"GetEnvironment",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetEnvironmentRequest"},
+      "output":{"shape":"GetEnvironmentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information for an environment.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "GetSoftwareSet":{
+      "name":"GetSoftwareSet",
+      "http":{
+        "method":"GET",
+        "requestUri":"/softwaresets/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSoftwareSetRequest"},
+      "output":{"shape":"GetSoftwareSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns information for a software set.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListDevices":{
+      "name":"ListDevices",
+      "http":{
+        "method":"GET",
+        "requestUri":"/devices",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDevicesRequest"},
+      "output":{"shape":"ListDevicesResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of thin client devices.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListEnvironments":{
+      "name":"ListEnvironments",
+      "http":{
+        "method":"GET",
+        "requestUri":"/environments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListEnvironmentsRequest"},
+      "output":{"shape":"ListEnvironmentsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of environments.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListSoftwareSets":{
+      "name":"ListSoftwareSets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/softwaresets",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSoftwareSetsRequest"},
+      "output":{"shape":"ListSoftwareSetsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of software sets.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of tags for a resource.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified resource.</p>",
+      "endpoint":{"hostPrefix":"api."}
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a tag or tags from a resource.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "UpdateDevice":{
+      "name":"UpdateDevice",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/devices/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateDeviceRequest"},
+      "output":{"shape":"UpdateDeviceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a thin client device.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "UpdateEnvironment":{
+      "name":"UpdateEnvironment",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/environments/{id}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateEnvironmentRequest"},
+      "output":{"shape":"UpdateEnvironmentResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates an environment.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    },
+    "UpdateSoftwareSet":{
+      "name":"UpdateSoftwareSet",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/softwaresets/{id}",
+        "responseCode":204
+      },
+      "input":{"shape":"UpdateSoftwareSetRequest"},
+      "output":{"shape":"UpdateSoftwareSetResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a software set.</p>",
+      "endpoint":{"hostPrefix":"api."},
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ActivationCode":{
+      "type":"string",
+      "pattern":"[a-z]{2}[a-z0-9]{6}",
+      "sensitive":true
+    },
+    "ApplyTimeOf":{
+      "type":"string",
+      "enum":[
+        "UTC",
+        "DEVICE"
+      ]
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:[\\w+=\\/,.@-]+:[a-zA-Z0-9\\-]+:[a-zA-Z0-9\\-]*:[0-9]{0,12}:[a-zA-Z0-9\\-\\/\\._]+"
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The ID of the resource associated with the request.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource associated with the request.</p>"
+        }
+      },
+      "documentation":"<p>The requested operation would cause a conflict with the current state of a service resource associated with the request. Resolve the conflict before retrying this request.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateEnvironmentRequest":{
+      "type":"structure",
+      "required":["desktopArn"],
+      "members":{
+        "name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name for the environment.</p>"
+        },
+        "desktopArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the desktop to stream from Amazon WorkSpaces, WorkSpaces Secure Browser, or AppStream 2.0.</p>"
+        },
+        "desktopEndpoint":{
+          "shape":"DesktopEndpoint",
+          "documentation":"<p>The URL for the identity provider login (only for environments that use AppStream 2.0).</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "maintenanceWindow":{
+          "shape":"MaintenanceWindow",
+          "documentation":"<p>A specification for a time window to apply software updates.</p>"
+        },
+        "softwareSetUpdateMode":{
+          "shape":"SoftwareSetUpdateMode",
+          "documentation":"<p>An option to define which software updates to apply.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set to apply.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Management Service key to use to encrypt the environment.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        },
+        "deviceCreationTags":{
+          "shape":"DeviceCreationTagsMap",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the newly created devices for this environment.</p>"
+        }
+      }
+    },
+    "CreateEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "environment":{
+          "shape":"EnvironmentSummary",
+          "documentation":"<p>Describes an environment.</p>"
+        }
+      }
+    },
+    "DayOfWeek":{
+      "type":"string",
+      "enum":[
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY"
+      ]
+    },
+    "DayOfWeekList":{
+      "type":"list",
+      "member":{"shape":"DayOfWeek"},
+      "max":7,
+      "min":1
+    },
+    "DeleteDeviceRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device to delete.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      }
+    },
+    "DeleteDeviceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteEnvironmentRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment to delete.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true,
+          "location":"querystring",
+          "locationName":"clientToken"
+        }
+      }
+    },
+    "DeleteEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeregisterDeviceRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device to deregister.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "targetDeviceStatus":{
+          "shape":"TargetDeviceStatus",
+          "documentation":"<p>The desired new status for the device.</p>"
+        },
+        "clientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Specifies a unique, case-sensitive identifier that you provide to ensure the idempotency of the request. This lets you safely retry the request without accidentally performing the same operation a second time. Passing the same value to a later call to an operation requires that you also pass the same value for all other parameters. We recommend that you use a <a href=\"https://wikipedia.org/wiki/Universally_unique_identifier\">UUID type of value</a>.</p> <p>If you don't provide this value, then Amazon Web Services generates a random one for you.</p> <p>If you retry the operation with the same <code>ClientToken</code>, but with different parameters, the retry fails with an <code>IdempotentParameterMismatch</code> error.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "DeregisterDeviceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DesktopEndpoint":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"(https:\\/\\/)[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,32}(:[0-9]{1,5})?(\\/.*)?",
+      "sensitive":true
+    },
+    "DesktopType":{
+      "type":"string",
+      "enum":[
+        "workspaces",
+        "appstream",
+        "workspaces-web"
+      ]
+    },
+    "Device":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device.</p>"
+        },
+        "serialNumber":{
+          "shape":"String",
+          "documentation":"<p>The hardware serial number of the device.</p>"
+        },
+        "name":{
+          "shape":"DeviceName",
+          "documentation":"<p>The name of the device.</p>"
+        },
+        "model":{
+          "shape":"String",
+          "documentation":"<p>The model number of the device.</p>"
+        },
+        "environmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment the device is associated with.</p>"
+        },
+        "status":{
+          "shape":"DeviceStatus",
+          "documentation":"<p>The status of the device.</p>"
+        },
+        "currentSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set currently installed on the device.</p>"
+        },
+        "currentSoftwareSetVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the software set currently installed on the device.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set which the device has been set to.</p>"
+        },
+        "pendingSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set that is pending to be installed on the device.</p>"
+        },
+        "pendingSoftwareSetVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the software set that is pending to be installed on the device.</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "softwareSetComplianceStatus":{
+          "shape":"DeviceSoftwareSetComplianceStatus",
+          "documentation":"<p>Describes if the software currently installed on the device is a supported version.</p>"
+        },
+        "softwareSetUpdateStatus":{
+          "shape":"SoftwareSetUpdateStatus",
+          "documentation":"<p>Describes if the device has a supported version of software installed.</p>"
+        },
+        "lastConnectedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the most recent session on the device.</p>"
+        },
+        "lastPostureAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the most recent check-in of the device.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was updated.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Management Service key used to encrypt the device.</p>"
+        },
+        "lastUserId":{
+          "shape":"UserId",
+          "documentation":"<p>The user ID of the most recent session on the device.</p>"
+        }
+      },
+      "documentation":"<p>Describes a thin client device.</p>"
+    },
+    "DeviceCreationTagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[A-Za-z0-9 _=@:.+-/]+"
+    },
+    "DeviceCreationTagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"[A-Za-z0-9 _=@:.+-/]+"
+    },
+    "DeviceCreationTagsMap":{
+      "type":"map",
+      "key":{"shape":"DeviceCreationTagKey"},
+      "value":{"shape":"DeviceCreationTagValue"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "DeviceId":{
+      "type":"string",
+      "pattern":"[a-zA-Z0-9]{24}"
+    },
+    "DeviceList":{
+      "type":"list",
+      "member":{"shape":"DeviceSummary"}
+    },
+    "DeviceName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"$|^[0-9\\p{IsAlphabetic}+:,.@'\" -]*",
+      "sensitive":true
+    },
+    "DeviceSoftwareSetComplianceStatus":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "COMPLIANT",
+        "NOT_COMPLIANT"
+      ]
+    },
+    "DeviceStatus":{
+      "type":"string",
+      "enum":[
+        "REGISTERED",
+        "DEREGISTERING",
+        "DEREGISTERED",
+        "ARCHIVED"
+      ]
+    },
+    "DeviceSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device.</p>"
+        },
+        "serialNumber":{
+          "shape":"String",
+          "documentation":"<p>The hardware serial number of the device.</p>"
+        },
+        "name":{
+          "shape":"DeviceName",
+          "documentation":"<p>The name of the device.</p>"
+        },
+        "model":{
+          "shape":"String",
+          "documentation":"<p>The model number of the device.</p>"
+        },
+        "environmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment the device is associated with.</p>"
+        },
+        "status":{
+          "shape":"DeviceStatus",
+          "documentation":"<p>The status of the device.</p>"
+        },
+        "currentSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set currently installed on the device.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set which the device has been set to.</p>"
+        },
+        "pendingSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set that is pending to be installed on the device.</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "lastConnectedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the most recent session on the device.</p>"
+        },
+        "lastPostureAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the most recent check-in of the device.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was updated.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the device.</p>"
+        },
+        "lastUserId":{
+          "shape":"UserId",
+          "documentation":"<p>The user ID of the most recent session on the device.</p>"
+        }
+      },
+      "documentation":"<p>Describes a thin client device.</p>"
+    },
+    "Environment":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment.</p>"
+        },
+        "name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "desktopArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the desktop to stream from Amazon WorkSpaces, WorkSpaces Secure Browser, or AppStream 2.0.</p>"
+        },
+        "desktopEndpoint":{
+          "shape":"DesktopEndpoint",
+          "documentation":"<p>The URL for the identity provider login (only for environments that use AppStream 2.0).</p>"
+        },
+        "desktopType":{
+          "shape":"DesktopType",
+          "documentation":"<p>The type of streaming desktop for the environment.</p>"
+        },
+        "activationCode":{
+          "shape":"ActivationCode",
+          "documentation":"<p>The activation code to register a device to the environment.</p>"
+        },
+        "registeredDevicesCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of devices registered to the environment.</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "maintenanceWindow":{
+          "shape":"MaintenanceWindow",
+          "documentation":"<p>A specification for a time window to apply software updates.</p>"
+        },
+        "softwareSetUpdateMode":{
+          "shape":"SoftwareSetUpdateMode",
+          "documentation":"<p>An option to define which software updates to apply.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set to apply.</p>"
+        },
+        "pendingSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set that is pending to be installed.</p>"
+        },
+        "pendingSoftwareSetVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the software set that is pending to be installed.</p>"
+        },
+        "softwareSetComplianceStatus":{
+          "shape":"EnvironmentSoftwareSetComplianceStatus",
+          "documentation":"<p>Describes if the software currently installed on all devices in the environment is a supported version.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the environment was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was updated.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment.</p>"
+        },
+        "kmsKeyArn":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Key Management Service key used to encrypt the environment.</p>"
+        },
+        "deviceCreationTags":{
+          "shape":"DeviceCreationTagsMap",
+          "documentation":"<p>The tag keys and optional values for the newly created devices for this environment.</p>"
+        }
+      },
+      "documentation":"<p>Describes an environment.</p>"
+    },
+    "EnvironmentId":{
+      "type":"string",
+      "pattern":"[a-z0-9]{9}"
+    },
+    "EnvironmentList":{
+      "type":"list",
+      "member":{"shape":"EnvironmentSummary"}
+    },
+    "EnvironmentName":{
+      "type":"string",
+      "max":64,
+      "min":0,
+      "pattern":"$|^[0-9\\p{IsAlphabetic}+:,.@'\" -][0-9\\p{IsAlphabetic}+=:,.@'\" -]*",
+      "sensitive":true
+    },
+    "EnvironmentSoftwareSetComplianceStatus":{
+      "type":"string",
+      "enum":[
+        "NO_REGISTERED_DEVICES",
+        "COMPLIANT",
+        "NOT_COMPLIANT"
+      ]
+    },
+    "EnvironmentSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment.</p>"
+        },
+        "name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment.</p>"
+        },
+        "desktopArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the desktop to stream from Amazon WorkSpaces, WorkSpaces Secure Browser, or AppStream 2.0.</p>"
+        },
+        "desktopEndpoint":{
+          "shape":"DesktopEndpoint",
+          "documentation":"<p>The URL for the identity provider login (only for environments that use AppStream 2.0).</p>"
+        },
+        "desktopType":{
+          "shape":"DesktopType",
+          "documentation":"<p>The type of streaming desktop for the environment.</p>"
+        },
+        "activationCode":{
+          "shape":"ActivationCode",
+          "documentation":"<p>The activation code to register a device to the environment.</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "maintenanceWindow":{
+          "shape":"MaintenanceWindow",
+          "documentation":"<p>A specification for a time window to apply software updates.</p>"
+        },
+        "softwareSetUpdateMode":{
+          "shape":"SoftwareSetUpdateMode",
+          "documentation":"<p>An option to define which software updates to apply.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set to apply.</p>"
+        },
+        "pendingSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set that is pending to be installed.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the environment was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the device was updated.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the environment.</p>"
+        }
+      },
+      "documentation":"<p>Describes an environment.</p>"
+    },
+    "ExceptionMessage":{"type":"string"},
+    "FieldName":{"type":"string"},
+    "GetDeviceRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device for which to return information.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetDeviceResponse":{
+      "type":"structure",
+      "members":{
+        "device":{
+          "shape":"Device",
+          "documentation":"<p>Describes an device.</p>"
+        }
+      }
+    },
+    "GetEnvironmentRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment for which to return information.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "environment":{
+          "shape":"Environment",
+          "documentation":"<p>Describes an environment.</p>"
+        }
+      }
+    },
+    "GetSoftwareSetRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set for which to return information.</p>",
+          "location":"uri",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetSoftwareSetResponse":{
+      "type":"structure",
+      "members":{
+        "softwareSet":{
+          "shape":"SoftwareSet",
+          "documentation":"<p>Describes a software set.</p>"
+        }
+      }
+    },
+    "Hour":{
+      "type":"integer",
+      "box":true,
+      "max":23,
+      "min":0
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "retryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds to wait before retrying the next request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The server encountered an internal error and is unable to complete the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"arn:[\\w+=\\/,.@-]+:kms:[a-zA-Z0-9\\-]*:[0-9]{0,12}:key\\/[a-zA-Z0-9-]+"
+    },
+    "ListDevicesRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListDevicesResponse":{
+      "type":"structure",
+      "members":{
+        "devices":{
+          "shape":"DeviceList",
+          "documentation":"<p>Describes devices.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListEnvironmentsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListEnvironmentsResponse":{
+      "type":"structure",
+      "members":{
+        "environments":{
+          "shape":"EnvironmentList",
+          "documentation":"<p>Describes environments.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListSoftwareSetsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. You can use <code>nextToken</code> to obtain further pages of results.</p> <p>This is only an upper limit. The actual number of results returned per call might be fewer than the specified maximum.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListSoftwareSetsResponse":{
+      "type":"structure",
+      "members":{
+        "softwareSets":{
+          "shape":"SoftwareSetList",
+          "documentation":"<p>Describes software sets.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged. Each pagination token expires after 24 hours. Using an expired pagination token will return an <i>HTTP 400 InvalidToken error</i>.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which you want to retrieve tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A map of the key-value pairs for the tag or tags assigned to the specified resource.</p>"
+        }
+      }
+    },
+    "MaintenanceWindow":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"MaintenanceWindowType",
+          "documentation":"<p>An option to select the default or custom maintenance window.</p>"
+        },
+        "startTimeHour":{
+          "shape":"Hour",
+          "documentation":"<p>The hour for the maintenance window start (<code>00</code>-<code>23</code>).</p>"
+        },
+        "startTimeMinute":{
+          "shape":"Minute",
+          "documentation":"<p>The minutes past the hour for the maintenance window start (<code>00</code>-<code>59</code>).</p>"
+        },
+        "endTimeHour":{
+          "shape":"Hour",
+          "documentation":"<p>The hour for the maintenance window end (<code>00</code>-<code>23</code>).</p>"
+        },
+        "endTimeMinute":{
+          "shape":"Minute",
+          "documentation":"<p>The minutes for the maintenance window end (<code>00</code>-<code>59</code>).</p>"
+        },
+        "daysOfTheWeek":{
+          "shape":"DayOfWeekList",
+          "documentation":"<p>The days of the week during which the maintenance window is open.</p>"
+        },
+        "applyTimeOf":{
+          "shape":"ApplyTimeOf",
+          "documentation":"<p>The option to set the maintenance window during the device local time or Universal Coordinated Time (UTC).</p>"
+        }
+      },
+      "documentation":"<p>Describes the maintenance window for a thin client device.</p>"
+    },
+    "MaintenanceWindowType":{
+      "type":"string",
+      "enum":[
+        "SYSTEM",
+        "CUSTOM"
+      ]
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "Minute":{
+      "type":"integer",
+      "box":true,
+      "max":59,
+      "min":0
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"\\S*"
+    },
+    "QuotaCode":{"type":"string"},
+    "ResourceId":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The ID of the resource associated with the request.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource associated with the request.</p>"
+        }
+      },
+      "documentation":"<p>The resource specified in the request was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{"type":"string"},
+    "RetryAfterSeconds":{
+      "type":"integer",
+      "box":true
+    },
+    "ServiceCode":{"type":"string"},
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "resourceId":{
+          "shape":"ResourceId",
+          "documentation":"<p>The ID of the resource that exceeds the service quota.</p>"
+        },
+        "resourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource that exceeds the service quota.</p>"
+        },
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>The code for the service in <a href=\"https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html\">Service Quotas</a>.</p>"
+        },
+        "quotaCode":{
+          "shape":"QuotaCode",
+          "documentation":"<p>The code for the quota in <a href=\"https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html\">Service Quotas</a>.</p>"
+        }
+      },
+      "documentation":"<p>Your request exceeds a service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Software":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the software component.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the software component.</p>"
+        }
+      },
+      "documentation":"<p>Describes software.</p>"
+    },
+    "SoftwareList":{
+      "type":"list",
+      "member":{"shape":"Software"}
+    },
+    "SoftwareSet":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the software set.</p>"
+        },
+        "releasedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the software set was released.</p>"
+        },
+        "supportedUntil":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the end of support for the software set.</p>"
+        },
+        "validationStatus":{
+          "shape":"SoftwareSetValidationStatus",
+          "documentation":"<p>An option to define if the software set has been validated.</p>"
+        },
+        "software":{
+          "shape":"SoftwareList",
+          "documentation":"<p>A list of the software components in the software set.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the software set.</p>"
+        }
+      },
+      "documentation":"<p>Describes a software set.</p>"
+    },
+    "SoftwareSetId":{
+      "type":"string",
+      "pattern":"[0-9]{1,9}"
+    },
+    "SoftwareSetIdOrEmptyString":{
+      "type":"string",
+      "pattern":"[0-9]{0,9}"
+    },
+    "SoftwareSetList":{
+      "type":"list",
+      "member":{"shape":"SoftwareSetSummary"}
+    },
+    "SoftwareSetSummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set.</p>"
+        },
+        "version":{
+          "shape":"String",
+          "documentation":"<p>The version of the software set.</p>"
+        },
+        "releasedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the software set was released.</p>"
+        },
+        "supportedUntil":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the end of support for the software set.</p>"
+        },
+        "validationStatus":{
+          "shape":"SoftwareSetValidationStatus",
+          "documentation":"<p>An option to define if the software set has been validated.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the software set.</p>"
+        }
+      },
+      "documentation":"<p>Describes a software set.</p>"
+    },
+    "SoftwareSetUpdateMode":{
+      "type":"string",
+      "enum":[
+        "USE_LATEST",
+        "USE_DESIRED"
+      ]
+    },
+    "SoftwareSetUpdateSchedule":{
+      "type":"string",
+      "enum":[
+        "USE_MAINTENANCE_WINDOW",
+        "APPLY_IMMEDIATELY"
+      ]
+    },
+    "SoftwareSetUpdateStatus":{
+      "type":"string",
+      "enum":[
+        "AVAILABLE",
+        "IN_PROGRESS",
+        "UP_TO_DATE"
+      ]
+    },
+    "SoftwareSetValidationStatus":{
+      "type":"string",
+      "enum":[
+        "VALIDATED",
+        "NOT_VALIDATED"
+      ]
+    },
+    "String":{"type":"string"},
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "sensitive":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to tag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagsMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"},
+      "sensitive":true
+    },
+    "TargetDeviceStatus":{
+      "type":"string",
+      "enum":[
+        "DEREGISTERED",
+        "ARCHIVED"
+      ]
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "serviceCode":{
+          "shape":"ServiceCode",
+          "documentation":"<p>The code for the service in <a href=\"https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html\">Service Quotas</a>.</p>"
+        },
+        "quotaCode":{
+          "shape":"QuotaCode",
+          "documentation":"<p>The code for the quota in <a href=\"https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html\">Service Quotas</a>.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"<p>The number of seconds to wait before retrying the next request.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that you want to untag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The keys of the key-value pairs for the tag or tags you want to remove from the specified resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateDeviceRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"DeviceId",
+          "documentation":"<p>The ID of the device to update.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "name":{
+          "shape":"DeviceName",
+          "documentation":"<p>The name of the device to update.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set to apply.</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        }
+      }
+    },
+    "UpdateDeviceResponse":{
+      "type":"structure",
+      "members":{
+        "device":{
+          "shape":"DeviceSummary",
+          "documentation":"<p>Describes a device.</p>"
+        }
+      }
+    },
+    "UpdateEnvironmentRequest":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>The ID of the environment to update.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "name":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The name of the environment to update.</p>"
+        },
+        "desktopArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the desktop to stream from Amazon WorkSpaces, WorkSpaces Secure Browser, or AppStream 2.0.</p>"
+        },
+        "desktopEndpoint":{
+          "shape":"DesktopEndpoint",
+          "documentation":"<p>The URL for the identity provider login (only for environments that use AppStream 2.0).</p>"
+        },
+        "softwareSetUpdateSchedule":{
+          "shape":"SoftwareSetUpdateSchedule",
+          "documentation":"<p>An option to define if software updates should be applied within a maintenance window.</p>"
+        },
+        "maintenanceWindow":{
+          "shape":"MaintenanceWindow",
+          "documentation":"<p>A specification for a time window to apply software updates.</p>"
+        },
+        "softwareSetUpdateMode":{
+          "shape":"SoftwareSetUpdateMode",
+          "documentation":"<p>An option to define which software updates to apply.</p>"
+        },
+        "desiredSoftwareSetId":{
+          "shape":"SoftwareSetIdOrEmptyString",
+          "documentation":"<p>The ID of the software set to apply.</p>"
+        },
+        "deviceCreationTags":{
+          "shape":"DeviceCreationTagsMap",
+          "documentation":"<p>A map of the key-value pairs of the tag or tags to assign to the newly created devices for this environment.</p>"
+        }
+      }
+    },
+    "UpdateEnvironmentResponse":{
+      "type":"structure",
+      "members":{
+        "environment":{
+          "shape":"EnvironmentSummary",
+          "documentation":"<p>Describes an environment.</p>"
+        }
+      }
+    },
+    "UpdateSoftwareSetRequest":{
+      "type":"structure",
+      "required":[
+        "id",
+        "validationStatus"
+      ],
+      "members":{
+        "id":{
+          "shape":"SoftwareSetId",
+          "documentation":"<p>The ID of the software set to update.</p>",
+          "location":"uri",
+          "locationName":"id"
+        },
+        "validationStatus":{
+          "shape":"SoftwareSetValidationStatus",
+          "documentation":"<p>An option to define if the software set has been validated.</p>"
+        }
+      }
+    },
+    "UpdateSoftwareSetResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UserId":{
+      "type":"string",
+      "sensitive":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the exception.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>A list of fields that didn't validate.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the specified constraints.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"FieldName",
+          "documentation":"<p>The name of the exception.</p>"
+        },
+        "message":{
+          "shape":"ExceptionMessage",
+          "documentation":"<p>A message that describes the reason for the exception.</p>"
+        }
+      },
+      "documentation":"<p>Describes a validation exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    }
+  },
+  "documentation":"<p>Amazon WorkSpaces Thin Client is an affordable device built to work with Amazon Web Services End User Computing (EUC) virtual desktops to provide users with a complete cloud desktop solution. WorkSpaces Thin Client is a compact device designed to connect up to two monitors and USB devices like a keyboard, mouse, headset, and webcam. To maximize endpoint security, WorkSpaces Thin Client devices do not allow local data storage or installation of unapproved applications. The WorkSpaces Thin Client device ships preloaded with device management software.</p> <p>You can use these APIs to complete WorkSpaces Thin Client tasks, such as creating environments or viewing devices. For more information about WorkSpaces Thin Client, including the required permissions to use the service, see the <a href=\"https://docs.aws.amazon.com/workspaces-thin-client/latest/ag/\">Amazon WorkSpaces Thin Client Administrator Guide</a>. For more information about using the Command Line Interface (CLI) to manage your WorkSpaces Thin Client resources, see the <a href=\"https://docs.aws.amazon.com/cli/latest/reference/workspaces-thin-client/index.html\">WorkSpaces Thin Client section of the CLI Reference</a>.</p>"
+}

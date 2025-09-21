@@ -1,0 +1,1070 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "endpointPrefix":"launchwizard",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Launch Wizard",
+    "serviceId":"Launch Wizard",
+    "signatureVersion":"v4",
+    "signingName":"launchwizard",
+    "uid":"launch-wizard-2018-05-10"
+  },
+  "operations":{
+    "CreateDeployment":{
+      "name":"CreateDeployment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/createDeployment",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateDeploymentInput"},
+      "output":{"shape":"CreateDeploymentOutput"},
+      "errors":[
+        {"shape":"ResourceLimitException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a deployment for the given workload. Deployments created by this operation are not available in the Launch Wizard console to use the <code>Clone deployment</code> action on.</p>"
+    },
+    "DeleteDeployment":{
+      "name":"DeleteDeployment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/deleteDeployment",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteDeploymentInput"},
+      "output":{"shape":"DeleteDeploymentOutput"},
+      "errors":[
+        {"shape":"ResourceLimitException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a deployment.</p>",
+      "idempotent":true
+    },
+    "GetDeployment":{
+      "name":"GetDeployment",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getDeployment",
+        "responseCode":200
+      },
+      "input":{"shape":"GetDeploymentInput"},
+      "output":{"shape":"GetDeploymentOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns information about the deployment.</p>"
+    },
+    "GetWorkload":{
+      "name":"GetWorkload",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getWorkload",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkloadInput"},
+      "output":{"shape":"GetWorkloadOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns information about a workload.</p>"
+    },
+    "GetWorkloadDeploymentPattern":{
+      "name":"GetWorkloadDeploymentPattern",
+      "http":{
+        "method":"POST",
+        "requestUri":"/getWorkloadDeploymentPattern",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWorkloadDeploymentPatternInput"},
+      "output":{"shape":"GetWorkloadDeploymentPatternOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns details for a given workload and deployment pattern, including the available specifications. You can use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloads.html\">ListWorkloads</a> operation to discover the available workload names and the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloadDeploymentPatterns.html\">ListWorkloadDeploymentPatterns</a> operation to discover the available deployment pattern names of a given workload.</p>"
+    },
+    "ListDeploymentEvents":{
+      "name":"ListDeploymentEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listDeploymentEvents",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDeploymentEventsInput"},
+      "output":{"shape":"ListDeploymentEventsOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the events of a deployment.</p>"
+    },
+    "ListDeployments":{
+      "name":"ListDeployments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listDeployments",
+        "responseCode":200
+      },
+      "input":{"shape":"ListDeploymentsInput"},
+      "output":{"shape":"ListDeploymentsOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the deployments that have been created.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the tags associated with a specified resource.</p>"
+    },
+    "ListWorkloadDeploymentPatterns":{
+      "name":"ListWorkloadDeploymentPatterns",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listWorkloadDeploymentPatterns",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkloadDeploymentPatternsInput"},
+      "output":{"shape":"ListWorkloadDeploymentPatternsOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists the workload deployment patterns for a given workload name. You can use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloads.html\">ListWorkloads</a> operation to discover the available workload names.</p>"
+    },
+    "ListWorkloads":{
+      "name":"ListWorkloads",
+      "http":{
+        "method":"POST",
+        "requestUri":"/listWorkloads",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWorkloadsInput"},
+      "output":{"shape":"ListWorkloadsOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the available workload names. You can use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloadDeploymentPatterns.html\">ListWorkloadDeploymentPatterns</a> operation to discover the available deployment patterns for a given workload.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds the specified tags to the given resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the given resource.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AllowedValues":{
+      "type":"list",
+      "member":{"shape":"ValueString"}
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CreateDeploymentInput":{
+      "type":"structure",
+      "required":[
+        "deploymentPatternName",
+        "name",
+        "specifications",
+        "workloadName"
+      ],
+      "members":{
+        "deploymentPatternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The name of the deployment pattern supported by a given workload. You can use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloadDeploymentPatterns.html\"> <code>ListWorkloadDeploymentPatterns</code> </a> operation to discover supported values for this parameter. </p>"
+        },
+        "dryRun":{
+          "shape":"Boolean",
+          "documentation":"<p>Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is <code>DryRunOperation</code>. Otherwise, it is <code>UnauthorizedOperation</code>.</p>"
+        },
+        "name":{
+          "shape":"DeploymentName",
+          "documentation":"<p>The name of the deployment.</p>"
+        },
+        "specifications":{
+          "shape":"DeploymentSpecifications",
+          "documentation":"<p>The settings specified for the deployment. These settings define how to deploy and configure your resources created by the deployment. For more information about the specifications required for creating a deployment for a SAP workload, see <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/launch-wizard-specifications-sap.html\">SAP deployment specifications</a>. To retrieve the specifications required to create a deployment for other workloads, use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_GetWorkloadDeploymentPattern.html\"> <code>GetWorkloadDeploymentPattern</code> </a> operation.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The tags to add to the deployment.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload. You can use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_ListWorkloads.html\"> <code>ListWorkloads</code> </a> operation to discover supported values for this parameter.</p>"
+        }
+      }
+    },
+    "CreateDeploymentOutput":{
+      "type":"structure",
+      "members":{
+        "deploymentId":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        }
+      }
+    },
+    "DeleteDeploymentInput":{
+      "type":"structure",
+      "required":["deploymentId"],
+      "members":{
+        "deploymentId":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        }
+      }
+    },
+    "DeleteDeploymentOutput":{
+      "type":"structure",
+      "members":{
+        "status":{
+          "shape":"DeploymentStatus",
+          "documentation":"<p>The status of the deployment.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the deployment status.</p>"
+        }
+      }
+    },
+    "DeploymentConditionalField":{
+      "type":"structure",
+      "members":{
+        "comparator":{
+          "shape":"String",
+          "documentation":"<p>The comparator of the condition.</p> <p>Valid values: <code>Equal | NotEqual</code> </p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the deployment condition.</p>"
+        },
+        "value":{
+          "shape":"String",
+          "documentation":"<p>The value of the condition.</p>"
+        }
+      },
+      "documentation":"<p>A field that details a condition of the specifications for a deployment.</p>"
+    },
+    "DeploymentData":{
+      "type":"structure",
+      "members":{
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the deployment was created.</p>"
+        },
+        "deletedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the deployment was deleted.</p>"
+        },
+        "deploymentArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the deployment.</p>"
+        },
+        "id":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the deployment.</p>"
+        },
+        "patternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The pattern name of the deployment.</p>"
+        },
+        "resourceGroup":{
+          "shape":"String",
+          "documentation":"<p>The resource group of the deployment.</p>"
+        },
+        "specifications":{
+          "shape":"DeploymentSpecifications",
+          "documentation":"<p>The settings specified for the deployment. These settings define how to deploy and configure your resources created by the deployment. For more information about the specifications required for creating a deployment for a SAP workload, see <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/launch-wizard-specifications-sap.html\">SAP deployment specifications</a>. To retrieve the specifications required to create a deployment for other workloads, use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_GetWorkloadDeploymentPattern.html\"> <code>GetWorkloadDeploymentPattern</code> </a> operation.</p>"
+        },
+        "status":{
+          "shape":"DeploymentStatus",
+          "documentation":"<p>The status of the deployment.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Information about the tags attached to a deployment.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      },
+      "documentation":"<p>The data associated with a deployment.</p>"
+    },
+    "DeploymentDataSummary":{
+      "type":"structure",
+      "members":{
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time the deployment was created.</p>"
+        },
+        "id":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the deployment</p>"
+        },
+        "patternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The name of the workload deployment pattern.</p>"
+        },
+        "status":{
+          "shape":"DeploymentStatus",
+          "documentation":"<p>The status of the deployment.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the deployment data.</p>"
+    },
+    "DeploymentDataSummaryList":{
+      "type":"list",
+      "member":{"shape":"DeploymentDataSummary"}
+    },
+    "DeploymentEventDataSummary":{
+      "type":"structure",
+      "members":{
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the deployment event.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the deployment event.</p>"
+        },
+        "status":{
+          "shape":"EventStatus",
+          "documentation":"<p>The status of the deployment event.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason of the deployment event status.</p>"
+        },
+        "timestamp":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of the deployment event.</p>"
+        }
+      },
+      "documentation":"<p>A summary of the deployment event data.</p>"
+    },
+    "DeploymentEventDataSummaryList":{
+      "type":"list",
+      "member":{"shape":"DeploymentEventDataSummary"}
+    },
+    "DeploymentFilter":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"DeploymentFilterKey",
+          "documentation":"<p>The name of the filter. Filter names are case-sensitive.</p>"
+        },
+        "values":{
+          "shape":"DeploymentFilterValues",
+          "documentation":"<p>The filter values. Filter values are case-sensitive. If you specify multiple values for a filter, the values are joined with an <code>OR</code>, and the request returns all results that match any of the specified values.</p>"
+        }
+      },
+      "documentation":"<p>A filter name and value pair that is used to return more specific results from a describe operation. Filters can be used to match a set of resources by specific criteria.</p>"
+    },
+    "DeploymentFilterKey":{
+      "type":"string",
+      "enum":[
+        "WORKLOAD_NAME",
+        "DEPLOYMENT_STATUS"
+      ]
+    },
+    "DeploymentFilterList":{
+      "type":"list",
+      "member":{"shape":"DeploymentFilter"},
+      "min":1
+    },
+    "DeploymentFilterValues":{
+      "type":"list",
+      "member":{"shape":"DeploymentFilterValuesMemberString"}
+    },
+    "DeploymentFilterValuesMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "DeploymentId":{
+      "type":"string",
+      "max":128,
+      "min":2,
+      "pattern":"^[a-zA-Z0-9-]+$"
+    },
+    "DeploymentName":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"^[A-Za-z0-9_\\.-]+$"
+    },
+    "DeploymentPatternName":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[A-Za-z0-9][a-zA-Z0-9-]*$"
+    },
+    "DeploymentSpecifications":{
+      "type":"map",
+      "key":{"shape":"KeyString"},
+      "value":{"shape":"ValueString"},
+      "max":100,
+      "min":1,
+      "sensitive":true
+    },
+    "DeploymentSpecificationsData":{
+      "type":"list",
+      "member":{"shape":"DeploymentSpecificationsField"},
+      "max":100,
+      "min":1
+    },
+    "DeploymentSpecificationsField":{
+      "type":"structure",
+      "members":{
+        "allowedValues":{
+          "shape":"AllowedValues",
+          "documentation":"<p>The allowed values of the deployment specification.</p>"
+        },
+        "conditionals":{
+          "shape":"SpecificationsConditionalData",
+          "documentation":"<p>The conditionals used for the deployment specification.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the deployment specification.</p>"
+        },
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the deployment specification.</p>"
+        },
+        "required":{
+          "shape":"String",
+          "documentation":"<p>Indicates if the deployment specification is required.</p>"
+        }
+      },
+      "documentation":"<p>A field that details a specification of a deployment pattern.</p>"
+    },
+    "DeploymentStatus":{
+      "type":"string",
+      "enum":[
+        "COMPLETED",
+        "CREATING",
+        "DELETE_IN_PROGRESS",
+        "DELETE_INITIATING",
+        "DELETE_FAILED",
+        "DELETED",
+        "FAILED",
+        "IN_PROGRESS",
+        "VALIDATING"
+      ]
+    },
+    "EventStatus":{
+      "type":"string",
+      "enum":[
+        "CANCELED",
+        "CANCELING",
+        "COMPLETED",
+        "CREATED",
+        "FAILED",
+        "IN_PROGRESS",
+        "PENDING",
+        "TIMED_OUT"
+      ]
+    },
+    "GetDeploymentInput":{
+      "type":"structure",
+      "required":["deploymentId"],
+      "members":{
+        "deploymentId":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        }
+      }
+    },
+    "GetDeploymentOutput":{
+      "type":"structure",
+      "members":{
+        "deployment":{
+          "shape":"DeploymentData",
+          "documentation":"<p>An object that details the deployment.</p>"
+        }
+      }
+    },
+    "GetWorkloadDeploymentPatternInput":{
+      "type":"structure",
+      "required":[
+        "deploymentPatternName",
+        "workloadName"
+      ],
+      "members":{
+        "deploymentPatternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The name of the deployment pattern.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      }
+    },
+    "GetWorkloadDeploymentPatternOutput":{
+      "type":"structure",
+      "members":{
+        "workloadDeploymentPattern":{
+          "shape":"WorkloadDeploymentPatternData",
+          "documentation":"<p>Details about the workload deployment pattern.</p>"
+        }
+      }
+    },
+    "GetWorkloadInput":{
+      "type":"structure",
+      "required":["workloadName"],
+      "members":{
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      }
+    },
+    "GetWorkloadOutput":{
+      "type":"structure",
+      "members":{
+        "workload":{
+          "shape":"WorkloadData",
+          "documentation":"<p>Information about the workload.</p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An internal error has occurred. Retry your request, but if the problem persists, contact us with details by posting a question on <a href=\"https://repost.aws/\">re:Post</a>.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "KeyString":{
+      "type":"string",
+      "max":256,
+      "min":3,
+      "pattern":"^[a-zA-Z0-9-:]+$"
+    },
+    "ListDeploymentEventsInput":{
+      "type":"structure",
+      "required":["deploymentId"],
+      "members":{
+        "deploymentId":{
+          "shape":"DeploymentId",
+          "documentation":"<p>The ID of the deployment.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxDeploymentEventResults",
+          "documentation":"<p>The maximum number of items to return for this request. To get the next page of items, make another request with the token returned in the output.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned from a previous paginated request. Pagination continues from the end of the items returned by the previous request.</p>"
+        }
+      }
+    },
+    "ListDeploymentEventsOutput":{
+      "type":"structure",
+      "members":{
+        "deploymentEvents":{
+          "shape":"DeploymentEventDataSummaryList",
+          "documentation":"<p>Lists the deployment events.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to include in another request to get the next page of items. This value is <code>null</code> when there are no more items to return.</p>"
+        }
+      }
+    },
+    "ListDeploymentsInput":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"DeploymentFilterList",
+          "documentation":"<p>Filters to scope the results. The following filters are supported:</p> <ul> <li> <p> <code>WORKLOAD_NAME</code> - The name used in deployments.</p> </li> <li> <p> <code>DEPLOYMENT_STATUS</code> - <code>COMPLETED</code> | <code>CREATING</code> | <code>DELETE_IN_PROGRESS</code> | <code>DELETE_INITIATING</code> | <code>DELETE_FAILED</code> | <code>DELETED</code> | <code>FAILED</code> | <code>IN_PROGRESS</code> | <code>VALIDATING</code> </p> </li> </ul>"
+        },
+        "maxResults":{
+          "shape":"MaxDeploymentResults",
+          "documentation":"<p>The maximum number of items to return for this request. To get the next page of items, make another request with the token returned in the output.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned from a previous paginated request. Pagination continues from the end of the items returned by the previous request.</p>"
+        }
+      }
+    },
+    "ListDeploymentsOutput":{
+      "type":"structure",
+      "members":{
+        "deployments":{
+          "shape":"DeploymentDataSummaryList",
+          "documentation":"<p>Lists the deployments.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to include in another request to get the next page of items. This value is <code>null</code> when there are no more items to return.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      }
+    },
+    "ListWorkloadDeploymentPatternsInput":{
+      "type":"structure",
+      "required":["workloadName"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxWorkloadDeploymentPatternResults",
+          "documentation":"<p>The maximum number of items to return for this request. To get the next page of items, make another request with the token returned in the output.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned from a previous paginated request. Pagination continues from the end of the items returned by the previous request.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      }
+    },
+    "ListWorkloadDeploymentPatternsOutput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to include in another request to get the next page of items. This value is <code>null</code> when there are no more items to return.</p>"
+        },
+        "workloadDeploymentPatterns":{
+          "shape":"WorkloadDeploymentPatternDataSummaryList",
+          "documentation":"<p>Describes the workload deployment patterns.</p>"
+        }
+      }
+    },
+    "ListWorkloadsInput":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"MaxWorkloadResults",
+          "documentation":"<p>The maximum number of items to return for this request. To get the next page of items, make another request with the token returned in the output.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned from a previous paginated request. Pagination continues from the end of the items returned by the previous request.</p>"
+        }
+      }
+    },
+    "ListWorkloadsOutput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to include in another request to get the next page of items. This value is <code>null</code> when there are no more items to return.</p>"
+        },
+        "workloads":{
+          "shape":"WorkloadDataSummaryList",
+          "documentation":"<p>Information about the workloads.</p>"
+        }
+      }
+    },
+    "MaxDeploymentEventResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxDeploymentResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxWorkloadDeploymentPatternResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MaxWorkloadResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ResourceLimitException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>You have exceeded an Launch Wizard resource limit. For example, you might have too many deployments in progress.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The specified workload or deployment resource can't be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SpecificationsConditionalData":{
+      "type":"list",
+      "member":{"shape":"DeploymentConditionalField"},
+      "max":5,
+      "min":1
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>One or more tags to attach to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Keys identifying the tags to remove.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValueString":{
+      "type":"string",
+      "max":1500,
+      "min":1
+    },
+    "WorkloadData":{
+      "type":"structure",
+      "members":{
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of a workload.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of a workload.</p>"
+        },
+        "documentationUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL of a workload document.</p>"
+        },
+        "iconUrl":{
+          "shape":"String",
+          "documentation":"<p>The URL of a workload icon.</p>"
+        },
+        "status":{
+          "shape":"WorkloadStatus",
+          "documentation":"<p>The status of a workload.</p>"
+        },
+        "statusMessage":{
+          "shape":"String",
+          "documentation":"<p>The message about a workload's status.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      },
+      "documentation":"<p>Describes a workload.</p>"
+    },
+    "WorkloadDataSummary":{
+      "type":"structure",
+      "members":{
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of the workload data.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        }
+      },
+      "documentation":"<p>Describes workload data.</p>"
+    },
+    "WorkloadDataSummaryList":{
+      "type":"list",
+      "member":{"shape":"WorkloadDataSummary"}
+    },
+    "WorkloadDeploymentPatternData":{
+      "type":"structure",
+      "members":{
+        "deploymentPatternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The name of the deployment pattern.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the deployment pattern.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of the deployment pattern.</p>"
+        },
+        "specifications":{
+          "shape":"DeploymentSpecificationsData",
+          "documentation":"<p>The settings specified for the deployment. These settings define how to deploy and configure your resources created by the deployment. For more information about the specifications required for creating a deployment for a SAP workload, see <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/launch-wizard-specifications-sap.html\">SAP deployment specifications</a>. To retrieve the specifications required to create a deployment for other workloads, use the <a href=\"https://docs.aws.amazon.com/launchwizard/latest/APIReference/API_GetWorkloadDeploymentPattern.html\"> <code>GetWorkloadDeploymentPattern</code> </a> operation.</p>"
+        },
+        "status":{
+          "shape":"WorkloadDeploymentPatternStatus",
+          "documentation":"<p>The status of the deployment pattern.</p>"
+        },
+        "statusMessage":{
+          "shape":"String",
+          "documentation":"<p>The status message of the deployment pattern.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The workload name of the deployment pattern.</p>"
+        },
+        "workloadVersionName":{
+          "shape":"WorkloadVersionName",
+          "documentation":"<p>The workload version name of the deployment pattern.</p>"
+        }
+      },
+      "documentation":"<p>The data that details a workload deployment pattern.</p>"
+    },
+    "WorkloadDeploymentPatternDataSummary":{
+      "type":"structure",
+      "members":{
+        "deploymentPatternName":{
+          "shape":"DeploymentPatternName",
+          "documentation":"<p>The name of a workload deployment pattern.</p>"
+        },
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of a workload deployment pattern.</p>"
+        },
+        "displayName":{
+          "shape":"String",
+          "documentation":"<p>The display name of a workload deployment pattern.</p>"
+        },
+        "status":{
+          "shape":"WorkloadDeploymentPatternStatus",
+          "documentation":"<p>The status of a workload deployment pattern.</p>"
+        },
+        "statusMessage":{
+          "shape":"String",
+          "documentation":"<p>A message about a workload deployment pattern's status.</p>"
+        },
+        "workloadName":{
+          "shape":"WorkloadName",
+          "documentation":"<p>The name of the workload.</p>"
+        },
+        "workloadVersionName":{
+          "shape":"WorkloadVersionName",
+          "documentation":"<p>The name of the workload deployment pattern version.</p>"
+        }
+      },
+      "documentation":"<p>Describes a workload deployment pattern.</p>"
+    },
+    "WorkloadDeploymentPatternDataSummaryList":{
+      "type":"list",
+      "member":{"shape":"WorkloadDeploymentPatternDataSummary"}
+    },
+    "WorkloadDeploymentPatternStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INACTIVE",
+        "DISABLED",
+        "DELETED"
+      ]
+    },
+    "WorkloadName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^[A-Za-z][a-zA-Z0-9-_]*$"
+    },
+    "WorkloadStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INACTIVE",
+        "DISABLED",
+        "DELETED"
+      ]
+    },
+    "WorkloadVersionName":{
+      "type":"string",
+      "max":30,
+      "min":5,
+      "pattern":"^[A-Za-z0-9][a-zA-Z0-9-]*$"
+    }
+  },
+  "documentation":"<p>Launch Wizard offers a guided way of sizing, configuring, and deploying Amazon Web Services resources for third party applications, such as Microsoft SQL Server Always On and HANA based SAP systems, without the need to manually identify and provision individual Amazon Web Services resources.</p>"
+}

@@ -1,0 +1,760 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-10-19",
+    "endpointPrefix":"kendra-ranking",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"Kendra Ranking",
+    "serviceFullName":"Amazon Kendra Intelligent Ranking",
+    "serviceId":"Kendra Ranking",
+    "signatureVersion":"v4",
+    "signingName":"kendra-ranking",
+    "targetPrefix":"AWSKendraRerankingFrontendService",
+    "uid":"kendra-ranking-2022-10-19",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateRescoreExecutionPlan":{
+      "name":"CreateRescoreExecutionPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRescoreExecutionPlanRequest"},
+      "output":{"shape":"CreateRescoreExecutionPlanResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API. You set the number of capacity units that you require for Amazon Kendra Intelligent Ranking to rescore or re-rank a search service's results.</p> <p>For an example of using the <code>CreateRescoreExecutionPlan</code> API, including using the Python and Java SDKs, see <a href=\"https://docs.aws.amazon.com/kendra/latest/dg/search-service-rerank.html\">Semantically ranking a search service's results</a>.</p>"
+    },
+    "DeleteRescoreExecutionPlan":{
+      "name":"DeleteRescoreExecutionPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRescoreExecutionPlanRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "DescribeRescoreExecutionPlan":{
+      "name":"DescribeRescoreExecutionPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeRescoreExecutionPlanRequest"},
+      "output":{"shape":"DescribeRescoreExecutionPlanResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets information about a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "ListRescoreExecutionPlans":{
+      "name":"ListRescoreExecutionPlans",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRescoreExecutionPlansRequest"},
+      "output":{"shape":"ListRescoreExecutionPlansResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists your rescore execution plans. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceUnavailableException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a list of tags associated with a specified resource. A rescore execution plan is an example of a resource that can have tags associated with it.</p>"
+    },
+    "Rescore":{
+      "name":"Rescore",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RescoreRequest"},
+      "output":{"shape":"RescoreResult"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Rescores or re-ranks search results from a search service such as OpenSearch (self managed). You use the semantic search capabilities of Amazon Kendra Intelligent Ranking to improve the search service's results.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceUnavailableException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a specified tag to a specified rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API. If the tag already exists, the existing value is replaced with the new value.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceUnavailableException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes a tag from a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> operation.</p>"
+    },
+    "UpdateRescoreExecutionPlan":{
+      "name":"UpdateRescoreExecutionPlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRescoreExecutionPlanRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API. You can update the number of capacity units you require for Amazon Kendra Intelligent Ranking to rescore or re-rank a search service's results.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You don’t have sufficient access to perform this action. Please ensure you have the required permission policies and user accounts and try again.</p>",
+      "exception":true
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "BodyTokensList":{
+      "type":"list",
+      "member":{"shape":"Tokens"},
+      "min":1
+    },
+    "CapacityUnitsConfiguration":{
+      "type":"structure",
+      "required":["RescoreCapacityUnits"],
+      "members":{
+        "RescoreCapacityUnits":{
+          "shape":"RescoreCapacityUnit",
+          "documentation":"<p>The amount of extra capacity for your rescore execution plan.</p> <p>A single extra capacity unit for a rescore execution plan provides 0.01 rescore requests per second. You can add up to 1000 extra capacity units.</p>"
+        }
+      },
+      "documentation":"<p>Sets additional capacity units configured for your rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API. You can add and remove capacity units to fit your usage requirements.</p>"
+    },
+    "ClientTokenName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^$|[\\x00-\\x7F]+"
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>A conflict occurred with the request. Please fix any inconsistencies with your resources and try again.</p>",
+      "exception":true
+    },
+    "CreateRescoreExecutionPlanRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RescoreExecutionPlanName",
+          "documentation":"<p>A name for the rescore execution plan.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description for the rescore execution plan.</p>"
+        },
+        "CapacityUnits":{
+          "shape":"CapacityUnitsConfiguration",
+          "documentation":"<p>You can set additional capacity units to meet the needs of your rescore execution plan. You are given a single capacity unit by default. If you want to use the default capacity, you don't set additional capacity units. For more information on the default capacity and additional capacity units, see <a href=\"https://docs.aws.amazon.com/kendra/latest/dg/adjusting-capacity.html\">Adjusting capacity</a>.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of key-value pairs that identify or categorize your rescore execution plan. You can also use tags to help control access to the rescore execution plan. Tag keys and values can consist of Unicode letters, digits, white space, and any of the following symbols: _ . : / = + - @.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientTokenName",
+          "documentation":"<p>A token that you provide to identify the request to create a rescore execution plan. Multiple calls to the <code>CreateRescoreExecutionPlanRequest</code> API with the same client token will create only one rescore execution plan.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateRescoreExecutionPlanResponse":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "Arn"
+      ],
+      "members":{
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan.</p>"
+        },
+        "Arn":{
+          "shape":"RescoreExecutionPlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rescore execution plan.</p>"
+        }
+      }
+    },
+    "DeleteRescoreExecutionPlanRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan that you want to delete.</p>"
+        }
+      }
+    },
+    "DescribeRescoreExecutionPlanRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan that you want to get information on.</p>"
+        }
+      }
+    },
+    "DescribeRescoreExecutionPlanResponse":{
+      "type":"structure",
+      "members":{
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan.</p>"
+        },
+        "Arn":{
+          "shape":"RescoreExecutionPlanArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rescore execution plan.</p>"
+        },
+        "Name":{
+          "shape":"RescoreExecutionPlanName",
+          "documentation":"<p>The name for the rescore execution plan.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description for the rescore execution plan.</p>"
+        },
+        "CapacityUnits":{
+          "shape":"CapacityUnitsConfiguration",
+          "documentation":"<p>The capacity units set for the rescore execution plan. A capacity of zero indicates that the rescore execution plan is using the default capacity. For more information on the default capacity and additional capacity units, see <a href=\"https://docs.aws.amazon.com/kendra/latest/dg/adjusting-capacity.html\">Adjusting capacity</a>.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The Unix timestamp of when the rescore execution plan was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The Unix timestamp of when the rescore execution plan was last updated.</p>"
+        },
+        "Status":{
+          "shape":"RescoreExecutionPlanStatus",
+          "documentation":"<p>The current status of the rescore execution plan. When the value is <code>ACTIVE</code>, the rescore execution plan is ready for use. If the <code>Status</code> field value is <code>FAILED</code>, the <code>ErrorMessage</code> field contains a message that explains why.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>When the <code>Status</code> field value is <code>FAILED</code>, the <code>ErrorMessage</code> field contains a message that explains why.</p>"
+        }
+      }
+    },
+    "Description":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":"^\\P{C}*$"
+    },
+    "Document":{
+      "type":"structure",
+      "required":[
+        "Id",
+        "OriginalScore"
+      ],
+      "members":{
+        "Id":{
+          "shape":"DocumentId",
+          "documentation":"<p>The identifier of the document from the search service.</p>"
+        },
+        "GroupId":{
+          "shape":"GroupId",
+          "documentation":"<p>The optional group identifier of the document from the search service. Documents with the same group identifier are grouped together and processed as one document within the service.</p>"
+        },
+        "Title":{
+          "shape":"DocumentTitle",
+          "documentation":"<p>The title of the search service's document.</p>"
+        },
+        "Body":{
+          "shape":"DocumentBody",
+          "documentation":"<p>The body text of the search service's document.</p>"
+        },
+        "TokenizedTitle":{
+          "shape":"TitleTokensList",
+          "documentation":"<p>The title of the search service's document represented as a list of tokens or words. You must choose to provide <code>Title</code> or <code>TokenizedTitle</code>. You cannot provide both.</p>"
+        },
+        "TokenizedBody":{
+          "shape":"BodyTokensList",
+          "documentation":"<p>The body text of the search service's document represented as a list of tokens or words. You must choose to provide <code>Body</code> or <code>TokenizedBody</code>. You cannot provide both.</p>"
+        },
+        "OriginalScore":{
+          "shape":"Float",
+          "documentation":"<p>The original document score or rank from the search service. Amazon Kendra Intelligent Ranking gives the document a new score or rank based on its intelligent search algorithms.</p>"
+        }
+      },
+      "documentation":"<p>Information about a document from a search service such as OpenSearch (self managed). Amazon Kendra Intelligent Ranking uses this information to rank and score on.</p>"
+    },
+    "DocumentBody":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^\\P{C}*$"
+    },
+    "DocumentId":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "DocumentList":{
+      "type":"list",
+      "member":{"shape":"Document"},
+      "min":1
+    },
+    "DocumentTitle":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^\\P{C}*$"
+    },
+    "Float":{
+      "type":"float",
+      "max":100000,
+      "min":-100000
+    },
+    "GroupId":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An issue occurred with the internal server used for your Amazon Kendra Intelligent Ranking service. Please wait a few minutes and try again, or contact <a href=\"http://aws.amazon.com/contact-us/\">Support</a> for help.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "ListRescoreExecutionPlansRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the response is truncated, Amazon Kendra Intelligent Ranking returns a pagination token in the response. You can use this pagination token to retrieve the next set of rescore execution plans.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResultsIntegerForListRescoreExecutionPlansRequest",
+          "documentation":"<p>The maximum number of rescore execution plans to return.</p>"
+        }
+      }
+    },
+    "ListRescoreExecutionPlansResponse":{
+      "type":"structure",
+      "members":{
+        "SummaryItems":{
+          "shape":"RescoreExecutionPlanSummaryList",
+          "documentation":"<p>An array of summary information for one or more rescore execution plans.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If the response is truncated, Amazon Kendra Intelligent Ranking returns a pagination token in the response.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rescore execution plan to get a list of tags for.</p>"
+        }
+      },
+      "documentation":"<p>The request information for listing tags associated with a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tags associated with the rescore execution plan.</p>"
+        }
+      },
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response.</p>"
+    },
+    "MaxResultsIntegerForListRescoreExecutionPlansRequest":{
+      "type":"integer",
+      "max":50,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":800,
+      "min":1,
+      "pattern":"^\\P{C}*$"
+    },
+    "RescoreCapacityUnit":{
+      "type":"integer",
+      "min":0
+    },
+    "RescoreExecutionPlanArn":{
+      "type":"string",
+      "max":1284,
+      "min":0,
+      "pattern":"arn:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{0,63}:[a-z0-9-\\.]{0,63}:[a-z0-9-\\.]{0,63}:[^/].{0,1023}"
+    },
+    "RescoreExecutionPlanId":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-]*"
+    },
+    "RescoreExecutionPlanName":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_-]*"
+    },
+    "RescoreExecutionPlanStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "UPDATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "RescoreExecutionPlanSummary":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"RescoreExecutionPlanName",
+          "documentation":"<p>The name of the rescore execution plan.</p>"
+        },
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan.</p>"
+        },
+        "CreatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The Unix timestamp when the rescore execution plan was created.</p>"
+        },
+        "UpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The Unix timestamp when the rescore execution plan was last updated.</p>"
+        },
+        "Status":{
+          "shape":"RescoreExecutionPlanStatus",
+          "documentation":"<p>The current status of the rescore execution plan. When the value is <code>ACTIVE</code>, the rescore execution plan is ready for use.</p>"
+        }
+      },
+      "documentation":"<p>Summary information for a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "RescoreExecutionPlanSummaryList":{
+      "type":"list",
+      "member":{"shape":"RescoreExecutionPlanSummary"}
+    },
+    "RescoreId":{
+      "type":"string",
+      "max":36,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9-]"
+    },
+    "RescoreRequest":{
+      "type":"structure",
+      "required":[
+        "RescoreExecutionPlanId",
+        "SearchQuery",
+        "Documents"
+      ],
+      "members":{
+        "RescoreExecutionPlanId":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+        },
+        "SearchQuery":{
+          "shape":"SearchQuery",
+          "documentation":"<p>The input query from the search service.</p>"
+        },
+        "Documents":{
+          "shape":"DocumentList",
+          "documentation":"<p>The list of documents for Amazon Kendra Intelligent Ranking to rescore or rank on.</p>"
+        }
+      }
+    },
+    "RescoreResult":{
+      "type":"structure",
+      "members":{
+        "RescoreId":{
+          "shape":"RescoreId",
+          "documentation":"<p>The identifier associated with the scores that Amazon Kendra Intelligent Ranking gives to the results. Amazon Kendra Intelligent Ranking rescores or re-ranks the results for the search service.</p>"
+        },
+        "ResultItems":{
+          "shape":"RescoreResultItemList",
+          "documentation":"<p>A list of result items for documents with new relevancy scores. The results are in descending order.</p>"
+        }
+      }
+    },
+    "RescoreResultItem":{
+      "type":"structure",
+      "members":{
+        "DocumentId":{
+          "shape":"DocumentId",
+          "documentation":"<p>The identifier of the document from the search service.</p>"
+        },
+        "Score":{
+          "shape":"Float",
+          "documentation":"<p>The relevancy score or rank that Amazon Kendra Intelligent Ranking gives to the result.</p>"
+        }
+      },
+      "documentation":"<p>A result item for a document with a new relevancy score.</p>"
+    },
+    "RescoreResultItemList":{
+      "type":"list",
+      "member":{"shape":"RescoreResultItem"},
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource you want to use doesn't exist. Please check you have provided the correct resource and try again.</p>",
+      "exception":true
+    },
+    "ResourceUnavailableException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource you want to use is unavailable. Please check you have provided the correct resource information and try again.</p>",
+      "exception":true
+    },
+    "SearchQuery":{
+      "type":"string",
+      "max":1000,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You have exceeded the set limits for your Amazon Kendra Intelligent Ranking service. Please see <a href=\"https://docs.aws.amazon.com/kendra/latest/dg/quotas.html\">Quotas</a> for more information, or contact <a href=\"http://aws.amazon.com/contact-us/\">Support</a> to inquire about an increase of limits.</p>",
+      "exception":true
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key for the tag. Keys are not case sensitive and must be unique.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value associated with the tag. The value can be an empty string but it can't be null.</p>"
+        }
+      },
+      "documentation":"<p>A key-value pair that identifies or categorizes a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API. You can also use a tag to help control access to a rescore execution plan. A tag key and value can consist of Unicode letters, digits, white space, and any of the following symbols: _ . : / = + - @.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rescore execution plan to tag.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of tag keys to add to a rescore execution plan. If a tag already exists, the existing value is replaced with the new value.</p>"
+        }
+      },
+      "documentation":"<p>The request information for tagging a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response with an empty HTTP body.</p>"
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. Please reduce the number of requests and try again.</p>",
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "TitleTokensList":{
+      "type":"list",
+      "member":{"shape":"Tokens"},
+      "min":1
+    },
+    "Tokens":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rescore execution plan to remove the tag.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of tag keys to remove from the rescore execution plan. If a tag key does not exist on the resource, it is ignored.</p>"
+        }
+      },
+      "documentation":"<p>The request information to remove a tag from a rescore execution plan. A rescore execution plan is an Amazon Kendra Intelligent Ranking resource used for provisioning the <code>Rescore</code> API.</p>"
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{},
+      "documentation":"<p>If the action is successful, the service sends back an HTTP 200 response with an empty HTTP body.</p>"
+    },
+    "UpdateRescoreExecutionPlanRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"RescoreExecutionPlanId",
+          "documentation":"<p>The identifier of the rescore execution plan that you want to update.</p>"
+        },
+        "Name":{
+          "shape":"RescoreExecutionPlanName",
+          "documentation":"<p>A new name for the rescore execution plan.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A new description for the rescore execution plan.</p>"
+        },
+        "CapacityUnits":{
+          "shape":"CapacityUnitsConfiguration",
+          "documentation":"<p>You can set additional capacity units to meet the needs of your rescore execution plan. You are given a single capacity unit by default. If you want to use the default capacity, you don't set additional capacity units. For more information on the default capacity and additional capacity units, see <a href=\"https://docs.aws.amazon.com/kendra/latest/dg/adjusting-capacity.html\">Adjusting capacity</a>.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints set by the Amazon Kendra Intelligent Ranking service. Please provide the correct input and try again.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>Amazon Kendra Intelligent Ranking uses Amazon Kendra semantic search capabilities to intelligently re-rank a search service's results.</p>"
+}

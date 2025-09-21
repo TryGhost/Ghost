@@ -1,0 +1,70 @@
+{
+  "pagination": {
+    "ListAutonomousVirtualMachines": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "autonomousVirtualMachines"
+    },
+    "ListCloudAutonomousVmClusters": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "cloudAutonomousVmClusters"
+    },
+    "ListCloudExadataInfrastructures": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "cloudExadataInfrastructures"
+    },
+    "ListCloudVmClusters": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "cloudVmClusters"
+    },
+    "ListDbNodes": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "dbNodes"
+    },
+    "ListDbServers": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "dbServers"
+    },
+    "ListDbSystemShapes": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "dbSystemShapes"
+    },
+    "ListGiVersions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "giVersions"
+    },
+    "ListOdbNetworks": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "odbNetworks"
+    },
+    "ListOdbPeeringConnections": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "odbPeeringConnections"
+    },
+    "ListSystemVersions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "systemVersions"
+    }
+  }
+}

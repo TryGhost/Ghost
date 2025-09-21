@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Service": {
+      "operation": "DescribeServices",
+      "resourceIdentifier": {
+        "ServiceCode": "Services[].ServiceCode",
+        "AttributeNames": "Services[].AttributeNames"
+      }
+    }
+  },
+  "operations": {
+    "DescribeServices": {
+      "ServiceCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "ServiceCode"
+          }
+        ]
+      }
+    },
+    "GetAttributeValues": {
+      "ServiceCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "ServiceCode"
+          }
+        ]
+      },
+      "AttributeName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "AttributeNames"
+          }
+        ]
+      }
+    },
+    "GetProducts": {
+      "ServiceCode": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Service",
+            "resourceIdentifier": "ServiceCode"
+          }
+        ]
+      }
+    }
+  }
+}

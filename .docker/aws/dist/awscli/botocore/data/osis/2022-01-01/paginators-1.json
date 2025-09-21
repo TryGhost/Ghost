@@ -1,0 +1,16 @@
+{
+  "pagination": {
+    "ListPipelineEndpointConnections": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineEndpointConnections"
+    },
+    "ListPipelineEndpoints": {
+      "input_token": "NextToken",
+      "output_token": "NextToken",
+      "limit_key": "MaxResults",
+      "result_key": "PipelineEndpoints"
+    }
+  }
+}

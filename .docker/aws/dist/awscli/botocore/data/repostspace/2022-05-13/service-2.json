@@ -1,0 +1,1758 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-05-13",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"repostspace",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS re:Post Private",
+    "serviceId":"repostspace",
+    "signatureVersion":"v4",
+    "signingName":"repostspace",
+    "uid":"repostspace-2022-05-13"
+  },
+  "operations":{
+    "BatchAddChannelRoleToAccessors":{
+      "name":"BatchAddChannelRoleToAccessors",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces/{spaceId}/channels/{channelId}/roles",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchAddChannelRoleToAccessorsInput"},
+      "output":{"shape":"BatchAddChannelRoleToAccessorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Add role to multiple users or groups in a private re:Post channel.</p>",
+      "idempotent":true
+    },
+    "BatchAddRole":{
+      "name":"BatchAddRole",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces/{spaceId}/roles",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchAddRoleInput"},
+      "output":{"shape":"BatchAddRoleOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Add a role to multiple users or groups in a private re:Post.</p>",
+      "idempotent":true
+    },
+    "BatchRemoveChannelRoleFromAccessors":{
+      "name":"BatchRemoveChannelRoleFromAccessors",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/spaces/{spaceId}/channels/{channelId}/roles",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchRemoveChannelRoleFromAccessorsInput"},
+      "output":{"shape":"BatchRemoveChannelRoleFromAccessorsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Remove a role from multiple users or groups in a private re:Post channel.</p>",
+      "idempotent":true
+    },
+    "BatchRemoveRole":{
+      "name":"BatchRemoveRole",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/spaces/{spaceId}/roles",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchRemoveRoleInput"},
+      "output":{"shape":"BatchRemoveRoleOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Remove a role from multiple users or groups in a private re:Post.</p>",
+      "idempotent":true
+    },
+    "CreateChannel":{
+      "name":"CreateChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces/{spaceId}/channels",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateChannelInput"},
+      "output":{"shape":"CreateChannelOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a channel in an AWS re:Post Private private re:Post.</p>",
+      "idempotent":true
+    },
+    "CreateSpace":{
+      "name":"CreateSpace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSpaceInput"},
+      "output":{"shape":"CreateSpaceOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates an AWS re:Post Private private re:Post.</p>",
+      "idempotent":true
+    },
+    "DeleteSpace":{
+      "name":"DeleteSpace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/spaces/{spaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSpaceInput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes an AWS re:Post Private private re:Post.</p>",
+      "idempotent":true
+    },
+    "DeregisterAdmin":{
+      "name":"DeregisterAdmin",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/spaces/{spaceId}/admins/{adminId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeregisterAdminInput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes the user or group from the list of administrators of the private re:Post.</p>",
+      "idempotent":true
+    },
+    "GetChannel":{
+      "name":"GetChannel",
+      "http":{
+        "method":"GET",
+        "requestUri":"/spaces/{spaceId}/channels/{channelId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetChannelInput"},
+      "output":{"shape":"GetChannelOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Displays information about a channel in a private re:Post.</p>"
+    },
+    "GetSpace":{
+      "name":"GetSpace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/spaces/{spaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSpaceInput"},
+      "output":{"shape":"GetSpaceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Displays information about the AWS re:Post Private private re:Post.</p>"
+    },
+    "ListChannels":{
+      "name":"ListChannels",
+      "http":{
+        "method":"GET",
+        "requestUri":"/spaces/{spaceId}/channels",
+        "responseCode":200
+      },
+      "input":{"shape":"ListChannelsInput"},
+      "output":{"shape":"ListChannelsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the list of channel within a private re:Post with some information about each channel.</p>"
+    },
+    "ListSpaces":{
+      "name":"ListSpaces",
+      "http":{
+        "method":"GET",
+        "requestUri":"/spaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSpacesInput"},
+      "output":{"shape":"ListSpacesOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns a list of AWS re:Post Private private re:Posts in the account with some information about each private re:Post.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Returns the tags that are associated with the AWS re:Post Private resource specified by the resourceArn. The only resource that can be tagged is a private re:Post.</p>"
+    },
+    "RegisterAdmin":{
+      "name":"RegisterAdmin",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces/{spaceId}/admins/{adminId}",
+        "responseCode":200
+      },
+      "input":{"shape":"RegisterAdminInput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a user or group to the list of administrators of the private re:Post.</p>",
+      "idempotent":true
+    },
+    "SendInvites":{
+      "name":"SendInvites",
+      "http":{
+        "method":"POST",
+        "requestUri":"/spaces/{spaceId}/invite",
+        "responseCode":200
+      },
+      "input":{"shape":"SendInvitesInput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Sends an invitation email to selected users and groups.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Associates tags with an AWS re:Post Private resource. Currently, the only resource that can be tagged is the private re:Post. If you specify a new tag key for the resource, the tag is appended to the list of tags that are associated with the resource. If you specify a tag key that’s already associated with the resource, the new tag value that you specify replaces the previous value for that tag.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes the association of the tag with the AWS re:Post Private resource.</p>",
+      "idempotent":true
+    },
+    "UpdateChannel":{
+      "name":"UpdateChannel",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/spaces/{spaceId}/channels/{channelId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateChannelInput"},
+      "output":{"shape":"UpdateChannelOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Modifies an existing channel.</p>",
+      "idempotent":true
+    },
+    "UpdateSpace":{
+      "name":"UpdateSpace",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/spaces/{spaceId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSpaceInput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Modifies an existing AWS re:Post Private private re:Post.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>User does not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessorId":{"type":"string"},
+    "AccessorIdList":{
+      "type":"list",
+      "member":{"shape":"AccessorId"},
+      "max":1000,
+      "min":0
+    },
+    "AdminId":{"type":"string"},
+    "AllowedDomainsList":{
+      "type":"list",
+      "member":{"shape":"EmailDomain"},
+      "max":10,
+      "min":1
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20
+    },
+    "BatchAddChannelRoleToAccessorsInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId",
+        "accessorIds",
+        "channelRole"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>",
+          "location":"uri",
+          "locationName":"channelId"
+        },
+        "accessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>The user or group identifiers to add the role to.</p>"
+        },
+        "channelRole":{
+          "shape":"ChannelRole",
+          "documentation":"<p>The channel role to add to the users or groups.</p>"
+        }
+      }
+    },
+    "BatchAddChannelRoleToAccessorsOutput":{
+      "type":"structure",
+      "required":[
+        "addedAccessorIds",
+        "errors"
+      ],
+      "members":{
+        "addedAccessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>An array of successfully updated identifiers.</p>"
+        },
+        "errors":{
+          "shape":"BatchErrorList",
+          "documentation":"<p>An array of errors that occurred when roles were added.</p>"
+        }
+      }
+    },
+    "BatchAddRoleInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "accessorIds",
+        "role"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "accessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>The user or group accessor identifiers to add the role to.</p>"
+        },
+        "role":{
+          "shape":"Role",
+          "documentation":"<p>The role to add to the users or groups.</p>"
+        }
+      }
+    },
+    "BatchAddRoleOutput":{
+      "type":"structure",
+      "required":[
+        "addedAccessorIds",
+        "errors"
+      ],
+      "members":{
+        "addedAccessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>An array of successfully updated accessor identifiers.</p>"
+        },
+        "errors":{
+          "shape":"BatchErrorList",
+          "documentation":"<p>An array of errors that occurred when roles were added.</p>"
+        }
+      }
+    },
+    "BatchError":{
+      "type":"structure",
+      "required":[
+        "accessorId",
+        "error",
+        "message"
+      ],
+      "members":{
+        "accessorId":{
+          "shape":"AccessorId",
+          "documentation":"<p>The accessor identifier that's related to the error.</p>"
+        },
+        "error":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The error code.</p>"
+        },
+        "message":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>Description of the error.</p>"
+        }
+      },
+      "documentation":"<p>An error that occurred during a batch operation.</p>"
+    },
+    "BatchErrorList":{
+      "type":"list",
+      "member":{"shape":"BatchError"}
+    },
+    "BatchRemoveChannelRoleFromAccessorsInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId",
+        "accessorIds",
+        "channelRole"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>",
+          "location":"uri",
+          "locationName":"channelId"
+        },
+        "accessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>The users or groups identifiers to remove the role from.</p>"
+        },
+        "channelRole":{
+          "shape":"ChannelRole",
+          "documentation":"<p>The channel role to remove from the users or groups.</p>"
+        }
+      }
+    },
+    "BatchRemoveChannelRoleFromAccessorsOutput":{
+      "type":"structure",
+      "required":[
+        "removedAccessorIds",
+        "errors"
+      ],
+      "members":{
+        "removedAccessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>An array of successfully updated identifiers.</p>"
+        },
+        "errors":{
+          "shape":"BatchErrorList",
+          "documentation":"<p>An array of errors that occurred when roles were removed.</p>"
+        }
+      }
+    },
+    "BatchRemoveRoleInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "accessorIds",
+        "role"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "accessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>The user or group accessor identifiers to remove the role from.</p>"
+        },
+        "role":{
+          "shape":"Role",
+          "documentation":"<p>The role to remove from the users or groups.</p>"
+        }
+      }
+    },
+    "BatchRemoveRoleOutput":{
+      "type":"structure",
+      "required":[
+        "removedAccessorIds",
+        "errors"
+      ],
+      "members":{
+        "removedAccessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>An array of successfully updated accessor identifiers.</p>"
+        },
+        "errors":{
+          "shape":"BatchErrorList",
+          "documentation":"<p>An array of errors that occurred when roles were removed.</p>"
+        }
+      }
+    },
+    "ChannelData":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId",
+        "channelName",
+        "createDateTime",
+        "channelStatus",
+        "userCount",
+        "groupCount"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>"
+        },
+        "channelName":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name for the channel. This must be unique per private re:Post.</p>"
+        },
+        "channelDescription":{
+          "shape":"ChannelDescription",
+          "documentation":"<p>A description for the channel. This is used only to help you identify this channel.</p>"
+        },
+        "createDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the channel was created.</p>"
+        },
+        "deleteDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the channel was deleted.</p>"
+        },
+        "channelStatus":{
+          "shape":"ChannelStatus",
+          "documentation":"<p>The status pf the channel.</p>"
+        },
+        "userCount":{
+          "shape":"UserCount",
+          "documentation":"<p>The number of users that are part of the channel.</p>"
+        },
+        "groupCount":{
+          "shape":"GroupCount",
+          "documentation":"<p>The number of groups that are part of the channel.</p>"
+        }
+      },
+      "documentation":"<p>A structure that contains some information about a channel in a private re:Post.</p>"
+    },
+    "ChannelDescription":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "sensitive":true
+    },
+    "ChannelId":{
+      "type":"string",
+      "max":24,
+      "min":24
+    },
+    "ChannelName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "sensitive":true
+    },
+    "ChannelRole":{
+      "type":"string",
+      "enum":[
+        "ASKER",
+        "EXPERT",
+        "MODERATOR",
+        "SUPPORTREQUESTOR"
+      ]
+    },
+    "ChannelRoleList":{
+      "type":"list",
+      "member":{"shape":"ChannelRole"}
+    },
+    "ChannelRoles":{
+      "type":"map",
+      "key":{"shape":"AccessorId"},
+      "value":{"shape":"ChannelRoleList"}
+    },
+    "ChannelStatus":{
+      "type":"string",
+      "enum":[
+        "CREATED",
+        "CREATING",
+        "CREATE_FAILED",
+        "DELETED",
+        "DELETING",
+        "DELETE_FAILED"
+      ]
+    },
+    "ChannelsList":{
+      "type":"list",
+      "member":{"shape":"ChannelData"}
+    },
+    "ClientId":{"type":"string"},
+    "ConfigurationStatus":{
+      "type":"string",
+      "enum":[
+        "CONFIGURED",
+        "UNCONFIGURED"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ContentSize":{
+      "type":"long",
+      "box":true
+    },
+    "CreateChannelInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelName"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "channelName":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name for the channel. This must be unique per private re:Post.</p>"
+        },
+        "channelDescription":{
+          "shape":"ChannelDescription",
+          "documentation":"<p>A description for the channel. This is used only to help you identify this channel.</p>"
+        }
+      }
+    },
+    "CreateChannelOutput":{
+      "type":"structure",
+      "required":["channelId"],
+      "members":{
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>"
+        }
+      }
+    },
+    "CreateSpaceInput":{
+      "type":"structure",
+      "required":[
+        "name",
+        "subdomain",
+        "tier"
+      ],
+      "members":{
+        "name":{
+          "shape":"SpaceName",
+          "documentation":"<p>The name for the private re:Post. This must be unique in your account.</p>"
+        },
+        "subdomain":{
+          "shape":"SpaceSubdomain",
+          "documentation":"<p>The subdomain that you use to access your AWS re:Post Private private re:Post. All custom subdomains must be approved by AWS before use. In addition to your custom subdomain, all private re:Posts are issued an AWS generated subdomain for immediate use.</p>"
+        },
+        "tier":{
+          "shape":"TierLevel",
+          "documentation":"<p>The pricing tier for the private re:Post.</p>"
+        },
+        "description":{
+          "shape":"SpaceDescription",
+          "documentation":"<p>A description for the private re:Post. This is used only to help you identify this private re:Post.</p>"
+        },
+        "userKMSKey":{
+          "shape":"KMSKey",
+          "documentation":"<p>The AWS KMS key ARN that’s used for the AWS KMS encryption. If you don't provide a key, your data is encrypted by default with a key that AWS owns and manages for you.</p>"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The list of tags associated with the private re:Post.</p>"
+        },
+        "roleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The IAM role that grants permissions to the private re:Post to convert unanswered questions into AWS support tickets.</p>"
+        },
+        "supportedEmailDomains":{
+          "shape":"SupportedEmailDomainsParameters",
+          "documentation":"<p/>"
+        }
+      }
+    },
+    "CreateSpaceOutput":{
+      "type":"structure",
+      "required":["spaceId"],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>"
+        }
+      }
+    },
+    "DeleteSpaceInput":{
+      "type":"structure",
+      "required":["spaceId"],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        }
+      }
+    },
+    "DeregisterAdminInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "adminId"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The ID of the private re:Post to remove the admin from.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "adminId":{
+          "shape":"AdminId",
+          "documentation":"<p>The ID of the admin to remove.</p>",
+          "location":"uri",
+          "locationName":"adminId"
+        }
+      }
+    },
+    "EmailDomain":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "sensitive":true
+    },
+    "ErrorCode":{
+      "type":"integer",
+      "box":true
+    },
+    "ErrorMessage":{"type":"string"},
+    "FeatureEnableParameter":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "FeatureEnableStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED",
+        "NOT_ALLOWED"
+      ]
+    },
+    "GetChannelInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>",
+          "location":"uri",
+          "locationName":"channelId"
+        }
+      }
+    },
+    "GetChannelOutput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId",
+        "channelName",
+        "createDateTime",
+        "channelStatus"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>"
+        },
+        "channelName":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name for the channel. This must be unique per private re:Post.</p>"
+        },
+        "channelDescription":{
+          "shape":"ChannelDescription",
+          "documentation":"<p>A description for the channel. This is used only to help you identify this channel.</p>"
+        },
+        "createDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the channel was created.</p>"
+        },
+        "deleteDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the channel was deleted.</p>"
+        },
+        "channelRoles":{
+          "shape":"ChannelRoles",
+          "documentation":"<p>The channel roles associated to the users and groups of the channel.</p>"
+        },
+        "channelStatus":{
+          "shape":"ChannelStatus",
+          "documentation":"<p>The status pf the channel.</p>"
+        }
+      }
+    },
+    "GetSpaceInput":{
+      "type":"structure",
+      "required":["spaceId"],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        }
+      }
+    },
+    "GetSpaceOutput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "arn",
+        "name",
+        "status",
+        "configurationStatus",
+        "clientId",
+        "vanityDomainStatus",
+        "vanityDomain",
+        "randomDomain",
+        "createDateTime",
+        "tier",
+        "storageLimit"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the private re:Post.</p>"
+        },
+        "name":{
+          "shape":"SpaceName",
+          "documentation":"<p>The name of the private re:Post.</p>"
+        },
+        "status":{
+          "shape":"ProvisioningStatus",
+          "documentation":"<p>The creation or deletion status of the private re:Post.</p>"
+        },
+        "configurationStatus":{
+          "shape":"ConfigurationStatus",
+          "documentation":"<p>The configuration status of the private re:Post.</p>"
+        },
+        "clientId":{
+          "shape":"ClientId",
+          "documentation":"<p>The Identity Center identifier for the Application Instance.</p>"
+        },
+        "identityStoreId":{
+          "shape":"IdentityStoreId",
+          "documentation":"<p/>"
+        },
+        "applicationArn":{
+          "shape":"Arn",
+          "documentation":"<p/>"
+        },
+        "description":{
+          "shape":"SpaceDescription",
+          "documentation":"<p>The description of the private re:Post.</p>"
+        },
+        "vanityDomainStatus":{
+          "shape":"VanityDomainStatus",
+          "documentation":"<p>The approval status of the custom subdomain.</p>"
+        },
+        "vanityDomain":{
+          "shape":"Url",
+          "documentation":"<p>The custom subdomain that you use to access your private re:Post. All custom subdomains must be approved by AWS before use.</p>"
+        },
+        "randomDomain":{
+          "shape":"Url",
+          "documentation":"<p>The AWS generated subdomain of the private re:Post</p>"
+        },
+        "customerRoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The IAM role that grants permissions to the private re:Post to convert unanswered questions into AWS support tickets.</p>"
+        },
+        "createDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the private re:Post was created.</p>"
+        },
+        "deleteDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the private re:Post was deleted.</p>"
+        },
+        "tier":{
+          "shape":"TierLevel",
+          "documentation":"<p>The pricing tier of the private re:Post.</p>"
+        },
+        "storageLimit":{
+          "shape":"StorageLimit",
+          "documentation":"<p>The storage limit of the private re:Post.</p>"
+        },
+        "userAdmins":{
+          "shape":"UserAdmins",
+          "documentation":"<p>The list of users that are administrators of the private re:Post.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property has been depracted and will be replaced by the roles property."
+        },
+        "groupAdmins":{
+          "shape":"GroupAdmins",
+          "documentation":"<p>The list of groups that are administrators of the private re:Post.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"This property has been depracted and will be replaced by the roles property."
+        },
+        "roles":{
+          "shape":"Roles",
+          "documentation":"<p>A map of accessor identifiers and their roles.</p>"
+        },
+        "userKMSKey":{
+          "shape":"KMSKey",
+          "documentation":"<p>The custom AWS KMS key ARN that’s used for the AWS KMS encryption.</p>"
+        },
+        "userCount":{
+          "shape":"UserCount",
+          "documentation":"<p>The number of users that have onboarded to the private re:Post.</p>"
+        },
+        "contentSize":{
+          "shape":"ContentSize",
+          "documentation":"<p>The content size of the private re:Post.</p>"
+        },
+        "supportedEmailDomains":{
+          "shape":"SupportedEmailDomainsStatus",
+          "documentation":"<p/>"
+        }
+      }
+    },
+    "GroupAdmins":{
+      "type":"list",
+      "member":{"shape":"AdminId"}
+    },
+    "GroupCount":{
+      "type":"integer",
+      "box":true
+    },
+    "IdentityStoreId":{"type":"string"},
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>Advice to clients on when the call can be safely retried.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>Unexpected error during processing of request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "InviteBody":{
+      "type":"string",
+      "max":600,
+      "min":1,
+      "sensitive":true
+    },
+    "InviteTitle":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "sensitive":true
+    },
+    "KMSKey":{"type":"string"},
+    "ListChannelsInput":{
+      "type":"structure",
+      "required":["spaceId"],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of channel to return. You receive this token from a previous ListChannels operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListChannelsLimit",
+          "documentation":"<p>The maximum number of channels to include in the results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListChannelsLimit":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListChannelsOutput":{
+      "type":"structure",
+      "required":["channels"],
+      "members":{
+        "channels":{
+          "shape":"ChannelsList",
+          "documentation":"<p>An array of structures that contain some information about the channels in the private re:Post.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token that you use when you request the next set of channels.</p>"
+        }
+      }
+    },
+    "ListSpacesInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token for the next set of private re:Posts to return. You receive this token from a previous ListSpaces operation.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListSpacesLimit",
+          "documentation":"<p>The maximum number of private re:Posts to include in the results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListSpacesLimit":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListSpacesOutput":{
+      "type":"structure",
+      "required":["spaces"],
+      "members":{
+        "spaces":{
+          "shape":"SpacesList",
+          "documentation":"<p>An array of structures that contain some information about the private re:Posts in the account.</p>"
+        },
+        "nextToken":{
+          "shape":"String",
+          "documentation":"<p>The token that you use when you request the next set of private re:Posts.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that the tags are associated with.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The list of tags that are associated with the resource.</p>"
+        }
+      }
+    },
+    "ProvisioningStatus":{
+      "type":"string",
+      "max":30,
+      "min":1
+    },
+    "RegisterAdminInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "adminId"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "adminId":{
+          "shape":"AdminId",
+          "documentation":"<p>The ID of the administrator.</p>",
+          "location":"uri",
+          "locationName":"adminId"
+        }
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>Request references a resource which does not exist.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Role":{
+      "type":"string",
+      "enum":[
+        "EXPERT",
+        "MODERATOR",
+        "ADMINISTRATOR",
+        "SUPPORTREQUESTOR"
+      ]
+    },
+    "RoleList":{
+      "type":"list",
+      "member":{"shape":"Role"}
+    },
+    "Roles":{
+      "type":"map",
+      "key":{"shape":"AccessorId"},
+      "value":{"shape":"RoleList"}
+    },
+    "SendInvitesInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "accessorIds",
+        "title",
+        "body"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "accessorIds":{
+          "shape":"AccessorIdList",
+          "documentation":"<p>The array of identifiers for the users and groups.</p>"
+        },
+        "title":{
+          "shape":"InviteTitle",
+          "documentation":"<p>The title of the invite.</p>"
+        },
+        "body":{
+          "shape":"InviteBody",
+          "documentation":"<p>The body of the invite.</p>"
+        }
+      }
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "resourceId",
+        "resourceType",
+        "serviceCode",
+        "quotaCode"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The id of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code to identify the service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code to identify the quota.</p>"
+        }
+      },
+      "documentation":"<p>Request would cause a service quota to be exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SpaceData":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "arn",
+        "name",
+        "status",
+        "configurationStatus",
+        "vanityDomainStatus",
+        "vanityDomain",
+        "randomDomain",
+        "tier",
+        "storageLimit",
+        "createDateTime"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>"
+        },
+        "arn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the private re:Post.</p>"
+        },
+        "name":{
+          "shape":"SpaceName",
+          "documentation":"<p>The name for the private re:Post.</p>"
+        },
+        "description":{
+          "shape":"SpaceDescription",
+          "documentation":"<p>The description for the private re:Post. This is used only to help you identify this private re:Post.</p>"
+        },
+        "status":{
+          "shape":"ProvisioningStatus",
+          "documentation":"<p>The creation/deletion status of the private re:Post.</p>"
+        },
+        "configurationStatus":{
+          "shape":"ConfigurationStatus",
+          "documentation":"<p>The configuration status of the private re:Post.</p>"
+        },
+        "vanityDomainStatus":{
+          "shape":"VanityDomainStatus",
+          "documentation":"<p>This approval status of the custom subdomain.</p>"
+        },
+        "vanityDomain":{
+          "shape":"Url",
+          "documentation":"<p>This custom subdomain that you use to access your private re:Post. All custom subdomains must be approved by AWS before use.</p>"
+        },
+        "randomDomain":{
+          "shape":"Url",
+          "documentation":"<p>The AWS generated subdomain of the private re:Post.</p>"
+        },
+        "tier":{
+          "shape":"TierLevel",
+          "documentation":"<p>The pricing tier of the private re:Post.</p>"
+        },
+        "storageLimit":{
+          "shape":"StorageLimit",
+          "documentation":"<p>The storage limit of the private re:Post.</p>"
+        },
+        "createDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the private re:Post was created.</p>"
+        },
+        "deleteDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date when the private re:Post was deleted.</p>"
+        },
+        "userKMSKey":{
+          "shape":"KMSKey",
+          "documentation":"<p>The custom AWS KMS key ARN that’s used for the AWS KMS encryption.</p>"
+        },
+        "userCount":{
+          "shape":"UserCount",
+          "documentation":"<p>The number of onboarded users to the private re:Post.</p>"
+        },
+        "contentSize":{
+          "shape":"ContentSize",
+          "documentation":"<p>The content size of the private re:Post.</p>"
+        },
+        "supportedEmailDomains":{
+          "shape":"SupportedEmailDomainsStatus",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p>A structure that contains some information about a private re:Post in the account.</p>"
+    },
+    "SpaceDescription":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "sensitive":true
+    },
+    "SpaceId":{"type":"string"},
+    "SpaceName":{
+      "type":"string",
+      "max":30,
+      "min":1,
+      "sensitive":true
+    },
+    "SpaceSubdomain":{
+      "type":"string",
+      "max":63,
+      "min":1
+    },
+    "SpacesList":{
+      "type":"list",
+      "member":{"shape":"SpaceData"}
+    },
+    "StorageLimit":{
+      "type":"long",
+      "box":true
+    },
+    "String":{"type":"string"},
+    "SupportedEmailDomainsParameters":{
+      "type":"structure",
+      "members":{
+        "enabled":{
+          "shape":"FeatureEnableParameter",
+          "documentation":"<p/>"
+        },
+        "allowedDomains":{
+          "shape":"AllowedDomainsList",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>"
+    },
+    "SupportedEmailDomainsStatus":{
+      "type":"structure",
+      "members":{
+        "enabled":{
+          "shape":"FeatureEnableStatus",
+          "documentation":"<p/>"
+        },
+        "allowedDomains":{
+          "shape":"AllowedDomainsList",
+          "documentation":"<p/>"
+        }
+      },
+      "documentation":"<p/>"
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[a-zA-Z+-=._:/]+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource that the tag is associated with.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The list of tag keys and values that must be associated with the resource. You can associate tag keys only, tags (key and values) only, or a combination of tag keys and tags.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The code to identify the service.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The code to identify the quota.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p> Advice to clients on when the call can be safely retried.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>Request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "TierLevel":{
+      "type":"string",
+      "enum":[
+        "BASIC",
+        "STANDARD"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The key values of the tag.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateChannelInput":{
+      "type":"structure",
+      "required":[
+        "spaceId",
+        "channelId",
+        "channelName"
+      ],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of the private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "channelId":{
+          "shape":"ChannelId",
+          "documentation":"<p>The unique ID of the private re:Post channel.</p>",
+          "location":"uri",
+          "locationName":"channelId"
+        },
+        "channelName":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name for the channel. This must be unique per private re:Post.</p>"
+        },
+        "channelDescription":{
+          "shape":"ChannelDescription",
+          "documentation":"<p>A description for the channel. This is used only to help you identify this channel.</p>"
+        }
+      }
+    },
+    "UpdateChannelOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateSpaceInput":{
+      "type":"structure",
+      "required":["spaceId"],
+      "members":{
+        "spaceId":{
+          "shape":"SpaceId",
+          "documentation":"<p>The unique ID of this private re:Post.</p>",
+          "location":"uri",
+          "locationName":"spaceId"
+        },
+        "description":{
+          "shape":"SpaceDescription",
+          "documentation":"<p>A description for the private re:Post. This is used only to help you identify this private re:Post.</p>"
+        },
+        "tier":{
+          "shape":"TierLevel",
+          "documentation":"<p>The pricing tier of this private re:Post.</p>"
+        },
+        "roleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The IAM role that grants permissions to the private re:Post to convert unanswered questions into AWS support tickets.</p>"
+        },
+        "supportedEmailDomains":{
+          "shape":"SupportedEmailDomainsParameters",
+          "documentation":"<p/>"
+        }
+      }
+    },
+    "Url":{"type":"string"},
+    "UserAdmins":{
+      "type":"list",
+      "member":{"shape":"AdminId"}
+    },
+    "UserCount":{
+      "type":"integer",
+      "box":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason why the request failed validation.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The field that caused the error, if applicable.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>Message describing why the field failed validation.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The name of the field.</p>"
+        }
+      },
+      "documentation":"<p>Stores information about a field that’s passed inside a request that resulted in an exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "VanityDomainStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "APPROVED",
+        "UNAPPROVED"
+      ]
+    }
+  },
+  "documentation":"<p>AWS re:Post Private is a private version of AWS re:Post for enterprises with Enterprise Support or Enterprise On-Ramp Support plans. It provides access to knowledge and experts to accelerate cloud adoption and increase developer productivity. With your organization-specific private re:Post, you can build an organization-specific developer community that drives efficiencies at scale and provides access to valuable knowledge resources. Additionally, re:Post Private centralizes trusted AWS technical content and offers private discussion forums to improve how your teams collaborate internally and with AWS to remove technical obstacles, accelerate innovation, and scale more efficiently in the cloud.</p>"
+}

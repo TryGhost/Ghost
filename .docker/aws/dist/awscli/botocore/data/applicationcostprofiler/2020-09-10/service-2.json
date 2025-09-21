@@ -1,0 +1,524 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-09-10",
+    "endpointPrefix":"application-cost-profiler",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Application Cost Profiler",
+    "serviceId":"ApplicationCostProfiler",
+    "signatureVersion":"v4",
+    "signingName":"application-cost-profiler",
+    "uid":"AWSApplicationCostProfiler-2020-09-10",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "DeleteReportDefinition":{
+      "name":"DeleteReportDefinition",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/reportDefinition/{reportId}"
+      },
+      "input":{"shape":"DeleteReportDefinitionRequest"},
+      "output":{"shape":"DeleteReportDefinitionResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified report definition in AWS Application Cost Profiler. This stops the report from being generated.</p>"
+    },
+    "GetReportDefinition":{
+      "name":"GetReportDefinition",
+      "http":{
+        "method":"GET",
+        "requestUri":"/reportDefinition/{reportId}"
+      },
+      "input":{"shape":"GetReportDefinitionRequest"},
+      "output":{"shape":"GetReportDefinitionResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves the definition of a report already configured in AWS Application Cost Profiler.</p>"
+    },
+    "ImportApplicationUsage":{
+      "name":"ImportApplicationUsage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/importApplicationUsage"
+      },
+      "input":{"shape":"ImportApplicationUsageRequest"},
+      "output":{"shape":"ImportApplicationUsageResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Ingests application usage data from Amazon Simple Storage Service (Amazon S3).</p> <p>The data must already exist in the S3 location. As part of the action, AWS Application Cost Profiler copies the object from your S3 bucket to an S3 bucket owned by Amazon for processing asynchronously.</p>"
+    },
+    "ListReportDefinitions":{
+      "name":"ListReportDefinitions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/reportDefinition"
+      },
+      "input":{"shape":"ListReportDefinitionsRequest"},
+      "output":{"shape":"ListReportDefinitionsResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Retrieves a list of all reports and their configurations for your AWS account.</p> <p>The maximum number of reports is one.</p>"
+    },
+    "PutReportDefinition":{
+      "name":"PutReportDefinition",
+      "http":{
+        "method":"POST",
+        "requestUri":"/reportDefinition"
+      },
+      "input":{"shape":"PutReportDefinitionRequest"},
+      "output":{"shape":"PutReportDefinitionResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Creates the report definition for a report in Application Cost Profiler.</p>"
+    },
+    "UpdateReportDefinition":{
+      "name":"UpdateReportDefinition",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/reportDefinition/{reportId}"
+      },
+      "input":{"shape":"UpdateReportDefinitionRequest"},
+      "output":{"shape":"UpdateReportDefinitionResult"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates existing report in AWS Application Cost Profiler.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have permission to perform this action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "DeleteReportDefinitionRequest":{
+      "type":"structure",
+      "required":["reportId"],
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>Required. ID of the report to delete.</p>",
+          "location":"uri",
+          "locationName":"reportId"
+        }
+      }
+    },
+    "DeleteReportDefinitionResult":{
+      "type":"structure",
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>ID of the report that was deleted.</p>"
+        }
+      }
+    },
+    "ErrorMessage":{"type":"string"},
+    "Format":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "PARQUET"
+      ]
+    },
+    "GetReportDefinitionRequest":{
+      "type":"structure",
+      "required":["reportId"],
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>ID of the report to retrieve.</p>",
+          "location":"uri",
+          "locationName":"reportId"
+        }
+      }
+    },
+    "GetReportDefinitionResult":{
+      "type":"structure",
+      "required":[
+        "reportId",
+        "reportDescription",
+        "reportFrequency",
+        "format",
+        "destinationS3Location",
+        "createdAt",
+        "lastUpdated"
+      ],
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>ID of the report retrieved.</p>"
+        },
+        "reportDescription":{
+          "shape":"ReportDescription",
+          "documentation":"<p>Description of the report.</p>"
+        },
+        "reportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Cadence used to generate the report.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Format of the generated report.</p>"
+        },
+        "destinationS3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>Amazon Simple Storage Service (Amazon S3) location where the report is uploaded.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Timestamp (milliseconds) when this report definition was created.</p>"
+        },
+        "lastUpdated":{
+          "shape":"Timestamp",
+          "documentation":"<p>Timestamp (milliseconds) when this report definition was last updated.</p>"
+        }
+      }
+    },
+    "ImportApplicationUsageRequest":{
+      "type":"structure",
+      "required":["sourceS3Location"],
+      "members":{
+        "sourceS3Location":{
+          "shape":"SourceS3Location",
+          "documentation":"<p>Amazon S3 location to import application usage data from.</p>"
+        }
+      }
+    },
+    "ImportApplicationUsageResult":{
+      "type":"structure",
+      "required":["importId"],
+      "members":{
+        "importId":{
+          "shape":"ImportId",
+          "documentation":"<p>ID of the import request.</p>"
+        }
+      }
+    },
+    "ImportId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[0-9A-Za-z\\.\\-_]*"
+    },
+    "Integer":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An internal server error occurred. Retry your request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "ListReportDefinitionsRequest":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"Token",
+          "documentation":"<p>The token value from a previous call to access the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum number of results to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListReportDefinitionsResult":{
+      "type":"structure",
+      "members":{
+        "reportDefinitions":{
+          "shape":"ReportDefinitionList",
+          "documentation":"<p>The retrieved reports.</p>"
+        },
+        "nextToken":{
+          "shape":"Token",
+          "documentation":"<p>The value of the next token, if it exists. Null if there are no more results.</p>"
+        }
+      }
+    },
+    "PutReportDefinitionRequest":{
+      "type":"structure",
+      "required":[
+        "reportId",
+        "reportDescription",
+        "reportFrequency",
+        "format",
+        "destinationS3Location"
+      ],
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>Required. ID of the report. You can choose any valid string matching the pattern for the ID.</p>"
+        },
+        "reportDescription":{
+          "shape":"ReportDescription",
+          "documentation":"<p>Required. Description of the report.</p>"
+        },
+        "reportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Required. The cadence to generate the report.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Required. The format to use for the generated report.</p>"
+        },
+        "destinationS3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>Required. Amazon Simple Storage Service (Amazon S3) location where Application Cost Profiler uploads the report.</p>"
+        }
+      }
+    },
+    "PutReportDefinitionResult":{
+      "type":"structure",
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>ID of the report.</p>"
+        }
+      }
+    },
+    "ReportDefinition":{
+      "type":"structure",
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>The ID of the report.</p>"
+        },
+        "reportDescription":{
+          "shape":"ReportDescription",
+          "documentation":"<p>Description of the report</p>"
+        },
+        "reportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>The cadence at which the report is generated.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>The format used for the generated reports.</p>"
+        },
+        "destinationS3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The location in Amazon Simple Storage Service (Amazon S3) the reports should be saved to.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Timestamp (milliseconds) when this report definition was created.</p>"
+        },
+        "lastUpdatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>Timestamp (milliseconds) when this report definition was last updated.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of a report in AWS Application Cost Profiler.</p>"
+    },
+    "ReportDefinitionList":{
+      "type":"list",
+      "member":{"shape":"ReportDefinition"}
+    },
+    "ReportDescription":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "ReportFrequency":{
+      "type":"string",
+      "enum":[
+        "MONTHLY",
+        "DAILY",
+        "ALL"
+      ]
+    },
+    "ReportId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[0-9A-Za-z\\.\\-_]+$"
+    },
+    "S3Bucket":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"(?=^.{3,63}$)(?!^(\\d+\\.)+\\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])$)"
+    },
+    "S3BucketRegion":{
+      "type":"string",
+      "enum":[
+        "ap-east-1",
+        "me-south-1",
+        "eu-south-1",
+        "af-south-1"
+      ]
+    },
+    "S3Key":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "S3Location":{
+      "type":"structure",
+      "required":[
+        "bucket",
+        "prefix"
+      ],
+      "members":{
+        "bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>Name of the S3 bucket.</p>"
+        },
+        "prefix":{
+          "shape":"S3Prefix",
+          "documentation":"<p>Prefix for the location to write to.</p>"
+        }
+      },
+      "documentation":"<p>Represents the Amazon Simple Storage Service (Amazon S3) location where AWS Application Cost Profiler reports are generated and then written to.</p>"
+    },
+    "S3Prefix":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Your request exceeds one or more of the service quotas.</p>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "SourceS3Location":{
+      "type":"structure",
+      "required":[
+        "bucket",
+        "key"
+      ],
+      "members":{
+        "bucket":{
+          "shape":"S3Bucket",
+          "documentation":"<p>Name of the bucket.</p>"
+        },
+        "key":{
+          "shape":"S3Key",
+          "documentation":"<p>Key of the object.</p>"
+        },
+        "region":{
+          "shape":"S3BucketRegion",
+          "documentation":"<p>Region of the bucket. Only required for Regions that are disabled by default. For more infomration about Regions that are disabled by default, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/rande-manage.html#rande-manage-enable\"> Enabling a Region</a> in the <i>AWS General Reference guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Represents the Amazon Simple Storage Service (Amazon S3) location where usage data is read from.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The calls to AWS Application Cost Profiler API are throttled. The request was denied.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "Token":{
+      "type":"string",
+      "max":102400,
+      "min":1,
+      "pattern":"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "UpdateReportDefinitionRequest":{
+      "type":"structure",
+      "required":[
+        "reportId",
+        "reportDescription",
+        "reportFrequency",
+        "format",
+        "destinationS3Location"
+      ],
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>Required. ID of the report to update.</p>",
+          "location":"uri",
+          "locationName":"reportId"
+        },
+        "reportDescription":{
+          "shape":"ReportDescription",
+          "documentation":"<p>Required. Description of the report.</p>"
+        },
+        "reportFrequency":{
+          "shape":"ReportFrequency",
+          "documentation":"<p>Required. The cadence to generate the report.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Required. The format to use for the generated report.</p>"
+        },
+        "destinationS3Location":{
+          "shape":"S3Location",
+          "documentation":"<p>Required. Amazon Simple Storage Service (Amazon S3) location where Application Cost Profiler uploads the report.</p>"
+        }
+      }
+    },
+    "UpdateReportDefinitionResult":{
+      "type":"structure",
+      "members":{
+        "reportId":{
+          "shape":"ReportId",
+          "documentation":"<p>ID of the report.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints for the API.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    }
+  },
+  "documentation":"<p>This reference provides descriptions of the AWS Application Cost Profiler API.</p> <p>The AWS Application Cost Profiler API provides programmatic access to view, create, update, and delete application cost report definitions, as well as to import your usage data into the Application Cost Profiler service.</p> <p>For more information about using this service, see the <a href=\"https://docs.aws.amazon.com/application-cost-profiler/latest/userguide/introduction.html\">AWS Application Cost Profiler User Guide</a>.</p>"
+}

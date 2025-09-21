@@ -1,0 +1,859 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "endpointPrefix":"license-manager-linux-subscriptions",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS License Manager Linux Subscriptions",
+    "serviceId":"License Manager Linux Subscriptions",
+    "signatureVersion":"v4",
+    "signingName":"license-manager-linux-subscriptions",
+    "uid":"license-manager-linux-subscriptions-2018-05-10",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "DeregisterSubscriptionProvider":{
+      "name":"DeregisterSubscriptionProvider",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/DeregisterSubscriptionProvider",
+        "responseCode":200
+      },
+      "input":{"shape":"DeregisterSubscriptionProviderRequest"},
+      "output":{"shape":"DeregisterSubscriptionProviderResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Remove a third-party subscription provider from the Bring Your Own License (BYOL) subscriptions registered to your account.</p>",
+      "idempotent":true
+    },
+    "GetRegisteredSubscriptionProvider":{
+      "name":"GetRegisteredSubscriptionProvider",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/GetRegisteredSubscriptionProvider",
+        "responseCode":200
+      },
+      "input":{"shape":"GetRegisteredSubscriptionProviderRequest"},
+      "output":{"shape":"GetRegisteredSubscriptionProviderResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Get details for a Bring Your Own License (BYOL) subscription that's registered to your account.</p>",
+      "idempotent":true
+    },
+    "GetServiceSettings":{
+      "name":"GetServiceSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/GetServiceSettings",
+        "responseCode":200
+      },
+      "input":{"shape":"GetServiceSettingsRequest"},
+      "output":{"shape":"GetServiceSettingsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the Linux subscriptions service settings for your account.</p>",
+      "idempotent":true
+    },
+    "ListLinuxSubscriptionInstances":{
+      "name":"ListLinuxSubscriptionInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/ListLinuxSubscriptionInstances",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLinuxSubscriptionInstancesRequest"},
+      "output":{"shape":"ListLinuxSubscriptionInstancesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the running Amazon EC2 instances that were discovered with commercial Linux subscriptions.</p>",
+      "idempotent":true
+    },
+    "ListLinuxSubscriptions":{
+      "name":"ListLinuxSubscriptions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/ListLinuxSubscriptions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLinuxSubscriptionsRequest"},
+      "output":{"shape":"ListLinuxSubscriptionsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the Linux subscriptions that have been discovered. If you have linked your organization, the returned results will include data aggregated across your accounts in Organizations.</p>",
+      "idempotent":true
+    },
+    "ListRegisteredSubscriptionProviders":{
+      "name":"ListRegisteredSubscriptionProviders",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/ListRegisteredSubscriptionProviders",
+        "responseCode":200
+      },
+      "input":{"shape":"ListRegisteredSubscriptionProvidersRequest"},
+      "output":{"shape":"ListRegisteredSubscriptionProvidersResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List Bring Your Own License (BYOL) subscription registration resources for your account.</p>",
+      "idempotent":true
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List the metadata tags that are assigned to the specified Amazon Web Services resource.</p>"
+    },
+    "RegisterSubscriptionProvider":{
+      "name":"RegisterSubscriptionProvider",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/RegisterSubscriptionProvider",
+        "responseCode":200
+      },
+      "input":{"shape":"RegisterSubscriptionProviderRequest"},
+      "output":{"shape":"RegisterSubscriptionProviderResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Register the supported third-party subscription provider for your Bring Your Own License (BYOL) subscription.</p>",
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Add metadata tags to the specified Amazon Web Services resource.</p>",
+      "idempotent":true
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Remove one or more metadata tag from the specified Amazon Web Services resource.</p>",
+      "idempotent":true
+    },
+    "UpdateServiceSettings":{
+      "name":"UpdateServiceSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/subscription/UpdateServiceSettings",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateServiceSettingsRequest"},
+      "output":{"shape":"UpdateServiceSettingsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates the service settings for Linux subscriptions.</p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BoxInteger":{
+      "type":"integer",
+      "box":true
+    },
+    "BoxLong":{
+      "type":"long",
+      "box":true
+    },
+    "DeregisterSubscriptionProviderRequest":{
+      "type":"structure",
+      "required":["SubscriptionProviderArn"],
+      "members":{
+        "SubscriptionProviderArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the subscription provider resource to deregister.</p>"
+        }
+      }
+    },
+    "DeregisterSubscriptionProviderResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Filter":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The type of name to filter by.</p>"
+        },
+        "Operator":{
+          "shape":"Operator",
+          "documentation":"<p>An operator for filtering results.</p>"
+        },
+        "Values":{
+          "shape":"StringList",
+          "documentation":"<p>One or more values for the name to filter by.</p>"
+        }
+      },
+      "documentation":"<p>A filter object that is used to return more specific results from a describe operation. Filters can be used to match a set of resources by specific criteria.</p>"
+    },
+    "FilterList":{
+      "type":"list",
+      "member":{"shape":"Filter"}
+    },
+    "GetRegisteredSubscriptionProviderRequest":{
+      "type":"structure",
+      "required":["SubscriptionProviderArn"],
+      "members":{
+        "SubscriptionProviderArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the BYOL registration resource to get details for.</p>"
+        }
+      }
+    },
+    "GetRegisteredSubscriptionProviderResponse":{
+      "type":"structure",
+      "members":{
+        "LastSuccessfulDataRetrievalTime":{
+          "shape":"String",
+          "documentation":"<p>The timestamp from the last time License Manager retrieved subscription details from your registered third-party Linux subscription provider.</p>"
+        },
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the third-party access secret stored in Secrets Manager for the BYOL registration resource specified in the request.</p>"
+        },
+        "SubscriptionProviderArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the BYOL registration resource specified in the request.</p>"
+        },
+        "SubscriptionProviderSource":{
+          "shape":"SubscriptionProviderSource",
+          "documentation":"<p>The subscription provider for the BYOL registration resource specified in the request.</p>"
+        },
+        "SubscriptionProviderStatus":{
+          "shape":"SubscriptionProviderStatus",
+          "documentation":"<p>The status of the Linux subscription provider access token from the last successful subscription data request.</p>"
+        },
+        "SubscriptionProviderStatusMessage":{
+          "shape":"String",
+          "documentation":"<p>The detailed message from your subscription provider token status.</p>"
+        }
+      }
+    },
+    "GetServiceSettingsRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "GetServiceSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "HomeRegions":{
+          "shape":"StringList",
+          "documentation":"<p>The Region in which License Manager displays the aggregated data for Linux subscriptions.</p>"
+        },
+        "LinuxSubscriptionsDiscovery":{
+          "shape":"LinuxSubscriptionsDiscovery",
+          "documentation":"<p>Lists if discovery has been enabled for Linux subscriptions.</p>"
+        },
+        "LinuxSubscriptionsDiscoverySettings":{
+          "shape":"LinuxSubscriptionsDiscoverySettings",
+          "documentation":"<p>Lists the settings defined for Linux subscriptions discovery. The settings include if Organizations integration has been enabled, and which Regions data will be aggregated from.</p>"
+        },
+        "Status":{
+          "shape":"Status",
+          "documentation":"<p>Indicates the status of Linux subscriptions settings being applied.</p>"
+        },
+        "StatusMessage":{
+          "shape":"StringMap",
+          "documentation":"<p>A message which details the Linux subscriptions service settings current status.</p>"
+        }
+      }
+    },
+    "Instance":{
+      "type":"structure",
+      "members":{
+        "AccountID":{
+          "shape":"String",
+          "documentation":"<p>The account ID which owns the instance.</p>"
+        },
+        "AmiId":{
+          "shape":"String",
+          "documentation":"<p>The AMI ID used to launch the instance.</p>"
+        },
+        "DualSubscription":{
+          "shape":"String",
+          "documentation":"<p>Indicates that you have two different license subscriptions for the same software on your instance.</p>"
+        },
+        "InstanceID":{
+          "shape":"String",
+          "documentation":"<p>The instance ID of the resource.</p>"
+        },
+        "InstanceType":{
+          "shape":"String",
+          "documentation":"<p>The instance type of the resource.</p>"
+        },
+        "LastUpdatedTime":{
+          "shape":"String",
+          "documentation":"<p>The time in which the last discovery updated the instance details.</p>"
+        },
+        "OsVersion":{
+          "shape":"String",
+          "documentation":"<p>The operating system software version that runs on your instance.</p>"
+        },
+        "ProductCode":{
+          "shape":"ProductCodeList",
+          "documentation":"<p>The product code for the instance. For more information, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/linux-subscriptions-usage-operation.html\">Usage operation values</a> in the <i>License Manager User Guide</i> .</p>"
+        },
+        "Region":{
+          "shape":"String",
+          "documentation":"<p>The Region the instance is running in.</p>"
+        },
+        "RegisteredWithSubscriptionProvider":{
+          "shape":"String",
+          "documentation":"<p>Indicates that your instance uses a BYOL license subscription from a third-party Linux subscription provider that you've registered with License Manager.</p>"
+        },
+        "Status":{
+          "shape":"String",
+          "documentation":"<p>The status of the instance.</p>"
+        },
+        "SubscriptionName":{
+          "shape":"String",
+          "documentation":"<p>The name of the license subscription that the instance uses.</p>"
+        },
+        "SubscriptionProviderCreateTime":{
+          "shape":"String",
+          "documentation":"<p>The timestamp when you registered the third-party Linux subscription provider for the subscription that the instance uses.</p>"
+        },
+        "SubscriptionProviderUpdateTime":{
+          "shape":"String",
+          "documentation":"<p>The timestamp from the last time that the instance synced with the registered third-party Linux subscription provider.</p>"
+        },
+        "UsageOperation":{
+          "shape":"String",
+          "documentation":"<p>The usage operation of the instance. For more information, see For more information, see <a href=\"https://docs.aws.amazon.com/license-manager/latest/userguide/linux-subscriptions-usage-operation.html\">Usage operation values</a> in the <i>License Manager User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Details discovered information about a running instance using Linux subscriptions.</p>"
+    },
+    "InstanceList":{
+      "type":"list",
+      "member":{"shape":"Instance"}
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>An exception occurred with the service.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "LinuxSubscriptionsDiscovery":{
+      "type":"string",
+      "enum":[
+        "Enabled",
+        "Disabled"
+      ]
+    },
+    "LinuxSubscriptionsDiscoverySettings":{
+      "type":"structure",
+      "required":[
+        "OrganizationIntegration",
+        "SourceRegions"
+      ],
+      "members":{
+        "OrganizationIntegration":{
+          "shape":"OrganizationIntegration",
+          "documentation":"<p>Details if you have enabled resource discovery across your accounts in Organizations.</p>"
+        },
+        "SourceRegions":{
+          "shape":"StringList",
+          "documentation":"<p>The Regions in which to discover data for Linux subscriptions.</p>"
+        }
+      },
+      "documentation":"<p>Lists the settings defined for discovering Linux subscriptions.</p>"
+    },
+    "ListLinuxSubscriptionInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>An array of structures that you can use to filter the results by your specified criteria. For example, you can specify <code>Region</code> in the <code>Name</code>, with the <code>contains</code> operator to list all subscriptions that match a partial string in the <code>Value</code>, such as <code>us-west</code>.</p> <p>For each filter, you can specify one of the following values for the <code>Name</code> key to streamline results:</p> <ul> <li> <p> <code>AccountID</code> </p> </li> <li> <p> <code>AmiID</code> </p> </li> <li> <p> <code>DualSubscription</code> </p> </li> <li> <p> <code>InstanceID</code> </p> </li> <li> <p> <code>InstanceType</code> </p> </li> <li> <p> <code>ProductCode</code> </p> </li> <li> <p> <code>Region</code> </p> </li> <li> <p> <code>Status</code> </p> </li> <li> <p> <code>UsageOperation</code> </p> </li> </ul> <p>For each filter, you can use one of the following <code>Operator</code> values to define the behavior of the filter:</p> <ul> <li> <p> <code>contains</code> </p> </li> <li> <p> <code>equals</code> </p> </li> <li> <p> <code>Notequal</code> </p> </li> </ul>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum items to return in a request.</p>"
+        },
+        "NextToken":{
+          "shape":"ListLinuxSubscriptionInstancesRequestNextTokenString",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      },
+      "documentation":"<p>NextToken length limit is half of ddb accepted limit. Increase this limit if parameters in request increases.</p>"
+    },
+    "ListLinuxSubscriptionInstancesRequestNextTokenString":{
+      "type":"string",
+      "max":16384,
+      "min":1
+    },
+    "ListLinuxSubscriptionInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "Instances":{
+          "shape":"InstanceList",
+          "documentation":"<p>An array that contains instance objects.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        }
+      }
+    },
+    "ListLinuxSubscriptionsRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{
+          "shape":"FilterList",
+          "documentation":"<p>An array of structures that you can use to filter the results to those that match one or more sets of key-value pairs that you specify. For example, you can filter by the name of <code>Subscription</code> with an optional operator to see subscriptions that match, partially match, or don't match a certain subscription's name.</p> <p>The valid names for this filter are:</p> <ul> <li> <p> <code>Subscription</code> </p> </li> </ul> <p>The valid Operators for this filter are:</p> <ul> <li> <p> <code>contains</code> </p> </li> <li> <p> <code>equals</code> </p> </li> <li> <p> <code>Notequal</code> </p> </li> </ul>"
+        },
+        "MaxResults":{
+          "shape":"BoxInteger",
+          "documentation":"<p>The maximum items to return in a request.</p>"
+        },
+        "NextToken":{
+          "shape":"ListLinuxSubscriptionsRequestNextTokenString",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        }
+      },
+      "documentation":"<p>NextToken length limit is half of ddb accepted limit. Increase this limit if parameters in request increases.</p>"
+    },
+    "ListLinuxSubscriptionsRequestNextTokenString":{
+      "type":"string",
+      "max":16384,
+      "min":1
+    },
+    "ListLinuxSubscriptionsResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        },
+        "Subscriptions":{
+          "shape":"SubscriptionList",
+          "documentation":"<p>An array that contains subscription objects.</p>"
+        }
+      }
+    },
+    "ListRegisteredSubscriptionProvidersRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"ListRegisteredSubscriptionProvidersRequestMaxResultsInteger",
+          "documentation":"<p>The maximum items to return in a request.</p>"
+        },
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>A token to specify where to start paginating. This is the nextToken from a previously truncated response.</p>"
+        },
+        "SubscriptionProviderSources":{
+          "shape":"SubscriptionProviderSourceList",
+          "documentation":"<p>To filter your results, specify which subscription providers to return in the list.</p>"
+        }
+      }
+    },
+    "ListRegisteredSubscriptionProvidersRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListRegisteredSubscriptionProvidersResponse":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"String",
+          "documentation":"<p>The next token used for paginated responses. When this field isn't empty, there are additional elements that the service hasn't included in this request. Use this token with the next request to retrieve additional objects.</p>"
+        },
+        "RegisteredSubscriptionProviders":{
+          "shape":"RegisteredSubscriptionProviderList",
+          "documentation":"<p>The list of BYOL registration resources that fit the criteria you specified in the request.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which to list metadata tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The metadata tags for the requested resource.</p>"
+        }
+      }
+    },
+    "Operator":{
+      "type":"string",
+      "enum":[
+        "Equal",
+        "NotEqual",
+        "Contains"
+      ],
+      "max":20,
+      "min":1
+    },
+    "OrganizationIntegration":{
+      "type":"string",
+      "enum":[
+        "Enabled",
+        "Disabled"
+      ]
+    },
+    "ProductCodeList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "RegisterSubscriptionProviderRequest":{
+      "type":"structure",
+      "required":[
+        "SecretArn",
+        "SubscriptionProviderSource"
+      ],
+      "members":{
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the secret where you've stored your subscription provider's access token. For RHEL subscriptions managed through the Red Hat Subscription Manager (RHSM), the secret contains your Red Hat Offline token.</p>"
+        },
+        "SubscriptionProviderSource":{
+          "shape":"SubscriptionProviderSource",
+          "documentation":"<p>The supported Linux subscription provider to register.</p>"
+        },
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p>The metadata tags to assign to your registered Linux subscription provider resource.</p>"
+        }
+      }
+    },
+    "RegisterSubscriptionProviderResponse":{
+      "type":"structure",
+      "members":{
+        "SubscriptionProviderArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Linux subscription provider resource that you registered.</p>"
+        },
+        "SubscriptionProviderSource":{
+          "shape":"SubscriptionProviderSource",
+          "documentation":"<p>The Linux subscription provider that you registered.</p>"
+        },
+        "SubscriptionProviderStatus":{
+          "shape":"SubscriptionProviderStatus",
+          "documentation":"<p>Indicates the status of the registration action for the Linux subscription provider that you requested.</p>"
+        }
+      }
+    },
+    "RegisteredSubscriptionProvider":{
+      "type":"structure",
+      "members":{
+        "LastSuccessfulDataRetrievalTime":{
+          "shape":"String",
+          "documentation":"<p>The timestamp from the last time that License Manager accessed third-party subscription data for your account from your registered Linux subscription provider.</p>"
+        },
+        "SecretArn":{
+          "shape":"SecretArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Secrets Manager secret that stores your registered Linux subscription provider access token. For RHEL account subscriptions, this is the offline token.</p>"
+        },
+        "SubscriptionProviderArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Linux subscription provider resource that you registered.</p>"
+        },
+        "SubscriptionProviderSource":{
+          "shape":"SubscriptionProviderSource",
+          "documentation":"<p>A supported third-party Linux subscription provider. License Manager currently supports Red Hat subscriptions.</p>"
+        },
+        "SubscriptionProviderStatus":{
+          "shape":"SubscriptionProviderStatus",
+          "documentation":"<p>Indicates the status of your registered Linux subscription provider access token from the last time License Manager retrieved subscription data. For RHEL account subscriptions, this is the status of the offline token.</p>"
+        },
+        "SubscriptionProviderStatusMessage":{
+          "shape":"String",
+          "documentation":"<p>A detailed message that's associated with your BYOL subscription provider token status.</p>"
+        }
+      },
+      "documentation":"<p>A third-party provider for operating system (OS) platform software and license subscriptions, such as Red Hat. When you register a third-party Linux subscription provider, License Manager can get subscription data from the registered provider.</p>"
+    },
+    "RegisteredSubscriptionProviderList":{
+      "type":"list",
+      "member":{"shape":"RegisteredSubscriptionProvider"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>Unable to find the requested Amazon Web Services resource.</p>",
+      "exception":true
+    },
+    "SecretArn":{
+      "type":"string",
+      "pattern":"^arn:[a-z0-9-\\.]{1,63}:secretsmanager:[a-z0-9-\\.]{0,63}:[a-z0-9-\\.]{0,63}:secret:[^/]{1,1023}$"
+    },
+    "Status":{
+      "type":"string",
+      "enum":[
+        "InProgress",
+        "Completed",
+        "Successful",
+        "Failed"
+      ]
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"StringListMemberString"},
+      "max":100,
+      "min":1
+    },
+    "StringListMemberString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "StringMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "Subscription":{
+      "type":"structure",
+      "members":{
+        "InstanceCount":{
+          "shape":"BoxLong",
+          "documentation":"<p>The total amount of running instances using this subscription.</p>"
+        },
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the subscription.</p>"
+        },
+        "Type":{
+          "shape":"String",
+          "documentation":"<p>The type of subscription. The type can be subscription-included with Amazon EC2, Bring Your Own Subscription model (BYOS), or from the Amazon Web Services Marketplace. Certain subscriptions may use licensing from the Amazon Web Services Marketplace as well as OS licensing from Amazon EC2 or BYOS.</p>"
+        }
+      },
+      "documentation":"<p>An object which details a discovered Linux subscription.</p>"
+    },
+    "SubscriptionList":{
+      "type":"list",
+      "member":{"shape":"Subscription"}
+    },
+    "SubscriptionProviderArn":{
+      "type":"string",
+      "pattern":"^arn:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,63}:[a-z0-9-\\.]{1,510}/[a-z0-9-\\.]{1,510}$"
+    },
+    "SubscriptionProviderSource":{
+      "type":"string",
+      "enum":["RedHat"]
+    },
+    "SubscriptionProviderSourceList":{
+      "type":"list",
+      "member":{"shape":"SubscriptionProviderSource"}
+    },
+    "SubscriptionProviderStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "INVALID",
+        "PENDING"
+      ]
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"String"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Web Services resource to which to add the specified metadata tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"Tags",
+          "documentation":"<p>The metadata tags to assign to the Amazon Web Services resource. Tags are formatted as key value pairs.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"},
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"SubscriptionProviderArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Amazon Web Services resource to remove the metadata tags from.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of metadata tag keys to remove from the requested resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateServiceSettingsRequest":{
+      "type":"structure",
+      "required":[
+        "LinuxSubscriptionsDiscovery",
+        "LinuxSubscriptionsDiscoverySettings"
+      ],
+      "members":{
+        "AllowUpdate":{
+          "shape":"Boolean",
+          "documentation":"<p>Describes if updates are allowed to the service settings for Linux subscriptions. If you allow updates, you can aggregate Linux subscription data in more than one home Region.</p>"
+        },
+        "LinuxSubscriptionsDiscovery":{
+          "shape":"LinuxSubscriptionsDiscovery",
+          "documentation":"<p>Describes if the discovery of Linux subscriptions is enabled.</p>"
+        },
+        "LinuxSubscriptionsDiscoverySettings":{
+          "shape":"LinuxSubscriptionsDiscoverySettings",
+          "documentation":"<p>The settings defined for Linux subscriptions discovery. The settings include if Organizations integration has been enabled, and which Regions data will be aggregated from.</p>"
+        }
+      }
+    },
+    "UpdateServiceSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "HomeRegions":{
+          "shape":"StringList",
+          "documentation":"<p>The Region in which License Manager displays the aggregated data for Linux subscriptions.</p>"
+        },
+        "LinuxSubscriptionsDiscovery":{
+          "shape":"LinuxSubscriptionsDiscovery",
+          "documentation":"<p>Lists if discovery has been enabled for Linux subscriptions.</p>"
+        },
+        "LinuxSubscriptionsDiscoverySettings":{
+          "shape":"LinuxSubscriptionsDiscoverySettings",
+          "documentation":"<p>The settings defined for Linux subscriptions discovery. The settings include if Organizations integration has been enabled, and which Regions data will be aggregated from.</p>"
+        },
+        "Status":{
+          "shape":"Status",
+          "documentation":"<p>Indicates the status of Linux subscriptions settings being applied.</p>"
+        },
+        "StatusMessage":{
+          "shape":"StringMap",
+          "documentation":"<p>A message which details the Linux subscriptions service settings current status.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The provided input is not valid. Try your request again.</p>",
+      "exception":true
+    }
+  },
+  "documentation":"<p>With License Manager, you can discover and track your commercial Linux subscriptions on running Amazon EC2 instances.</p>"
+}

@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "resources": {
+    "PlaybackConfiguration": {
+      "operation": "ListPlaybackConfigurations",
+      "resourceIdentifier": {
+        "AdDecisionServerUrl": "Items[].AdDecisionServerUrl",
+        "CdnConfiguration": "Items[].CdnConfiguration",
+        "Name": "Items[].Name",
+        "SlateAdUrl": "Items[].SlateAdUrl",
+        "VideoContentSourceUrl": "Items[].VideoContentSourceUrl"
+      }
+    }
+  },
+  "operations": {
+    "DeletePlaybackConfiguration": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetPlaybackConfiguration": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "PutPlaybackConfiguration": {
+      "AdDecisionServerUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "AdDecisionServerUrl"
+          }
+        ]
+      },
+      "CdnConfiguration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "CdnConfiguration"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      },
+      "SlateAdUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "SlateAdUrl"
+          }
+        ]
+      },
+      "VideoContentSourceUrl": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PlaybackConfiguration",
+            "resourceIdentifier": "VideoContentSourceUrl"
+          }
+        ]
+      }
+    }
+  }
+}

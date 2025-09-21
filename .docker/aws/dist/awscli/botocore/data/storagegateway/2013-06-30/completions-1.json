@@ -1,0 +1,685 @@
+{
+  "version": "1.0",
+  "resources": {
+    "TapeArchive": {
+      "operation": "DescribeTapeArchives",
+      "resourceIdentifier": {
+        "TapeARN": "TapeArchives[].TapeARN",
+        "KMSKey": "TapeArchives[].KMSKey"
+      }
+    },
+    "FileShare": {
+      "operation": "ListFileShares",
+      "resourceIdentifier": {
+        "FileShareARN": "FileShareInfoList[].FileShareARN"
+      }
+    },
+    "Gateway": {
+      "operation": "ListGateways",
+      "resourceIdentifier": {
+        "GatewayType": "Gateways[].GatewayType",
+        "GatewayName": "Gateways[].GatewayName"
+      }
+    },
+    "Volume": {
+      "operation": "ListVolumes",
+      "resourceIdentifier": {
+        "VolumeARN": "VolumeInfos[].VolumeARN",
+        "GatewayARN": "VolumeInfos[].GatewayARN"
+      }
+    }
+  },
+  "operations": {
+    "ActivateGateway": {
+      "GatewayName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Gateway",
+            "resourceIdentifier": "GatewayName"
+          }
+        ]
+      },
+      "GatewayType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Gateway",
+            "resourceIdentifier": "GatewayType"
+          }
+        ]
+      }
+    },
+    "AddCache": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "AddUploadBuffer": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "AddWorkingStorage": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "CancelArchival": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      },
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "CancelRetrieval": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      },
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "DeleteBandwidthRateLimit": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DeleteFileShare": {
+      "FileShareARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileShare",
+            "resourceIdentifier": "FileShareARN"
+          }
+        ]
+      }
+    },
+    "DeleteGateway": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DeleteSnapshotSchedule": {
+      "VolumeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "DeleteTape": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      },
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "DeleteTapeArchive": {
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "DeleteVolume": {
+      "VolumeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "DescribeBandwidthRateLimit": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeCache": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeCachediSCSIVolumes": {
+      "VolumeARNs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "DescribeGatewayInformation": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeMaintenanceStartTime": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeSMBSettings": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeSnapshotSchedule": {
+      "VolumeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "DescribeStorediSCSIVolumes": {
+      "VolumeARNs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "DescribeTapeArchives": {
+      "TapeARNs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "DescribeTapeRecoveryPoints": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeTapes": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      },
+      "TapeARNs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "DescribeUploadBuffer": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeVTLDevices": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DescribeWorkingStorage": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "DisableGateway": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "JoinDomain": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "ListFileShares": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "ListLocalDisks": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "ListTapes": {
+      "TapeARNs": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      }
+    },
+    "ListVolumeInitiators": {
+      "VolumeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    },
+    "ListVolumeRecoveryPoints": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "ListVolumes": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "NotifyWhenUploaded": {
+      "FileShareARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileShare",
+            "resourceIdentifier": "FileShareARN"
+          }
+        ]
+      }
+    },
+    "RefreshCache": {
+      "FileShareARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileShare",
+            "resourceIdentifier": "FileShareARN"
+          }
+        ]
+      }
+    },
+    "ResetCache": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "RetrieveTapeArchive": {
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      },
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "RetrieveTapeRecoveryPoint": {
+      "TapeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "TapeARN"
+          }
+        ]
+      },
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "SetLocalConsolePassword": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "SetSMBGuestPassword": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "ShutdownGateway": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "StartGateway": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "UpdateBandwidthRateLimit": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "UpdateGatewayInformation": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      },
+      "GatewayName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Gateway",
+            "resourceIdentifier": "GatewayName"
+          }
+        ]
+      }
+    },
+    "UpdateGatewaySoftwareNow": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "UpdateMaintenanceStartTime": {
+      "GatewayARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "GatewayARN"
+          }
+        ]
+      }
+    },
+    "UpdateNFSFileShare": {
+      "FileShareARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileShare",
+            "resourceIdentifier": "FileShareARN"
+          }
+        ]
+      },
+      "KMSKey": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "KMSKey"
+          }
+        ]
+      }
+    },
+    "UpdateSMBFileShare": {
+      "FileShareARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "FileShare",
+            "resourceIdentifier": "FileShareARN"
+          }
+        ]
+      },
+      "KMSKey": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "TapeArchive",
+            "resourceIdentifier": "KMSKey"
+          }
+        ]
+      }
+    },
+    "UpdateSnapshotSchedule": {
+      "VolumeARN": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Volume",
+            "resourceIdentifier": "VolumeARN"
+          }
+        ]
+      }
+    }
+  }
+}

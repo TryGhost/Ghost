@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "resources": {
+    "CertificateAuthority": {
+      "operation": "ListCertificateAuthorities",
+      "resourceIdentifier": {
+        "Status": "CertificateAuthorities[].Status",
+        "RevocationConfiguration": "CertificateAuthorities[].RevocationConfiguration"
+      }
+    }
+  },
+  "operations": {
+    "UpdateCertificateAuthority": {
+      "RevocationConfiguration": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CertificateAuthority",
+            "resourceIdentifier": "RevocationConfiguration"
+          }
+        ]
+      },
+      "Status": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "CertificateAuthority",
+            "resourceIdentifier": "Status"
+          }
+        ]
+      }
+    }
+  }
+}

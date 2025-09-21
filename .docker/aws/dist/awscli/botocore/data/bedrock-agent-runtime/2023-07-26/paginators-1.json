@@ -1,0 +1,50 @@
+{
+  "pagination": {
+    "Retrieve": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "result_key": "retrievalResults"
+    },
+    "GetAgentMemory": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxItems",
+      "result_key": "memoryContents"
+    },
+    "Rerank": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "result_key": "results"
+    },
+    "ListInvocationSteps": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "invocationStepSummaries"
+    },
+    "ListInvocations": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "invocationSummaries"
+    },
+    "ListSessions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "sessionSummaries"
+    },
+    "ListFlowExecutionEvents": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "flowExecutionEvents"
+    },
+    "ListFlowExecutions": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "flowExecutionSummaries"
+    }
+  }
+}

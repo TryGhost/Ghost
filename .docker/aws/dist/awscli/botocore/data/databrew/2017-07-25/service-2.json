@@ -1,0 +1,4407 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2017-07-25",
+    "endpointPrefix":"databrew",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Glue DataBrew",
+    "serviceId":"DataBrew",
+    "signatureVersion":"v4",
+    "signingName":"databrew",
+    "uid":"databrew-2017-07-25",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "BatchDeleteRecipeVersion":{
+      "name":"BatchDeleteRecipeVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/recipes/{name}/batchDeleteRecipeVersion"
+      },
+      "input":{"shape":"BatchDeleteRecipeVersionRequest"},
+      "output":{"shape":"BatchDeleteRecipeVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes one or more versions of a recipe at a time.</p> <p>The entire request will be rejected if:</p> <ul> <li> <p>The recipe does not exist.</p> </li> <li> <p>There is an invalid version identifier in the list of versions.</p> </li> <li> <p>The version list is empty.</p> </li> <li> <p>The version list size exceeds 50.</p> </li> <li> <p>The version list contains duplicate entries.</p> </li> </ul> <p>The request will complete successfully, but with partial failures, if:</p> <ul> <li> <p>A version does not exist.</p> </li> <li> <p>A version is being used by a job.</p> </li> <li> <p>You specify <code>LATEST_WORKING</code>, but it's being used by a project.</p> </li> <li> <p>The version fails to be deleted.</p> </li> </ul> <p>The <code>LATEST_WORKING</code> version will only be deleted if the recipe has no other versions. If you try to delete <code>LATEST_WORKING</code> while other versions exist (or if they can't be deleted), then <code>LATEST_WORKING</code> will be listed as partial failure in the response.</p>"
+    },
+    "CreateDataset":{
+      "name":"CreateDataset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/datasets"
+      },
+      "input":{"shape":"CreateDatasetRequest"},
+      "output":{"shape":"CreateDatasetResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new DataBrew dataset.</p>"
+    },
+    "CreateProfileJob":{
+      "name":"CreateProfileJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/profileJobs"
+      },
+      "input":{"shape":"CreateProfileJobRequest"},
+      "output":{"shape":"CreateProfileJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new job to analyze a dataset and create its data profile.</p>"
+    },
+    "CreateProject":{
+      "name":"CreateProject",
+      "http":{
+        "method":"POST",
+        "requestUri":"/projects"
+      },
+      "input":{"shape":"CreateProjectRequest"},
+      "output":{"shape":"CreateProjectResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new DataBrew project.</p>"
+    },
+    "CreateRecipe":{
+      "name":"CreateRecipe",
+      "http":{
+        "method":"POST",
+        "requestUri":"/recipes"
+      },
+      "input":{"shape":"CreateRecipeRequest"},
+      "output":{"shape":"CreateRecipeResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new DataBrew recipe.</p>"
+    },
+    "CreateRecipeJob":{
+      "name":"CreateRecipeJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/recipeJobs"
+      },
+      "input":{"shape":"CreateRecipeJobRequest"},
+      "output":{"shape":"CreateRecipeJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new job to transform input data, using steps defined in an existing Glue DataBrew recipe</p>"
+    },
+    "CreateRuleset":{
+      "name":"CreateRuleset",
+      "http":{
+        "method":"POST",
+        "requestUri":"/rulesets"
+      },
+      "input":{"shape":"CreateRulesetRequest"},
+      "output":{"shape":"CreateRulesetResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new ruleset that can be used in a profile job to validate the data quality of a dataset.</p>"
+    },
+    "CreateSchedule":{
+      "name":"CreateSchedule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/schedules"
+      },
+      "input":{"shape":"CreateScheduleRequest"},
+      "output":{"shape":"CreateScheduleResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a new schedule for one or more DataBrew jobs. Jobs can be run at a specific date and time, or at regular intervals.</p>"
+    },
+    "DeleteDataset":{
+      "name":"DeleteDataset",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/datasets/{name}"
+      },
+      "input":{"shape":"DeleteDatasetRequest"},
+      "output":{"shape":"DeleteDatasetResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a dataset from DataBrew.</p>"
+    },
+    "DeleteJob":{
+      "name":"DeleteJob",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/jobs/{name}"
+      },
+      "input":{"shape":"DeleteJobRequest"},
+      "output":{"shape":"DeleteJobResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified DataBrew job.</p>"
+    },
+    "DeleteProject":{
+      "name":"DeleteProject",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/projects/{name}"
+      },
+      "input":{"shape":"DeleteProjectRequest"},
+      "output":{"shape":"DeleteProjectResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an existing DataBrew project.</p>"
+    },
+    "DeleteRecipeVersion":{
+      "name":"DeleteRecipeVersion",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/recipes/{name}/recipeVersion/{recipeVersion}"
+      },
+      "input":{"shape":"DeleteRecipeVersionRequest"},
+      "output":{"shape":"DeleteRecipeVersionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a single version of a DataBrew recipe.</p>"
+    },
+    "DeleteRuleset":{
+      "name":"DeleteRuleset",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/rulesets/{name}"
+      },
+      "input":{"shape":"DeleteRulesetRequest"},
+      "output":{"shape":"DeleteRulesetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"}
+      ],
+      "documentation":"<p>Deletes a ruleset.</p>"
+    },
+    "DeleteSchedule":{
+      "name":"DeleteSchedule",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/schedules/{name}"
+      },
+      "input":{"shape":"DeleteScheduleRequest"},
+      "output":{"shape":"DeleteScheduleResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified DataBrew schedule.</p>"
+    },
+    "DescribeDataset":{
+      "name":"DescribeDataset",
+      "http":{
+        "method":"GET",
+        "requestUri":"/datasets/{name}"
+      },
+      "input":{"shape":"DescribeDatasetRequest"},
+      "output":{"shape":"DescribeDatasetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the definition of a specific DataBrew dataset.</p>"
+    },
+    "DescribeJob":{
+      "name":"DescribeJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs/{name}"
+      },
+      "input":{"shape":"DescribeJobRequest"},
+      "output":{"shape":"DescribeJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the definition of a specific DataBrew job.</p>"
+    },
+    "DescribeJobRun":{
+      "name":"DescribeJobRun",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs/{name}/jobRun/{runId}"
+      },
+      "input":{"shape":"DescribeJobRunRequest"},
+      "output":{"shape":"DescribeJobRunResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Represents one run of a DataBrew job.</p>"
+    },
+    "DescribeProject":{
+      "name":"DescribeProject",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects/{name}"
+      },
+      "input":{"shape":"DescribeProjectRequest"},
+      "output":{"shape":"DescribeProjectResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the definition of a specific DataBrew project.</p>"
+    },
+    "DescribeRecipe":{
+      "name":"DescribeRecipe",
+      "http":{
+        "method":"GET",
+        "requestUri":"/recipes/{name}"
+      },
+      "input":{"shape":"DescribeRecipeRequest"},
+      "output":{"shape":"DescribeRecipeResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the definition of a specific DataBrew recipe corresponding to a particular version.</p>"
+    },
+    "DescribeRuleset":{
+      "name":"DescribeRuleset",
+      "http":{
+        "method":"GET",
+        "requestUri":"/rulesets/{name}"
+      },
+      "input":{"shape":"DescribeRulesetRequest"},
+      "output":{"shape":"DescribeRulesetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves detailed information about the ruleset.</p>"
+    },
+    "DescribeSchedule":{
+      "name":"DescribeSchedule",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedules/{name}"
+      },
+      "input":{"shape":"DescribeScheduleRequest"},
+      "output":{"shape":"DescribeScheduleResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the definition of a specific DataBrew schedule.</p>"
+    },
+    "ListDatasets":{
+      "name":"ListDatasets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/datasets"
+      },
+      "input":{"shape":"ListDatasetsRequest"},
+      "output":{"shape":"ListDatasetsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the DataBrew datasets.</p>"
+    },
+    "ListJobRuns":{
+      "name":"ListJobRuns",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs/{name}/jobRuns"
+      },
+      "input":{"shape":"ListJobRunsRequest"},
+      "output":{"shape":"ListJobRunsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the previous runs of a particular DataBrew job.</p>"
+    },
+    "ListJobs":{
+      "name":"ListJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/jobs"
+      },
+      "input":{"shape":"ListJobsRequest"},
+      "output":{"shape":"ListJobsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the DataBrew jobs that are defined.</p>"
+    },
+    "ListProjects":{
+      "name":"ListProjects",
+      "http":{
+        "method":"GET",
+        "requestUri":"/projects"
+      },
+      "input":{"shape":"ListProjectsRequest"},
+      "output":{"shape":"ListProjectsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the DataBrew projects that are defined.</p>"
+    },
+    "ListRecipeVersions":{
+      "name":"ListRecipeVersions",
+      "http":{
+        "method":"GET",
+        "requestUri":"/recipeVersions"
+      },
+      "input":{"shape":"ListRecipeVersionsRequest"},
+      "output":{"shape":"ListRecipeVersionsResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the versions of a particular DataBrew recipe, except for <code>LATEST_WORKING</code>.</p>"
+    },
+    "ListRecipes":{
+      "name":"ListRecipes",
+      "http":{
+        "method":"GET",
+        "requestUri":"/recipes"
+      },
+      "input":{"shape":"ListRecipesRequest"},
+      "output":{"shape":"ListRecipesResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the DataBrew recipes that are defined.</p>"
+    },
+    "ListRulesets":{
+      "name":"ListRulesets",
+      "http":{
+        "method":"GET",
+        "requestUri":"/rulesets"
+      },
+      "input":{"shape":"ListRulesetsRequest"},
+      "output":{"shape":"ListRulesetsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List all rulesets available in the current account or rulesets associated with a specific resource (dataset).</p>"
+    },
+    "ListSchedules":{
+      "name":"ListSchedules",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schedules"
+      },
+      "input":{"shape":"ListSchedulesRequest"},
+      "output":{"shape":"ListSchedulesResponse"},
+      "errors":[
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the DataBrew schedules that are defined.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{ResourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all the tags for a DataBrew resource. </p>"
+    },
+    "PublishRecipe":{
+      "name":"PublishRecipe",
+      "http":{
+        "method":"POST",
+        "requestUri":"/recipes/{name}/publishRecipe"
+      },
+      "input":{"shape":"PublishRecipeRequest"},
+      "output":{"shape":"PublishRecipeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"}
+      ],
+      "documentation":"<p>Publishes a new version of a DataBrew recipe.</p>"
+    },
+    "SendProjectSessionAction":{
+      "name":"SendProjectSessionAction",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/projects/{name}/sendProjectSessionAction"
+      },
+      "input":{"shape":"SendProjectSessionActionRequest"},
+      "output":{"shape":"SendProjectSessionActionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Performs a recipe step within an interactive DataBrew session that's currently open.</p>"
+    },
+    "StartJobRun":{
+      "name":"StartJobRun",
+      "http":{
+        "method":"POST",
+        "requestUri":"/jobs/{name}/startJobRun"
+      },
+      "input":{"shape":"StartJobRunRequest"},
+      "output":{"shape":"StartJobRunResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Runs a DataBrew job.</p>"
+    },
+    "StartProjectSession":{
+      "name":"StartProjectSession",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/projects/{name}/startProjectSession"
+      },
+      "input":{"shape":"StartProjectSessionRequest"},
+      "output":{"shape":"StartProjectSessionResponse"},
+      "errors":[
+        {"shape":"ConflictException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an interactive session, enabling you to manipulate data in a DataBrew project.</p>"
+    },
+    "StopJobRun":{
+      "name":"StopJobRun",
+      "http":{
+        "method":"POST",
+        "requestUri":"/jobs/{name}/jobRun/{runId}/stopJobRun"
+      },
+      "input":{"shape":"StopJobRunRequest"},
+      "output":{"shape":"StopJobRunResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Stops a particular run of a job.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{ResourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds metadata tags to a DataBrew resource, such as a dataset, project, recipe, job, or schedule.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{ResourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Removes metadata tags from a DataBrew resource.</p>"
+    },
+    "UpdateDataset":{
+      "name":"UpdateDataset",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/datasets/{name}"
+      },
+      "input":{"shape":"UpdateDatasetRequest"},
+      "output":{"shape":"UpdateDatasetResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Modifies the definition of an existing DataBrew dataset.</p>"
+    },
+    "UpdateProfileJob":{
+      "name":"UpdateProfileJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/profileJobs/{name}"
+      },
+      "input":{"shape":"UpdateProfileJobRequest"},
+      "output":{"shape":"UpdateProfileJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Modifies the definition of an existing profile job.</p>"
+    },
+    "UpdateProject":{
+      "name":"UpdateProject",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/projects/{name}"
+      },
+      "input":{"shape":"UpdateProjectRequest"},
+      "output":{"shape":"UpdateProjectResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Modifies the definition of an existing DataBrew project.</p>"
+    },
+    "UpdateRecipe":{
+      "name":"UpdateRecipe",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/recipes/{name}"
+      },
+      "input":{"shape":"UpdateRecipeRequest"},
+      "output":{"shape":"UpdateRecipeResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Modifies the definition of the <code>LATEST_WORKING</code> version of a DataBrew recipe.</p>"
+    },
+    "UpdateRecipeJob":{
+      "name":"UpdateRecipeJob",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/recipeJobs/{name}"
+      },
+      "input":{"shape":"UpdateRecipeJobRequest"},
+      "output":{"shape":"UpdateRecipeJobResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Modifies the definition of an existing DataBrew recipe job.</p>"
+    },
+    "UpdateRuleset":{
+      "name":"UpdateRuleset",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/rulesets/{name}"
+      },
+      "input":{"shape":"UpdateRulesetRequest"},
+      "output":{"shape":"UpdateRulesetResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates specified ruleset.</p>"
+    },
+    "UpdateSchedule":{
+      "name":"UpdateSchedule",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/schedules/{name}"
+      },
+      "input":{"shape":"UpdateScheduleRequest"},
+      "output":{"shape":"UpdateScheduleResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Modifies the definition of an existing DataBrew schedule.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Access to the specified resource was denied.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "AccountId":{
+      "type":"string",
+      "max":255
+    },
+    "ActionId":{"type":"integer"},
+    "AllowedStatisticList":{
+      "type":"list",
+      "member":{"shape":"AllowedStatistics"},
+      "min":1
+    },
+    "AllowedStatistics":{
+      "type":"structure",
+      "required":["Statistics"],
+      "members":{
+        "Statistics":{
+          "shape":"StatisticList",
+          "documentation":"<p>One or more column statistics to allow for columns that contain detected entities.</p>"
+        }
+      },
+      "documentation":"<p>Configuration of statistics that are allowed to be run on columns that contain detected entities. When undefined, no statistics will be computed on columns that contain detected entities.</p>"
+    },
+    "AnalyticsMode":{
+      "type":"string",
+      "enum":[
+        "ENABLE",
+        "DISABLE"
+      ]
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":20
+    },
+    "AssumeControl":{"type":"boolean"},
+    "Attempt":{"type":"integer"},
+    "BatchDeleteRecipeVersionRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RecipeVersions"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe whose versions are to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RecipeVersions":{
+          "shape":"RecipeVersionList",
+          "documentation":"<p>An array of version identifiers, for the recipe versions to be deleted. You can specify numeric versions (<code>X.Y</code>) or <code>LATEST_WORKING</code>. <code>LATEST_PUBLISHED</code> is not supported.</p>"
+        }
+      }
+    },
+    "BatchDeleteRecipeVersionResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe that was modified.</p>"
+        },
+        "Errors":{
+          "shape":"RecipeErrorList",
+          "documentation":"<p>Errors, if any, that occurred while attempting to delete the recipe versions.</p>"
+        }
+      }
+    },
+    "Bucket":{
+      "type":"string",
+      "max":63,
+      "min":3
+    },
+    "BucketOwner":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"^[0-9]{12}$"
+    },
+    "CatalogId":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ClientSessionId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9-]*$",
+      "sensitive":true
+    },
+    "ColumnName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "ColumnNameList":{
+      "type":"list",
+      "member":{"shape":"ColumnName"},
+      "max":200
+    },
+    "ColumnRange":{
+      "type":"integer",
+      "max":20,
+      "min":0
+    },
+    "ColumnSelector":{
+      "type":"structure",
+      "members":{
+        "Regex":{
+          "shape":"ColumnName",
+          "documentation":"<p>A regular expression for selecting a column from a dataset.</p>"
+        },
+        "Name":{
+          "shape":"ColumnName",
+          "documentation":"<p>The name of a column from a dataset.</p>"
+        }
+      },
+      "documentation":"<p>Selector of a column from a dataset for profile job configuration. One selector includes either a column name or a regular expression.</p>"
+    },
+    "ColumnSelectorList":{
+      "type":"list",
+      "member":{"shape":"ColumnSelector"},
+      "min":1
+    },
+    "ColumnStatisticsConfiguration":{
+      "type":"structure",
+      "required":["Statistics"],
+      "members":{
+        "Selectors":{
+          "shape":"ColumnSelectorList",
+          "documentation":"<p>List of column selectors. Selectors can be used to select columns from the dataset. When selectors are undefined, configuration will be applied to all supported columns. </p>"
+        },
+        "Statistics":{
+          "shape":"StatisticsConfiguration",
+          "documentation":"<p>Configuration for evaluations. Statistics can be used to select evaluations and override parameters of evaluations. </p>"
+        }
+      },
+      "documentation":"<p>Configuration for column evaluations for a profile job. ColumnStatisticsConfiguration can be used to select evaluations and override parameters of evaluations for particular columns. </p>"
+    },
+    "ColumnStatisticsConfigurationList":{
+      "type":"list",
+      "member":{"shape":"ColumnStatisticsConfiguration"},
+      "min":1
+    },
+    "CompressionFormat":{
+      "type":"string",
+      "enum":[
+        "GZIP",
+        "LZ4",
+        "SNAPPY",
+        "BZIP2",
+        "DEFLATE",
+        "LZO",
+        "BROTLI",
+        "ZSTD",
+        "ZLIB"
+      ]
+    },
+    "Condition":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[A-Z\\_]+$"
+    },
+    "ConditionExpression":{
+      "type":"structure",
+      "required":[
+        "Condition",
+        "TargetColumn"
+      ],
+      "members":{
+        "Condition":{
+          "shape":"Condition",
+          "documentation":"<p>A specific condition to apply to a recipe action. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/recipes.html#recipes.structure\">Recipe structure</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+        },
+        "Value":{
+          "shape":"ConditionValue",
+          "documentation":"<p>A value that the condition must evaluate to for the condition to succeed.</p>"
+        },
+        "TargetColumn":{
+          "shape":"TargetColumn",
+          "documentation":"<p>A column to apply this condition to.</p>"
+        }
+      },
+      "documentation":"<p>Represents an individual condition that evaluates to true or false.</p> <p>Conditions are used with recipe actions. The action is only performed for column values where the condition evaluates to true.</p> <p>If a recipe requires more than one condition, then the recipe must specify multiple <code>ConditionExpression</code> elements. Each condition is applied to the rows in a dataset first, before the recipe action is performed.</p>"
+    },
+    "ConditionExpressionList":{
+      "type":"list",
+      "member":{"shape":"ConditionExpression"}
+    },
+    "ConditionValue":{
+      "type":"string",
+      "max":1024
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Updating or deleting a resource can cause an inconsistent state.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "CreateColumn":{"type":"boolean"},
+    "CreateDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Input"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset to be created. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "Format":{
+          "shape":"InputFormat",
+          "documentation":"<p>The file format of a dataset that is created from an Amazon S3 file or folder.</p>"
+        },
+        "FormatOptions":{"shape":"FormatOptions"},
+        "Input":{"shape":"Input"},
+        "PathOptions":{
+          "shape":"PathOptions",
+          "documentation":"<p>A set of options that defines how DataBrew interprets an Amazon S3 path of the dataset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this dataset.</p>"
+        }
+      }
+    },
+    "CreateDatasetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset that you created.</p>"
+        }
+      }
+    },
+    "CreateProfileJobRequest":{
+      "type":"structure",
+      "required":[
+        "DatasetName",
+        "Name",
+        "OutputLocation",
+        "RoleArn"
+      ],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset that this job is to act upon.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job.</p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - <code>SSE-KMS</code> - Server-side encryption with KMS-managed keys.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be created. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>Enables or disables Amazon CloudWatch logging for the job. If logging is enabled, CloudWatch writes one log stream for each job run.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of nodes that DataBrew can use when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "OutputLocation":{"shape":"S3Location"},
+        "Configuration":{
+          "shape":"ProfileConfiguration",
+          "documentation":"<p>Configuration for profile jobs. Used to select columns, do evaluations, and override default parameters of evaluations. When configuration is null, the profile job will run with default settings.</p>"
+        },
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>Sample configuration for profile jobs only. Determines the number of rows on which the profile job will be executed. If a JobSample value is not provided, the default value will be used. The default value is CUSTOM_ROWS for the mode parameter and 20000 for the size parameter.</p>"
+        }
+      }
+    },
+    "CreateProfileJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that was created.</p>"
+        }
+      }
+    },
+    "CreateProjectRequest":{
+      "type":"structure",
+      "required":[
+        "DatasetName",
+        "Name",
+        "RecipeName",
+        "RoleArn"
+      ],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of an existing dataset to associate this project with.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>A unique name for the new project. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "RecipeName":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of an existing recipe to associate with the project.</p>"
+        },
+        "Sample":{"shape":"Sample"},
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role to be assumed for this request.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this project.</p>"
+        }
+      }
+    },
+    "CreateProjectResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that you created.</p>"
+        }
+      }
+    },
+    "CreateRecipeJobRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RoleArn"
+      ],
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset that this job processes.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job.</p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - Server-side encryption with keys managed by KMS.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>A unique name for the job. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>Enables or disables Amazon CloudWatch logging for the job. If logging is enabled, CloudWatch writes one log stream for each job run.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of nodes that DataBrew can consume when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more artifacts that represent the output from running the job.</p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write to. </p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>Either the name of an existing project, or a combination of a recipe and a dataset to associate with the recipe.</p>"
+        },
+        "RecipeReference":{"shape":"RecipeReference"},
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        }
+      }
+    },
+    "CreateRecipeJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that you created.</p>"
+        }
+      }
+    },
+    "CreateRecipeRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Steps"
+      ],
+      "members":{
+        "Description":{
+          "shape":"RecipeDescription",
+          "documentation":"<p>A description for the recipe.</p>"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>A unique name for the recipe. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "Steps":{
+          "shape":"RecipeStepList",
+          "documentation":"<p>An array containing the steps to be performed by the recipe. Each recipe step consists of one recipe action and (optionally) an array of condition expressions.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this recipe.</p>"
+        }
+      }
+    },
+    "CreateRecipeResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe that you created.</p>"
+        }
+      }
+    },
+    "CreateRulesetRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "TargetArn",
+        "Rules"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset to be created. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        },
+        "Description":{
+          "shape":"RulesetDescription",
+          "documentation":"<p>The description of the ruleset.</p>"
+        },
+        "TargetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a resource (dataset) that the ruleset is associated with.</p>"
+        },
+        "Rules":{
+          "shape":"RuleList",
+          "documentation":"<p>A list of rules that are defined with the ruleset. A rule includes one or more checks to be validated on a DataBrew dataset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to the ruleset.</p>"
+        }
+      }
+    },
+    "CreateRulesetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The unique name of the created ruleset.</p>"
+        }
+      }
+    },
+    "CreateScheduleRequest":{
+      "type":"structure",
+      "required":[
+        "CronExpression",
+        "Name"
+      ],
+      "members":{
+        "JobNames":{
+          "shape":"JobNameList",
+          "documentation":"<p>The name or names of one or more jobs to be run.</p>"
+        },
+        "CronExpression":{
+          "shape":"CronExpression",
+          "documentation":"<p>The date or dates and time or times when the jobs are to be run. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/jobs.cron.html\">Cron expressions</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags to apply to this schedule.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>A unique name for the schedule. Valid characters are alphanumeric (A-Z, a-z, 0-9), hyphen (-), period (.), and space.</p>"
+        }
+      }
+    },
+    "CreateScheduleResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule that was created.</p>"
+        }
+      }
+    },
+    "CreatedBy":{"type":"string"},
+    "CronExpression":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "CsvOptions":{
+      "type":"structure",
+      "members":{
+        "Delimiter":{
+          "shape":"Delimiter",
+          "documentation":"<p>A single character that specifies the delimiter being used in the CSV file.</p>"
+        },
+        "HeaderRow":{
+          "shape":"HeaderRow",
+          "documentation":"<p>A variable that specifies whether the first row in the file is parsed as the header. If this value is false, column names are auto-generated.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define how DataBrew will read a comma-separated value (CSV) file when creating a dataset from that file.</p>"
+    },
+    "CsvOutputOptions":{
+      "type":"structure",
+      "members":{
+        "Delimiter":{
+          "shape":"Delimiter",
+          "documentation":"<p>A single character that specifies the delimiter used to create CSV job output.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define how DataBrew will write a comma-separated value (CSV) file.</p>"
+    },
+    "DataCatalogInputDefinition":{
+      "type":"structure",
+      "required":[
+        "DatabaseName",
+        "TableName"
+      ],
+      "members":{
+        "CatalogId":{
+          "shape":"CatalogId",
+          "documentation":"<p>The unique identifier of the Amazon Web Services account that holds the Data Catalog that stores the data.</p>"
+        },
+        "DatabaseName":{
+          "shape":"DatabaseName",
+          "documentation":"<p>The name of a database in the Data Catalog.</p>"
+        },
+        "TableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of a database table in the Data Catalog. This table corresponds to a DataBrew dataset.</p>"
+        },
+        "TempDirectory":{
+          "shape":"S3Location",
+          "documentation":"<p>Represents an Amazon location where DataBrew can store intermediate results.</p>"
+        }
+      },
+      "documentation":"<p>Represents how metadata stored in the Glue Data Catalog is defined in a DataBrew dataset. </p>"
+    },
+    "DataCatalogOutput":{
+      "type":"structure",
+      "required":[
+        "DatabaseName",
+        "TableName"
+      ],
+      "members":{
+        "CatalogId":{
+          "shape":"CatalogId",
+          "documentation":"<p>The unique identifier of the Amazon Web Services account that holds the Data Catalog that stores the data.</p>"
+        },
+        "DatabaseName":{
+          "shape":"DatabaseName",
+          "documentation":"<p>The name of a database in the Data Catalog.</p>"
+        },
+        "TableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of a table in the Data Catalog.</p>"
+        },
+        "S3Options":{
+          "shape":"S3TableOutputOptions",
+          "documentation":"<p>Represents options that specify how and where DataBrew writes the Amazon S3 output generated by recipe jobs.</p>"
+        },
+        "DatabaseOptions":{
+          "shape":"DatabaseTableOutputOptions",
+          "documentation":"<p>Represents options that specify how and where DataBrew writes the database output generated by recipe jobs.</p>"
+        },
+        "Overwrite":{
+          "shape":"OverwriteOutput",
+          "documentation":"<p>A value that, if true, means that any data in the location specified for output is overwritten with new output. Not supported with DatabaseOptions.</p>"
+        }
+      },
+      "documentation":"<p>Represents options that specify how and where in the Glue Data Catalog DataBrew writes the output generated by recipe jobs.</p>"
+    },
+    "DataCatalogOutputList":{
+      "type":"list",
+      "member":{"shape":"DataCatalogOutput"},
+      "min":1
+    },
+    "DatabaseInputDefinition":{
+      "type":"structure",
+      "required":["GlueConnectionName"],
+      "members":{
+        "GlueConnectionName":{
+          "shape":"GlueConnectionName",
+          "documentation":"<p>The Glue Connection that stores the connection information for the target database.</p>"
+        },
+        "DatabaseTableName":{
+          "shape":"DatabaseTableName",
+          "documentation":"<p>The table within the target database.</p>"
+        },
+        "TempDirectory":{"shape":"S3Location"},
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p>Custom SQL to run against the provided Glue connection. This SQL will be used as the input for DataBrew projects and jobs.</p>"
+        }
+      },
+      "documentation":"<p>Connection information for dataset input files stored in a database.</p>"
+    },
+    "DatabaseName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DatabaseOutput":{
+      "type":"structure",
+      "required":[
+        "GlueConnectionName",
+        "DatabaseOptions"
+      ],
+      "members":{
+        "GlueConnectionName":{
+          "shape":"GlueConnectionName",
+          "documentation":"<p>The Glue connection that stores the connection information for the target database.</p>"
+        },
+        "DatabaseOptions":{
+          "shape":"DatabaseTableOutputOptions",
+          "documentation":"<p>Represents options that specify how and where DataBrew writes the database output generated by recipe jobs.</p>"
+        },
+        "DatabaseOutputMode":{
+          "shape":"DatabaseOutputMode",
+          "documentation":"<p>The output mode to write into the database. Currently supported option: NEW_TABLE.</p>"
+        }
+      },
+      "documentation":"<p>Represents a JDBC database output object which defines the output destination for a DataBrew recipe job to write into.</p>"
+    },
+    "DatabaseOutputList":{
+      "type":"list",
+      "member":{"shape":"DatabaseOutput"},
+      "min":1
+    },
+    "DatabaseOutputMode":{
+      "type":"string",
+      "enum":["NEW_TABLE"]
+    },
+    "DatabaseTableName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DatabaseTableOutputOptions":{
+      "type":"structure",
+      "required":["TableName"],
+      "members":{
+        "TempDirectory":{
+          "shape":"S3Location",
+          "documentation":"<p>Represents an Amazon S3 location (bucket name and object key) where DataBrew can store intermediate results.</p>"
+        },
+        "TableName":{
+          "shape":"DatabaseTableName",
+          "documentation":"<p>A prefix for the name of a table DataBrew will create in the database.</p>"
+        }
+      },
+      "documentation":"<p>Represents options that specify how and where DataBrew writes the database output generated by recipe jobs.</p>"
+    },
+    "Dataset":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Input"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The ID of the Amazon Web Services account that owns the dataset.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the dataset.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the dataset was created.</p>"
+        },
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The unique name of the dataset.</p>"
+        },
+        "Format":{
+          "shape":"InputFormat",
+          "documentation":"<p>The file format of a dataset that is created from an Amazon S3 file or folder.</p>"
+        },
+        "FormatOptions":{
+          "shape":"FormatOptions",
+          "documentation":"<p>A set of options that define how DataBrew interprets the data in the dataset.</p>"
+        },
+        "Input":{
+          "shape":"Input",
+          "documentation":"<p>Information on how DataBrew can find the dataset, in either the Glue Data Catalog or Amazon S3.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The last modification date and time of the dataset.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the dataset.</p>"
+        },
+        "Source":{
+          "shape":"Source",
+          "documentation":"<p>The location of the data for the dataset, either Amazon S3 or the Glue Data Catalog.</p>"
+        },
+        "PathOptions":{
+          "shape":"PathOptions",
+          "documentation":"<p>A set of options that defines how DataBrew interprets an Amazon S3 path of the dataset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the dataset.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) for the dataset.</p>"
+        }
+      },
+      "documentation":"<p>Represents a dataset that can be processed by DataBrew.</p>"
+    },
+    "DatasetList":{
+      "type":"list",
+      "member":{"shape":"Dataset"}
+    },
+    "DatasetName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "DatasetParameter":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Type"
+      ],
+      "members":{
+        "Name":{
+          "shape":"PathParameterName",
+          "documentation":"<p>The name of the parameter that is used in the dataset's Amazon S3 path.</p>"
+        },
+        "Type":{
+          "shape":"ParameterType",
+          "documentation":"<p>The type of the dataset parameter, can be one of a 'String', 'Number' or 'Datetime'.</p>"
+        },
+        "DatetimeOptions":{
+          "shape":"DatetimeOptions",
+          "documentation":"<p>Additional parameter options such as a format and a timezone. Required for datetime parameters.</p>"
+        },
+        "CreateColumn":{
+          "shape":"CreateColumn",
+          "documentation":"<p>Optional boolean value that defines whether the captured value of this parameter should be used to create a new column in a dataset.</p>"
+        },
+        "Filter":{
+          "shape":"FilterExpression",
+          "documentation":"<p>The optional filter expression structure to apply additional matching criteria to the parameter.</p>"
+        }
+      },
+      "documentation":"<p>Represents a dataset parameter that defines type and conditions for a parameter in the Amazon S3 path of the dataset.</p>"
+    },
+    "Date":{"type":"timestamp"},
+    "DatetimeFormat":{
+      "type":"string",
+      "max":100,
+      "min":2
+    },
+    "DatetimeOptions":{
+      "type":"structure",
+      "required":["Format"],
+      "members":{
+        "Format":{
+          "shape":"DatetimeFormat",
+          "documentation":"<p>Required option, that defines the datetime format used for a date parameter in the Amazon S3 path. Should use only supported datetime specifiers and separation characters, all literal a-z or A-Z characters should be escaped with single quotes. E.g. \"MM.dd.yyyy-'at'-HH:mm\".</p>"
+        },
+        "TimezoneOffset":{
+          "shape":"TimezoneOffset",
+          "documentation":"<p>Optional value for a timezone offset of the datetime parameter value in the Amazon S3 path. Shouldn't be used if Format for this parameter includes timezone fields. If no offset specified, UTC is assumed.</p>"
+        },
+        "LocaleCode":{
+          "shape":"LocaleCode",
+          "documentation":"<p>Optional value for a non-US locale code, needed for correct interpretation of some date formats.</p>"
+        }
+      },
+      "documentation":"<p>Represents additional options for correct interpretation of datetime parameters used in the Amazon S3 path of a dataset.</p>"
+    },
+    "DeleteDatasetRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteDatasetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset that you deleted.</p>"
+        }
+      }
+    },
+    "DeleteJobRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that you deleted.</p>"
+        }
+      }
+    },
+    "DeleteProjectRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteProjectResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that you deleted.</p>"
+        }
+      }
+    },
+    "DeleteRecipeVersionRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RecipeVersion"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The version of the recipe to be deleted. You can specify a numeric versions (<code>X.Y</code>) or <code>LATEST_WORKING</code>. <code>LATEST_PUBLISHED</code> is not supported.</p>",
+          "location":"uri",
+          "locationName":"recipeVersion"
+        }
+      }
+    },
+    "DeleteRecipeVersionResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RecipeVersion"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe that was deleted.</p>"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The version of the recipe that was deleted.</p>"
+        }
+      }
+    },
+    "DeleteRulesetRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteRulesetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the deleted ruleset.</p>"
+        }
+      }
+    },
+    "DeleteScheduleRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule to be deleted.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DeleteScheduleResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule that was deleted.</p>"
+        }
+      }
+    },
+    "Delimiter":{
+      "type":"string",
+      "max":1,
+      "min":1
+    },
+    "DescribeDatasetRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DescribeDatasetResponse":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Input"
+      ],
+      "members":{
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The identifier (user name) of the user who created the dataset.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the dataset was created.</p>"
+        },
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset.</p>"
+        },
+        "Format":{
+          "shape":"InputFormat",
+          "documentation":"<p>The file format of a dataset that is created from an Amazon S3 file or folder.</p>"
+        },
+        "FormatOptions":{"shape":"FormatOptions"},
+        "Input":{"shape":"Input"},
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the dataset was last modified.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The identifier (user name) of the user who last modified the dataset.</p>"
+        },
+        "Source":{
+          "shape":"Source",
+          "documentation":"<p>The location of the data for this dataset, Amazon S3 or the Glue Data Catalog.</p>"
+        },
+        "PathOptions":{
+          "shape":"PathOptions",
+          "documentation":"<p>A set of options that defines how DataBrew interprets an Amazon S3 path of the dataset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags associated with this dataset.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the dataset.</p>"
+        }
+      }
+    },
+    "DescribeJobRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DescribeJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the job was created.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The identifier (user name) of the user associated with the creation of the job.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The dataset that the job acts upon.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job.</p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - Server-side encryption with keys managed by KMS.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job.</p>"
+        },
+        "Type":{
+          "shape":"JobType",
+          "documentation":"<p>The job type, which must be one of the following:</p> <ul> <li> <p> <code>PROFILE</code> - The job analyzes the dataset to determine its size, data types, data distribution, and more.</p> </li> <li> <p> <code>RECIPE</code> - The job applies one or more transformations to a dataset.</p> </li> </ul>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The identifier (user name) of the user who last modified the job.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the job was last modified.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>Indicates whether Amazon CloudWatch logging is enabled for this job.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of compute nodes that DataBrew can consume when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more artifacts that represent the output from running the job.</p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write into.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The DataBrew project associated with this job.</p>"
+        },
+        "ProfileConfiguration":{
+          "shape":"ProfileConfiguration",
+          "documentation":"<p>Configuration for profile jobs. Used to select columns, do evaluations, and override default parameters of evaluations. When configuration is null, the profile job will run with default settings.</p>"
+        },
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job.</p>"
+        },
+        "RecipeReference":{"shape":"RecipeReference"},
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the job.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags associated with this job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>Sample configuration for profile jobs only. Determines the number of rows on which the profile job will be executed.</p>"
+        }
+      }
+    },
+    "DescribeJobRunRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RunId"
+      ],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job being processed during this run.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>The unique identifier of the job run.</p>",
+          "location":"uri",
+          "locationName":"runId"
+        }
+      }
+    },
+    "DescribeJobRunResponse":{
+      "type":"structure",
+      "required":["JobName"],
+      "members":{
+        "Attempt":{
+          "shape":"Attempt",
+          "documentation":"<p>The number of times that DataBrew has attempted to run the job.</p>"
+        },
+        "CompletedOn":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the job completed processing.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset for the job to process.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"JobRunErrorMessage",
+          "documentation":"<p>A message indicating an error (if any) that was encountered when the job ran.</p>"
+        },
+        "ExecutionTime":{
+          "shape":"ExecutionTime",
+          "documentation":"<p>The amount of time, in seconds, during which the job run consumed resources.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job being processed during this run.</p>"
+        },
+        "ProfileConfiguration":{
+          "shape":"ProfileConfiguration",
+          "documentation":"<p>Configuration for profile jobs. Used to select columns, do evaluations, and override default parameters of evaluations. When configuration is null, the profile job will run with default settings.</p>"
+        },
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job.</p>"
+        },
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>The unique identifier of the job run.</p>"
+        },
+        "State":{
+          "shape":"JobRunState",
+          "documentation":"<p>The current state of the job run entity itself.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>The current status of Amazon CloudWatch logging for the job run.</p>"
+        },
+        "LogGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>The name of an Amazon CloudWatch log group, where the job writes diagnostic messages when it runs.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more output artifacts from a job run.</p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write into.</p>"
+        },
+        "RecipeReference":{"shape":"RecipeReference"},
+        "StartedBy":{
+          "shape":"StartedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who started the job run.</p>"
+        },
+        "StartedOn":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the job run began.</p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>Sample configuration for profile jobs only. Determines the number of rows on which the profile job will be executed. If a JobSample value is not provided, the default value will be used. The default value is CUSTOM_ROWS for the mode parameter and 20000 for the size parameter.</p>"
+        }
+      }
+    },
+    "DescribeProjectRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DescribeProjectResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the project was created.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The identifier (user name) of the user who created the project.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The dataset associated with the project.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the project was last modified.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The identifier (user name) of the user who last modified the project.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project.</p>"
+        },
+        "RecipeName":{
+          "shape":"RecipeName",
+          "documentation":"<p>The recipe associated with this job.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the project.</p>"
+        },
+        "Sample":{"shape":"Sample"},
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags associated with this project.</p>"
+        },
+        "SessionStatus":{
+          "shape":"SessionStatus",
+          "documentation":"<p>Describes the current state of the session:</p> <ul> <li> <p> <code>PROVISIONING</code> - allocating resources for the session.</p> </li> <li> <p> <code>INITIALIZING</code> - getting the session ready for first use.</p> </li> <li> <p> <code>ASSIGNED</code> - the session is ready for use.</p> </li> </ul>"
+        },
+        "OpenedBy":{
+          "shape":"OpenedBy",
+          "documentation":"<p>The identifier (user name) of the user that opened the project for use. </p>"
+        },
+        "OpenDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the project was opened. </p>"
+        }
+      }
+    },
+    "DescribeRecipeRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The recipe version identifier. If this parameter isn't specified, then the latest published version is returned.</p>",
+          "location":"querystring",
+          "locationName":"recipeVersion"
+        }
+      }
+    },
+    "DescribeRecipeResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The identifier (user name) of the user who created the recipe.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the recipe was created.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The identifier (user name) of the user who last modified the recipe.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the recipe was last modified.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project associated with this recipe.</p>"
+        },
+        "PublishedBy":{
+          "shape":"PublishedBy",
+          "documentation":"<p>The identifier (user name) of the user who last published the recipe.</p>"
+        },
+        "PublishedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the recipe was last published.</p>"
+        },
+        "Description":{
+          "shape":"RecipeDescription",
+          "documentation":"<p>The description of the recipe.</p>"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe.</p>"
+        },
+        "Steps":{
+          "shape":"RecipeStepList",
+          "documentation":"<p>One or more steps to be performed by the recipe. Each step consists of an action, and the conditions under which the action should succeed.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags associated with this project.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the recipe.</p>"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The recipe version identifier.</p>"
+        }
+      }
+    },
+    "DescribeRulesetRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DescribeRulesetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset.</p>"
+        },
+        "Description":{
+          "shape":"RulesetDescription",
+          "documentation":"<p>The description of the ruleset.</p>"
+        },
+        "TargetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a resource (dataset) that the ruleset is associated with.</p>"
+        },
+        "Rules":{
+          "shape":"RuleList",
+          "documentation":"<p>A list of rules that are defined with the ruleset. A rule includes one or more checks to be validated on a DataBrew dataset.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the ruleset was created.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the ruleset.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the ruleset.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The modification date and time of the ruleset.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the ruleset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the ruleset.</p>"
+        }
+      }
+    },
+    "DescribeScheduleRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule to be described.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "DescribeScheduleResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the schedule was created.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The identifier (user name) of the user who created the schedule. </p>"
+        },
+        "JobNames":{
+          "shape":"JobNameList",
+          "documentation":"<p>The name or names of one or more jobs to be run by using the schedule.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The identifier (user name) of the user who last modified the schedule.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the schedule was last modified.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule.</p>"
+        },
+        "CronExpression":{
+          "shape":"CronExpression",
+          "documentation":"<p>The date or dates and time or times when the jobs are to be run for the schedule. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/jobs.cron.html\">Cron expressions</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags associated with this schedule.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule.</p>"
+        }
+      }
+    },
+    "Disabled":{"type":"boolean"},
+    "EncryptionKeyArn":{
+      "type":"string",
+      "max":2048,
+      "min":20
+    },
+    "EncryptionMode":{
+      "type":"string",
+      "enum":[
+        "SSE-KMS",
+        "SSE-S3"
+      ]
+    },
+    "EntityDetectorConfiguration":{
+      "type":"structure",
+      "required":["EntityTypes"],
+      "members":{
+        "EntityTypes":{
+          "shape":"EntityTypeList",
+          "documentation":"<p>Entity types to detect. Can be any of the following:</p> <ul> <li> <p>USA_SSN</p> </li> <li> <p>EMAIL</p> </li> <li> <p>USA_ITIN</p> </li> <li> <p>USA_PASSPORT_NUMBER</p> </li> <li> <p>PHONE_NUMBER</p> </li> <li> <p>USA_DRIVING_LICENSE</p> </li> <li> <p>BANK_ACCOUNT</p> </li> <li> <p>CREDIT_CARD</p> </li> <li> <p>IP_ADDRESS</p> </li> <li> <p>MAC_ADDRESS</p> </li> <li> <p>USA_DEA_NUMBER</p> </li> <li> <p>USA_HCPCS_CODE</p> </li> <li> <p>USA_NATIONAL_PROVIDER_IDENTIFIER</p> </li> <li> <p>USA_NATIONAL_DRUG_CODE</p> </li> <li> <p>USA_HEALTH_INSURANCE_CLAIM_NUMBER</p> </li> <li> <p>USA_MEDICARE_BENEFICIARY_IDENTIFIER</p> </li> <li> <p>USA_CPT_CODE</p> </li> <li> <p>PERSON_NAME</p> </li> <li> <p>DATE</p> </li> </ul> <p>The Entity type group USA_ALL is also supported, and includes all of the above entity types except PERSON_NAME and DATE.</p>"
+        },
+        "AllowedStatistics":{
+          "shape":"AllowedStatisticList",
+          "documentation":"<p>Configuration of statistics that are allowed to be run on columns that contain detected entities. When undefined, no statistics will be computed on columns that contain detected entities.</p>"
+        }
+      },
+      "documentation":"<p>Configuration of entity detection for a profile job. When undefined, entity detection is disabled.</p>"
+    },
+    "EntityType":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[A-Z_][A-Z\\\\d_]*$"
+    },
+    "EntityTypeList":{
+      "type":"list",
+      "member":{"shape":"EntityType"},
+      "min":1
+    },
+    "ErrorCode":{
+      "type":"string",
+      "pattern":"^[1-5][0-9][0-9]$"
+    },
+    "ExcelOptions":{
+      "type":"structure",
+      "members":{
+        "SheetNames":{
+          "shape":"SheetNameList",
+          "documentation":"<p>One or more named sheets in the Excel file that will be included in the dataset.</p>"
+        },
+        "SheetIndexes":{
+          "shape":"SheetIndexList",
+          "documentation":"<p>One or more sheet numbers in the Excel file that will be included in the dataset.</p>"
+        },
+        "HeaderRow":{
+          "shape":"HeaderRow",
+          "documentation":"<p>A variable that specifies whether the first row in the file is parsed as the header. If this value is false, column names are auto-generated.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define how DataBrew will interpret a Microsoft Excel file when creating a dataset from that file.</p>"
+    },
+    "ExecutionTime":{"type":"integer"},
+    "Expression":{
+      "type":"string",
+      "max":1024,
+      "min":4,
+      "pattern":"^[<>0-9A-Za-z_.,:)(!= ]+$"
+    },
+    "FilesLimit":{
+      "type":"structure",
+      "required":["MaxFiles"],
+      "members":{
+        "MaxFiles":{
+          "shape":"MaxFiles",
+          "documentation":"<p>The number of Amazon S3 files to select.</p>"
+        },
+        "OrderedBy":{
+          "shape":"OrderedBy",
+          "documentation":"<p>A criteria to use for Amazon S3 files sorting before their selection. By default uses LAST_MODIFIED_DATE as a sorting criteria. Currently it's the only allowed value.</p>"
+        },
+        "Order":{
+          "shape":"Order",
+          "documentation":"<p>A criteria to use for Amazon S3 files sorting before their selection. By default uses DESCENDING order, i.e. most recent files are selected first. Another possible value is ASCENDING.</p>"
+        }
+      },
+      "documentation":"<p>Represents a limit imposed on number of Amazon S3 files that should be selected for a dataset from a connected Amazon S3 path.</p>"
+    },
+    "FilterExpression":{
+      "type":"structure",
+      "required":[
+        "Expression",
+        "ValuesMap"
+      ],
+      "members":{
+        "Expression":{
+          "shape":"Expression",
+          "documentation":"<p>The expression which includes condition names followed by substitution variables, possibly grouped and combined with other conditions. For example, \"(starts_with :prefix1 or starts_with :prefix2) and (ends_with :suffix1 or ends_with :suffix2)\". Substitution variables should start with ':' symbol.</p>"
+        },
+        "ValuesMap":{
+          "shape":"ValuesMap",
+          "documentation":"<p>The map of substitution variable names to their values used in this filter expression.</p>"
+        }
+      },
+      "documentation":"<p>Represents a structure for defining parameter conditions. Supported conditions are described here: <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/datasets.multiple-files.html#conditions.for.dynamic.datasets\">Supported conditions for dynamic datasets</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+    },
+    "FormatOptions":{
+      "type":"structure",
+      "members":{
+        "Json":{
+          "shape":"JsonOptions",
+          "documentation":"<p>Options that define how JSON input is to be interpreted by DataBrew.</p>"
+        },
+        "Excel":{
+          "shape":"ExcelOptions",
+          "documentation":"<p>Options that define how Excel input is to be interpreted by DataBrew.</p>"
+        },
+        "Csv":{
+          "shape":"CsvOptions",
+          "documentation":"<p>Options that define how CSV input is to be interpreted by DataBrew.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define the structure of either comma-separated value (CSV), Excel, or JSON input.</p>"
+    },
+    "GlueConnectionName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "HeaderRow":{"type":"boolean"},
+    "HiddenColumnList":{
+      "type":"list",
+      "member":{"shape":"ColumnName"}
+    },
+    "Input":{
+      "type":"structure",
+      "members":{
+        "S3InputDefinition":{
+          "shape":"S3Location",
+          "documentation":"<p>The Amazon S3 location where the data is stored.</p>"
+        },
+        "DataCatalogInputDefinition":{
+          "shape":"DataCatalogInputDefinition",
+          "documentation":"<p>The Glue Data Catalog parameters for the data.</p>"
+        },
+        "DatabaseInputDefinition":{
+          "shape":"DatabaseInputDefinition",
+          "documentation":"<p>Connection information for dataset input files stored in a database.</p>"
+        },
+        "Metadata":{
+          "shape":"Metadata",
+          "documentation":"<p>Contains additional resource information needed for specific datasets.</p>"
+        }
+      },
+      "documentation":"<p>Represents information on how DataBrew can find data, in either the Glue Data Catalog or Amazon S3.</p>"
+    },
+    "InputFormat":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "JSON",
+        "PARQUET",
+        "EXCEL",
+        "ORC"
+      ]
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>An internal service failure occurred.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true
+    },
+    "Job":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The ID of the Amazon Web Services account that owns the job.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the job.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the job was created.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>A dataset that the job is to process.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job output. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/encryption-security-configuration.html\">Encrypting data written by DataBrew jobs</a> </p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - Server-side encryption with keys managed by KMS.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The unique name of the job.</p>"
+        },
+        "Type":{
+          "shape":"JobType",
+          "documentation":"<p>The job type of the job, which must be one of the following:</p> <ul> <li> <p> <code>PROFILE</code> - A job to analyze a dataset, to determine its size, data types, data distribution, and more.</p> </li> <li> <p> <code>RECIPE</code> - A job to apply one or more transformations to a dataset.</p> </li> </ul>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the job.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The modification date and time of the job.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>The current status of Amazon CloudWatch logging for the job.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of nodes that can be consumed when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more artifacts that represent output from running the job.</p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write into.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that the job is associated with.</p>"
+        },
+        "RecipeReference":{
+          "shape":"RecipeReference",
+          "documentation":"<p>A set of steps that the job runs.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The unique Amazon Resource Name (ARN) for the job.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role to be assumed for this job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the job.</p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>A sample configuration for profile jobs only, which determines the number of rows on which the profile job is run. If a <code>JobSample</code> value isn't provided, the default value is used. The default value is CUSTOM_ROWS for the mode parameter and 20,000 for the size parameter.</p>"
+        },
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job.</p>"
+        }
+      },
+      "documentation":"<p>Represents all of the attributes of a DataBrew job.</p>"
+    },
+    "JobList":{
+      "type":"list",
+      "member":{"shape":"Job"}
+    },
+    "JobName":{
+      "type":"string",
+      "max":240,
+      "min":1
+    },
+    "JobNameList":{
+      "type":"list",
+      "member":{"shape":"JobName"},
+      "max":50
+    },
+    "JobRun":{
+      "type":"structure",
+      "members":{
+        "Attempt":{
+          "shape":"Attempt",
+          "documentation":"<p>The number of times that DataBrew has attempted to run the job.</p>"
+        },
+        "CompletedOn":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the job completed processing.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset for the job to process.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"JobRunErrorMessage",
+          "documentation":"<p>A message indicating an error (if any) that was encountered when the job ran.</p>"
+        },
+        "ExecutionTime":{
+          "shape":"ExecutionTime",
+          "documentation":"<p>The amount of time, in seconds, during which a job run consumed resources.</p>"
+        },
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job being processed during this run.</p>"
+        },
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>The unique identifier of the job run.</p>"
+        },
+        "State":{
+          "shape":"JobRunState",
+          "documentation":"<p>The current state of the job run entity itself.</p>"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>The current status of Amazon CloudWatch logging for the job run.</p>"
+        },
+        "LogGroupName":{
+          "shape":"LogGroupName",
+          "documentation":"<p>The name of an Amazon CloudWatch log group, where the job writes diagnostic messages when it runs.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more output artifacts from a job run.</p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write into.</p>"
+        },
+        "RecipeReference":{
+          "shape":"RecipeReference",
+          "documentation":"<p>The set of steps processed by the job.</p>"
+        },
+        "StartedBy":{
+          "shape":"StartedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who initiated the job run. </p>"
+        },
+        "StartedOn":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the job run began. </p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>A sample configuration for profile jobs only, which determines the number of rows on which the profile job is run. If a <code>JobSample</code> value isn't provided, the default is used. The default value is CUSTOM_ROWS for the mode parameter and 20,000 for the size parameter.</p>"
+        },
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job run.</p>"
+        }
+      },
+      "documentation":"<p>Represents one run of a DataBrew job.</p>"
+    },
+    "JobRunErrorMessage":{"type":"string"},
+    "JobRunId":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "JobRunList":{
+      "type":"list",
+      "member":{"shape":"JobRun"}
+    },
+    "JobRunState":{
+      "type":"string",
+      "enum":[
+        "STARTING",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED",
+        "SUCCEEDED",
+        "FAILED",
+        "TIMEOUT"
+      ]
+    },
+    "JobSample":{
+      "type":"structure",
+      "members":{
+        "Mode":{
+          "shape":"SampleMode",
+          "documentation":"<p>A value that determines whether the profile job is run on the entire dataset or a specified number of rows. This value must be one of the following:</p> <ul> <li> <p>FULL_DATASET - The profile job is run on the entire dataset.</p> </li> <li> <p>CUSTOM_ROWS - The profile job is run on the number of rows specified in the <code>Size</code> parameter.</p> </li> </ul>"
+        },
+        "Size":{
+          "shape":"JobSize",
+          "documentation":"<p>The <code>Size</code> parameter is only required when the mode is CUSTOM_ROWS. The profile job is run on the specified number of rows. The maximum value for size is Long.MAX_VALUE.</p> <p>Long.MAX_VALUE = 9223372036854775807</p>"
+        }
+      },
+      "documentation":"<p>A sample configuration for profile jobs only, which determines the number of rows on which the profile job is run. If a <code>JobSample</code> value isn't provided, the default is used. The default value is CUSTOM_ROWS for the mode parameter and 20,000 for the size parameter.</p>"
+    },
+    "JobSize":{"type":"long"},
+    "JobType":{
+      "type":"string",
+      "enum":[
+        "PROFILE",
+        "RECIPE"
+      ]
+    },
+    "JsonOptions":{
+      "type":"structure",
+      "members":{
+        "MultiLine":{
+          "shape":"MultiLine",
+          "documentation":"<p>A value that specifies whether JSON input contains embedded new line characters.</p>"
+        }
+      },
+      "documentation":"<p>Represents the JSON-specific options that define how input is to be interpreted by Glue DataBrew.</p>"
+    },
+    "Key":{
+      "type":"string",
+      "max":1280,
+      "min":1
+    },
+    "LastModifiedBy":{"type":"string"},
+    "ListDatasetsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListDatasetsResponse":{
+      "type":"structure",
+      "required":["Datasets"],
+      "members":{
+        "Datasets":{
+          "shape":"DatasetList",
+          "documentation":"<p>A list of datasets that are defined.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListJobRunsRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListJobRunsResponse":{
+      "type":"structure",
+      "required":["JobRuns"],
+      "members":{
+        "JobRuns":{
+          "shape":"JobRunList",
+          "documentation":"<p>A list of job runs that have occurred for the specified job.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListJobsRequest":{
+      "type":"structure",
+      "members":{
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of a dataset. Using this parameter indicates to return only those jobs that act on the specified dataset.</p>",
+          "location":"querystring",
+          "locationName":"datasetName"
+        },
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token generated by DataBrew that specifies where to continue pagination if a previous request was truncated. To get the next set of pages, pass in the NextToken value from the response object of the previous page call. </p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of a project. Using this parameter indicates to return only those jobs that are associated with the specified project.</p>",
+          "location":"querystring",
+          "locationName":"projectName"
+        }
+      }
+    },
+    "ListJobsResponse":{
+      "type":"structure",
+      "required":["Jobs"],
+      "members":{
+        "Jobs":{
+          "shape":"JobList",
+          "documentation":"<p>A list of jobs that are defined.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListProjectsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListProjectsResponse":{
+      "type":"structure",
+      "required":["Projects"],
+      "members":{
+        "Projects":{
+          "shape":"ProjectList",
+          "documentation":"<p>A list of projects that are defined .</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListRecipeVersionsRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe for which to return version information.</p>",
+          "location":"querystring",
+          "locationName":"name"
+        }
+      }
+    },
+    "ListRecipeVersionsResponse":{
+      "type":"structure",
+      "required":["Recipes"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        },
+        "Recipes":{
+          "shape":"RecipeList",
+          "documentation":"<p>A list of versions for the specified recipe.</p>"
+        }
+      }
+    },
+    "ListRecipesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>Return only those recipes with a version identifier of <code>LATEST_WORKING</code> or <code>LATEST_PUBLISHED</code>. If <code>RecipeVersion</code> is omitted, <code>ListRecipes</code> returns all of the <code>LATEST_PUBLISHED</code> recipe versions.</p> <p>Valid values: <code>LATEST_WORKING</code> | <code>LATEST_PUBLISHED</code> </p>",
+          "location":"querystring",
+          "locationName":"recipeVersion"
+        }
+      }
+    },
+    "ListRecipesResponse":{
+      "type":"structure",
+      "required":["Recipes"],
+      "members":{
+        "Recipes":{
+          "shape":"RecipeList",
+          "documentation":"<p>A list of recipes that are defined.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListRulesetsRequest":{
+      "type":"structure",
+      "members":{
+        "TargetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a resource (dataset). Using this parameter indicates to return only those rulesets that are associated with the specified resource.</p>",
+          "location":"querystring",
+          "locationName":"targetArn"
+        },
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token generated by DataBrew that specifies where to continue pagination if a previous request was truncated. To get the next set of pages, pass in the NextToken value from the response object of the previous page call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListRulesetsResponse":{
+      "type":"structure",
+      "required":["Rulesets"],
+      "members":{
+        "Rulesets":{
+          "shape":"RulesetItemList",
+          "documentation":"<p>A list of RulesetItem. RulesetItem contains meta data of a ruleset.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListSchedulesRequest":{
+      "type":"structure",
+      "members":{
+        "JobName":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that these schedules apply to.</p>",
+          "location":"querystring",
+          "locationName":"jobName"
+        },
+        "MaxResults":{
+          "shape":"MaxResults100",
+          "documentation":"<p>The maximum number of results to return in this request. </p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token returned by a previous call to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListSchedulesResponse":{
+      "type":"structure",
+      "required":["Schedules"],
+      "members":{
+        "Schedules":{
+          "shape":"ScheduleList",
+          "documentation":"<p>A list of schedules that are defined.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>A token that you can use in a subsequent call to retrieve the next set of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) string that uniquely identifies the DataBrew resource. </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>A list of tags associated with the DataBrew resource.</p>"
+        }
+      }
+    },
+    "LocaleCode":{
+      "type":"string",
+      "max":100,
+      "min":2,
+      "pattern":"^[A-Za-z0-9_\\.#@\\-]+$"
+    },
+    "LogGroupName":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "LogSubscription":{
+      "type":"string",
+      "enum":[
+        "ENABLE",
+        "DISABLE"
+      ]
+    },
+    "MaxCapacity":{"type":"integer"},
+    "MaxFiles":{
+      "type":"integer",
+      "min":1
+    },
+    "MaxOutputFiles":{
+      "type":"integer",
+      "max":999,
+      "min":1
+    },
+    "MaxResults100":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "MaxRetries":{
+      "type":"integer",
+      "min":0
+    },
+    "Message":{"type":"string"},
+    "Metadata":{
+      "type":"structure",
+      "members":{
+        "SourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) associated with the dataset. Currently, DataBrew only supports ARNs from Amazon AppFlow.</p>"
+        }
+      },
+      "documentation":"<p>Contains additional resource information needed for specific datasets.</p>"
+    },
+    "MultiLine":{"type":"boolean"},
+    "NextToken":{
+      "type":"string",
+      "max":2000,
+      "min":1
+    },
+    "OpenedBy":{"type":"string"},
+    "Operation":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[A-Z\\_]+$"
+    },
+    "Order":{
+      "type":"string",
+      "enum":[
+        "DESCENDING",
+        "ASCENDING"
+      ]
+    },
+    "OrderedBy":{
+      "type":"string",
+      "enum":["LAST_MODIFIED_DATE"]
+    },
+    "Output":{
+      "type":"structure",
+      "required":["Location"],
+      "members":{
+        "CompressionFormat":{
+          "shape":"CompressionFormat",
+          "documentation":"<p>The compression algorithm used to compress the output text of the job.</p>"
+        },
+        "Format":{
+          "shape":"OutputFormat",
+          "documentation":"<p>The data format of the output of the job.</p>"
+        },
+        "PartitionColumns":{
+          "shape":"ColumnNameList",
+          "documentation":"<p>The names of one or more partition columns for the output of the job.</p>"
+        },
+        "Location":{
+          "shape":"S3Location",
+          "documentation":"<p>The location in Amazon S3 where the job writes its output.</p>"
+        },
+        "Overwrite":{
+          "shape":"OverwriteOutput",
+          "documentation":"<p>A value that, if true, means that any data in the location specified for output is overwritten with new output.</p>"
+        },
+        "FormatOptions":{
+          "shape":"OutputFormatOptions",
+          "documentation":"<p>Represents options that define how DataBrew formats job output files.</p>"
+        },
+        "MaxOutputFiles":{
+          "shape":"MaxOutputFiles",
+          "documentation":"<p>Maximum number of files to be generated by the job and written to the output folder. For output partitioned by column(s), the MaxOutputFiles value is the maximum number of files per partition.</p>"
+        }
+      },
+      "documentation":"<p>Represents options that specify how and where in Amazon S3 DataBrew writes the output generated by recipe jobs or profile jobs.</p>"
+    },
+    "OutputFormat":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "JSON",
+        "PARQUET",
+        "GLUEPARQUET",
+        "AVRO",
+        "ORC",
+        "XML",
+        "TABLEAUHYPER"
+      ]
+    },
+    "OutputFormatOptions":{
+      "type":"structure",
+      "members":{
+        "Csv":{
+          "shape":"CsvOutputOptions",
+          "documentation":"<p>Represents a set of options that define the structure of comma-separated value (CSV) job output.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define the structure of comma-separated (CSV) job output.</p>"
+    },
+    "OutputList":{
+      "type":"list",
+      "member":{"shape":"Output"},
+      "min":1
+    },
+    "OverwriteOutput":{"type":"boolean"},
+    "ParameterMap":{
+      "type":"map",
+      "key":{"shape":"ParameterName"},
+      "value":{"shape":"ParameterValue"}
+    },
+    "ParameterName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[A-Za-z0-9]+$"
+    },
+    "ParameterType":{
+      "type":"string",
+      "enum":[
+        "Datetime",
+        "Number",
+        "String"
+      ]
+    },
+    "ParameterValue":{
+      "type":"string",
+      "max":32768,
+      "min":1
+    },
+    "PathOptions":{
+      "type":"structure",
+      "members":{
+        "LastModifiedDateCondition":{
+          "shape":"FilterExpression",
+          "documentation":"<p>If provided, this structure defines a date range for matching Amazon S3 objects based on their LastModifiedDate attribute in Amazon S3.</p>"
+        },
+        "FilesLimit":{
+          "shape":"FilesLimit",
+          "documentation":"<p>If provided, this structure imposes a limit on a number of files that should be selected.</p>"
+        },
+        "Parameters":{
+          "shape":"PathParametersMap",
+          "documentation":"<p>A structure that maps names of parameters used in the Amazon S3 path of a dataset to their definitions.</p>"
+        }
+      },
+      "documentation":"<p>Represents a set of options that define how DataBrew selects files for a given Amazon S3 path in a dataset.</p>"
+    },
+    "PathParameterName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "PathParametersMap":{
+      "type":"map",
+      "key":{"shape":"PathParameterName"},
+      "value":{"shape":"DatasetParameter"},
+      "documentation":"<p>A structure that map names of parameters used in the Amazon S3 path of a dataset to their definitions. A definition includes parameter type and conditions.</p>",
+      "max":10,
+      "min":1
+    },
+    "Preview":{"type":"boolean"},
+    "ProfileConfiguration":{
+      "type":"structure",
+      "members":{
+        "DatasetStatisticsConfiguration":{
+          "shape":"StatisticsConfiguration",
+          "documentation":"<p>Configuration for inter-column evaluations. Configuration can be used to select evaluations and override parameters of evaluations. When configuration is undefined, the profile job will run all supported inter-column evaluations. </p>"
+        },
+        "ProfileColumns":{
+          "shape":"ColumnSelectorList",
+          "documentation":"<p>List of column selectors. ProfileColumns can be used to select columns from the dataset. When ProfileColumns is undefined, the profile job will profile all supported columns. </p>"
+        },
+        "ColumnStatisticsConfigurations":{
+          "shape":"ColumnStatisticsConfigurationList",
+          "documentation":"<p>List of configurations for column evaluations. ColumnStatisticsConfigurations are used to select evaluations and override parameters of evaluations for particular columns. When ColumnStatisticsConfigurations is undefined, the profile job will profile all supported columns and run all supported evaluations. </p>"
+        },
+        "EntityDetectorConfiguration":{
+          "shape":"EntityDetectorConfiguration",
+          "documentation":"<p>Configuration of entity detection for a profile job. When undefined, entity detection is disabled.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for profile jobs. Configuration can be used to select columns, do evaluations, and override default parameters of evaluations. When configuration is undefined, the profile job will apply default settings to all supported columns. </p>"
+    },
+    "Project":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RecipeName"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The ID of the Amazon Web Services account that owns the project.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the project was created.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who crated the project.</p>"
+        },
+        "DatasetName":{
+          "shape":"DatasetName",
+          "documentation":"<p>The dataset that the project is to act upon.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The last modification date and time for the project.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the project.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The unique name of a project.</p>"
+        },
+        "RecipeName":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of a recipe that will be developed during a project session.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the project.</p>"
+        },
+        "Sample":{
+          "shape":"Sample",
+          "documentation":"<p>The sample size and sampling type to apply to the data. If this parameter isn't specified, then the sample consists of the first 500 rows from the dataset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the project.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the role that will be assumed for this project.</p>"
+        },
+        "OpenedBy":{
+          "shape":"OpenedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user that opened the project for use.</p>"
+        },
+        "OpenDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the project was opened.</p>"
+        }
+      },
+      "documentation":"<p>Represents all of the attributes of a DataBrew project.</p>"
+    },
+    "ProjectList":{
+      "type":"list",
+      "member":{"shape":"Project"}
+    },
+    "ProjectName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "PublishRecipeRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Description":{
+          "shape":"RecipeDescription",
+          "documentation":"<p>A description of the recipe to be published, for this version of the recipe.</p>"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe to be published.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "PublishRecipeResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe that you published.</p>"
+        }
+      }
+    },
+    "PublishedBy":{"type":"string"},
+    "QueryString":{
+      "type":"string",
+      "max":10000,
+      "min":1
+    },
+    "Recipe":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the recipe.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the recipe was created.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the recipe.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The last modification date and time of the recipe.</p>"
+        },
+        "ProjectName":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that the recipe is associated with.</p>"
+        },
+        "PublishedBy":{
+          "shape":"PublishedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who published the recipe.</p>"
+        },
+        "PublishedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the recipe was published.</p>"
+        },
+        "Description":{
+          "shape":"RecipeDescription",
+          "documentation":"<p>The description of the recipe.</p>"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The unique name for the recipe.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the recipe.</p>"
+        },
+        "Steps":{
+          "shape":"RecipeStepList",
+          "documentation":"<p>A list of steps that are defined by the recipe.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the recipe.</p>"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The identifier for the version for the recipe. Must be one of the following:</p> <ul> <li> <p>Numeric version (<code>X.Y</code>) - <code>X</code> and <code>Y</code> stand for major and minor version numbers. The maximum length of each is 6 digits, and neither can be negative values. Both <code>X</code> and <code>Y</code> are required, and \"0.0\" isn't a valid version.</p> </li> <li> <p> <code>LATEST_WORKING</code> - the most recent valid version being developed in a DataBrew project.</p> </li> <li> <p> <code>LATEST_PUBLISHED</code> - the most recent published version.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Represents one or more actions to be performed on a DataBrew dataset.</p>"
+    },
+    "RecipeAction":{
+      "type":"structure",
+      "required":["Operation"],
+      "members":{
+        "Operation":{
+          "shape":"Operation",
+          "documentation":"<p>The name of a valid DataBrew transformation to be performed on the data.</p>"
+        },
+        "Parameters":{
+          "shape":"ParameterMap",
+          "documentation":"<p>Contextual parameters for the transformation.</p>"
+        }
+      },
+      "documentation":"<p>Represents a transformation and associated parameters that are used to apply a change to a DataBrew dataset. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/recipe-actions-reference.html\">Recipe actions reference</a>.</p>"
+    },
+    "RecipeDescription":{
+      "type":"string",
+      "max":1024
+    },
+    "RecipeErrorList":{
+      "type":"list",
+      "member":{"shape":"RecipeVersionErrorDetail"}
+    },
+    "RecipeErrorMessage":{"type":"string"},
+    "RecipeList":{
+      "type":"list",
+      "member":{"shape":"Recipe"}
+    },
+    "RecipeName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "RecipeReference":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe.</p>"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The identifier for the version for the recipe. </p>"
+        }
+      },
+      "documentation":"<p>Represents the name and version of a DataBrew recipe.</p>"
+    },
+    "RecipeStep":{
+      "type":"structure",
+      "required":["Action"],
+      "members":{
+        "Action":{
+          "shape":"RecipeAction",
+          "documentation":"<p>The particular action to be performed in the recipe step.</p>"
+        },
+        "ConditionExpressions":{
+          "shape":"ConditionExpressionList",
+          "documentation":"<p>One or more conditions that must be met for the recipe step to succeed.</p> <note> <p>All of the conditions in the array must be met. In other words, all of the conditions must be combined using a logical AND operation.</p> </note>"
+        }
+      },
+      "documentation":"<p>Represents a single step from a DataBrew recipe to be performed.</p>"
+    },
+    "RecipeStepList":{
+      "type":"list",
+      "member":{"shape":"RecipeStep"}
+    },
+    "RecipeVersion":{
+      "type":"string",
+      "max":16,
+      "min":1
+    },
+    "RecipeVersionErrorDetail":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{
+          "shape":"ErrorCode",
+          "documentation":"<p>The HTTP status code for the error.</p>"
+        },
+        "ErrorMessage":{
+          "shape":"RecipeErrorMessage",
+          "documentation":"<p>The text of the error message.</p>"
+        },
+        "RecipeVersion":{
+          "shape":"RecipeVersion",
+          "documentation":"<p>The identifier for the recipe version associated with this error.</p>"
+        }
+      },
+      "documentation":"<p>Represents any errors encountered when attempting to delete multiple recipe versions.</p>"
+    },
+    "RecipeVersionList":{
+      "type":"list",
+      "member":{"shape":"RecipeVersion"},
+      "max":50,
+      "min":1
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>One or more resources can't be found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "Result":{"type":"string"},
+    "RowRange":{"type":"integer"},
+    "Rule":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "CheckExpression"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RuleName",
+          "documentation":"<p>The name of the rule.</p>"
+        },
+        "Disabled":{
+          "shape":"Disabled",
+          "documentation":"<p>A value that specifies whether the rule is disabled. Once a rule is disabled, a profile job will not validate it during a job run. Default value is false.</p>"
+        },
+        "CheckExpression":{
+          "shape":"Expression",
+          "documentation":"<p>The expression which includes column references, condition names followed by variable references, possibly grouped and combined with other conditions. For example, <code>(:col1 starts_with :prefix1 or :col1 starts_with :prefix2) and (:col1 ends_with :suffix1 or :col1 ends_with :suffix2)</code>. Column and value references are substitution variables that should start with the ':' symbol. Depending on the context, substitution variables' values can be either an actual value or a column name. These values are defined in the SubstitutionMap. If a CheckExpression starts with a column reference, then ColumnSelectors in the rule should be null. If ColumnSelectors has been defined, then there should be no column reference in the left side of a condition, for example, <code>is_between :val1 and :val2</code>.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/profile.data-quality-available-checks.html\">Available checks</a> </p>"
+        },
+        "SubstitutionMap":{
+          "shape":"ValuesMap",
+          "documentation":"<p>The map of substitution variable names to their values used in a check expression. Variable names should start with a ':' (colon). Variable values can either be actual values or column names. To differentiate between the two, column names should be enclosed in backticks, for example, <code>\":col1\": \"`Column A`\".</code> </p>"
+        },
+        "Threshold":{
+          "shape":"Threshold",
+          "documentation":"<p>The threshold used with a non-aggregate check expression. Non-aggregate check expressions will be applied to each row in a specific column, and the threshold will be used to determine whether the validation succeeds.</p>"
+        },
+        "ColumnSelectors":{
+          "shape":"ColumnSelectorList",
+          "documentation":"<p>List of column selectors. Selectors can be used to select columns using a name or regular expression from the dataset. Rule will be applied to selected columns.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single data quality requirement that should be validated in the scope of this dataset.</p>"
+    },
+    "RuleCount":{
+      "type":"integer",
+      "min":0
+    },
+    "RuleList":{
+      "type":"list",
+      "member":{"shape":"Rule"},
+      "min":1
+    },
+    "RuleName":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "RulesetDescription":{
+      "type":"string",
+      "max":1024
+    },
+    "RulesetItem":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "TargetArn"
+      ],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The ID of the Amazon Web Services account that owns the ruleset.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the ruleset.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the ruleset was created.</p>"
+        },
+        "Description":{
+          "shape":"RulesetDescription",
+          "documentation":"<p>The description of the ruleset.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the ruleset.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The modification date and time of the ruleset.</p>"
+        },
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the ruleset.</p>"
+        },
+        "RuleCount":{
+          "shape":"RuleCount",
+          "documentation":"<p>The number of rules that are defined in the ruleset.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the ruleset.</p>"
+        },
+        "TargetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a resource (dataset) that the ruleset is associated with.</p>"
+        }
+      },
+      "documentation":"<p>Contains metadata about the ruleset.</p>"
+    },
+    "RulesetItemList":{
+      "type":"list",
+      "member":{"shape":"RulesetItem"}
+    },
+    "RulesetName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "S3Location":{
+      "type":"structure",
+      "required":["Bucket"],
+      "members":{
+        "Bucket":{
+          "shape":"Bucket",
+          "documentation":"<p>The Amazon S3 bucket name.</p>"
+        },
+        "Key":{
+          "shape":"Key",
+          "documentation":"<p>The unique name of the object in the bucket.</p>"
+        },
+        "BucketOwner":{
+          "shape":"BucketOwner",
+          "documentation":"<p>The Amazon Web Services account ID of the bucket owner.</p>"
+        }
+      },
+      "documentation":"<p>Represents an Amazon S3 location (bucket name, bucket owner, and object key) where DataBrew can read input data, or write output from a job.</p>"
+    },
+    "S3TableOutputOptions":{
+      "type":"structure",
+      "required":["Location"],
+      "members":{
+        "Location":{
+          "shape":"S3Location",
+          "documentation":"<p>Represents an Amazon S3 location (bucket name and object key) where DataBrew can write output from a job.</p>"
+        }
+      },
+      "documentation":"<p>Represents options that specify how and where DataBrew writes the Amazon S3 output generated by recipe jobs.</p>"
+    },
+    "Sample":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "Size":{
+          "shape":"SampleSize",
+          "documentation":"<p>The number of rows in the sample.</p>"
+        },
+        "Type":{
+          "shape":"SampleType",
+          "documentation":"<p>The way in which DataBrew obtains rows from a dataset.</p>"
+        }
+      },
+      "documentation":"<p>Represents the sample size and sampling type for DataBrew to use for interactive data analysis.</p>"
+    },
+    "SampleMode":{
+      "type":"string",
+      "enum":[
+        "FULL_DATASET",
+        "CUSTOM_ROWS"
+      ]
+    },
+    "SampleSize":{
+      "type":"integer",
+      "max":5000,
+      "min":1
+    },
+    "SampleType":{
+      "type":"string",
+      "enum":[
+        "FIRST_N",
+        "LAST_N",
+        "RANDOM"
+      ]
+    },
+    "Schedule":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "AccountId":{
+          "shape":"AccountId",
+          "documentation":"<p>The ID of the Amazon Web Services account that owns the schedule.</p>"
+        },
+        "CreatedBy":{
+          "shape":"CreatedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who created the schedule.</p>"
+        },
+        "CreateDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the schedule was created.</p>"
+        },
+        "JobNames":{
+          "shape":"JobNameList",
+          "documentation":"<p>A list of jobs to be run, according to the schedule.</p>"
+        },
+        "LastModifiedBy":{
+          "shape":"LastModifiedBy",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the user who last modified the schedule.</p>"
+        },
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time when the schedule was last modified.</p>"
+        },
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the schedule.</p>"
+        },
+        "CronExpression":{
+          "shape":"CronExpression",
+          "documentation":"<p>The dates and times when the job is to run. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/jobs.cron.html\">Cron expressions</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Metadata tags that have been applied to the schedule.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule.</p>"
+        }
+      },
+      "documentation":"<p>Represents one or more dates and times when a job is to run.</p>"
+    },
+    "ScheduleList":{
+      "type":"list",
+      "member":{"shape":"Schedule"}
+    },
+    "ScheduleName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "SendProjectSessionActionRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Preview":{
+          "shape":"Preview",
+          "documentation":"<p>If true, the result of the recipe step will be returned, but not applied.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to apply the action to.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RecipeStep":{"shape":"RecipeStep"},
+        "StepIndex":{
+          "shape":"StepIndex",
+          "documentation":"<p>The index from which to preview a step. This index is used to preview the result of steps that have already been applied, so that the resulting view frame is from earlier in the view frame stack.</p>"
+        },
+        "ClientSessionId":{
+          "shape":"ClientSessionId",
+          "documentation":"<p>A unique identifier for an interactive session that's currently open and ready for work. The action will be performed on this session.</p>"
+        },
+        "ViewFrame":{"shape":"ViewFrame"}
+      }
+    },
+    "SendProjectSessionActionResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Result":{
+          "shape":"Result",
+          "documentation":"<p>A message indicating the result of performing the action.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that was affected by the action.</p>"
+        },
+        "ActionId":{
+          "shape":"ActionId",
+          "documentation":"<p>A unique identifier for the action that was performed.</p>"
+        }
+      }
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>A service quota is exceeded.</p>",
+      "error":{"httpStatusCode":402},
+      "exception":true
+    },
+    "SessionStatus":{
+      "type":"string",
+      "enum":[
+        "ASSIGNED",
+        "FAILED",
+        "INITIALIZING",
+        "PROVISIONING",
+        "READY",
+        "RECYCLING",
+        "ROTATING",
+        "TERMINATED",
+        "TERMINATING",
+        "UPDATING"
+      ]
+    },
+    "SheetIndex":{
+      "type":"integer",
+      "max":200,
+      "min":0
+    },
+    "SheetIndexList":{
+      "type":"list",
+      "member":{"shape":"SheetIndex"},
+      "max":1,
+      "min":1
+    },
+    "SheetName":{
+      "type":"string",
+      "max":31,
+      "min":1
+    },
+    "SheetNameList":{
+      "type":"list",
+      "member":{"shape":"SheetName"},
+      "max":1,
+      "min":1
+    },
+    "Source":{
+      "type":"string",
+      "enum":[
+        "S3",
+        "DATA-CATALOG",
+        "DATABASE"
+      ]
+    },
+    "StartColumnIndex":{
+      "type":"integer",
+      "min":0
+    },
+    "StartJobRunRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be run.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "StartJobRunResponse":{
+      "type":"structure",
+      "required":["RunId"],
+      "members":{
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>A system-generated identifier for this particular job run.</p>"
+        }
+      }
+    },
+    "StartProjectSessionRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to act upon.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "AssumeControl":{
+          "shape":"AssumeControl",
+          "documentation":"<p>A value that, if true, enables you to take control of a session, even if a different client is currently accessing the project.</p>"
+        }
+      }
+    },
+    "StartProjectSessionResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to be acted upon.</p>"
+        },
+        "ClientSessionId":{
+          "shape":"ClientSessionId",
+          "documentation":"<p>A system-generated identifier for the session.</p>"
+        }
+      }
+    },
+    "StartRowIndex":{
+      "type":"integer",
+      "min":0
+    },
+    "StartedBy":{"type":"string"},
+    "Statistic":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[A-Z\\_]+$"
+    },
+    "StatisticList":{
+      "type":"list",
+      "member":{"shape":"Statistic"},
+      "min":1
+    },
+    "StatisticOverride":{
+      "type":"structure",
+      "required":[
+        "Statistic",
+        "Parameters"
+      ],
+      "members":{
+        "Statistic":{
+          "shape":"Statistic",
+          "documentation":"<p>The name of an evaluation</p>"
+        },
+        "Parameters":{
+          "shape":"ParameterMap",
+          "documentation":"<p>A map that includes overrides of an evaluation’s parameters.</p>"
+        }
+      },
+      "documentation":"<p>Override of a particular evaluation for a profile job. </p>"
+    },
+    "StatisticOverrideList":{
+      "type":"list",
+      "member":{"shape":"StatisticOverride"},
+      "min":1
+    },
+    "StatisticsConfiguration":{
+      "type":"structure",
+      "members":{
+        "IncludedStatistics":{
+          "shape":"StatisticList",
+          "documentation":"<p>List of included evaluations. When the list is undefined, all supported evaluations will be included.</p>"
+        },
+        "Overrides":{
+          "shape":"StatisticOverrideList",
+          "documentation":"<p>List of overrides for evaluations.</p>"
+        }
+      },
+      "documentation":"<p>Configuration of evaluations for a profile job. This configuration can be used to select evaluations and override the parameters of selected evaluations. </p>"
+    },
+    "StepIndex":{
+      "type":"integer",
+      "min":0
+    },
+    "StopJobRunRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RunId"
+      ],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be stopped.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>The ID of the job run to be stopped.</p>",
+          "location":"uri",
+          "locationName":"runId"
+        }
+      }
+    },
+    "StopJobRunResponse":{
+      "type":"structure",
+      "required":["RunId"],
+      "members":{
+        "RunId":{
+          "shape":"JobRunId",
+          "documentation":"<p>The ID of the job run that you stopped.</p>"
+        }
+      }
+    },
+    "TableName":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The DataBrew resource to which tags should be added. The value for this parameter is an Amazon Resource Name (ARN). For DataBrew, you can tag a dataset, a job, a project, or a recipe.</p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>One or more tags to be assigned to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
+    "TargetColumn":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "Threshold":{
+      "type":"structure",
+      "required":["Value"],
+      "members":{
+        "Value":{
+          "shape":"ThresholdValue",
+          "documentation":"<p>The value of a threshold.</p>"
+        },
+        "Type":{
+          "shape":"ThresholdType",
+          "documentation":"<p>The type of a threshold. Used for comparison of an actual count of rows that satisfy the rule to the threshold value.</p>"
+        },
+        "Unit":{
+          "shape":"ThresholdUnit",
+          "documentation":"<p>Unit of threshold value. Can be either a COUNT or PERCENTAGE of the full sample size used for validation.</p>"
+        }
+      },
+      "documentation":"<p>The threshold used with a non-aggregate check expression. The non-aggregate check expression will be applied to each row in a specific column. Then the threshold will be used to determine whether the validation succeeds.</p>"
+    },
+    "ThresholdType":{
+      "type":"string",
+      "enum":[
+        "GREATER_THAN_OR_EQUAL",
+        "LESS_THAN_OR_EQUAL",
+        "GREATER_THAN",
+        "LESS_THAN"
+      ]
+    },
+    "ThresholdUnit":{
+      "type":"string",
+      "enum":[
+        "COUNT",
+        "PERCENTAGE"
+      ]
+    },
+    "ThresholdValue":{
+      "type":"double",
+      "min":0
+    },
+    "Timeout":{
+      "type":"integer",
+      "min":0
+    },
+    "TimezoneOffset":{
+      "type":"string",
+      "max":6,
+      "min":1,
+      "pattern":"^(Z|[-+](\\d|\\d{2}|\\d{2}:?\\d{2}))$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>A DataBrew resource from which you want to remove a tag or tags. The value for this parameter is an Amazon Resource Name (ARN). </p>",
+          "location":"uri",
+          "locationName":"ResourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys (names) of one or more tags to be removed.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDatasetRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Input"
+      ],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "Format":{
+          "shape":"InputFormat",
+          "documentation":"<p>The file format of a dataset that is created from an Amazon S3 file or folder.</p>"
+        },
+        "FormatOptions":{"shape":"FormatOptions"},
+        "Input":{"shape":"Input"},
+        "PathOptions":{
+          "shape":"PathOptions",
+          "documentation":"<p>A set of options that defines how DataBrew interprets an Amazon S3 path of the dataset.</p>"
+        }
+      }
+    },
+    "UpdateDatasetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"DatasetName",
+          "documentation":"<p>The name of the dataset that you updated.</p>"
+        }
+      }
+    },
+    "UpdateProfileJobRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "OutputLocation",
+        "RoleArn"
+      ],
+      "members":{
+        "Configuration":{
+          "shape":"ProfileConfiguration",
+          "documentation":"<p>Configuration for profile jobs. Used to select columns, do evaluations, and override default parameters of evaluations. When configuration is null, the profile job will run with default settings.</p>"
+        },
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job.</p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - Server-side encryption with keys managed by KMS.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>Enables or disables Amazon CloudWatch logging for the job. If logging is enabled, CloudWatch writes one log stream for each job run.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of compute nodes that DataBrew can use when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "OutputLocation":{"shape":"S3Location"},
+        "ValidationConfigurations":{
+          "shape":"ValidationConfigurationList",
+          "documentation":"<p>List of validation configurations that are applied to the profile job.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        },
+        "JobSample":{
+          "shape":"JobSample",
+          "documentation":"<p>Sample configuration for Profile Jobs only. Determines the number of rows on which the Profile job will be executed. If a JobSample value is not provided for profile jobs, the default value will be used. The default value is CUSTOM_ROWS for the mode parameter and 20000 for the size parameter.</p>"
+        }
+      }
+    },
+    "UpdateProfileJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that was updated.</p>"
+        }
+      }
+    },
+    "UpdateProjectRequest":{
+      "type":"structure",
+      "required":[
+        "RoleArn",
+        "Name"
+      ],
+      "members":{
+        "Sample":{"shape":"Sample"},
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role to be assumed for this request.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "UpdateProjectResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "LastModifiedDate":{
+          "shape":"Date",
+          "documentation":"<p>The date and time that the project was last modified.</p>"
+        },
+        "Name":{
+          "shape":"ProjectName",
+          "documentation":"<p>The name of the project that you updated.</p>"
+        }
+      }
+    },
+    "UpdateRecipeJobRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RoleArn"
+      ],
+      "members":{
+        "EncryptionKeyArn":{
+          "shape":"EncryptionKeyArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an encryption key that is used to protect the job.</p>"
+        },
+        "EncryptionMode":{
+          "shape":"EncryptionMode",
+          "documentation":"<p>The encryption mode for the job, which can be one of the following:</p> <ul> <li> <p> <code>SSE-KMS</code> - Server-side encryption with keys managed by KMS.</p> </li> <li> <p> <code>SSE-S3</code> - Server-side encryption with keys managed by Amazon S3.</p> </li> </ul>"
+        },
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job to update.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "LogSubscription":{
+          "shape":"LogSubscription",
+          "documentation":"<p>Enables or disables Amazon CloudWatch logging for the job. If logging is enabled, CloudWatch writes one log stream for each job run.</p>"
+        },
+        "MaxCapacity":{
+          "shape":"MaxCapacity",
+          "documentation":"<p>The maximum number of nodes that DataBrew can consume when the job processes data.</p>"
+        },
+        "MaxRetries":{
+          "shape":"MaxRetries",
+          "documentation":"<p>The maximum number of times to retry the job after a job run fails.</p>"
+        },
+        "Outputs":{
+          "shape":"OutputList",
+          "documentation":"<p>One or more artifacts that represent the output from running the job. </p>"
+        },
+        "DataCatalogOutputs":{
+          "shape":"DataCatalogOutputList",
+          "documentation":"<p>One or more artifacts that represent the Glue Data Catalog output from running the job.</p>"
+        },
+        "DatabaseOutputs":{
+          "shape":"DatabaseOutputList",
+          "documentation":"<p>Represents a list of JDBC database output objects which defines the output destination for a DataBrew recipe job to write into.</p>"
+        },
+        "RoleArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Identity and Access Management (IAM) role to be assumed when DataBrew runs the job.</p>"
+        },
+        "Timeout":{
+          "shape":"Timeout",
+          "documentation":"<p>The job's timeout in minutes. A job that attempts to run longer than this timeout period ends with a status of <code>TIMEOUT</code>.</p>"
+        }
+      }
+    },
+    "UpdateRecipeJobResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"JobName",
+          "documentation":"<p>The name of the job that you updated.</p>"
+        }
+      }
+    },
+    "UpdateRecipeRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Description":{
+          "shape":"RecipeDescription",
+          "documentation":"<p>A description of the recipe.</p>"
+        },
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "Steps":{
+          "shape":"RecipeStepList",
+          "documentation":"<p>One or more steps to be performed by the recipe. Each step consists of an action, and the conditions under which the action should succeed.</p>"
+        }
+      }
+    },
+    "UpdateRecipeResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RecipeName",
+          "documentation":"<p>The name of the recipe that was updated.</p>"
+        }
+      }
+    },
+    "UpdateRulesetRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Rules"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the ruleset to be updated.</p>",
+          "location":"uri",
+          "locationName":"name"
+        },
+        "Description":{
+          "shape":"RulesetDescription",
+          "documentation":"<p>The description of the ruleset.</p>"
+        },
+        "Rules":{
+          "shape":"RuleList",
+          "documentation":"<p>A list of rules that are defined with the ruleset. A rule includes one or more checks to be validated on a DataBrew dataset.</p>"
+        }
+      }
+    },
+    "UpdateRulesetResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"RulesetName",
+          "documentation":"<p>The name of the updated ruleset.</p>"
+        }
+      }
+    },
+    "UpdateScheduleRequest":{
+      "type":"structure",
+      "required":[
+        "CronExpression",
+        "Name"
+      ],
+      "members":{
+        "JobNames":{
+          "shape":"JobNameList",
+          "documentation":"<p>The name or names of one or more jobs to be run for this schedule.</p>"
+        },
+        "CronExpression":{
+          "shape":"CronExpression",
+          "documentation":"<p>The date or dates and time or times when the jobs are to be run. For more information, see <a href=\"https://docs.aws.amazon.com/databrew/latest/dg/jobs.cron.html\">Cron expressions</a> in the <i>Glue DataBrew Developer Guide</i>.</p>"
+        },
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule to update.</p>",
+          "location":"uri",
+          "locationName":"name"
+        }
+      }
+    },
+    "UpdateScheduleResponse":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"ScheduleName",
+          "documentation":"<p>The name of the schedule that was updated.</p>"
+        }
+      }
+    },
+    "ValidationConfiguration":{
+      "type":"structure",
+      "required":["RulesetArn"],
+      "members":{
+        "RulesetArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the ruleset to be validated in the profile job. The TargetArn of the selected ruleset should be the same as the Amazon Resource Name (ARN) of the dataset that is associated with the profile job.</p>"
+        },
+        "ValidationMode":{
+          "shape":"ValidationMode",
+          "documentation":"<p>Mode of data quality validation. Default mode is “CHECK_ALL” which verifies all rules defined in the selected ruleset.</p>"
+        }
+      },
+      "documentation":"<p>Configuration for data quality validation. Used to select the Rulesets and Validation Mode to be used in the profile job. When ValidationConfiguration is null, the profile job will run without data quality validation.</p>"
+    },
+    "ValidationConfigurationList":{
+      "type":"list",
+      "member":{"shape":"ValidationConfiguration"},
+      "min":1
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The input parameters for this request failed validation.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ValidationMode":{
+      "type":"string",
+      "enum":["CHECK_ALL"]
+    },
+    "ValueReference":{
+      "type":"string",
+      "max":128,
+      "min":2,
+      "pattern":"^:[A-Za-z0-9_]+$"
+    },
+    "ValuesMap":{
+      "type":"map",
+      "key":{"shape":"ValueReference"},
+      "value":{"shape":"ConditionValue"}
+    },
+    "ViewFrame":{
+      "type":"structure",
+      "required":["StartColumnIndex"],
+      "members":{
+        "StartColumnIndex":{
+          "shape":"StartColumnIndex",
+          "documentation":"<p>The starting index for the range of columns to return in the view frame.</p>"
+        },
+        "ColumnRange":{
+          "shape":"ColumnRange",
+          "documentation":"<p>The number of columns to include in the view frame, beginning with the <code>StartColumnIndex</code> value and ignoring any columns in the <code>HiddenColumns</code> list.</p>"
+        },
+        "HiddenColumns":{
+          "shape":"HiddenColumnList",
+          "documentation":"<p>A list of columns to hide in the view frame.</p>"
+        },
+        "StartRowIndex":{
+          "shape":"StartRowIndex",
+          "documentation":"<p>The starting index for the range of rows to return in the view frame.</p>"
+        },
+        "RowRange":{
+          "shape":"RowRange",
+          "documentation":"<p>The number of rows to include in the view frame, beginning with the <code>StartRowIndex</code> value.</p>"
+        },
+        "Analytics":{
+          "shape":"AnalyticsMode",
+          "documentation":"<p>Controls if analytics computation is enabled or disabled. Enabled by default.</p>"
+        }
+      },
+      "documentation":"<p>Represents the data being transformed during an action.</p>"
+    }
+  },
+  "documentation":"<p>Glue DataBrew is a visual, cloud-scale data-preparation service. DataBrew simplifies data preparation tasks, targeting data issues that are hard to spot and time-consuming to fix. DataBrew empowers users of all technical levels to visualize the data and perform one-click data transformations, with no coding required.</p>"
+}

@@ -1,0 +1,616 @@
+{
+  "version": "1.0",
+  "resources": {
+    "ByteMatchSet": {
+      "operation": "ListByteMatchSets",
+      "resourceIdentifier": {
+        "ByteMatchSetId": "ByteMatchSets[].ByteMatchSetId"
+      }
+    },
+    "GeoMatchSet": {
+      "operation": "ListGeoMatchSets",
+      "resourceIdentifier": {
+        "GeoMatchSetId": "GeoMatchSets[].GeoMatchSetId"
+      }
+    },
+    "IPSet": {
+      "operation": "ListIPSets",
+      "resourceIdentifier": {
+        "IPSetId": "IPSets[].IPSetId"
+      }
+    },
+    "LoggingConfiguration": {
+      "operation": "ListLoggingConfigurations",
+      "resourceIdentifier": {
+        "ResourceArn": "LoggingConfigurations[].ResourceArn"
+      }
+    },
+    "RegexMatchSet": {
+      "operation": "ListRegexMatchSets",
+      "resourceIdentifier": {
+        "RegexMatchSetId": "RegexMatchSets[].RegexMatchSetId"
+      }
+    },
+    "RegexPatternSet": {
+      "operation": "ListRegexPatternSets",
+      "resourceIdentifier": {
+        "RegexPatternSetId": "RegexPatternSets[].RegexPatternSetId"
+      }
+    },
+    "Rule": {
+      "operation": "ListRules",
+      "resourceIdentifier": {
+        "RuleId": "Rules[].RuleId"
+      }
+    },
+    "SizeConstraintSet": {
+      "operation": "ListSizeConstraintSets",
+      "resourceIdentifier": {
+        "SizeConstraintSetId": "SizeConstraintSets[].SizeConstraintSetId"
+      }
+    },
+    "SqlInjectionMatchSet": {
+      "operation": "ListSqlInjectionMatchSets",
+      "resourceIdentifier": {
+        "SqlInjectionMatchSetId": "SqlInjectionMatchSets[].SqlInjectionMatchSetId"
+      }
+    },
+    "SubscribedRuleGroup": {
+      "operation": "ListSubscribedRuleGroups",
+      "resourceIdentifier": {
+        "RuleGroupId": "RuleGroups[].RuleGroupId"
+      }
+    },
+    "WebACL": {
+      "operation": "ListWebACLs",
+      "resourceIdentifier": {
+        "WebACLId": "WebACLs[].WebACLId"
+      }
+    },
+    "XssMatchSet": {
+      "operation": "ListXssMatchSets",
+      "resourceIdentifier": {
+        "XssMatchSetId": "XssMatchSets[].XssMatchSetId"
+      }
+    }
+  },
+  "operations": {
+    "AssociateWebACL": {
+      "WebACLId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WebACL",
+            "resourceIdentifier": "WebACLId"
+          }
+        ]
+      },
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "DeleteByteMatchSet": {
+      "ByteMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ByteMatchSet",
+            "resourceIdentifier": "ByteMatchSetId"
+          }
+        ]
+      }
+    },
+    "DeleteGeoMatchSet": {
+      "GeoMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GeoMatchSet",
+            "resourceIdentifier": "GeoMatchSetId"
+          }
+        ]
+      }
+    },
+    "DeleteIPSet": {
+      "IPSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IPSet",
+            "resourceIdentifier": "IPSetId"
+          }
+        ]
+      }
+    },
+    "DeleteLoggingConfiguration": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "DeletePermissionPolicy": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "DeleteRateBasedRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "DeleteRegexMatchSet": {
+      "RegexMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexMatchSet",
+            "resourceIdentifier": "RegexMatchSetId"
+          }
+        ]
+      }
+    },
+    "DeleteRegexPatternSet": {
+      "RegexPatternSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexPatternSet",
+            "resourceIdentifier": "RegexPatternSetId"
+          }
+        ]
+      }
+    },
+    "DeleteRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "DeleteRuleGroup": {
+      "RuleGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscribedRuleGroup",
+            "resourceIdentifier": "RuleGroupId"
+          }
+        ]
+      }
+    },
+    "DeleteSizeConstraintSet": {
+      "SizeConstraintSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SizeConstraintSet",
+            "resourceIdentifier": "SizeConstraintSetId"
+          }
+        ]
+      }
+    },
+    "DeleteSqlInjectionMatchSet": {
+      "SqlInjectionMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SqlInjectionMatchSet",
+            "resourceIdentifier": "SqlInjectionMatchSetId"
+          }
+        ]
+      }
+    },
+    "DeleteWebACL": {
+      "WebACLId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WebACL",
+            "resourceIdentifier": "WebACLId"
+          }
+        ]
+      }
+    },
+    "DeleteXssMatchSet": {
+      "XssMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "XssMatchSet",
+            "resourceIdentifier": "XssMatchSetId"
+          }
+        ]
+      }
+    },
+    "DisassociateWebACL": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "GetByteMatchSet": {
+      "ByteMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ByteMatchSet",
+            "resourceIdentifier": "ByteMatchSetId"
+          }
+        ]
+      }
+    },
+    "GetGeoMatchSet": {
+      "GeoMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GeoMatchSet",
+            "resourceIdentifier": "GeoMatchSetId"
+          }
+        ]
+      }
+    },
+    "GetIPSet": {
+      "IPSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IPSet",
+            "resourceIdentifier": "IPSetId"
+          }
+        ]
+      }
+    },
+    "GetLoggingConfiguration": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "GetPermissionPolicy": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "GetRateBasedRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "GetRateBasedRuleManagedKeys": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "GetRegexMatchSet": {
+      "RegexMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexMatchSet",
+            "resourceIdentifier": "RegexMatchSetId"
+          }
+        ]
+      }
+    },
+    "GetRegexPatternSet": {
+      "RegexPatternSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexPatternSet",
+            "resourceIdentifier": "RegexPatternSetId"
+          }
+        ]
+      }
+    },
+    "GetRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "GetRuleGroup": {
+      "RuleGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscribedRuleGroup",
+            "resourceIdentifier": "RuleGroupId"
+          }
+        ]
+      }
+    },
+    "GetSampledRequests": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "GetSizeConstraintSet": {
+      "SizeConstraintSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SizeConstraintSet",
+            "resourceIdentifier": "SizeConstraintSetId"
+          }
+        ]
+      }
+    },
+    "GetSqlInjectionMatchSet": {
+      "SqlInjectionMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SqlInjectionMatchSet",
+            "resourceIdentifier": "SqlInjectionMatchSetId"
+          }
+        ]
+      }
+    },
+    "GetWebACL": {
+      "WebACLId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WebACL",
+            "resourceIdentifier": "WebACLId"
+          }
+        ]
+      }
+    },
+    "GetWebACLForResource": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "GetXssMatchSet": {
+      "XssMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "XssMatchSet",
+            "resourceIdentifier": "XssMatchSetId"
+          }
+        ]
+      }
+    },
+    "ListActivatedRulesInRuleGroup": {
+      "RuleGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscribedRuleGroup",
+            "resourceIdentifier": "RuleGroupId"
+          }
+        ]
+      }
+    },
+    "ListResourcesForWebACL": {
+      "WebACLId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WebACL",
+            "resourceIdentifier": "WebACLId"
+          }
+        ]
+      }
+    },
+    "PutPermissionPolicy": {
+      "ResourceArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "LoggingConfiguration",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      }
+    },
+    "UpdateByteMatchSet": {
+      "ByteMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "ByteMatchSet",
+            "resourceIdentifier": "ByteMatchSetId"
+          }
+        ]
+      }
+    },
+    "UpdateGeoMatchSet": {
+      "GeoMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GeoMatchSet",
+            "resourceIdentifier": "GeoMatchSetId"
+          }
+        ]
+      }
+    },
+    "UpdateIPSet": {
+      "IPSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "IPSet",
+            "resourceIdentifier": "IPSetId"
+          }
+        ]
+      }
+    },
+    "UpdateRateBasedRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "UpdateRegexMatchSet": {
+      "RegexMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexMatchSet",
+            "resourceIdentifier": "RegexMatchSetId"
+          }
+        ]
+      }
+    },
+    "UpdateRegexPatternSet": {
+      "RegexPatternSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "RegexPatternSet",
+            "resourceIdentifier": "RegexPatternSetId"
+          }
+        ]
+      }
+    },
+    "UpdateRule": {
+      "RuleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Rule",
+            "resourceIdentifier": "RuleId"
+          }
+        ]
+      }
+    },
+    "UpdateRuleGroup": {
+      "RuleGroupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SubscribedRuleGroup",
+            "resourceIdentifier": "RuleGroupId"
+          }
+        ]
+      }
+    },
+    "UpdateSizeConstraintSet": {
+      "SizeConstraintSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SizeConstraintSet",
+            "resourceIdentifier": "SizeConstraintSetId"
+          }
+        ]
+      }
+    },
+    "UpdateSqlInjectionMatchSet": {
+      "SqlInjectionMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "SqlInjectionMatchSet",
+            "resourceIdentifier": "SqlInjectionMatchSetId"
+          }
+        ]
+      }
+    },
+    "UpdateWebACL": {
+      "WebACLId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WebACL",
+            "resourceIdentifier": "WebACLId"
+          }
+        ]
+      }
+    },
+    "UpdateXssMatchSet": {
+      "XssMatchSetId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "XssMatchSet",
+            "resourceIdentifier": "XssMatchSetId"
+          }
+        ]
+      }
+    }
+  }
+}

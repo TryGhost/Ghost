@@ -1,0 +1,85 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Backup": {
+      "operation": "DescribeBackups",
+      "resourceIdentifier": {
+        "BackupId": "Backups[].BackupId"
+      }
+    },
+    "Cluster": {
+      "operation": "DescribeClusters",
+      "resourceIdentifier": {
+        "ClusterId": "Clusters[].ClusterId"
+      }
+    }
+  },
+  "operations": {
+    "CopyBackupToRegion": {
+      "BackupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupId"
+          }
+        ]
+      }
+    },
+    "DeleteBackup": {
+      "BackupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupId"
+          }
+        ]
+      }
+    },
+    "DeleteCluster": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "DeleteHsm": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "InitializeCluster": {
+      "ClusterId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Cluster",
+            "resourceIdentifier": "ClusterId"
+          }
+        ]
+      }
+    },
+    "RestoreBackup": {
+      "BackupId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Backup",
+            "resourceIdentifier": "BackupId"
+          }
+        ]
+      }
+    }
+  }
+}

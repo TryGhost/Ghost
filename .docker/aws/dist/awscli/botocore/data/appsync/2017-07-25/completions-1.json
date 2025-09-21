@@ -1,0 +1,321 @@
+{
+  "version": "1.0",
+  "resources": {
+    "GraphqlApi": {
+      "operation": "ListGraphqlApis",
+      "resourceIdentifier": {
+        "name": "graphqlApis[].name",
+        "apiId": "graphqlApis[].apiId",
+        "authenticationType": "graphqlApis[].authenticationType",
+        "logConfig": "graphqlApis[].logConfig",
+        "userPoolConfig": "graphqlApis[].userPoolConfig",
+        "openIDConnectConfig": "graphqlApis[].openIDConnectConfig"
+      }
+    }
+  },
+  "operations": {
+    "DeleteApiKey": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "DeleteDataSource": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "DeleteGraphqlApi": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "DeleteResolver": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "DeleteType": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "GetDataSource": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "GetGraphqlApi": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "GetIntrospectionSchema": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "GetResolver": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "GetSchemaCreationStatus": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "GetType": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "ListApiKeys": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "ListDataSources": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "ListResolvers": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "ListTypes": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "StartSchemaCreation": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "UpdateApiKey": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "UpdateDataSource": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "name"
+          }
+        ]
+      }
+    },
+    "UpdateGraphqlApi": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      },
+      "name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "name"
+          }
+        ]
+      },
+      "logConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "logConfig"
+          }
+        ]
+      },
+      "authenticationType": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "authenticationType"
+          }
+        ]
+      },
+      "userPoolConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "userPoolConfig"
+          }
+        ]
+      },
+      "openIDConnectConfig": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "openIDConnectConfig"
+          }
+        ]
+      }
+    },
+    "UpdateResolver": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    },
+    "UpdateType": {
+      "apiId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "GraphqlApi",
+            "resourceIdentifier": "apiId"
+          }
+        ]
+      }
+    }
+  }
+}

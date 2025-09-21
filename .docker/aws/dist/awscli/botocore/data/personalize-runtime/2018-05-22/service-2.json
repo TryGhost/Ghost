@@ -1,0 +1,414 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-22",
+    "endpointPrefix":"personalize-runtime",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon Personalize Runtime",
+    "serviceId":"Personalize Runtime",
+    "signatureVersion":"v4",
+    "signingName":"personalize",
+    "uid":"personalize-runtime-2018-05-22",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "GetActionRecommendations":{
+      "name":"GetActionRecommendations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/action-recommendations"
+      },
+      "input":{"shape":"GetActionRecommendationsRequest"},
+      "output":{"shape":"GetActionRecommendationsResponse"},
+      "errors":[
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of recommended actions in sorted in descending order by prediction score. Use the <code>GetActionRecommendations</code> API if you have a custom campaign that deploys a solution version trained with a PERSONALIZED_ACTIONS recipe. </p> <p>For more information about PERSONALIZED_ACTIONS recipes, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/nexts-best-action-recipes.html\">PERSONALIZED_ACTIONS recipes</a>. For more information about getting action recommendations, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/get-action-recommendations.html\">Getting action recommendations</a>.</p>",
+      "idempotent":true
+    },
+    "GetPersonalizedRanking":{
+      "name":"GetPersonalizedRanking",
+      "http":{
+        "method":"POST",
+        "requestUri":"/personalize-ranking"
+      },
+      "input":{"shape":"GetPersonalizedRankingRequest"},
+      "output":{"shape":"GetPersonalizedRankingResponse"},
+      "errors":[
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Re-ranks a list of recommended items for the given user. The first item in the list is deemed the most likely item to be of interest to the user.</p> <note> <p>The solution backing the campaign must have been created using a recipe of type PERSONALIZED_RANKING.</p> </note>",
+      "idempotent":true
+    },
+    "GetRecommendations":{
+      "name":"GetRecommendations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/recommendations"
+      },
+      "input":{"shape":"GetRecommendationsRequest"},
+      "output":{"shape":"GetRecommendationsResponse"},
+      "errors":[
+        {"shape":"InvalidInputException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of recommended items. For campaigns, the campaign's Amazon Resource Name (ARN) is required and the required user and item input depends on the recipe type used to create the solution backing the campaign as follows:</p> <ul> <li> <p>USER_PERSONALIZATION - <code>userId</code> required, <code>itemId</code> not used</p> </li> <li> <p>RELATED_ITEMS - <code>itemId</code> required, <code>userId</code> not used</p> </li> </ul> <note> <p>Campaigns that are backed by a solution created using a recipe of type PERSONALIZED_RANKING use the API.</p> </note> <p> For recommenders, the recommender's ARN is required and the required item and user input depends on the use case (domain-based recipe) backing the recommender. For information on use case requirements see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/domain-use-cases.html\">Choosing recommender use cases</a>. </p>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "ActionID":{
+      "type":"string",
+      "max":256
+    },
+    "ActionList":{
+      "type":"list",
+      "member":{"shape":"PredictedAction"}
+    },
+    "Arn":{
+      "type":"string",
+      "max":256,
+      "pattern":"arn:([a-z\\d-]+):personalize:.*:.*:.+"
+    },
+    "AttributeName":{
+      "type":"string",
+      "max":150,
+      "pattern":"[A-Za-z\\d_]+"
+    },
+    "AttributeValue":{
+      "type":"string",
+      "max":1000,
+      "sensitive":true
+    },
+    "ColumnName":{
+      "type":"string",
+      "max":150
+    },
+    "ColumnNamesList":{
+      "type":"list",
+      "member":{"shape":"ColumnName"},
+      "max":99
+    },
+    "ColumnValue":{
+      "type":"string",
+      "max":20000
+    },
+    "Context":{
+      "type":"map",
+      "key":{"shape":"AttributeName"},
+      "value":{"shape":"AttributeValue"},
+      "max":150
+    },
+    "DatasetType":{
+      "type":"string",
+      "max":256
+    },
+    "ErrorMessage":{"type":"string"},
+    "FilterAttributeName":{
+      "type":"string",
+      "max":50,
+      "pattern":"[A-Za-z0-9_]+"
+    },
+    "FilterAttributeValue":{
+      "type":"string",
+      "max":1000,
+      "sensitive":true
+    },
+    "FilterValues":{
+      "type":"map",
+      "key":{"shape":"FilterAttributeName"},
+      "value":{"shape":"FilterAttributeValue"},
+      "max":25
+    },
+    "GetActionRecommendationsRequest":{
+      "type":"structure",
+      "members":{
+        "campaignArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the campaign to use for getting action recommendations. This campaign must deploy a solution version trained with a PERSONALIZED_ACTIONS recipe.</p>"
+        },
+        "userId":{
+          "shape":"UserID",
+          "documentation":"<p>The user ID of the user to provide action recommendations for.</p>"
+        },
+        "numResults":{
+          "shape":"NumResults",
+          "documentation":"<p>The number of results to return. The default is 5. The maximum is 100.</p>"
+        },
+        "filterArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the filter to apply to the returned recommendations. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering Recommendations</a>.</p> <p>When using this parameter, be sure the filter resource is <code>ACTIVE</code>.</p>"
+        },
+        "filterValues":{
+          "shape":"FilterValues",
+          "documentation":"<p>The values to use when filtering recommendations. For each placeholder parameter in your filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include actions, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude actions, you can omit the <code>filter-values</code>. In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering recommendations and user segments</a>.</p>"
+        }
+      }
+    },
+    "GetActionRecommendationsResponse":{
+      "type":"structure",
+      "members":{
+        "actionList":{
+          "shape":"ActionList",
+          "documentation":"<p>A list of action recommendations sorted in descending order by prediction score. There can be a maximum of 100 actions in the list. For information about action scores, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/how-action-recommendation-scoring-works.html\">How action recommendation scoring works</a>.</p>"
+        },
+        "recommendationId":{
+          "shape":"RecommendationID",
+          "documentation":"<p>The ID of the recommendation.</p>"
+        }
+      }
+    },
+    "GetPersonalizedRankingRequest":{
+      "type":"structure",
+      "required":[
+        "campaignArn",
+        "inputList",
+        "userId"
+      ],
+      "members":{
+        "campaignArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the campaign to use for generating the personalized ranking.</p>"
+        },
+        "inputList":{
+          "shape":"InputList",
+          "documentation":"<p>A list of items (by <code>itemId</code>) to rank. If an item was not included in the training dataset, the item is appended to the end of the reranked list. If you are including metadata in recommendations, the maximum is 50. Otherwise, the maximum is 500.</p>"
+        },
+        "userId":{
+          "shape":"UserID",
+          "documentation":"<p>The user for which you want the campaign to provide a personalized ranking.</p>"
+        },
+        "context":{
+          "shape":"Context",
+          "documentation":"<p>The contextual metadata to use when getting recommendations. Contextual metadata includes any interaction information that might be relevant when getting a user's recommendations, such as the user's current location or device type.</p>"
+        },
+        "filterArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a filter you created to include items or exclude items from recommendations for a given user. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering Recommendations</a>.</p>"
+        },
+        "filterValues":{
+          "shape":"FilterValues",
+          "documentation":"<p>The values to use when filtering recommendations. For each placeholder parameter in your filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include items, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude items, you can omit the <code>filter-values</code>.In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering Recommendations</a>.</p>"
+        },
+        "metadataColumns":{
+          "shape":"MetadataColumns",
+          "documentation":"<p>If you enabled metadata in recommendations when you created or updated the campaign, specify metadata columns from your Items dataset to include in the personalized ranking. The map key is <code>ITEMS</code> and the value is a list of column names from your Items dataset. The maximum number of columns you can provide is 10.</p> <p> For information about enabling metadata for a campaign, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/campaigns.html#create-campaign-return-metadata\">Enabling metadata in recommendations for a campaign</a>. </p>"
+        }
+      }
+    },
+    "GetPersonalizedRankingResponse":{
+      "type":"structure",
+      "members":{
+        "personalizedRanking":{
+          "shape":"ItemList",
+          "documentation":"<p>A list of items in order of most likely interest to the user. The maximum is 500.</p>"
+        },
+        "recommendationId":{
+          "shape":"RecommendationID",
+          "documentation":"<p>The ID of the recommendation.</p>"
+        }
+      }
+    },
+    "GetRecommendationsRequest":{
+      "type":"structure",
+      "members":{
+        "campaignArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the campaign to use for getting recommendations.</p>"
+        },
+        "itemId":{
+          "shape":"ItemID",
+          "documentation":"<p>The item ID to provide recommendations for.</p> <p>Required for <code>RELATED_ITEMS</code> recipe type.</p>"
+        },
+        "userId":{
+          "shape":"UserID",
+          "documentation":"<p>The user ID to provide recommendations for.</p> <p>Required for <code>USER_PERSONALIZATION</code> recipe type.</p>"
+        },
+        "numResults":{
+          "shape":"NumResults",
+          "documentation":"<p>The number of results to return. The default is 25. If you are including metadata in recommendations, the maximum is 50. Otherwise, the maximum is 500.</p>"
+        },
+        "context":{
+          "shape":"Context",
+          "documentation":"<p>The contextual metadata to use when getting recommendations. Contextual metadata includes any interaction information that might be relevant when getting a user's recommendations, such as the user's current location or device type.</p>"
+        },
+        "filterArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the filter to apply to the returned recommendations. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering Recommendations</a>.</p> <p>When using this parameter, be sure the filter resource is <code>ACTIVE</code>.</p>"
+        },
+        "filterValues":{
+          "shape":"FilterValues",
+          "documentation":"<p>The values to use when filtering recommendations. For each placeholder parameter in your filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include items, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude items, you can omit the <code>filter-values</code>.In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering recommendations and user segments</a>.</p>"
+        },
+        "recommenderArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the recommender to use to get recommendations. Provide a recommender ARN if you created a Domain dataset group with a recommender for a domain use case.</p>"
+        },
+        "promotions":{
+          "shape":"PromotionList",
+          "documentation":"<p>The promotions to apply to the recommendation request. A promotion defines additional business rules that apply to a configurable subset of recommended items.</p>"
+        },
+        "metadataColumns":{
+          "shape":"MetadataColumns",
+          "documentation":"<p>If you enabled metadata in recommendations when you created or updated the campaign or recommender, specify the metadata columns from your Items dataset to include in item recommendations. The map key is <code>ITEMS</code> and the value is a list of column names from your Items dataset. The maximum number of columns you can provide is 10.</p> <p> For information about enabling metadata for a campaign, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/campaigns.html#create-campaign-return-metadata\">Enabling metadata in recommendations for a campaign</a>. For information about enabling metadata for a recommender, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/creating-recommenders.html#create-recommender-return-metadata\">Enabling metadata in recommendations for a recommender</a>. </p>"
+        }
+      }
+    },
+    "GetRecommendationsResponse":{
+      "type":"structure",
+      "members":{
+        "itemList":{
+          "shape":"ItemList",
+          "documentation":"<p>A list of recommendations sorted in descending order by prediction score. There can be a maximum of 500 items in the list.</p>"
+        },
+        "recommendationId":{
+          "shape":"RecommendationID",
+          "documentation":"<p>The ID of the recommendation.</p>"
+        }
+      }
+    },
+    "InputList":{
+      "type":"list",
+      "member":{"shape":"ItemID"}
+    },
+    "InvalidInputException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Provide a valid value for the field or parameter.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "ItemID":{
+      "type":"string",
+      "max":256
+    },
+    "ItemList":{
+      "type":"list",
+      "member":{"shape":"PredictedItem"}
+    },
+    "Metadata":{
+      "type":"map",
+      "key":{"shape":"ColumnName"},
+      "value":{"shape":"ColumnValue"},
+      "sensitive":true
+    },
+    "MetadataColumns":{
+      "type":"map",
+      "key":{"shape":"DatasetType"},
+      "value":{"shape":"ColumnNamesList"},
+      "max":1
+    },
+    "Name":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9][a-zA-Z0-9\\-_]*"
+    },
+    "NumResults":{
+      "type":"integer",
+      "min":0
+    },
+    "PercentPromotedItems":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "PredictedAction":{
+      "type":"structure",
+      "members":{
+        "actionId":{
+          "shape":"ActionID",
+          "documentation":"<p>The ID of the recommended action.</p>"
+        },
+        "score":{
+          "shape":"Score",
+          "documentation":"<p>The score of the recommended action. For information about action scores, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/how-action-recommendation-scoring-works.html\">How action recommendation scoring works</a>.</p>"
+        }
+      },
+      "documentation":"<p>An object that identifies an action.</p> <p>The API returns a list of <code>PredictedAction</code>s.</p>"
+    },
+    "PredictedItem":{
+      "type":"structure",
+      "members":{
+        "itemId":{
+          "shape":"ItemID",
+          "documentation":"<p>The recommended item ID.</p>"
+        },
+        "score":{
+          "shape":"Score",
+          "documentation":"<p>A numeric representation of the model's certainty that the item will be the next user selection. For more information on scoring logic, see <a>how-scores-work</a>.</p>"
+        },
+        "promotionName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the promotion that included the predicted item.</p>"
+        },
+        "metadata":{
+          "shape":"Metadata",
+          "documentation":"<p>Metadata about the item from your Items dataset.</p>"
+        },
+        "reason":{
+          "shape":"ReasonList",
+          "documentation":"<p>If you use User-Personalization-v2, a list of reasons for why the item was included in recommendations. Possible reasons include the following:</p> <ul> <li> <p>Promoted item - Indicates the item was included as part of a promotion that you applied in your recommendation request.</p> </li> <li> <p>Exploration - Indicates the item was included with exploration. With exploration, recommendations include items with less interactions data or relevance for the user. For more information about exploration, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/use-case-recipe-features.html#about-exploration\">Exploration</a>.</p> </li> <li> <p> Popular item - Indicates the item was included as a placeholder popular item. If you use a filter, depending on how many recommendations the filter removes, Amazon Personalize might add placeholder items to meet the <code>numResults</code> for your recommendation request. These items are popular items, based on interactions data, that satisfy your filter criteria. They don't have a relevance score for the user. </p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>An object that identifies an item.</p> <p>The and APIs return a list of <code>PredictedItem</code>s.</p>"
+    },
+    "Promotion":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the promotion.</p>"
+        },
+        "percentPromotedItems":{
+          "shape":"PercentPromotedItems",
+          "documentation":"<p>The percentage of recommended items to apply the promotion to.</p>"
+        },
+        "filterArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the filter used by the promotion. This filter defines the criteria for promoted items. For more information, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/promoting-items.html#promotion-filters\">Promotion filters</a>.</p>"
+        },
+        "filterValues":{
+          "shape":"FilterValues",
+          "documentation":"<p>The values to use when promoting items. For each placeholder parameter in your promotion's filter expression, provide the parameter name (in matching case) as a key and the filter value(s) as the corresponding value. Separate multiple values for one parameter with a comma. </p> <p>For filter expressions that use an <code>INCLUDE</code> element to include items, you must provide values for all parameters that are defined in the expression. For filters with expressions that use an <code>EXCLUDE</code> element to exclude items, you can omit the <code>filter-values</code>. In this case, Amazon Personalize doesn't use that portion of the expression to filter recommendations.</p> <p>For more information on creating filters, see <a href=\"https://docs.aws.amazon.com/personalize/latest/dg/filter.html\">Filtering recommendations and user segments</a>.</p>"
+        }
+      },
+      "documentation":"<p>Contains information on a promotion. A promotion defines additional business rules that apply to a configurable subset of recommended items.</p>"
+    },
+    "PromotionList":{
+      "type":"list",
+      "member":{"shape":"Promotion"},
+      "max":1
+    },
+    "Reason":{
+      "type":"string",
+      "max":256
+    },
+    "ReasonList":{
+      "type":"list",
+      "member":{"shape":"Reason"}
+    },
+    "RecommendationID":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The specified resource does not exist.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "Score":{"type":"double"},
+    "UserID":{
+      "type":"string",
+      "max":256
+    }
+  },
+  "documentation":"<p/>"
+}

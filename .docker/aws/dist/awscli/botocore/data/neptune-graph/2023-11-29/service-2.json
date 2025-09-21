@@ -1,0 +1,3851 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2023-11-29",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"neptune-graph",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"Neptune Graph",
+    "serviceFullName":"Amazon Neptune Graph",
+    "serviceId":"Neptune Graph",
+    "signatureVersion":"v4",
+    "signingName":"neptune-graph",
+    "uid":"neptune-graph-2023-11-29"
+  },
+  "operations":{
+    "CancelExportTask":{
+      "name":"CancelExportTask",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/exporttasks/{taskIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelExportTaskInput"},
+      "output":{"shape":"CancelExportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Cancel the specified export task.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "CancelImportTask":{
+      "name":"CancelImportTask",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/importtasks/{taskIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelImportTaskInput"},
+      "output":{"shape":"CancelImportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the specified import task.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "CancelQuery":{
+      "name":"CancelQuery",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/queries/{queryId}",
+        "responseCode":200
+      },
+      "input":{"shape":"CancelQueryInput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Cancels a specified query.</p>",
+      "endpoint":{
+        "hostPrefix":"{graphIdentifier}."
+      },
+      "idempotent":true,
+      "staticContextParams":{
+        "ApiType":{"value":"DataPlane"}
+      }
+    },
+    "CreateGraph":{
+      "name":"CreateGraph",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateGraphInput"},
+      "output":{"shape":"CreateGraphOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a new Neptune Analytics graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "CreateGraphSnapshot":{
+      "name":"CreateGraphSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/snapshots",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateGraphSnapshotInput"},
+      "output":{"shape":"CreateGraphSnapshotOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Creates a snapshot of the specific graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "CreateGraphUsingImportTask":{
+      "name":"CreateGraphUsingImportTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/importtasks",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateGraphUsingImportTaskInput"},
+      "output":{"shape":"CreateGraphUsingImportTaskOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a new Neptune Analytics graph and imports data into it, either from Amazon Simple Storage Service (S3) or from a Neptune database or a Neptune database snapshot.</p> <p>The data can be loaded from files in S3 that in either the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a> or the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "CreatePrivateGraphEndpoint":{
+      "name":"CreatePrivateGraphEndpoint",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs/{graphIdentifier}/endpoints/",
+        "responseCode":201
+      },
+      "input":{"shape":"CreatePrivateGraphEndpointInput"},
+      "output":{"shape":"CreatePrivateGraphEndpointOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Create a private graph endpoint to allow private access from to the graph from within a VPC. You can attach security groups to the private graph endpoint.</p> <note> <p>VPC endpoint charges apply.</p> </note>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "DeleteGraph":{
+      "name":"DeleteGraph",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/graphs/{graphIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteGraphInput"},
+      "output":{"shape":"DeleteGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the specified graph. Graphs cannot be deleted if delete-protection is enabled.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "DeleteGraphSnapshot":{
+      "name":"DeleteGraphSnapshot",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/snapshots/{snapshotIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteGraphSnapshotInput"},
+      "output":{"shape":"DeleteGraphSnapshotOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes the specifed graph snapshot.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "DeletePrivateGraphEndpoint":{
+      "name":"DeletePrivateGraphEndpoint",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/graphs/{graphIdentifier}/endpoints/{vpcId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeletePrivateGraphEndpointInput"},
+      "output":{"shape":"DeletePrivateGraphEndpointOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Deletes a private graph endpoint.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ExecuteQuery":{
+      "name":"ExecuteQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/queries",
+        "responseCode":200
+      },
+      "input":{"shape":"ExecuteQueryInput"},
+      "output":{"shape":"ExecuteQueryOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"UnprocessableException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Execute an openCypher query.</p> <p> When invoking this operation in a Neptune Analytics cluster, the IAM user or role making the request must have a policy attached that allows one of the following IAM actions in that cluster, depending on the query: </p> <ul> <li> <p>neptune-graph:ReadDataViaQuery</p> </li> <li> <p>neptune-graph:WriteDataViaQuery</p> </li> <li> <p>neptune-graph:DeleteDataViaQuery</p> </li> </ul>",
+      "endpoint":{
+        "hostPrefix":"{graphIdentifier}."
+      },
+      "staticContextParams":{
+        "ApiType":{"value":"DataPlane"}
+      }
+    },
+    "GetExportTask":{
+      "name":"GetExportTask",
+      "http":{
+        "method":"GET",
+        "requestUri":"/exporttasks/{taskIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetExportTaskInput"},
+      "output":{"shape":"GetExportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves a specified export task.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "GetGraph":{
+      "name":"GetGraph",
+      "http":{
+        "method":"GET",
+        "requestUri":"/graphs/{graphIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetGraphInput"},
+      "output":{"shape":"GetGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets information about a specified graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "GetGraphSnapshot":{
+      "name":"GetGraphSnapshot",
+      "http":{
+        "method":"GET",
+        "requestUri":"/snapshots/{snapshotIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetGraphSnapshotInput"},
+      "output":{"shape":"GetGraphSnapshotOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves a specified graph snapshot.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "GetGraphSummary":{
+      "name":"GetGraphSummary",
+      "http":{
+        "method":"GET",
+        "requestUri":"/summary",
+        "responseCode":200
+      },
+      "input":{"shape":"GetGraphSummaryInput"},
+      "output":{"shape":"GetGraphSummaryOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Gets a graph summary for a property graph.</p>",
+      "endpoint":{
+        "hostPrefix":"{graphIdentifier}."
+      },
+      "staticContextParams":{
+        "ApiType":{"value":"DataPlane"}
+      }
+    },
+    "GetImportTask":{
+      "name":"GetImportTask",
+      "http":{
+        "method":"GET",
+        "requestUri":"/importtasks/{taskIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetImportTaskInput"},
+      "output":{"shape":"GetImportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves a specified import task.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "GetPrivateGraphEndpoint":{
+      "name":"GetPrivateGraphEndpoint",
+      "http":{
+        "method":"GET",
+        "requestUri":"/graphs/{graphIdentifier}/endpoints/{vpcId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPrivateGraphEndpointInput"},
+      "output":{"shape":"GetPrivateGraphEndpointOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves information about a specified private endpoint.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "GetQuery":{
+      "name":"GetQuery",
+      "http":{
+        "method":"GET",
+        "requestUri":"/queries/{queryId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetQueryInput"},
+      "output":{"shape":"GetQueryOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves the status of a specified query.</p> <note> <p> When invoking this operation in a Neptune Analytics cluster, the IAM user or role making the request must have the <code>neptune-graph:GetQueryStatus</code> IAM action attached. </p> </note>",
+      "endpoint":{
+        "hostPrefix":"{graphIdentifier}."
+      },
+      "staticContextParams":{
+        "ApiType":{"value":"DataPlane"}
+      }
+    },
+    "ListExportTasks":{
+      "name":"ListExportTasks",
+      "http":{
+        "method":"GET",
+        "requestUri":"/exporttasks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListExportTasksInput"},
+      "output":{"shape":"ListExportTasksOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves a list of export tasks.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ListGraphSnapshots":{
+      "name":"ListGraphSnapshots",
+      "http":{
+        "method":"GET",
+        "requestUri":"/snapshots",
+        "responseCode":200
+      },
+      "input":{"shape":"ListGraphSnapshotsInput"},
+      "output":{"shape":"ListGraphSnapshotsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists available snapshots of a specified Neptune Analytics graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ListGraphs":{
+      "name":"ListGraphs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/graphs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListGraphsInput"},
+      "output":{"shape":"ListGraphsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists available Neptune Analytics graphs.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ListImportTasks":{
+      "name":"ListImportTasks",
+      "http":{
+        "method":"GET",
+        "requestUri":"/importtasks",
+        "responseCode":200
+      },
+      "input":{"shape":"ListImportTasksInput"},
+      "output":{"shape":"ListImportTasksOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists import tasks.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ListPrivateGraphEndpoints":{
+      "name":"ListPrivateGraphEndpoints",
+      "http":{
+        "method":"GET",
+        "requestUri":"/graphs/{graphIdentifier}/endpoints/",
+        "responseCode":200
+      },
+      "input":{"shape":"ListPrivateGraphEndpointsInput"},
+      "output":{"shape":"ListPrivateGraphEndpointsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists private endpoints for a specified Neptune Analytics graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ListQueries":{
+      "name":"ListQueries",
+      "http":{
+        "method":"GET",
+        "requestUri":"/queries",
+        "responseCode":200
+      },
+      "input":{"shape":"ListQueriesInput"},
+      "output":{"shape":"ListQueriesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists active openCypher queries.</p>",
+      "endpoint":{
+        "hostPrefix":"{graphIdentifier}."
+      },
+      "staticContextParams":{
+        "ApiType":{"value":"DataPlane"}
+      }
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Lists tags associated with a specified resource.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "ResetGraph":{
+      "name":"ResetGraph",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/graphs/{graphIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"ResetGraphInput"},
+      "output":{"shape":"ResetGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Empties the data from a specified Neptune Analytics graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "RestoreGraphFromSnapshot":{
+      "name":"RestoreGraphFromSnapshot",
+      "http":{
+        "method":"POST",
+        "requestUri":"/snapshots/{snapshotIdentifier}/restore",
+        "responseCode":201
+      },
+      "input":{"shape":"RestoreGraphFromSnapshotInput"},
+      "output":{"shape":"RestoreGraphFromSnapshotOutput"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Restores a graph from a snapshot.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "StartExportTask":{
+      "name":"StartExportTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/exporttasks",
+        "responseCode":201
+      },
+      "input":{"shape":"StartExportTaskInput"},
+      "output":{"shape":"StartExportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Export data from an existing Neptune Analytics graph to Amazon S3. The graph state should be <code>AVAILABLE</code>.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "StartGraph":{
+      "name":"StartGraph",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs/{graphIdentifier}/start",
+        "responseCode":200
+      },
+      "input":{"shape":"StartGraphInput"},
+      "output":{"shape":"StartGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Starts the specific graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "StartImportTask":{
+      "name":"StartImportTask",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs/{graphIdentifier}/importtasks",
+        "responseCode":201
+      },
+      "input":{"shape":"StartImportTaskInput"},
+      "output":{"shape":"StartImportTaskOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Import data into existing Neptune Analytics graph from Amazon Simple Storage Service (S3). The graph needs to be empty and in the AVAILABLE state.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "StopGraph":{
+      "name":"StopGraph",
+      "http":{
+        "method":"POST",
+        "requestUri":"/graphs/{graphIdentifier}/stop",
+        "responseCode":200
+      },
+      "input":{"shape":"StopGraphInput"},
+      "output":{"shape":"StopGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Stops the specific graph.</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds tags to the specified resource.</p>",
+      "idempotent":true,
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p>",
+      "idempotent":true,
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    },
+    "UpdateGraph":{
+      "name":"UpdateGraph",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/graphs/{graphIdentifier}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateGraphInput"},
+      "output":{"shape":"UpdateGraphOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Updates the configuration of a specified Neptune Analytics graph</p>",
+      "staticContextParams":{
+        "ApiType":{"value":"ControlPlane"}
+      }
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        }
+      },
+      "documentation":"<p>Raised in case of an authentication or authorization failure.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Arn":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"arn:.+"
+    },
+    "BlankNodeHandling":{
+      "type":"string",
+      "enum":["convertToIri"]
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CancelExportTaskInput":{
+      "type":"structure",
+      "required":["taskIdentifier"],
+      "members":{
+        "taskIdentifier":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>",
+          "location":"uri",
+          "locationName":"taskIdentifier"
+        }
+      }
+    },
+    "CancelExportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "graphId",
+        "roleArn",
+        "taskId",
+        "status",
+        "format",
+        "destination",
+        "kmsKeyIdentifier"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The source graph identifier of the cancelled export task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow the exporting of data to the destination.</p>"
+        },
+        "taskId":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>"
+        },
+        "status":{
+          "shape":"ExportTaskStatus",
+          "documentation":"<p>The current status of the export task. The status is <code>CANCELLING</code> when the export task is cancelled.</p>"
+        },
+        "format":{
+          "shape":"ExportFormat",
+          "documentation":"<p>The format of the cancelled export task.</p>"
+        },
+        "destination":{
+          "shape":"CancelExportTaskOutputDestinationString",
+          "documentation":"<p>The Amazon S3 URI of the cancelled export task where data will be exported to.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The KMS key identifier of the cancelled export task.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the cancelled export task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the export task has this status value.</p>"
+        }
+      }
+    },
+    "CancelExportTaskOutputDestinationString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "CancelImportTaskInput":{
+      "type":"structure",
+      "required":["taskIdentifier"],
+      "members":{
+        "taskIdentifier":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>",
+          "location":"uri",
+          "locationName":"taskIdentifier"
+        }
+      }
+    },
+    "CancelImportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "taskId",
+        "source",
+        "roleArn",
+        "status"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying to the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of S3 data to be imported. Valid values are <code>CSV</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a> or <code>OPENCYPHER</code>, which identies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the cancelled import task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        },
+        "status":{
+          "shape":"ImportTaskStatus",
+          "documentation":"<p>Current status of the task. Status is CANCELLING when the import task is cancelled.</p>"
+        }
+      }
+    },
+    "CancelQueryInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "queryId"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "hostLabel":true,
+          "location":"header",
+          "locationName":"graphIdentifier"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the query to cancel.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        },
+        "reason":{
+          "shape":"ConflictExceptionReason",
+          "documentation":"<p>The reason for the conflict exception.</p>"
+        }
+      },
+      "documentation":"<p>Raised when a conflict is encountered.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConflictExceptionReason":{
+      "type":"string",
+      "enum":["CONCURRENT_MODIFICATION"]
+    },
+    "CreateGraphInput":{
+      "type":"structure",
+      "required":[
+        "graphName",
+        "provisionedMemory"
+      ],
+      "members":{
+        "graphName":{
+          "shape":"GraphName",
+          "documentation":"<p>A name for the new Neptune Analytics graph to be created.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Adds metadata tags to the new graph. These tags can also be used with cost allocation reporting, or used in a Condition statement in an IAM policy.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether or not the graph can be reachable over the internet. All access to graphs is IAM authenticated. (<code>true</code> to enable, or <code>false</code> to disable.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Specifies a KMS key to use to encrypt data in the new graph.</p>"
+        },
+        "vectorSearchConfiguration":{
+          "shape":"VectorSearchConfiguration",
+          "documentation":"<p>Specifies the number of dimensions for vector embeddings that will be loaded into the graph. The value is specified as <code>dimension=</code>value. Max = 65,535</p>"
+        },
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas in other AZs. Min =0, Max = 2, Default = 1.</p> <important> <p> Additional charges equivalent to the m-NCUs selected for the graph apply for each replica. </p> </important>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether or not to enable deletion protection on the graph. The graph can’t be deleted when deletion protection is enabled. (<code>true</code> or <code>false</code>).</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph. Min = 16</p>"
+        }
+      }
+    },
+    "CreateGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The ID of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The graph name. For example: <code>my-graph-1</code>.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The current status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason the status was given.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph.</p> <p>Min = 16</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether or not the graph can be reachable over the internet. All access to graphs is IAM authenticated.</p> <note> <p>If enabling public connectivity for the first time, there will be a delay while it is enabled.</p> </note>"
+        },
+        "vectorSearchConfiguration":{
+          "shape":"VectorSearchConfiguration",
+          "documentation":"<p>The vector-search configuration for the graph, which specifies the vector dimension to use in the vector index, if any.</p>"
+        },
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas in other AZs.</p> <p>Default: If not specified, the default value is 1.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Specifies the KMS key used to encrypt data in the new graph.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the source graph.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that indicates whether the graph has deletion protection enabled. The graph can't be deleted when deletion protection is enabled.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph software.</p>"
+        }
+      }
+    },
+    "CreateGraphSnapshotInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "snapshotName"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "snapshotName":{
+          "shape":"SnapshotName",
+          "documentation":"<p>The snapshot name. For example: <code>my-snapshot-1</code>.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Adds metadata tags to the new graph. These tags can also be used with cost allocation reporting, or used in a Condition statement in an IAM policy.</p>"
+        }
+      }
+    },
+    "CreateGraphSnapshotOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot created.</p>"
+        },
+        "name":{
+          "shape":"SnapshotName",
+          "documentation":"<p>The name of the snapshot created.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the snapshot created.</p>"
+        },
+        "sourceGraphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The Id of the Neptune Analytics graph from which the snapshot is created.</p>"
+        },
+        "snapshotCreateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The snapshot creation time</p>"
+        },
+        "status":{
+          "shape":"SnapshotStatus",
+          "documentation":"<p>The current state of the snapshot.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        }
+      }
+    },
+    "CreateGraphUsingImportTaskInput":{
+      "type":"structure",
+      "required":[
+        "graphName",
+        "source",
+        "roleArn"
+      ],
+      "members":{
+        "graphName":{
+          "shape":"GraphName",
+          "documentation":"<p>A name for the new Neptune Analytics graph to be created.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Adds metadata tags to the new graph. These tags can also be used with cost allocation reporting, or used in a Condition statement in an IAM policy.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether or not the graph can be reachable over the internet. All access to graphs is IAM authenticated. (<code>true</code> to enable, or <code>false</code> to disable).</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>Specifies a KMS key to use to encrypt data imported into the new graph.</p>"
+        },
+        "vectorSearchConfiguration":{
+          "shape":"VectorSearchConfiguration",
+          "documentation":"<p>Specifies the number of dimensions for vector embeddings that will be loaded into the graph. The value is specified as <code>dimension=</code>value. Max = 65,535 </p>"
+        },
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas in other AZs to provision on the new graph after import. Default = 0, Min = 0, Max = 2.</p> <important> <p> Additional charges equivalent to the m-NCUs selected for the graph apply for each replica. </p> </important>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether or not to enable deletion protection on the graph. The graph can’t be deleted when deletion protection is enabled. (<code>true</code> or <code>false</code>).</p>"
+        },
+        "importOptions":{
+          "shape":"ImportOptions",
+          "documentation":"<p>Contains options for controlling the import process. For example, if the <code>failOnError</code> key is set to <code>false</code>, the import skips problem data and attempts to continue (whereas if set to <code>true</code>, the default, or if omitted, the import operation halts immediately when an error is encountered.</p>"
+        },
+        "maxProvisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The maximum provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph. Default: 1024, or the approved upper limit for your account.</p> <p> If both the minimum and maximum values are specified, the final <code>provisioned-memory</code> will be chosen per the actual size of your imported data. If neither value is specified, 128 m-NCUs are used.</p>"
+        },
+        "minProvisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The minimum provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph. Default: 16</p>"
+        },
+        "failOnError":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to <code>true</code>, the task halts when an import error is encountered. If set to <code>false</code>, the task skips the data that caused the error and continues if possible.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying to the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of S3 data to be imported. Valid values are <code>CSV</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a>, <code>OPEN_CYPHER</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>, or <code>ntriples</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune-analytics/latest/userguide/using-rdf-data.html\">RDF n-triples</a> format.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "blankNodeHandling":{
+          "shape":"BlankNodeHandling",
+          "documentation":"<p>The method to handle blank nodes in the dataset. Currently, only <code>convertToIri</code> is supported, meaning blank nodes are converted to unique IRIs at load time. Must be provided when format is <code>ntriples</code>. For more information, see <a href=\"https://docs.aws.amazon.com/neptune-analytics/latest/userguide/using-rdf-data.html#rdf-handling\">Handling RDF values</a>.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        }
+      }
+    },
+    "CreateGraphUsingImportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "taskId",
+        "source",
+        "roleArn",
+        "status"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying to the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of S3 data to be imported. Valid values are <code>CSV</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a>, <code>OPENCYPHER</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>, or <code>ntriples</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune-analytics/latest/userguide/using-rdf-data.html\">RDF n-triples</a> format.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        },
+        "status":{
+          "shape":"ImportTaskStatus",
+          "documentation":"<p>The status of the import task.</p>"
+        },
+        "importOptions":{
+          "shape":"ImportOptions",
+          "documentation":"<p>Contains options for controlling the import process. For example, if the <code>failOnError</code> key is set to <code>false</code>, the import skips problem data and attempts to continue (whereas if set to <code>true</code>, the default, or if omitted, the import operation halts immediately when an error is encountered.</p>"
+        }
+      }
+    },
+    "CreatePrivateGraphEndpointInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p> The VPC in which the private graph endpoint needs to be created.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>Subnets in which private graph endpoint ENIs are created.</p>"
+        },
+        "vpcSecurityGroupIds":{
+          "shape":"SecurityGroupIds",
+          "documentation":"<p>Security groups to be attached to the private graph endpoint..</p>"
+        }
+      }
+    },
+    "CreatePrivateGraphEndpointOutput":{
+      "type":"structure",
+      "required":[
+        "vpcId",
+        "subnetIds",
+        "status"
+      ],
+      "members":{
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>VPC in which the private graph endpoint is created.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>Subnets in which the private graph endpoint ENIs are created. </p>"
+        },
+        "status":{
+          "shape":"PrivateGraphEndpointStatus",
+          "documentation":"<p>Status of the private graph endpoint.</p>"
+        },
+        "vpcEndpointId":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>Endpoint ID of the prviate grpah endpoint.</p>"
+        }
+      }
+    },
+    "DeleteGraphInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "skipSnapshot"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "skipSnapshot":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines whether a final graph snapshot is created before the graph is deleted. If <code>true</code> is specified, no graph snapshot is created. If <code>false</code> is specified, a graph snapshot is created before the graph is deleted.</p>",
+          "location":"querystring",
+          "locationName":"skipSnapshot"
+        }
+      }
+    },
+    "DeleteGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason for the status of the graph.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if the graph was recovered from a snapshot.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection was enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number associated with the graph.</p>"
+        }
+      }
+    },
+    "DeleteGraphSnapshotInput":{
+      "type":"structure",
+      "required":["snapshotIdentifier"],
+      "members":{
+        "snapshotIdentifier":{
+          "shape":"SnapshotIdentifier",
+          "documentation":"<p>ID of the graph snapshot to be deleted.</p>",
+          "location":"uri",
+          "locationName":"snapshotIdentifier"
+        }
+      }
+    },
+    "DeleteGraphSnapshotOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The unique identifier of the graph snapshot.</p>"
+        },
+        "name":{
+          "shape":"SnapshotName",
+          "documentation":"<p>The snapshot name. For example: <code>my-snapshot-1</code>.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the graph snapshot.</p>"
+        },
+        "sourceGraphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The graph identifier for the graph from which the snapshot was created.</p>"
+        },
+        "snapshotCreateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the snapshot was created.</p>"
+        },
+        "status":{
+          "shape":"SnapshotStatus",
+          "documentation":"<p>The status of the graph snapshot.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt the snapshot.</p>"
+        }
+      }
+    },
+    "DeletePrivateGraphEndpointInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "vpcId"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC where the private endpoint is located.</p>",
+          "location":"uri",
+          "locationName":"vpcId"
+        }
+      }
+    },
+    "DeletePrivateGraphEndpointOutput":{
+      "type":"structure",
+      "required":[
+        "vpcId",
+        "subnetIds",
+        "status"
+      ],
+      "members":{
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC where the private endpoint was deleted.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The subnet IDs involved.</p>"
+        },
+        "status":{
+          "shape":"PrivateGraphEndpointStatus",
+          "documentation":"<p>The status of the delete operation.</p>"
+        },
+        "vpcEndpointId":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The ID of the VPC endpoint that was deleted.</p>"
+        }
+      }
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "DocumentValuedMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"Document"}
+    },
+    "EdgeLabels":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "EdgeProperties":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "EdgeStructure":{
+      "type":"structure",
+      "members":{
+        "count":{
+          "shape":"Long",
+          "documentation":"<p>The number of instances of the edge in the graph.</p>"
+        },
+        "edgeProperties":{
+          "shape":"EdgeProperties",
+          "documentation":"<p>A list of the properties associated with the edge.</p>"
+        }
+      },
+      "documentation":"<p>Contains information about an edge in a Neptune Analytics graph.</p>"
+    },
+    "EdgeStructures":{
+      "type":"list",
+      "member":{"shape":"EdgeStructure"}
+    },
+    "ExecuteQueryInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "queryString",
+        "language"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "hostLabel":true,
+          "location":"header",
+          "locationName":"graphIdentifier"
+        },
+        "queryString":{
+          "shape":"String",
+          "documentation":"<p>The query string to be executed.</p>",
+          "locationName":"query"
+        },
+        "language":{
+          "shape":"QueryLanguage",
+          "documentation":"<p>The query language the query is written in. Currently only openCypher is supported.</p>"
+        },
+        "parameters":{
+          "shape":"DocumentValuedMap",
+          "documentation":"<p>The data parameters the query can use in JSON format. For example: {\"name\": \"john\", \"age\": 20}. (optional) </p>"
+        },
+        "planCache":{
+          "shape":"PlanCacheType",
+          "documentation":"<p>Query plan cache is a feature that saves the query plan and reuses it on successive executions of the same query. This reduces query latency, and works for both <code>READ</code> and <code>UPDATE</code> queries. The plan cache is an LRU cache with a 5 minute TTL and a capacity of 1000.</p>"
+        },
+        "explainMode":{
+          "shape":"ExplainMode",
+          "documentation":"<p>The explain mode parameter returns a query explain instead of the actual query results. A query explain can be used to gather insights about the query execution such as planning decisions, time spent on each operator, solutions flowing etc.</p>",
+          "locationName":"explain"
+        },
+        "queryTimeoutMilliseconds":{
+          "shape":"Integer",
+          "documentation":"<p>Specifies the query timeout duration, in milliseconds. (optional)</p>"
+        }
+      }
+    },
+    "ExecuteQueryOutput":{
+      "type":"structure",
+      "required":["payload"],
+      "members":{
+        "payload":{
+          "shape":"QueryResponseBlob",
+          "documentation":"<p>The query results.</p>"
+        }
+      },
+      "payload":"payload"
+    },
+    "ExplainMode":{
+      "type":"string",
+      "enum":[
+        "STATIC",
+        "DETAILS"
+      ]
+    },
+    "ExportFilter":{
+      "type":"structure",
+      "members":{
+        "vertexFilter":{
+          "shape":"ExportFilterPerLabelMap",
+          "documentation":"<p>Used to specify filters on a per-label basis for vertices. This allows you to control which vertex labels and properties are included in the export.</p>"
+        },
+        "edgeFilter":{
+          "shape":"ExportFilterPerLabelMap",
+          "documentation":"<p>Used to specify filters on a per-label basis for edges. This allows you to control which edge labels and properties are included in the export.</p>"
+        }
+      },
+      "documentation":"<p>This is the top-level field for specifying vertex or edge filters. If the ExportFilter is not provided, then all properties for all labels will be exported. If the ExportFilter is provided but is an empty object, then no data will be exported.</p>"
+    },
+    "ExportFilterElement":{
+      "type":"structure",
+      "members":{
+        "properties":{
+          "shape":"ExportFilterPropertyMap",
+          "documentation":"<p>Each property is defined by a key-value pair, where the key is the desired output property name (e.g. \"name\"), and the value is an object.</p>"
+        }
+      },
+      "documentation":"<p>Specifies whihc properties of that label should be included in the export.</p>"
+    },
+    "ExportFilterLabel":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ExportFilterOutputDataType":{
+      "type":"string",
+      "pattern":"(Any|Byte|Short|Int|Long|Float|Double|String|Bool|Boolean|Float\\[\\]|Double\\[\\])"
+    },
+    "ExportFilterOutputPropertyName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_]+"
+    },
+    "ExportFilterPerLabelMap":{
+      "type":"map",
+      "key":{"shape":"ExportFilterLabel"},
+      "value":{"shape":"ExportFilterElement"}
+    },
+    "ExportFilterPropertyAttributes":{
+      "type":"structure",
+      "members":{
+        "outputType":{
+          "shape":"ExportFilterOutputDataType",
+          "documentation":"<p>Specifies the data type to use for the property in the exported data (e.g. \"String\", \"Int\", \"Float\"). If a type is not provided, the export process will determine the type. If a given property is present as multiple types (e.g. one vertex has \"height\" stored as a double, and another edge has it stored as a string), the type will be of Any type, otherwise, it will be the type of the property as present in vertices.</p>"
+        },
+        "sourcePropertyName":{
+          "shape":"ExportFilterSourcePropertyName",
+          "documentation":"<p>The name of the property as it exists in the original graph data. If not provided, it is assumed that the key matches the desired sourcePropertyName.</p>"
+        },
+        "multiValueHandling":{
+          "shape":"MultiValueHandlingType",
+          "documentation":"<p>Specifies how to handle properties that have multiple values. Can be either <code>TO_LIST</code> to export all values as a list, or <code>PICK_FIRST</code> to export the first value encountered. If not specified, the default value is <code>PICK_FIRST</code>.</p>"
+        }
+      },
+      "documentation":"<p>A structure representing a property's attributes. It is a map object of outputType, sourcePropertyName and multiValueHandling.</p>"
+    },
+    "ExportFilterPropertyMap":{
+      "type":"map",
+      "key":{"shape":"ExportFilterOutputPropertyName"},
+      "value":{"shape":"ExportFilterPropertyAttributes"}
+    },
+    "ExportFilterSourcePropertyName":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "ExportFormat":{
+      "type":"string",
+      "enum":[
+        "PARQUET",
+        "CSV"
+      ]
+    },
+    "ExportTaskDetails":{
+      "type":"structure",
+      "required":[
+        "startTime",
+        "timeElapsedSeconds",
+        "progressPercentage"
+      ],
+      "members":{
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The start time of the export task.</p>"
+        },
+        "timeElapsedSeconds":{
+          "shape":"Long",
+          "documentation":"<p>The time elapsed, in seconds, since the start time of the export task.</p>"
+        },
+        "progressPercentage":{
+          "shape":"Integer",
+          "documentation":"<p>The number of progress percentage of the export task.</p>"
+        },
+        "numVerticesWritten":{
+          "shape":"Long",
+          "documentation":"<p>The number of exported vertices.</p>"
+        },
+        "numEdgesWritten":{
+          "shape":"Long",
+          "documentation":"<p>The number of exported edges.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about the specified export task.</p>"
+    },
+    "ExportTaskId":{
+      "type":"string",
+      "pattern":"t-[a-z0-9]{10}"
+    },
+    "ExportTaskStatus":{
+      "type":"string",
+      "enum":[
+        "INITIALIZING",
+        "EXPORTING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLING",
+        "CANCELLED",
+        "DELETED"
+      ]
+    },
+    "ExportTaskSummary":{
+      "type":"structure",
+      "required":[
+        "graphId",
+        "roleArn",
+        "taskId",
+        "status",
+        "format",
+        "destination",
+        "kmsKeyIdentifier"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The source graph identifier of the export task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow the data to be exported to the destination.</p>"
+        },
+        "taskId":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>"
+        },
+        "status":{
+          "shape":"ExportTaskStatus",
+          "documentation":"<p>The current status of the export task.</p>"
+        },
+        "format":{
+          "shape":"ExportFormat",
+          "documentation":"<p>The format of the export task.</p>"
+        },
+        "destination":{
+          "shape":"ExportTaskSummaryDestinationString",
+          "documentation":"<p>The Amazon S3 URI of the export task where data will be exported to.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The KMS key identifier of the export task.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the export task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the export task has this status value.</p>"
+        }
+      },
+      "documentation":"<p>Provides details about an export task.</p>"
+    },
+    "ExportTaskSummaryDestinationString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "ExportTaskSummaryList":{
+      "type":"list",
+      "member":{"shape":"ExportTaskSummary"}
+    },
+    "Format":{
+      "type":"string",
+      "enum":[
+        "CSV",
+        "OPEN_CYPHER",
+        "PARQUET",
+        "NTRIPLES"
+      ]
+    },
+    "GetExportTaskInput":{
+      "type":"structure",
+      "required":["taskIdentifier"],
+      "members":{
+        "taskIdentifier":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>",
+          "location":"uri",
+          "locationName":"taskIdentifier"
+        }
+      }
+    },
+    "GetExportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "graphId",
+        "roleArn",
+        "taskId",
+        "status",
+        "format",
+        "destination",
+        "kmsKeyIdentifier"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The source graph identifier of the export task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow data to be exported to the destination.</p>"
+        },
+        "taskId":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>"
+        },
+        "status":{
+          "shape":"ExportTaskStatus",
+          "documentation":"<p>The current status of the export task.</p>"
+        },
+        "format":{
+          "shape":"ExportFormat",
+          "documentation":"<p>The format of the export task.</p>"
+        },
+        "destination":{
+          "shape":"GetExportTaskOutputDestinationString",
+          "documentation":"<p>The Amazon S3 URI of the export task where data will be exported.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The KMS key identifier of the export task.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the export task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the export task has this status value.</p>"
+        },
+        "exportTaskDetails":{
+          "shape":"ExportTaskDetails",
+          "documentation":"<p>The details of the export task.</p>"
+        },
+        "exportFilter":{
+          "shape":"ExportFilter",
+          "documentation":"<p>The export filter of the export task.</p>"
+        }
+      }
+    },
+    "GetExportTaskOutputDestinationString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "GetGraphInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        }
+      }
+    },
+    "GetGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if it was created from a snapshot.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "GetGraphSnapshotInput":{
+      "type":"structure",
+      "required":["snapshotIdentifier"],
+      "members":{
+        "snapshotIdentifier":{
+          "shape":"SnapshotIdentifier",
+          "documentation":"<p>The ID of the snapshot to retrieve.</p>",
+          "location":"uri",
+          "locationName":"snapshotIdentifier"
+        }
+      }
+    },
+    "GetGraphSnapshotOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The unique identifier of the graph snapshot.</p>"
+        },
+        "name":{
+          "shape":"SnapshotName",
+          "documentation":"<p>The snapshot name. For example: <code>my-snapshot-1</code>.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the graph snapshot.</p>"
+        },
+        "sourceGraphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The graph identifier for the graph for which a snapshot is to be created.</p>"
+        },
+        "snapshotCreateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the snapshot was created.</p>"
+        },
+        "status":{
+          "shape":"SnapshotStatus",
+          "documentation":"<p>The status of the graph snapshot.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt the snapshot.</p>"
+        }
+      }
+    },
+    "GetGraphSummaryInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "hostLabel":true,
+          "location":"header",
+          "locationName":"graphIdentifier"
+        },
+        "mode":{
+          "shape":"GraphSummaryMode",
+          "documentation":"<p>The summary mode can take one of two values: <code>basic</code> (the default), and <code>detailed</code>.</p>",
+          "location":"querystring",
+          "locationName":"mode"
+        }
+      }
+    },
+    "GetGraphSummaryOutput":{
+      "type":"structure",
+      "members":{
+        "version":{
+          "shape":"String",
+          "documentation":"<p>Display the version of this tool.</p>"
+        },
+        "lastStatisticsComputationTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The timestamp, in ISO 8601 format, of the time at which Neptune Analytics last computed statistics.</p>"
+        },
+        "graphSummary":{
+          "shape":"GraphDataSummary",
+          "documentation":"<p>The graph summary.</p>"
+        }
+      }
+    },
+    "GetImportTaskInput":{
+      "type":"structure",
+      "required":["taskIdentifier"],
+      "members":{
+        "taskIdentifier":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>",
+          "location":"uri",
+          "locationName":"taskIdentifier"
+        }
+      }
+    },
+    "GetImportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "taskId",
+        "source",
+        "roleArn",
+        "status"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying to the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of S3 data to be imported. Valid values are <code>CSV</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a> or <code>OPENCYPHER</code>, which identies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        },
+        "status":{
+          "shape":"ImportTaskStatus",
+          "documentation":"<p>The status of the import task:</p> <ul> <li> <p> <b>INITIALIZING</b>   –   The necessary resources needed to create the graph are being prepared.</p> </li> <li> <p> <b>ANALYZING_DATA</b>   –   The data is being analyzed to determine the optimal infrastructure configuration for the new graph.</p> </li> <li> <p> <b>RE_PROVISIONING</b>   –   The data did not fit into the provisioned graph, so it is being re-provisioned with more capacity.</p> </li> <li> <p> <b>IMPORTING</b>   –   The data is being loaded.</p> </li> <li> <p> <b>ERROR_ENCOUNTERED</b>   –   An error has been encountered while trying to create the graph and import the data.</p> </li> <li> <p> <b>ERROR_ENCOUNTERED_ROLLING_BACK</b>   –   Because of the error that was encountered, the graph is being rolled back and all its resources released.</p> </li> <li> <p> <b>SUCCEEDED</b>   –   Graph creation and data loading succeeded.</p> </li> <li> <p> <b>FAILED</b>   –   Graph creation or data loading failed. When the status is <code>FAILED</code>, you can use <code>get-graphs</code> to get more information about the state of the graph.</p> </li> <li> <p> <b>CANCELLING</b>   –   Because you cancelled the import task, cancellation is in progress.</p> </li> <li> <p> <b>CANCELLED</b>   –   You have successfully cancelled the import task.</p> </li> </ul>"
+        },
+        "importOptions":{
+          "shape":"ImportOptions",
+          "documentation":"<p>Contains options for controlling the import process. For example, if the <code>failOnError</code> key is set to <code>false</code>, the import skips problem data and attempts to continue (whereas if set to <code>true</code>, the default, or if omitted, the import operation halts immediately when an error is encountered.</p>"
+        },
+        "importTaskDetails":{
+          "shape":"ImportTaskDetails",
+          "documentation":"<p>Contains details about the specified import task.</p>"
+        },
+        "attemptNumber":{
+          "shape":"Integer",
+          "documentation":"<p>The number of the current attempts to execute the import task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the import task has this status value.</p>"
+        }
+      }
+    },
+    "GetPrivateGraphEndpointInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "vpcId"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC where the private endpoint is located.</p>",
+          "location":"uri",
+          "locationName":"vpcId"
+        }
+      }
+    },
+    "GetPrivateGraphEndpointOutput":{
+      "type":"structure",
+      "required":[
+        "vpcId",
+        "subnetIds",
+        "status"
+      ],
+      "members":{
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC where the private endpoint is located.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The subnet IDs involved.</p>"
+        },
+        "status":{
+          "shape":"PrivateGraphEndpointStatus",
+          "documentation":"<p>The current status of the private endpoint.</p>"
+        },
+        "vpcEndpointId":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The ID of the private endpoint.</p>"
+        }
+      }
+    },
+    "GetQueryInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "queryId"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "hostLabel":true,
+          "location":"header",
+          "locationName":"graphIdentifier"
+        },
+        "queryId":{
+          "shape":"String",
+          "documentation":"<p>The ID of the query in question.</p>",
+          "location":"uri",
+          "locationName":"queryId"
+        }
+      }
+    },
+    "GetQueryOutput":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"String",
+          "documentation":"<p>The ID of the query in question.</p>"
+        },
+        "queryString":{
+          "shape":"String",
+          "documentation":"<p>The query in question.</p>"
+        },
+        "waited":{
+          "shape":"Integer",
+          "documentation":"<p>Indicates how long the query waited, in milliseconds.</p>"
+        },
+        "elapsed":{
+          "shape":"Integer",
+          "documentation":"<p>The number of milliseconds the query has been running.</p>"
+        },
+        "state":{
+          "shape":"QueryState",
+          "documentation":"<p>State of the query.</p>"
+        }
+      }
+    },
+    "GraphDataSummary":{
+      "type":"structure",
+      "members":{
+        "numNodes":{
+          "shape":"Long",
+          "documentation":"<p>The number of nodes in the graph.</p>"
+        },
+        "numEdges":{
+          "shape":"Long",
+          "documentation":"<p>The number of edges in the graph.</p>"
+        },
+        "numNodeLabels":{
+          "shape":"Long",
+          "documentation":"<p>The number of distinct node labels in the graph.</p>"
+        },
+        "numEdgeLabels":{
+          "shape":"Long",
+          "documentation":"<p>The number of unique edge labels in the graph.</p>"
+        },
+        "nodeLabels":{
+          "shape":"NodeLabels",
+          "documentation":"<p>A list of distinct node labels in the graph.</p>"
+        },
+        "edgeLabels":{
+          "shape":"EdgeLabels",
+          "documentation":"<p>A list of the edge labels in the graph.</p>"
+        },
+        "numNodeProperties":{
+          "shape":"Long",
+          "documentation":"<p>The number of distinct node properties in the graph.</p>"
+        },
+        "numEdgeProperties":{
+          "shape":"Long",
+          "documentation":"<p>The number of edge properties in the graph.</p>"
+        },
+        "nodeProperties":{
+          "shape":"LongValuedMapList",
+          "documentation":"<p>A list of the distinct node properties in the graph, along with the count of nodes where each property is used.</p>"
+        },
+        "edgeProperties":{
+          "shape":"LongValuedMapList",
+          "documentation":"<p>A list of the distinct edge properties in the graph, along with the count of edges where each property is used.</p>"
+        },
+        "totalNodePropertyValues":{
+          "shape":"Long",
+          "documentation":"<p>The total number of usages of all node properties.</p>"
+        },
+        "totalEdgePropertyValues":{
+          "shape":"Long",
+          "documentation":"<p>The total number of usages of all edge properties.</p>"
+        },
+        "nodeStructures":{
+          "shape":"NodeStructures",
+          "documentation":"<p>This field is only present when the requested mode is DETAILED. It contains a list of node structures.</p>"
+        },
+        "edgeStructures":{
+          "shape":"EdgeStructures",
+          "documentation":"<p>This field is only present when the requested mode is DETAILED. It contains a list of edge structures.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the graph.</p>"
+    },
+    "GraphId":{
+      "type":"string",
+      "pattern":"g-[a-z0-9]{10}"
+    },
+    "GraphIdentifier":{
+      "type":"string",
+      "pattern":"g-[a-z0-9]{10}"
+    },
+    "GraphName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"(?!g-)[a-z][a-z0-9]*(-[a-z0-9]+)*"
+    },
+    "GraphSnapshotSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The unique identifier of the graph snapshot.</p>"
+        },
+        "name":{
+          "shape":"SnapshotName",
+          "documentation":"<p>The snapshot name. For example: <code>my-snapshot-1</code>.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN of the graph snapshot.</p>"
+        },
+        "sourceGraphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The graph identifier for the graph for which a snapshot is to be created.</p>"
+        },
+        "snapshotCreateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the snapshot was created.</p>"
+        },
+        "status":{
+          "shape":"SnapshotStatus",
+          "documentation":"<p>The status of the graph snapshot.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt the snapshot.</p>"
+        }
+      },
+      "documentation":"<p>Details about a graph snapshot.</p>"
+    },
+    "GraphSnapshotSummaryList":{
+      "type":"list",
+      "member":{"shape":"GraphSnapshotSummary"}
+    },
+    "GraphStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "AVAILABLE",
+        "DELETING",
+        "RESETTING",
+        "UPDATING",
+        "SNAPSHOTTING",
+        "FAILED",
+        "IMPORTING",
+        "STARTING",
+        "STOPPING",
+        "STOPPED"
+      ]
+    },
+    "GraphSummary":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"String",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        }
+      },
+      "documentation":"<p>Summary details about a graph.</p>"
+    },
+    "GraphSummaryList":{
+      "type":"list",
+      "member":{"shape":"GraphSummary"}
+    },
+    "GraphSummaryMode":{
+      "type":"string",
+      "enum":[
+        "BASIC",
+        "DETAILED"
+      ]
+    },
+    "ImportOptions":{
+      "type":"structure",
+      "members":{
+        "neptune":{
+          "shape":"NeptuneImportOptions",
+          "documentation":"<p>Options for importing data from a Neptune database.</p>"
+        }
+      },
+      "documentation":"<p>Options for how to perform an import.</p>",
+      "union":true
+    },
+    "ImportTaskDetails":{
+      "type":"structure",
+      "required":[
+        "status",
+        "startTime",
+        "timeElapsedSeconds",
+        "progressPercentage",
+        "errorCount",
+        "statementCount",
+        "dictionaryEntryCount"
+      ],
+      "members":{
+        "status":{
+          "shape":"String",
+          "documentation":"<p>Status of the import task.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>Time at which the import task started.</p>"
+        },
+        "timeElapsedSeconds":{
+          "shape":"Long",
+          "documentation":"<p>Seconds elapsed since the import task started.</p>"
+        },
+        "progressPercentage":{
+          "shape":"Integer",
+          "documentation":"<p>The percentage progress so far.</p>"
+        },
+        "errorCount":{
+          "shape":"Integer",
+          "documentation":"<p>The number of errors encountered so far.</p>"
+        },
+        "errorDetails":{
+          "shape":"String",
+          "documentation":"<p>Details about the errors that have been encountered.</p>"
+        },
+        "statementCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of statements in the import task.</p>"
+        },
+        "dictionaryEntryCount":{
+          "shape":"Long",
+          "documentation":"<p>The number of dictionary entries in the import task.</p>"
+        }
+      },
+      "documentation":"<p>Contains details about an import task.</p>"
+    },
+    "ImportTaskStatus":{
+      "type":"string",
+      "enum":[
+        "INITIALIZING",
+        "EXPORTING",
+        "ANALYZING_DATA",
+        "IMPORTING",
+        "REPROVISIONING",
+        "ROLLING_BACK",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLING",
+        "CANCELLED",
+        "DELETED"
+      ]
+    },
+    "ImportTaskSummary":{
+      "type":"structure",
+      "required":[
+        "taskId",
+        "source",
+        "roleArn",
+        "status"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying to the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of S3 data to be imported. Valid values are <code>CSV</code>, which identifies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-gremlin.html\">Gremlin CSV format</a> or <code>OPENCYPHER</code>, which identies the <a href=\"https://docs.aws.amazon.com/neptune/latest/userguide/bulk-load-tutorial-format-opencypher.html\">openCypher load format</a>.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        },
+        "status":{
+          "shape":"ImportTaskStatus",
+          "documentation":"<p>Status of the import task.</p>"
+        }
+      },
+      "documentation":"<p>Details about an import task.</p>"
+    },
+    "ImportTaskSummaryList":{
+      "type":"list",
+      "member":{"shape":"ImportTaskSummary"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        }
+      },
+      "documentation":"<p>A failure occurred on the server.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "KmsKeyArn":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"arn:aws(|-cn|-us-gov):kms:[a-zA-Z0-9-]*:[0-9]{12}:key/[a-zA-Z0-9-]{36}"
+    },
+    "ListExportTasksInput":{
+      "type":"structure",
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"querystring",
+          "locationName":"graphIdentifier"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate input.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of export tasks to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListExportTasksOutput":{
+      "type":"structure",
+      "required":["tasks"],
+      "members":{
+        "tasks":{
+          "shape":"ExportTaskSummaryList",
+          "documentation":"<p>The requested list of export tasks.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p>"
+        }
+      }
+    },
+    "ListGraphSnapshotsInput":{
+      "type":"structure",
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"querystring",
+          "locationName":"graphIdentifier"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of records to return in the command's output.</p> <p>If the total number of records available is more than the value specified, <code>nextToken</code> is provided in the command's output. To resume pagination, provide the <code>nextToken</code> output value in the <code>nextToken</code> argument of a subsequent command. Do not use the <code>nextToken</code> response element directly outside of the Amazon CLI.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListGraphSnapshotsOutput":{
+      "type":"structure",
+      "required":["graphSnapshots"],
+      "members":{
+        "graphSnapshots":{
+          "shape":"GraphSnapshotSummaryList",
+          "documentation":"<p>The requested list of snapshots.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>"
+        }
+      }
+    },
+    "ListGraphsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of records to return in the command's output.</p> <p>If the total number of records available is more than the value specified, <code>nextToken</code> is provided in the command's output. To resume pagination, provide the <code>nextToken</code> output value in the <code>nextToken</code> argument of a subsequent command. Do not use the <code>nextToken</code> response element directly outside of the Amazon CLI.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListGraphsOutput":{
+      "type":"structure",
+      "required":["graphs"],
+      "members":{
+        "graphs":{
+          "shape":"GraphSummaryList",
+          "documentation":"<p>A list of the graphs.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>"
+        }
+      }
+    },
+    "ListImportTasksInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of records to return in the command's output.</p> <p>If the total number of records available is more than the value specified, <code>nextToken</code> is provided in the command's output. To resume pagination, provide the <code>nextToken</code> output value in the <code>nextToken</code> argument of a subsequent command. Do not use the <code>nextToken</code> response element directly outside of the Amazon CLI.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListImportTasksOutput":{
+      "type":"structure",
+      "required":["tasks"],
+      "members":{
+        "tasks":{
+          "shape":"ImportTaskSummaryList",
+          "documentation":"<p>The requested list of import tasks.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>"
+        }
+      }
+    },
+    "ListPrivateGraphEndpointsInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The total number of records to return in the command's output.</p> <p>If the total number of records available is more than the value specified, <code>nextToken</code> is provided in the command's output. To resume pagination, provide the <code>nextToken</code> output value in the <code>nextToken</code> argument of a subsequent command. Do not use the <code>nextToken</code> response element directly outside of the Amazon CLI.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListPrivateGraphEndpointsOutput":{
+      "type":"structure",
+      "required":["privateGraphEndpoints"],
+      "members":{
+        "privateGraphEndpoints":{
+          "shape":"PrivateGraphEndpointSummaryList",
+          "documentation":"<p>A list of private endpoints for the specified Neptune Analytics graph.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Pagination token used to paginate output.</p> <p>When this value is provided as input, the service returns results from where the previous response left off. When this value is present in output, it indicates that there are more results to retrieve.</p>"
+        }
+      }
+    },
+    "ListQueriesInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "maxResults"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "hostLabel":true,
+          "location":"header",
+          "locationName":"graphIdentifier"
+        },
+        "maxResults":{
+          "shape":"Integer",
+          "documentation":"<p>The maximum number of results to be fetched by the API.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "state":{
+          "shape":"QueryStateInput",
+          "documentation":"<p>Filtered list of queries based on state.</p>",
+          "location":"querystring",
+          "locationName":"state"
+        }
+      }
+    },
+    "ListQueriesOutput":{
+      "type":"structure",
+      "required":["queries"],
+      "members":{
+        "queries":{
+          "shape":"QuerySummaryList",
+          "documentation":"<p>A list of current openCypher queries.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The ARN of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The list of metadata tags associated with the resource.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "LongValuedMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"Long"}
+    },
+    "LongValuedMapList":{
+      "type":"list",
+      "member":{"shape":"LongValuedMap"}
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MultiValueHandlingType":{
+      "type":"string",
+      "enum":[
+        "TO_LIST",
+        "PICK_FIRST"
+      ]
+    },
+    "NeptuneImportOptions":{
+      "type":"structure",
+      "required":[
+        "s3ExportPath",
+        "s3ExportKmsKeyId"
+      ],
+      "members":{
+        "s3ExportPath":{
+          "shape":"NeptuneImportOptionsS3ExportPathString",
+          "documentation":"<p>The path to an S3 bucket from which to import data.</p>"
+        },
+        "s3ExportKmsKeyId":{
+          "shape":"NeptuneImportOptionsS3ExportKmsKeyIdString",
+          "documentation":"<p>The KMS key to use to encrypt data in the S3 bucket where the graph data is exported</p>"
+        },
+        "preserveDefaultVertexLabels":{
+          "shape":"Boolean",
+          "documentation":"<p>Neptune Analytics supports label-less vertices and no labels are assigned unless one is explicitly provided. Neptune assigns default labels when none is explicitly provided. When importing the data into Neptune Analytics, the default vertex labels can be omitted by setting <i>preserveDefaultVertexLabels</i> to false. Note that if the vertex only has default labels, and has no other properties or edges, then the vertex will effectively not get imported into Neptune Analytics when preserveDefaultVertexLabels is set to false.</p>"
+        },
+        "preserveEdgeIds":{
+          "shape":"Boolean",
+          "documentation":"<p>Neptune Analytics currently does not support user defined edge ids. The edge ids are not imported by default. They are imported if <i>preserveEdgeIds</i> is set to true, and ids are stored as properties on the relationships with the property name <i>neptuneEdgeId</i>.</p>"
+        }
+      },
+      "documentation":"<p>Options for how to import Neptune data.</p>"
+    },
+    "NeptuneImportOptionsS3ExportKmsKeyIdString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "NeptuneImportOptionsS3ExportPathString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "NodeLabels":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "NodeProperties":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "NodeStructure":{
+      "type":"structure",
+      "members":{
+        "count":{
+          "shape":"Long",
+          "documentation":"<p>The number of instances of this node.</p>"
+        },
+        "nodeProperties":{
+          "shape":"NodeProperties",
+          "documentation":"<p>Properties associated with this node.</p>"
+        },
+        "distinctOutgoingEdgeLabels":{
+          "shape":"OutgoingEdgeLabels",
+          "documentation":"<p>The outgoing edge labels associated with this node.</p>"
+        }
+      },
+      "documentation":"<p>Information about a node.</p>"
+    },
+    "NodeStructures":{
+      "type":"list",
+      "member":{"shape":"NodeStructure"}
+    },
+    "OutgoingEdgeLabels":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":8192,
+      "min":1
+    },
+    "ParquetType":{
+      "type":"string",
+      "enum":["COLUMNAR"]
+    },
+    "PlanCacheType":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED",
+        "AUTO"
+      ]
+    },
+    "PrivateGraphEndpointStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "AVAILABLE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "PrivateGraphEndpointSummary":{
+      "type":"structure",
+      "required":[
+        "vpcId",
+        "subnetIds",
+        "status"
+      ],
+      "members":{
+        "vpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC in which the private graph endpoint is located.</p>"
+        },
+        "subnetIds":{
+          "shape":"SubnetIds",
+          "documentation":"<p>The subnet IDs associated with the private graph endpoint.</p>"
+        },
+        "status":{
+          "shape":"PrivateGraphEndpointStatus",
+          "documentation":"<p>The status of the private graph endpoint.</p>"
+        },
+        "vpcEndpointId":{
+          "shape":"VpcEndpointId",
+          "documentation":"<p>The ID of the VPC endpoint.</p>"
+        }
+      },
+      "documentation":"<p>Details about a private graph endpoint.</p>"
+    },
+    "PrivateGraphEndpointSummaryList":{
+      "type":"list",
+      "member":{"shape":"PrivateGraphEndpointSummary"}
+    },
+    "ProvisionedMemory":{
+      "type":"integer",
+      "box":true,
+      "max":24576,
+      "min":16
+    },
+    "QueryLanguage":{
+      "type":"string",
+      "enum":["OPEN_CYPHER"]
+    },
+    "QueryResponseBlob":{
+      "type":"blob",
+      "streaming":true
+    },
+    "QueryState":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "WAITING",
+        "CANCELLING"
+      ]
+    },
+    "QueryStateInput":{
+      "type":"string",
+      "enum":[
+        "ALL",
+        "RUNNING",
+        "WAITING",
+        "CANCELLING"
+      ]
+    },
+    "QuerySummary":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"String",
+          "documentation":"<p>A string representation of the id of the query.</p>"
+        },
+        "queryString":{
+          "shape":"String",
+          "documentation":"<p>The actual query text. The <code>queryString</code> may be truncated if the actual query string is too long.</p>"
+        },
+        "waited":{
+          "shape":"Integer",
+          "documentation":"<p>The amount of time, in milliseconds, the query has waited in the queue before being picked up by a worker thread.</p>"
+        },
+        "elapsed":{
+          "shape":"Integer",
+          "documentation":"<p>The running time of the query, in milliseconds.</p>"
+        },
+        "state":{
+          "shape":"QueryState",
+          "documentation":"<p>State of the query.</p>"
+        }
+      },
+      "documentation":"<p>Details of the query listed.</p>"
+    },
+    "QuerySummaryList":{
+      "type":"list",
+      "member":{"shape":"QuerySummary"}
+    },
+    "ReplicaCount":{
+      "type":"integer",
+      "box":true,
+      "max":2,
+      "min":0
+    },
+    "ResetGraphInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "skipSnapshot"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>ID of the graph to reset.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "skipSnapshot":{
+          "shape":"Boolean",
+          "documentation":"<p>Determines whether a final graph snapshot is created before the graph data is deleted. If set to <code>true</code>, no graph snapshot is created. If set to <code>false</code>, a graph snapshot is created before the data is deleted.</p>"
+        }
+      }
+    },
+    "ResetGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if any.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        }
+      },
+      "documentation":"<p>A specified resource could not be located.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RestoreGraphFromSnapshotInput":{
+      "type":"structure",
+      "required":[
+        "snapshotIdentifier",
+        "graphName"
+      ],
+      "members":{
+        "snapshotIdentifier":{
+          "shape":"SnapshotIdentifier",
+          "documentation":"<p>The ID of the snapshot in question.</p>",
+          "location":"uri",
+          "locationName":"snapshotIdentifier"
+        },
+        "graphName":{
+          "shape":"GraphName",
+          "documentation":"<p>A name for the new Neptune Analytics graph to be created from the snapshot.</p> <p>The name must contain from 1 to 63 letters, numbers, or hyphens, and its first character must be a letter. It cannot end with a hyphen or contain two consecutive hyphens. Only lowercase letters are allowed.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph.</p> <p>Min = 16</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that indicates whether the graph has deletion protection enabled. The graph can't be deleted when deletion protection is enabled.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Adds metadata tags to the snapshot. These tags can also be used with cost allocation reporting, or used in a Condition statement in an IAM policy.</p>"
+        },
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas in other AZs. Min =0, Max = 2, Default =1</p> <important> <p> Additional charges equivalent to the m-NCUs selected for the graph apply for each replica. </p> </important>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether or not the graph can be reachable over the internet. All access to graphs is IAM authenticated. (<code>true</code> to enable, or <code>false</code> to disable).</p>"
+        }
+      }
+    },
+    "RestoreGraphFromSnapshotOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if any.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "RoleArn":{
+      "type":"string",
+      "pattern":"arn:aws[^:]*:iam::\\d{12}:(role|role/service-role)(/[\\w+=,.@-]+)+"
+    },
+    "SecurityGroupId":{
+      "type":"string",
+      "pattern":"sg-[a-z0-9]+"
+    },
+    "SecurityGroupIds":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"},
+      "max":10,
+      "min":1
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The identifier of the resource that exceeded quota.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The type of the resource that exceeded quota. Ex: Graph, Snapshot</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The service code that exceeded quota.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>Service quota code of the resource for which quota was exceeded.</p>"
+        }
+      },
+      "documentation":"<p>A service quota was exceeded.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SnapshotId":{
+      "type":"string",
+      "pattern":"gs-[a-z0-9]{10}"
+    },
+    "SnapshotIdentifier":{
+      "type":"string",
+      "pattern":"gs-[a-z0-9]{10}"
+    },
+    "SnapshotName":{
+      "type":"string",
+      "max":63,
+      "min":1,
+      "pattern":"(?!gs-)[a-z][a-z0-9]*(-[a-z0-9]+)*"
+    },
+    "SnapshotStatus":{
+      "type":"string",
+      "enum":[
+        "CREATING",
+        "AVAILABLE",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "StartExportTaskInput":{
+      "type":"structure",
+      "required":[
+        "graphIdentifier",
+        "roleArn",
+        "format",
+        "destination",
+        "kmsKeyIdentifier"
+      ],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The source graph identifier of the export task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow data to be exported to the destination.</p>"
+        },
+        "format":{
+          "shape":"ExportFormat",
+          "documentation":"<p>The format of the export task.</p>"
+        },
+        "destination":{
+          "shape":"StartExportTaskInputDestinationString",
+          "documentation":"<p>The Amazon S3 URI where data will be exported to.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The KMS key identifier of the export task.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the export task.</p>"
+        },
+        "exportFilter":{
+          "shape":"ExportFilter",
+          "documentation":"<p>The export filter of the export task.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Tags to be applied to the export task.</p>"
+        }
+      }
+    },
+    "StartExportTaskInputDestinationString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "StartExportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "graphId",
+        "roleArn",
+        "taskId",
+        "status",
+        "format",
+        "destination",
+        "kmsKeyIdentifier"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The source graph identifier of the export task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow data to be exported to the destination.</p>"
+        },
+        "taskId":{
+          "shape":"ExportTaskId",
+          "documentation":"<p>The unique identifier of the export task.</p>"
+        },
+        "status":{
+          "shape":"ExportTaskStatus",
+          "documentation":"<p>The current status of the export task.</p>"
+        },
+        "format":{
+          "shape":"ExportFormat",
+          "documentation":"<p>The format of the export task.</p>"
+        },
+        "destination":{
+          "shape":"StartExportTaskOutputDestinationString",
+          "documentation":"<p>The Amazon S3 URI of the export task where data will be exported to.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The KMS key identifier of the export task.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the export task.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the export task has this status value.</p>"
+        },
+        "exportFilter":{
+          "shape":"ExportFilter",
+          "documentation":"<p>The export filter of the export task.</p>"
+        }
+      }
+    },
+    "StartExportTaskOutputDestinationString":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "StartGraphInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        }
+      }
+    },
+    "StartGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if it was created from a snapshot.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "StartImportTaskInput":{
+      "type":"structure",
+      "required":[
+        "source",
+        "graphIdentifier",
+        "roleArn"
+      ],
+      "members":{
+        "importOptions":{"shape":"ImportOptions"},
+        "failOnError":{
+          "shape":"Boolean",
+          "documentation":"<p>If set to true, the task halts when an import error is encountered. If set to false, the task skips the data that caused the error and continues if possible.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of Amazon S3 data to be imported. Valid values are CSV, which identifies the Gremlin CSV format or OPENCYPHER, which identies the openCypher load format.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "blankNodeHandling":{
+          "shape":"BlankNodeHandling",
+          "documentation":"<p>The method to handle blank nodes in the dataset. Currently, only <code>convertToIri</code> is supported, meaning blank nodes are converted to unique IRIs at load time. Must be provided when format is <code>ntriples</code>. For more information, see <a href=\"https://docs.aws.amazon.com/neptune-analytics/latest/userguide/using-rdf-data.html#rdf-handling\">Handling RDF values</a>.</p>"
+        },
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        }
+      }
+    },
+    "StartImportTaskOutput":{
+      "type":"structure",
+      "required":[
+        "taskId",
+        "source",
+        "roleArn",
+        "status"
+      ],
+      "members":{
+        "graphId":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>"
+        },
+        "taskId":{
+          "shape":"TaskId",
+          "documentation":"<p>The unique identifier of the import task.</p>"
+        },
+        "source":{
+          "shape":"String",
+          "documentation":"<p>A URL identifying the location of the data to be imported. This can be an Amazon S3 path, or can point to a Neptune database endpoint or snapshot.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>Specifies the format of Amazon S3 data to be imported. Valid values are CSV, which identifies the Gremlin CSV format or OPENCYPHER, which identies the openCypher load format.</p>"
+        },
+        "parquetType":{
+          "shape":"ParquetType",
+          "documentation":"<p>The parquet type of the import task.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The ARN of the IAM role that will allow access to the data that is to be imported.</p>"
+        },
+        "status":{
+          "shape":"ImportTaskStatus",
+          "documentation":"<p>The status of the import task.</p>"
+        },
+        "importOptions":{"shape":"ImportOptions"}
+      }
+    },
+    "StopGraphInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        }
+      }
+    },
+    "StopGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If true, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if it was created from a snapshot.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "SubnetId":{
+      "type":"string",
+      "pattern":"subnet-[a-z0-9]+"
+    },
+    "SubnetIds":{
+      "type":"list",
+      "member":{"shape":"SubnetId"},
+      "max":6,
+      "min":1
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:)[a-zA-Z+-=._:/]+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>ARN of the resource for which tags need to be added.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags to be assigned to the Neptune Analytics resource.</p> <p>The tags are metadata that are specified as a list of key-value pairs:</p> <p> <b>Key</b> (string)   –   A key is the required name of the tag. The string value can be from 1 to 128 Unicode characters in length. It can't be prefixed with <code>aws:</code> and can only contain the set of Unicode characters specified by this Java regular expression: <code>\"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$\")</code>.</p> <p> <b>Value</b> (string)   –   A value is the optional value of the tag. The string value can be from 1 to 256 Unicode characters in length. It can't be prefixed with <code>aws:</code> and can only contain the set of Unicode characters specified by this Java regular expression: <code>\"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$\")</code>.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TaskId":{
+      "type":"string",
+      "pattern":"t-[a-z0-9]{10}"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        }
+      },
+      "documentation":"<p>The exception was interrupted by throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UnprocessableException":{
+      "type":"structure",
+      "required":[
+        "message",
+        "reason"
+      ],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"UnprocessableExceptionReason",
+          "documentation":"<p>The reason for the unprocessable exception.</p>"
+        }
+      },
+      "documentation":"<p>Request cannot be processed due to known reasons. Eg. partition full.</p>",
+      "error":{
+        "httpStatusCode":422,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UnprocessableExceptionReason":{
+      "type":"string",
+      "enum":[
+        "QUERY_TIMEOUT",
+        "INTERNAL_LIMIT_EXCEEDED",
+        "MEMORY_LIMIT_EXCEEDED",
+        "STORAGE_LIMIT_EXCEEDED",
+        "PARTITION_FULL"
+      ]
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>ARN of the resource whose tag needs to be removed.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>Tag keys for the tags to be removed.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateGraphInput":{
+      "type":"structure",
+      "required":["graphIdentifier"],
+      "members":{
+        "graphIdentifier":{
+          "shape":"GraphIdentifier",
+          "documentation":"<p>The unique identifier of the Neptune Analytics graph.</p>",
+          "location":"uri",
+          "locationName":"graphIdentifier"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether or not the graph can be reachable over the internet. All access to graphs is IAM authenticated. (<code>true</code> to enable, or <code>false</code> to disable.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The provisioned memory-optimized Neptune Capacity Units (m-NCUs) to use for the graph.</p> <p>Min = 16</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>A value that indicates whether the graph has deletion protection enabled. The graph can't be deleted when deletion protection is enabled.</p>"
+        }
+      }
+    },
+    "UpdateGraphOutput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "name",
+        "arn"
+      ],
+      "members":{
+        "id":{
+          "shape":"GraphId",
+          "documentation":"<p>The unique identifier of the graph.</p>"
+        },
+        "name":{
+          "shape":"GraphName",
+          "documentation":"<p>The name of the graph.</p>"
+        },
+        "arn":{
+          "shape":"String",
+          "documentation":"<p>The ARN associated with the graph.</p>"
+        },
+        "status":{
+          "shape":"GraphStatus",
+          "documentation":"<p>The status of the graph.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The reason that the graph has this status.</p>"
+        },
+        "createTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the graph was created.</p>"
+        },
+        "provisionedMemory":{
+          "shape":"ProvisionedMemory",
+          "documentation":"<p>The number of memory-optimized Neptune Capacity Units (m-NCUs) allocated to the graph.</p>"
+        },
+        "endpoint":{
+          "shape":"String",
+          "documentation":"<p>The graph endpoint.</p>"
+        },
+        "publicConnectivity":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, the graph has a public endpoint, otherwise not.</p>"
+        },
+        "vectorSearchConfiguration":{"shape":"VectorSearchConfiguration"},
+        "replicaCount":{
+          "shape":"ReplicaCount",
+          "documentation":"<p>The number of replicas for the graph.</p>"
+        },
+        "kmsKeyIdentifier":{
+          "shape":"KmsKeyArn",
+          "documentation":"<p>The ID of the KMS key used to encrypt and decrypt graph data.</p>"
+        },
+        "sourceSnapshotId":{
+          "shape":"SnapshotId",
+          "documentation":"<p>The ID of the snapshot from which the graph was created, if any.</p>"
+        },
+        "deletionProtection":{
+          "shape":"Boolean",
+          "documentation":"<p>If <code>true</code>, deletion protection is enabled for the graph.</p>"
+        },
+        "buildNumber":{
+          "shape":"String",
+          "documentation":"<p>The build number of the graph.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A message describing the problem.</p>"
+        },
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason that the resource could not be validated.</p>"
+        }
+      },
+      "documentation":"<p>A resource could not be validated.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "CONSTRAINT_VIOLATION",
+        "ILLEGAL_ARGUMENT",
+        "MALFORMED_QUERY",
+        "QUERY_CANCELLED",
+        "QUERY_TOO_LARGE",
+        "UNSUPPORTED_OPERATION",
+        "BAD_REQUEST"
+      ]
+    },
+    "VectorSearchConfiguration":{
+      "type":"structure",
+      "required":["dimension"],
+      "members":{
+        "dimension":{
+          "shape":"VectorSearchDimension",
+          "documentation":"<p>The number of dimensions.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the number of dimensions for vector embeddings loaded into the graph. Max = 65535</p>"
+    },
+    "VectorSearchDimension":{
+      "type":"integer",
+      "box":true,
+      "max":65536,
+      "min":1
+    },
+    "VpcEndpointId":{
+      "type":"string",
+      "pattern":"vpce-[0-9a-f]{17}"
+    },
+    "VpcId":{
+      "type":"string",
+      "pattern":"vpc-[a-z0-9]+"
+    }
+  },
+  "documentation":"<p>Neptune Analytics is a new analytics database engine for Amazon Neptune that helps customers get to insights faster by quickly processing large amounts of graph data, invoking popular graph analytic algorithms in low-latency queries, and getting analytics results in seconds.</p>"
+}

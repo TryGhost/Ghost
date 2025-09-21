@@ -1,0 +1,704 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Directory": {
+      "operation": "ListDirectories",
+      "resourceIdentifier": {
+        "Name": "Directories[].Name",
+        "DirectoryArn": "Directories[].DirectoryArn"
+      }
+    },
+    "PublishedSchemaArn": {
+      "operation": "ListPublishedSchemaArns",
+      "resourceIdentifier": {
+        "SchemaArn": "SchemaArns[]"
+      }
+    }
+  },
+  "operations": {
+    "AddFacetToObject": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ApplySchema": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "AttachObject": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "AttachPolicy": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "AttachToIndex": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "AttachTypedLink": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "BatchRead": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "BatchWrite": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DeleteDirectory": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DeleteFacet": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DeleteObject": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DeleteSchema": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "DeleteTypedLinkFacet": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "DetachFromIndex": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DetachObject": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DetachPolicy": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DetachTypedLink": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "DisableDirectory": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "EnableDirectory": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "GetAppliedSchemaVersion": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "GetDirectory": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "GetFacet": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "GetLinkAttributes": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "GetObjectAttributes": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "GetObjectInformation": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "GetSchemaAsJson": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "GetTypedLinkFacetInformation": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListAppliedSchemaArns": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      },
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "ListAttachedIndices": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListFacetAttributes": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListFacetNames": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "ListIncomingTypedLinks": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListIndex": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListManagedSchemaArns": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "ListObjectAttributes": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListObjectChildren": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListObjectParentPaths": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListObjectParents": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListObjectPolicies": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListOutgoingTypedLinks": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListPolicyAttachments": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "ListPublishedSchemaArns": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "ListTypedLinkFacetAttributes": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "ListTypedLinkFacetNames": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "LookupPolicy": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "PublishSchema": {
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "PutSchemaFromJson": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      }
+    },
+    "RemoveFacetFromObject": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "UpdateFacet": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateLinkAttributes": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "UpdateObjectAttributes": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    },
+    "UpdateSchema": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpdateTypedLinkFacet": {
+      "SchemaArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "PublishedSchemaArn",
+            "resourceIdentifier": "SchemaArn"
+          }
+        ]
+      },
+      "Name": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "Name"
+          }
+        ]
+      }
+    },
+    "UpgradeAppliedSchema": {
+      "DirectoryArn": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Directory",
+            "resourceIdentifier": "DirectoryArn"
+          }
+        ]
+      }
+    }
+  }
+}

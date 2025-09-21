@@ -1,0 +1,2131 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-01-01",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"social-messaging",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS End User Messaging Social",
+    "serviceId":"SocialMessaging",
+    "signatureVersion":"v4",
+    "signingName":"social-messaging",
+    "uid":"socialmessaging-2024-01-01"
+  },
+  "operations":{
+    "AssociateWhatsAppBusinessAccount":{
+      "name":"AssociateWhatsAppBusinessAccount",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/signup",
+        "responseCode":200
+      },
+      "input":{"shape":"AssociateWhatsAppBusinessAccountInput"},
+      "output":{"shape":"AssociateWhatsAppBusinessAccountOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>This is only used through the Amazon Web Services console during sign-up to associate your WhatsApp Business Account to your Amazon Web Services account.</p>"
+    },
+    "CreateWhatsAppMessageTemplate":{
+      "name":"CreateWhatsAppMessageTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/template/put",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateWhatsAppMessageTemplateInput"},
+      "output":{"shape":"CreateWhatsAppMessageTemplateOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Creates a new WhatsApp message template from a custom definition.</p>"
+    },
+    "CreateWhatsAppMessageTemplateFromLibrary":{
+      "name":"CreateWhatsAppMessageTemplateFromLibrary",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/template/create",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateWhatsAppMessageTemplateFromLibraryInput"},
+      "output":{"shape":"CreateWhatsAppMessageTemplateFromLibraryOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Creates a new WhatsApp message template using a template from Meta's template library.</p>"
+    },
+    "CreateWhatsAppMessageTemplateMedia":{
+      "name":"CreateWhatsAppMessageTemplateMedia",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/template/media",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateWhatsAppMessageTemplateMediaInput"},
+      "output":{"shape":"CreateWhatsAppMessageTemplateMediaOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Uploads media for use in a WhatsApp message template.</p>"
+    },
+    "DeleteWhatsAppMessageMedia":{
+      "name":"DeleteWhatsAppMessageMedia",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/whatsapp/media",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteWhatsAppMessageMediaInput"},
+      "output":{"shape":"DeleteWhatsAppMessageMediaOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"AccessDeniedByMetaException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Delete a media object from the WhatsApp service. If the object is still in an Amazon S3 bucket you should delete it from there too.</p>",
+      "idempotent":true
+    },
+    "DeleteWhatsAppMessageTemplate":{
+      "name":"DeleteWhatsAppMessageTemplate",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/whatsapp/template",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteWhatsAppMessageTemplateInput"},
+      "output":{"shape":"DeleteWhatsAppMessageTemplateOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Deletes a WhatsApp message template.</p>",
+      "idempotent":true
+    },
+    "DisassociateWhatsAppBusinessAccount":{
+      "name":"DisassociateWhatsAppBusinessAccount",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/v1/whatsapp/waba/disassociate",
+        "responseCode":200
+      },
+      "input":{"shape":"DisassociateWhatsAppBusinessAccountInput"},
+      "output":{"shape":"DisassociateWhatsAppBusinessAccountOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Disassociate a WhatsApp Business Account (WABA) from your Amazon Web Services account.</p>",
+      "idempotent":true
+    },
+    "GetLinkedWhatsAppBusinessAccount":{
+      "name":"GetLinkedWhatsAppBusinessAccount",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/whatsapp/waba/details",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLinkedWhatsAppBusinessAccountInput"},
+      "output":{"shape":"GetLinkedWhatsAppBusinessAccountOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Get the details of your linked WhatsApp Business Account.</p>"
+    },
+    "GetLinkedWhatsAppBusinessAccountPhoneNumber":{
+      "name":"GetLinkedWhatsAppBusinessAccountPhoneNumber",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/whatsapp/waba/phone/details",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLinkedWhatsAppBusinessAccountPhoneNumberInput"},
+      "output":{"shape":"GetLinkedWhatsAppBusinessAccountPhoneNumberOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Use your WhatsApp phone number id to get the WABA account id and phone number details.</p>"
+    },
+    "GetWhatsAppMessageMedia":{
+      "name":"GetWhatsAppMessageMedia",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/media/get",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWhatsAppMessageMediaInput"},
+      "output":{"shape":"GetWhatsAppMessageMediaOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"AccessDeniedByMetaException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Get a media file from the WhatsApp service. On successful completion the media file is retrieved from Meta and stored in the specified Amazon S3 bucket. Use either <code>destinationS3File</code> or <code>destinationS3PresignedUrl</code> for the destination. If both are used then an <code>InvalidParameterException</code> is returned.</p>"
+    },
+    "GetWhatsAppMessageTemplate":{
+      "name":"GetWhatsAppMessageTemplate",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/whatsapp/template",
+        "responseCode":200
+      },
+      "input":{"shape":"GetWhatsAppMessageTemplateInput"},
+      "output":{"shape":"GetWhatsAppMessageTemplateOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Retrieves a specific WhatsApp message template.</p>"
+    },
+    "ListLinkedWhatsAppBusinessAccounts":{
+      "name":"ListLinkedWhatsAppBusinessAccounts",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/whatsapp/waba/list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLinkedWhatsAppBusinessAccountsInput"},
+      "output":{"shape":"ListLinkedWhatsAppBusinessAccountsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"}
+      ],
+      "documentation":"<p>List all WhatsApp Business Accounts linked to your Amazon Web Services account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/tags/list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"}
+      ],
+      "documentation":"<p>List all tags associated with a resource, such as a phone number or WABA.</p>"
+    },
+    "ListWhatsAppMessageTemplates":{
+      "name":"ListWhatsAppMessageTemplates",
+      "http":{
+        "method":"GET",
+        "requestUri":"/v1/whatsapp/template/list",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWhatsAppMessageTemplatesInput"},
+      "output":{"shape":"ListWhatsAppMessageTemplatesOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Lists WhatsApp message templates for a specific WhatsApp Business Account.</p>"
+    },
+    "ListWhatsAppTemplateLibrary":{
+      "name":"ListWhatsAppTemplateLibrary",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/template/library",
+        "responseCode":200
+      },
+      "input":{"shape":"ListWhatsAppTemplateLibraryInput"},
+      "output":{"shape":"ListWhatsAppTemplateLibraryOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Lists templates available in Meta's template library for WhatsApp messaging.</p>"
+    },
+    "PostWhatsAppMessageMedia":{
+      "name":"PostWhatsAppMessageMedia",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/media",
+        "responseCode":200
+      },
+      "input":{"shape":"PostWhatsAppMessageMediaInput"},
+      "output":{"shape":"PostWhatsAppMessageMediaOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"AccessDeniedByMetaException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Upload a media file to the WhatsApp service. Only the specified <code>originationPhoneNumberId</code> has the permissions to send the media file when using <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_SendWhatsAppMessage.html\">SendWhatsAppMessage</a>. You must use either <code>sourceS3File</code> or <code>sourceS3PresignedUrl</code> for the source. If both or neither are specified then an <code>InvalidParameterException</code> is returned.</p>"
+    },
+    "PutWhatsAppBusinessAccountEventDestinations":{
+      "name":"PutWhatsAppBusinessAccountEventDestinations",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/v1/whatsapp/waba/eventdestinations",
+        "responseCode":200
+      },
+      "input":{"shape":"PutWhatsAppBusinessAccountEventDestinationsInput"},
+      "output":{"shape":"PutWhatsAppBusinessAccountEventDestinationsOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"}
+      ],
+      "documentation":"<p>Add an event destination to log event data from WhatsApp for a WhatsApp Business Account (WABA). A WABA can only have one event destination at a time. All resources associated with the WABA use the same event destination.</p>",
+      "idempotent":true
+    },
+    "SendWhatsAppMessage":{
+      "name":"SendWhatsAppMessage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/send",
+        "responseCode":200
+      },
+      "input":{"shape":"SendWhatsAppMessageInput"},
+      "output":{"shape":"SendWhatsAppMessageOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Send a WhatsApp message. For examples of sending a message using the Amazon Web Services CLI, see <a href=\"https://docs.aws.amazon.com/social-messaging/latest/userguide/send-message.html\">Sending messages</a> in the <i> <i>Amazon Web Services End User Messaging Social User Guide</i> </i>.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/tags/tag-resource",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"}
+      ],
+      "documentation":"<p>Adds or overwrites only the specified tags for the specified resource. When you specify an existing tag key, the value is overwritten with the new value.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/tags/untag-resource",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"}
+      ],
+      "documentation":"<p>Removes the specified tags from a resource. </p>"
+    },
+    "UpdateWhatsAppMessageTemplate":{
+      "name":"UpdateWhatsAppMessageTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/v1/whatsapp/template",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateWhatsAppMessageTemplateInput"},
+      "output":{"shape":"UpdateWhatsAppMessageTemplateOutput"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidParametersException"},
+        {"shape":"ThrottledRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"DependencyException"}
+      ],
+      "documentation":"<p>Updates an existing WhatsApp message template.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedByMetaException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AddContactNumber":{
+      "type":"boolean",
+      "box":true
+    },
+    "AddLearnMoreLink":{
+      "type":"boolean",
+      "box":true
+    },
+    "AddSecurityRecommendation":{
+      "type":"boolean",
+      "box":true
+    },
+    "AddTrackPackageLink":{
+      "type":"boolean",
+      "box":true
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:.*"
+    },
+    "AssociateInProgressToken":{
+      "type":"string",
+      "max":50,
+      "min":0,
+      "sensitive":true
+    },
+    "AssociateWhatsAppBusinessAccountInput":{
+      "type":"structure",
+      "members":{
+        "signupCallback":{
+          "shape":"WhatsAppSignupCallback",
+          "documentation":"<p>Contains the callback access token.</p>"
+        },
+        "setupFinalization":{
+          "shape":"WhatsAppSetupFinalization",
+          "documentation":"<p>A JSON object that contains the phone numbers and WhatsApp Business Account to link to your account.</p>"
+        }
+      }
+    },
+    "AssociateWhatsAppBusinessAccountOutput":{
+      "type":"structure",
+      "members":{
+        "signupCallbackResult":{
+          "shape":"WhatsAppSignupCallbackResult",
+          "documentation":"<p>Contains your WhatsApp registration status.</p>"
+        },
+        "statusCode":{
+          "shape":"Integer",
+          "documentation":"<p>The status code for the response.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ButtonType":{
+      "type":"string",
+      "max":25,
+      "min":1
+    },
+    "CodeExpirationMinutes":{
+      "type":"integer",
+      "box":true
+    },
+    "CreateWhatsAppMessageTemplateFromLibraryInput":{
+      "type":"structure",
+      "required":[
+        "metaLibraryTemplate",
+        "id"
+      ],
+      "members":{
+        "metaLibraryTemplate":{
+          "shape":"MetaLibraryTemplate",
+          "documentation":"<p>The template configuration from Meta's library, including customizations for buttons and body text.</p>"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account to associate with this template.</p>"
+        }
+      }
+    },
+    "CreateWhatsAppMessageTemplateFromLibraryOutput":{
+      "type":"structure",
+      "members":{
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID assigned to the template by Meta.</p>"
+        },
+        "templateStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the created template (for example, PENDING or APPROVED).</p>"
+        },
+        "category":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The category of the template (for example, UTILITY or MARKETING).</p>"
+        }
+      }
+    },
+    "CreateWhatsAppMessageTemplateInput":{
+      "type":"structure",
+      "required":[
+        "templateDefinition",
+        "id"
+      ],
+      "members":{
+        "templateDefinition":{
+          "shape":"MetaTemplateDefinition",
+          "documentation":"<p>The complete template definition as a JSON blob.</p>"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account to associate with this template.</p>"
+        }
+      }
+    },
+    "CreateWhatsAppMessageTemplateMediaInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account associated with this media upload.</p>"
+        },
+        "sourceS3File":{"shape":"S3File"}
+      }
+    },
+    "CreateWhatsAppMessageTemplateMediaOutput":{
+      "type":"structure",
+      "members":{
+        "metaHeaderHandle":{
+          "shape":"String",
+          "documentation":"<p>The handle assigned to the uploaded media by Meta, used to reference the media in templates.</p>"
+        }
+      }
+    },
+    "CreateWhatsAppMessageTemplateOutput":{
+      "type":"structure",
+      "members":{
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID assigned to the template by Meta.</p>"
+        },
+        "templateStatus":{
+          "shape":"String",
+          "documentation":"<p>The status of the created template, such as PENDING or APPROVED..</p>"
+        },
+        "category":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The category of the template, such as UTILITY or MARKETING.</p>"
+        }
+      }
+    },
+    "DeleteAllLanguages":{
+      "type":"boolean",
+      "box":true
+    },
+    "DeleteWhatsAppMessageMediaInput":{
+      "type":"structure",
+      "required":[
+        "mediaId",
+        "originationPhoneNumberId"
+      ],
+      "members":{
+        "mediaId":{
+          "shape":"WhatsAppMediaId",
+          "documentation":"<p>The unique identifier of the media file to delete. Use the <code>mediaId</code> returned from <a href=\"https://console.aws.amazon.com/social-messaging/latest/APIReference/API_PostWhatsAppMessageMedia.html\">PostWhatsAppMessageMedia</a>.</p>",
+          "location":"querystring",
+          "locationName":"mediaId"
+        },
+        "originationPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The unique identifier of the originating phone number associated with the media. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>",
+          "location":"querystring",
+          "locationName":"originationPhoneNumberId"
+        }
+      }
+    },
+    "DeleteWhatsAppMessageMediaOutput":{
+      "type":"structure",
+      "members":{
+        "success":{
+          "shape":"Boolean",
+          "documentation":"<p>Success indicator for deleting the media file.</p>"
+        }
+      }
+    },
+    "DeleteWhatsAppMessageTemplateInput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "templateName"
+      ],
+      "members":{
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID of the template assigned by Meta.</p>",
+          "location":"querystring",
+          "locationName":"metaTemplateId"
+        },
+        "deleteAllLanguages":{
+          "shape":"DeleteAllLanguages",
+          "documentation":"<p>If true, deletes all language versions of the template.</p>",
+          "location":"querystring",
+          "locationName":"deleteAllTemplates"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account associated with this template.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        },
+        "templateName":{
+          "shape":"MetaTemplateName",
+          "documentation":"<p>The name of the template to delete.</p>",
+          "location":"querystring",
+          "locationName":"templateName"
+        }
+      }
+    },
+    "DeleteWhatsAppMessageTemplateOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DependencyException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>Thrown when performing an action because a dependency would be broken.</p>",
+      "error":{"httpStatusCode":502},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "DisassociateWhatsAppBusinessAccountInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The unique identifier of your WhatsApp Business Account. WABA identifiers are formatted as <code>waba-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_ListLinkedWhatsAppBusinessAccounts.html\">ListLinkedWhatsAppBusinessAccounts</a> to list all WABAs and their details.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        }
+      }
+    },
+    "DisassociateWhatsAppBusinessAccountOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ErrorMessage":{"type":"string"},
+    "EventDestinationArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:.*:[a-z-]+([/:](.*))?"
+    },
+    "Filter":{
+      "type":"map",
+      "key":{"shape":"FilterKeyString"},
+      "value":{"shape":"FilterValueString"},
+      "max":10,
+      "min":0
+    },
+    "FilterKeyString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "FilterValueString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "GetLinkedWhatsAppBusinessAccountInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The unique identifier, from Amazon Web Services, of the linked WhatsApp Business Account. WABA identifiers are formatted as <code>waba-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_ListLinkedWhatsAppBusinessAccounts.html\">ListLinkedWhatsAppBusinessAccounts</a> to list all WABAs and their details.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetLinkedWhatsAppBusinessAccountOutput":{
+      "type":"structure",
+      "members":{
+        "account":{
+          "shape":"LinkedWhatsAppBusinessAccount",
+          "documentation":"<p>The details of the linked WhatsApp Business Account.</p>"
+        }
+      }
+    },
+    "GetLinkedWhatsAppBusinessAccountPhoneNumberInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The unique identifier of the phone number. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetLinkedWhatsAppBusinessAccountPhoneNumberOutput":{
+      "type":"structure",
+      "members":{
+        "phoneNumber":{"shape":"WhatsAppPhoneNumberDetail"},
+        "linkedWhatsAppBusinessAccountId":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The WABA identifier linked to the phone number, formatted as <code>waba-01234567890123456789012345678901</code>.</p>"
+        }
+      }
+    },
+    "GetWhatsAppMessageMediaInput":{
+      "type":"structure",
+      "required":[
+        "mediaId",
+        "originationPhoneNumberId"
+      ],
+      "members":{
+        "mediaId":{
+          "shape":"WhatsAppMediaId",
+          "documentation":"<p>The unique identifier for the media file.</p>"
+        },
+        "originationPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The unique identifier of the originating phone number for the WhatsApp message media. The phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>"
+        },
+        "metadataOnly":{
+          "shape":"Boolean",
+          "documentation":"<p>Set to <code>True</code> to get only the metadata for the file.</p>"
+        },
+        "destinationS3PresignedUrl":{
+          "shape":"S3PresignedUrl",
+          "documentation":"<p>The presign url of the media file.</p>"
+        },
+        "destinationS3File":{
+          "shape":"S3File",
+          "documentation":"<p>The <code>bucketName</code> and <code>key</code> of the S3 media file.</p>"
+        }
+      }
+    },
+    "GetWhatsAppMessageMediaOutput":{
+      "type":"structure",
+      "members":{
+        "mimeType":{
+          "shape":"String",
+          "documentation":"<p>The MIME type of the media.</p>"
+        },
+        "fileSize":{
+          "shape":"Long",
+          "documentation":"<p>The file size of the media, in KB.</p>"
+        }
+      }
+    },
+    "GetWhatsAppMessageTemplateInput":{
+      "type":"structure",
+      "required":[
+        "metaTemplateId",
+        "id"
+      ],
+      "members":{
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID of the template assigned by Meta.</p>",
+          "location":"querystring",
+          "locationName":"metaTemplateId"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account associated with this template.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        }
+      }
+    },
+    "GetWhatsAppMessageTemplateOutput":{
+      "type":"structure",
+      "members":{
+        "template":{
+          "shape":"MetaTemplate",
+          "documentation":"<p>The complete template definition as a JSON string (maximum 6000 characters).</p>"
+        }
+      }
+    },
+    "Headers":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServiceException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception, or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "InvalidParametersException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>One or more parameters provided to the action are not valid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "IsoCountryCode":{
+      "type":"string",
+      "pattern":"[A-Z]{2}"
+    },
+    "LibraryTemplateBodyInputs":{
+      "type":"structure",
+      "members":{
+        "addContactNumber":{
+          "shape":"AddContactNumber",
+          "documentation":"<p>When true, includes a contact number in the template body.</p>"
+        },
+        "addLearnMoreLink":{
+          "shape":"AddLearnMoreLink",
+          "documentation":"<p>When true, includes a \"learn more\" link in the template body.</p>"
+        },
+        "addSecurityRecommendation":{
+          "shape":"AddSecurityRecommendation",
+          "documentation":"<p>When true, includes security recommendations in the template body.</p>"
+        },
+        "addTrackPackageLink":{
+          "shape":"AddTrackPackageLink",
+          "documentation":"<p>When true, includes a package tracking link in the template body.</p>"
+        },
+        "codeExpirationMinutes":{
+          "shape":"CodeExpirationMinutes",
+          "documentation":"<p>The number of minutes until a verification code or OTP expires.</p>"
+        }
+      },
+      "documentation":"<p>Configuration options for customizing the body content of a template from Meta's library.</p>"
+    },
+    "LibraryTemplateButtonInput":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"ButtonType",
+          "documentation":"<p>The type of button (for example, QUICK_REPLY, CALL, or URL).</p>"
+        },
+        "phoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number in E.164 format for CALL-type buttons.</p>"
+        },
+        "url":{
+          "shape":"MetaUrlWithSuffixExample",
+          "documentation":"<p>The URL with dynamic parameters for URL-type buttons.</p>"
+        },
+        "otpType":{
+          "shape":"OtpType",
+          "documentation":"<p>The type of one-time password for OTP buttons.</p>"
+        },
+        "zeroTapTermsAccepted":{
+          "shape":"ZeroTapTermsAccepted",
+          "documentation":"<p>When true, indicates acceptance of zero-tap terms for the button.</p>"
+        },
+        "supportedApps":{
+          "shape":"SupportedApps",
+          "documentation":"<p>List of supported applications for this button type.</p>"
+        }
+      },
+      "documentation":"<p>Configuration options for customizing buttons in a template from Meta's library.</p>"
+    },
+    "LibraryTemplateButtonList":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"ButtonType",
+          "documentation":"<p>The type of button (for example, QUICK_REPLY, CALL, or URL).</p>"
+        },
+        "text":{
+          "shape":"MetaText",
+          "documentation":"<p>The text displayed on the button (maximum 40 characters).</p>"
+        },
+        "phoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number in E.164 format for CALL-type buttons.</p>"
+        },
+        "url":{
+          "shape":"MetaUrl",
+          "documentation":"<p>The URL for URL-type buttons.</p>"
+        },
+        "otpType":{
+          "shape":"OtpType",
+          "documentation":"<p>The type of one-time password for OTP buttons.</p>"
+        },
+        "zeroTapTermsAccepted":{
+          "shape":"ZeroTapTermsAccepted",
+          "documentation":"<p>When true, indicates acceptance of zero-tap terms for the button.</p>"
+        },
+        "supportedApps":{
+          "shape":"SupportedApps",
+          "documentation":"<p>List of supported applications for this button type.</p>"
+        }
+      },
+      "documentation":"<p>Defines a button in a template from Meta's library.</p>"
+    },
+    "LimitExceededException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied because it would exceed one or more service quotas or limits.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "LinkedAccountWithIncompleteSetup":{
+      "type":"map",
+      "key":{"shape":"WhatsAppBusinessAccountId"},
+      "value":{"shape":"LinkedWhatsAppBusinessAccountIdMetaData"}
+    },
+    "LinkedWhatsAppBusinessAccount":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "wabaId",
+        "registrationStatus",
+        "linkDate",
+        "wabaName",
+        "eventDestinations",
+        "phoneNumbers"
+      ],
+      "members":{
+        "arn":{
+          "shape":"LinkedWhatsAppBusinessAccountArn",
+          "documentation":"<p>The ARN of the linked WhatsApp Business Account.</p>"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the linked WhatsApp Business Account, formatted as <code>waba-01234567890123456789012345678901</code>.</p>"
+        },
+        "wabaId":{
+          "shape":"WhatsAppBusinessAccountId",
+          "documentation":"<p>The WhatsApp Business Account ID from meta.</p>"
+        },
+        "registrationStatus":{
+          "shape":"RegistrationStatus",
+          "documentation":"<p>The registration status of the linked WhatsApp Business Account.</p>"
+        },
+        "linkDate":{
+          "shape":"WhatsAppBusinessAccountLinkDate",
+          "documentation":"<p>The date the WhatsApp Business Account was linked.</p>"
+        },
+        "wabaName":{
+          "shape":"WhatsAppBusinessAccountName",
+          "documentation":"<p>The name of the linked WhatsApp Business Account.</p>"
+        },
+        "eventDestinations":{
+          "shape":"WhatsAppBusinessAccountEventDestinations",
+          "documentation":"<p>The event destinations for the linked WhatsApp Business Account.</p>"
+        },
+        "phoneNumbers":{
+          "shape":"WhatsAppPhoneNumberSummaryList",
+          "documentation":"<p>The phone numbers associated with the Linked WhatsApp Business Account.</p>"
+        }
+      },
+      "documentation":"<p>The details of your linked WhatsApp Business Account.</p>"
+    },
+    "LinkedWhatsAppBusinessAccountArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:.*:waba/[0-9a-zA-Z]+"
+    },
+    "LinkedWhatsAppBusinessAccountId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":".*(^waba-.*$)|(^arn:.*:waba/[0-9a-zA-Z]+$).*"
+    },
+    "LinkedWhatsAppBusinessAccountIdMetaData":{
+      "type":"structure",
+      "members":{
+        "accountName":{
+          "shape":"WhatsAppBusinessAccountName",
+          "documentation":"<p>The name of your account.</p>"
+        },
+        "registrationStatus":{
+          "shape":"RegistrationStatus",
+          "documentation":"<p>The registration status of the linked WhatsApp Business Account.</p>"
+        },
+        "unregisteredWhatsAppPhoneNumbers":{
+          "shape":"WhatsAppPhoneNumberDetailList",
+          "documentation":"<p>The details for unregistered WhatsApp phone numbers.</p>"
+        },
+        "wabaId":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the WhatsApp Business Account ID.</p>"
+        }
+      },
+      "documentation":"<p>Contains your WhatsApp registration status and details of any unregistered WhatsApp phone number.</p>"
+    },
+    "LinkedWhatsAppBusinessAccountSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "id",
+        "wabaId",
+        "registrationStatus",
+        "linkDate",
+        "wabaName",
+        "eventDestinations"
+      ],
+      "members":{
+        "arn":{
+          "shape":"LinkedWhatsAppBusinessAccountArn",
+          "documentation":"<p>The ARN of the linked WhatsApp Business Account.</p>"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the linked WhatsApp Business Account, formatted as <code>waba-01234567890123456789012345678901</code>.</p>"
+        },
+        "wabaId":{
+          "shape":"WhatsAppBusinessAccountId",
+          "documentation":"<p>The WhatsApp Business Account ID provided by Meta.</p>"
+        },
+        "registrationStatus":{
+          "shape":"RegistrationStatus",
+          "documentation":"<p>The registration status of the linked WhatsApp Business Account.</p>"
+        },
+        "linkDate":{
+          "shape":"WhatsAppBusinessAccountLinkDate",
+          "documentation":"<p>The date the WhatsApp Business Account was linked.</p>"
+        },
+        "wabaName":{
+          "shape":"WhatsAppBusinessAccountName",
+          "documentation":"<p>The name of the linked WhatsApp Business Account.</p>"
+        },
+        "eventDestinations":{
+          "shape":"WhatsAppBusinessAccountEventDestinations",
+          "documentation":"<p>The event destinations for the linked WhatsApp Business Account.</p>"
+        }
+      },
+      "documentation":"<p>The details of a linked WhatsApp Business Account.</p>"
+    },
+    "LinkedWhatsAppBusinessAccountSummaryList":{
+      "type":"list",
+      "member":{"shape":"LinkedWhatsAppBusinessAccountSummary"}
+    },
+    "LinkedWhatsAppPhoneNumberArn":{
+      "type":"string",
+      "max":2048,
+      "min":0,
+      "pattern":"arn:.*:phone-number-id/[0-9a-zA-Z]+"
+    },
+    "ListLinkedWhatsAppBusinessAccountsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token for pagination.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListLinkedWhatsAppBusinessAccountsOutput":{
+      "type":"structure",
+      "members":{
+        "linkedAccounts":{
+          "shape":"LinkedWhatsAppBusinessAccountSummaryList",
+          "documentation":"<p>A list of WhatsApp Business Accounts linked to your Amazon Web Services account.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token for pagination.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to retrieve the tags from.</p>",
+          "location":"querystring",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "members":{
+        "statusCode":{
+          "shape":"Integer",
+          "documentation":"<p>The status code of the response.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags for the resource.</p>"
+        }
+      }
+    },
+    "ListWhatsAppMessageTemplatesInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account to list templates for.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page (1-100).</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListWhatsAppMessageTemplatesOutput":{
+      "type":"structure",
+      "members":{
+        "templates":{
+          "shape":"TemplateSummaryList",
+          "documentation":"<p>A list of template summaries.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to retrieve the next page of results, if any.</p>"
+        }
+      }
+    },
+    "ListWhatsAppTemplateLibraryInput":{
+      "type":"structure",
+      "required":["id"],
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next page of results.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page (1-100).</p>"
+        },
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account to list library templates for.</p>",
+          "location":"querystring",
+          "locationName":"id"
+        },
+        "filters":{
+          "shape":"Filter",
+          "documentation":"<p>Map of filters to apply (searchKey, topic, usecase, industry, language).</p>"
+        }
+      }
+    },
+    "ListWhatsAppTemplateLibraryOutput":{
+      "type":"structure",
+      "members":{
+        "metaLibraryTemplates":{
+          "shape":"MetaLibraryTemplatesList",
+          "documentation":"<p>A list of templates from Meta's library.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token to retrieve the next page of results, if any.</p>"
+        }
+      }
+    },
+    "Long":{
+      "type":"long",
+      "box":true
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "MetaIndustries":{
+      "type":"list",
+      "member":{"shape":"MetaIndustry"}
+    },
+    "MetaIndustry":{
+      "type":"string",
+      "max":25,
+      "min":1
+    },
+    "MetaLibraryTemplate":{
+      "type":"structure",
+      "required":[
+        "templateName",
+        "libraryTemplateName",
+        "templateCategory",
+        "templateLanguage"
+      ],
+      "members":{
+        "templateName":{
+          "shape":"MetaTemplateName",
+          "documentation":"<p>The name to assign to the template.</p>"
+        },
+        "libraryTemplateName":{
+          "shape":"MetaTemplateName",
+          "documentation":"<p>The name of the template in Meta's library.</p>"
+        },
+        "templateCategory":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The category of the template (for example, UTILITY or MARKETING).</p>"
+        },
+        "templateLanguage":{
+          "shape":"MetaTemplateLanguage",
+          "documentation":"<p>The language code for the template (for example, en_US).</p>"
+        },
+        "libraryTemplateButtonInputs":{
+          "shape":"MetaLibraryTemplateButtonInputs",
+          "documentation":"<p>Button customizations for the template.</p>"
+        },
+        "libraryTemplateBodyInputs":{
+          "shape":"LibraryTemplateBodyInputs",
+          "documentation":"<p>Body text customizations for the template.</p>"
+        }
+      },
+      "documentation":"<p>Represents a template from Meta's library with customization options.</p>"
+    },
+    "MetaLibraryTemplateButtonInputs":{
+      "type":"list",
+      "member":{"shape":"LibraryTemplateButtonInput"}
+    },
+    "MetaLibraryTemplateButtonList":{
+      "type":"list",
+      "member":{"shape":"LibraryTemplateButtonList"}
+    },
+    "MetaLibraryTemplateDefinition":{
+      "type":"structure",
+      "members":{
+        "templateName":{
+          "shape":"MetaTemplateName",
+          "documentation":"<p>The name of the template.</p>"
+        },
+        "templateLanguage":{
+          "shape":"MetaTemplateLanguage",
+          "documentation":"<p>The language code for the template (for example, en_US).</p>"
+        },
+        "templateCategory":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The category of the template (for example, UTILITY or MARKETING).</p>"
+        },
+        "templateTopic":{
+          "shape":"MetaTemplateTopic",
+          "documentation":"<p>The topic or subject matter of the template.</p>"
+        },
+        "templateUseCase":{
+          "shape":"MetaTemplateUseCase",
+          "documentation":"<p>The intended use case for the template.</p>"
+        },
+        "templateIndustry":{
+          "shape":"MetaIndustries",
+          "documentation":"<p>The industries the template is designed for.</p>"
+        },
+        "templateHeader":{
+          "shape":"MetaTemplateHeader",
+          "documentation":"<p>The header text of the template.</p>"
+        },
+        "templateBody":{
+          "shape":"MetaTemplateBody",
+          "documentation":"<p>The body text of the template.</p>"
+        },
+        "templateButtons":{
+          "shape":"MetaLibraryTemplateButtonList",
+          "documentation":"<p>The buttons included in the template.</p>"
+        },
+        "templateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The ID of the template in Meta's library.</p>"
+        }
+      },
+      "documentation":"<p>Defines the complete structure and content of a template in Meta's library.</p>"
+    },
+    "MetaLibraryTemplatesList":{
+      "type":"list",
+      "member":{"shape":"MetaLibraryTemplateDefinition"}
+    },
+    "MetaTemplate":{
+      "type":"string",
+      "max":6000,
+      "min":1
+    },
+    "MetaTemplateBody":{
+      "type":"string",
+      "max":2000,
+      "min":1
+    },
+    "MetaTemplateCategory":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "MetaTemplateComponents":{
+      "type":"blob",
+      "max":3000,
+      "min":1
+    },
+    "MetaTemplateDefinition":{
+      "type":"blob",
+      "max":6000,
+      "min":1
+    },
+    "MetaTemplateHeader":{
+      "type":"string",
+      "max":200,
+      "min":1
+    },
+    "MetaTemplateId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[0-9]+"
+    },
+    "MetaTemplateLanguage":{
+      "type":"string",
+      "max":6,
+      "min":1
+    },
+    "MetaTemplateName":{
+      "type":"string",
+      "max":512,
+      "min":1
+    },
+    "MetaTemplateQualityScore":{
+      "type":"string",
+      "max":20,
+      "min":1
+    },
+    "MetaTemplateStatus":{
+      "type":"string",
+      "max":20,
+      "min":1
+    },
+    "MetaTemplateTopic":{
+      "type":"string",
+      "max":20,
+      "min":1
+    },
+    "MetaTemplateUseCase":{
+      "type":"string",
+      "max":30,
+      "min":1
+    },
+    "MetaText":{
+      "type":"string",
+      "max":40,
+      "min":1
+    },
+    "MetaUrl":{
+      "type":"string",
+      "max":400,
+      "min":1
+    },
+    "MetaUrlWithSuffixExample":{
+      "type":"map",
+      "key":{"shape":"MetaUrlWithSuffixExampleKeyString"},
+      "value":{"shape":"MetaUrlWithSuffixExampleValueString"},
+      "max":10,
+      "min":0
+    },
+    "MetaUrlWithSuffixExampleKeyString":{
+      "type":"string",
+      "max":30,
+      "min":1
+    },
+    "MetaUrlWithSuffixExampleValueString":{
+      "type":"string",
+      "max":400,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":600,
+      "min":1
+    },
+    "OtpType":{
+      "type":"string",
+      "max":25,
+      "min":1
+    },
+    "PhoneNumber":{
+      "type":"string",
+      "max":20,
+      "min":1
+    },
+    "PostWhatsAppMessageMediaInput":{
+      "type":"structure",
+      "required":["originationPhoneNumberId"],
+      "members":{
+        "originationPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The ID of the phone number to associate with the WhatsApp media file. The phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>"
+        },
+        "sourceS3PresignedUrl":{
+          "shape":"S3PresignedUrl",
+          "documentation":"<p>The source presign url of the media file.</p>"
+        },
+        "sourceS3File":{
+          "shape":"S3File",
+          "documentation":"<p>The source S3 url for the media file.</p>"
+        }
+      }
+    },
+    "PostWhatsAppMessageMediaOutput":{
+      "type":"structure",
+      "members":{
+        "mediaId":{
+          "shape":"WhatsAppMediaId",
+          "documentation":"<p>The unique identifier of the posted WhatsApp message.</p>"
+        }
+      }
+    },
+    "PutWhatsAppBusinessAccountEventDestinationsInput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "eventDestinations"
+      ],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The unique identifier of your WhatsApp Business Account. WABA identifiers are formatted as <code>waba-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_ListLinkedWhatsAppBusinessAccounts.html\">ListLinkedWhatsAppBusinessAccounts</a> to list all WABAs and their details.</p>"
+        },
+        "eventDestinations":{
+          "shape":"WhatsAppBusinessAccountEventDestinations",
+          "documentation":"<p>An array of <code>WhatsAppBusinessAccountEventDestination</code> event destinations.</p>"
+        }
+      }
+    },
+    "PutWhatsAppBusinessAccountEventDestinationsOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "RegistrationStatus":{
+      "type":"string",
+      "enum":[
+        "COMPLETE",
+        "INCOMPLETE"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleArn":{
+      "type":"string",
+      "pattern":"arn:aws:iam::\\d{12}:role\\/[a-zA-Z0-9+=,.@\\-_]+"
+    },
+    "S3File":{
+      "type":"structure",
+      "required":[
+        "bucketName",
+        "key"
+      ],
+      "members":{
+        "bucketName":{
+          "shape":"S3FileBucketNameString",
+          "documentation":"<p>The bucket name.</p>"
+        },
+        "key":{
+          "shape":"S3FileKeyString",
+          "documentation":"<p>The object key of the media file.</p>"
+        }
+      },
+      "documentation":"<p>Contains information for the S3 bucket that contains media files.</p>",
+      "sensitive":true
+    },
+    "S3FileBucketNameString":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-z0-9][a-z0-9.-]*[a-z0-9]"
+    },
+    "S3FileKeyString":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "S3PresignedUrl":{
+      "type":"structure",
+      "required":[
+        "url",
+        "headers"
+      ],
+      "members":{
+        "url":{
+          "shape":"S3PresignedUrlUrlString",
+          "documentation":"<p>The presign url to the object.</p>"
+        },
+        "headers":{
+          "shape":"Headers",
+          "documentation":"<p>A map of headers and their values. You must specify the <code>Content-Type</code> header when using <code>PostWhatsAppMessageMedia</code>. For a list of common headers, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonRequestHeaders.html\">Common Request Headers</a> in the <i>Amazon S3 API Reference</i> </p>"
+        }
+      },
+      "documentation":"<p>You can use presigned URLs to grant time-limited access to objects in Amazon S3 without updating your bucket policy. For more information, see <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html\">Working with presigned URLs</a> in the <i>Amazon S3 User Guide</i>.</p>",
+      "sensitive":true
+    },
+    "S3PresignedUrlUrlString":{
+      "type":"string",
+      "max":2000,
+      "min":1,
+      "pattern":"https://(.*)s3(.*).amazonaws.com/(.*)"
+    },
+    "SendWhatsAppMessageInput":{
+      "type":"structure",
+      "required":[
+        "originationPhoneNumberId",
+        "message",
+        "metaApiVersion"
+      ],
+      "members":{
+        "originationPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The ID of the phone number used to send the WhatsApp message. If you are sending a media file only the <code>originationPhoneNumberId</code> used to upload the file can be used. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>"
+        },
+        "message":{
+          "shape":"WhatsAppMessageBlob",
+          "documentation":"<p>The message to send through WhatsApp. The length is in KB. The message field passes through a WhatsApp Message object, see <a href=\"https://developers.facebook.com/docs/whatsapp/cloud-api/reference/messages\">Messages</a> in the <i>WhatsApp Business Platform Cloud API Reference</i>.</p>"
+        },
+        "metaApiVersion":{
+          "shape":"String",
+          "documentation":"<p>The API version for the request formatted as <code>v{VersionNumber}</code>. For a list of supported API versions and Amazon Web Services Regions, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/end-user-messaging.html\"> <i>Amazon Web Services End User Messaging Social API</i> Service Endpoints</a> in the <i>Amazon Web Services General Reference</i>.</p>"
+        }
+      }
+    },
+    "SendWhatsAppMessageOutput":{
+      "type":"structure",
+      "members":{
+        "messageId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifier of the message.</p>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "StringList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SupportedApp":{
+      "type":"map",
+      "key":{"shape":"SupportedAppKeyString"},
+      "value":{"shape":"SupportedAppValueString"},
+      "max":10,
+      "min":0
+    },
+    "SupportedAppKeyString":{
+      "type":"string",
+      "max":30,
+      "min":1
+    },
+    "SupportedAppValueString":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "SupportedApps":{
+      "type":"list",
+      "member":{"shape":"SupportedApp"}
+    },
+    "Tag":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{
+          "shape":"TagKeyString",
+          "documentation":"<p>The tag key.</p>"
+        },
+        "value":{
+          "shape":"TagValueString",
+          "documentation":"<p>The tag value.</p>"
+        }
+      },
+      "documentation":"<p>The tag for a resource.</p>"
+    },
+    "TagKeyString":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to tag.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags to add to the resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{
+        "statusCode":{
+          "shape":"Integer",
+          "documentation":"<p>The status code of the tag resource operation.</p>"
+        }
+      }
+    },
+    "TagValueString":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TemplateSummary":{
+      "type":"structure",
+      "members":{
+        "templateName":{
+          "shape":"MetaTemplateName",
+          "documentation":"<p>The name of the template.</p>"
+        },
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID assigned to the template by Meta.</p>"
+        },
+        "templateStatus":{
+          "shape":"MetaTemplateStatus",
+          "documentation":"<p>The current status of the template (for example, APPROVED, PENDING, or REJECTED).</p>"
+        },
+        "templateQualityScore":{
+          "shape":"MetaTemplateQualityScore",
+          "documentation":"<p>The quality score assigned to the template by Meta.</p>"
+        },
+        "templateLanguage":{
+          "shape":"MetaTemplateLanguage",
+          "documentation":"<p>The language code of the template (for example, en_US).</p>"
+        },
+        "templateCategory":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The category of the template (for example, UTILITY or MARKETING).</p>"
+        }
+      },
+      "documentation":"<p>Provides a summary of a WhatsApp message template's key attributes.</p>"
+    },
+    "TemplateSummaryList":{
+      "type":"list",
+      "member":{"shape":"TemplateSummary"}
+    },
+    "ThrottledRequestException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":false}
+    },
+    "TwoFactorPin":{
+      "type":"string",
+      "max":6,
+      "min":1,
+      "sensitive":true
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource to remove tags from.</p>"
+        },
+        "tagKeys":{
+          "shape":"StringList",
+          "documentation":"<p>The keys of the tags to remove from the resource.</p>"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{
+        "statusCode":{
+          "shape":"Integer",
+          "documentation":"<p>The status code of the untag resource operation.</p>"
+        }
+      }
+    },
+    "UpdateWhatsAppMessageTemplateInput":{
+      "type":"structure",
+      "required":[
+        "id",
+        "metaTemplateId"
+      ],
+      "members":{
+        "id":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the WhatsApp Business Account associated with this template.</p>"
+        },
+        "metaTemplateId":{
+          "shape":"MetaTemplateId",
+          "documentation":"<p>The numeric ID of the template assigned by Meta.</p>"
+        },
+        "templateCategory":{
+          "shape":"MetaTemplateCategory",
+          "documentation":"<p>The new category for the template (for example, UTILITY or MARKETING).</p>"
+        },
+        "templateComponents":{
+          "shape":"MetaTemplateComponents",
+          "documentation":"<p>The updated components of the template as a JSON blob (maximum 3000 characters).</p>"
+        }
+      }
+    },
+    "UpdateWhatsAppMessageTemplateOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request contains an invalid parameter value. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "WabaPhoneNumberSetupFinalization":{
+      "type":"structure",
+      "required":[
+        "id",
+        "twoFactorPin"
+      ],
+      "members":{
+        "id":{
+          "shape":"WhatsAppPhoneNumber",
+          "documentation":"<p>The unique identifier of the originating phone number associated with the media. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. Use <a href=\"https://docs.aws.amazon.com/social-messaging/latest/APIReference/API_GetLinkedWhatsAppBusinessAccountPhoneNumber.html\">GetLinkedWhatsAppBusinessAccount</a> to find a phone number's id.</p>"
+        },
+        "twoFactorPin":{
+          "shape":"TwoFactorPin",
+          "documentation":"<p>The PIN to use for two-step verification. To reset your PIN follow the directions in <a href=\"https://developers.facebook.com/docs/whatsapp/cloud-api/reference/two-step-verification/#updating-pin\">Updating PIN</a> in the <i>WhatsApp Business Platform Cloud API Reference</i>.</p>"
+        },
+        "dataLocalizationRegion":{
+          "shape":"IsoCountryCode",
+          "documentation":"<p>The two letter ISO region for the location of where Meta will store data.</p> <p class=\"title\"> <b>Asia–Pacific (APAC)</b> </p> <ul> <li> <p>Australia <b>AU</b> </p> </li> <li> <p>Indonesia <b>ID</b> </p> </li> <li> <p>India <b>IN</b> </p> </li> <li> <p>Japan <b>JP</b> </p> </li> <li> <p>Singapore <b>SG</b> </p> </li> <li> <p>South Korea <b>KR</b> </p> </li> </ul> <p class=\"title\"> <b>Europe</b> </p> <ul> <li> <p>Germany <b>DE</b> </p> </li> <li> <p>Switzerland <b>CH</b> </p> </li> <li> <p>United Kingdom <b>GB</b> </p> </li> </ul> <p class=\"title\"> <b>Latin America (LATAM)</b> </p> <ul> <li> <p>Brazil <b>BR</b> </p> </li> </ul> <p class=\"title\"> <b>Middle East and Africa (MEA)</b> </p> <ul> <li> <p>Bahrain <b>BH</b> </p> </li> <li> <p>South Africa <b>ZA</b> </p> </li> <li> <p>United Arab Emirates <b>AE</b> </p> </li> </ul> <p class=\"title\"> <b>North America (NORAM)</b> </p> <ul> <li> <p>Canada <b>CA</b> </p> </li> </ul>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of key and value pair tags.</p>"
+        }
+      },
+      "documentation":"<p>The registration details for a linked phone number.</p>"
+    },
+    "WabaPhoneNumberSetupFinalizationList":{
+      "type":"list",
+      "member":{"shape":"WabaPhoneNumberSetupFinalization"}
+    },
+    "WabaSetupFinalization":{
+      "type":"structure",
+      "members":{
+        "id":{
+          "shape":"WhatsAppBusinessAccountId",
+          "documentation":"<p>The ID of the linked WhatsApp Business Account, formatted as <code>waba-01234567890123456789012345678901</code>.</p>"
+        },
+        "eventDestinations":{
+          "shape":"WhatsAppBusinessAccountEventDestinations",
+          "documentation":"<p>The event destinations for the linked WhatsApp Business Account.</p>"
+        },
+        "tags":{
+          "shape":"TagList",
+          "documentation":"<p>An array of key and value pair tags.</p>"
+        }
+      },
+      "documentation":"<p>The registration details for a linked WhatsApp Business Account.</p>"
+    },
+    "WhatsAppBusinessAccountEventDestination":{
+      "type":"structure",
+      "required":["eventDestinationArn"],
+      "members":{
+        "eventDestinationArn":{
+          "shape":"EventDestinationArn",
+          "documentation":"<p>The ARN of the event destination.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Identity and Access Management role that is able to import phone numbers and write events.</p>"
+        }
+      },
+      "documentation":"<p>Contains information on the event destination.</p>"
+    },
+    "WhatsAppBusinessAccountEventDestinations":{
+      "type":"list",
+      "member":{"shape":"WhatsAppBusinessAccountEventDestination"},
+      "max":1,
+      "min":0
+    },
+    "WhatsAppBusinessAccountId":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "WhatsAppBusinessAccountLinkDate":{"type":"timestamp"},
+    "WhatsAppBusinessAccountName":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "WhatsAppDisplayPhoneNumber":{
+      "type":"string",
+      "max":20,
+      "min":0
+    },
+    "WhatsAppMediaId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[A-Za-z0-9]+"
+    },
+    "WhatsAppMessageBlob":{
+      "type":"blob",
+      "max":2048000,
+      "min":1,
+      "sensitive":true
+    },
+    "WhatsAppPhoneNumber":{
+      "type":"string",
+      "max":100,
+      "min":1
+    },
+    "WhatsAppPhoneNumberDetail":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "phoneNumber",
+        "phoneNumberId",
+        "metaPhoneNumberId",
+        "displayPhoneNumberName",
+        "displayPhoneNumber",
+        "qualityRating"
+      ],
+      "members":{
+        "arn":{
+          "shape":"LinkedWhatsAppPhoneNumberArn",
+          "documentation":"<p>The ARN of the WhatsApp phone number.</p>"
+        },
+        "phoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number for sending WhatsApp.</p>"
+        },
+        "phoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The phone number ID. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. </p>"
+        },
+        "metaPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumber",
+          "documentation":"<p>The phone number ID from Meta.</p>"
+        },
+        "displayPhoneNumberName":{
+          "shape":"WhatsAppPhoneNumberName",
+          "documentation":"<p>The display name for this phone number.</p>"
+        },
+        "displayPhoneNumber":{
+          "shape":"WhatsAppDisplayPhoneNumber",
+          "documentation":"<p>The phone number that appears in the recipients display.</p>"
+        },
+        "qualityRating":{
+          "shape":"WhatsAppPhoneNumberQualityRating",
+          "documentation":"<p>The quality rating of the phone number.</p>"
+        },
+        "dataLocalizationRegion":{
+          "shape":"IsoCountryCode",
+          "documentation":"<p>The geographic region where the WhatsApp phone number's data is stored and processed.</p>"
+        }
+      },
+      "documentation":"<p>The details of your WhatsApp phone number.</p>"
+    },
+    "WhatsAppPhoneNumberDetailList":{
+      "type":"list",
+      "member":{"shape":"WhatsAppPhoneNumberDetail"}
+    },
+    "WhatsAppPhoneNumberId":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":".*(^phone-number-id-.*$)|(^arn:.*:phone-number-id/[0-9a-zA-Z]+$).*"
+    },
+    "WhatsAppPhoneNumberName":{
+      "type":"string",
+      "max":200,
+      "min":0
+    },
+    "WhatsAppPhoneNumberQualityRating":{
+      "type":"string",
+      "max":10,
+      "min":0
+    },
+    "WhatsAppPhoneNumberSummary":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "phoneNumber",
+        "phoneNumberId",
+        "metaPhoneNumberId",
+        "displayPhoneNumberName",
+        "displayPhoneNumber",
+        "qualityRating"
+      ],
+      "members":{
+        "arn":{
+          "shape":"LinkedWhatsAppPhoneNumberArn",
+          "documentation":"<p>The full Amazon Resource Name (ARN) for the phone number.</p>"
+        },
+        "phoneNumber":{
+          "shape":"PhoneNumber",
+          "documentation":"<p>The phone number associated with the Linked WhatsApp Business Account.</p>"
+        },
+        "phoneNumberId":{
+          "shape":"WhatsAppPhoneNumberId",
+          "documentation":"<p>The phone number ID. Phone number identifiers are formatted as <code>phone-number-id-01234567890123456789012345678901</code>. </p>"
+        },
+        "metaPhoneNumberId":{
+          "shape":"WhatsAppPhoneNumber",
+          "documentation":"<p>The phone number ID from Meta.</p>"
+        },
+        "displayPhoneNumberName":{
+          "shape":"WhatsAppPhoneNumberName",
+          "documentation":"<p>The display name for this phone number.</p>"
+        },
+        "displayPhoneNumber":{
+          "shape":"WhatsAppDisplayPhoneNumber",
+          "documentation":"<p>The phone number that appears in the recipients display.</p>"
+        },
+        "qualityRating":{
+          "shape":"WhatsAppPhoneNumberQualityRating",
+          "documentation":"<p>The quality rating of the phone number. This is from Meta.</p>"
+        },
+        "dataLocalizationRegion":{
+          "shape":"IsoCountryCode",
+          "documentation":"<p>The geographic region where the WhatsApp phone number's data is stored and processed.</p>"
+        }
+      },
+      "documentation":"<p>The details of a linked phone number.</p>"
+    },
+    "WhatsAppPhoneNumberSummaryList":{
+      "type":"list",
+      "member":{"shape":"WhatsAppPhoneNumberSummary"}
+    },
+    "WhatsAppSetupFinalization":{
+      "type":"structure",
+      "required":[
+        "associateInProgressToken",
+        "phoneNumbers"
+      ],
+      "members":{
+        "associateInProgressToken":{
+          "shape":"AssociateInProgressToken",
+          "documentation":"<p>An Amazon Web Services access token generated by <code>WhatsAppSignupCallback</code> and used by <code>WhatsAppSetupFinalization</code>.</p>"
+        },
+        "phoneNumbers":{
+          "shape":"WabaPhoneNumberSetupFinalizationList",
+          "documentation":"<p>An array of WabaPhoneNumberSetupFinalization objects containing the details of each phone number associated with the WhatsApp Business Account.</p>"
+        },
+        "phoneNumberParent":{
+          "shape":"LinkedWhatsAppBusinessAccountId",
+          "documentation":"<p>Used to add a new phone number to an existing WhatsApp Business Account. This field can't be used when the <code>waba</code> field is present.</p>"
+        },
+        "waba":{
+          "shape":"WabaSetupFinalization",
+          "documentation":"<p>Used to create a new WhatsApp Business Account and add a phone number. This field can't be used when the <code>phoneNumberParent</code> field is present.</p>"
+        }
+      },
+      "documentation":"<p>The details of linking a WhatsApp Business Account to your Amazon Web Services account.</p>"
+    },
+    "WhatsAppSignupCallback":{
+      "type":"structure",
+      "required":["accessToken"],
+      "members":{
+        "accessToken":{
+          "shape":"WhatsAppSignupCallbackAccessTokenString",
+          "documentation":"<p>The access token for your WhatsApp Business Account. The <code>accessToken</code> value is provided by Meta.</p>"
+        },
+        "callbackUrl":{
+          "shape":"WhatsAppSignupCallbackCallbackUrlString",
+          "documentation":"<p>The URL where WhatsApp will send callback notifications for this account.</p>"
+        }
+      },
+      "documentation":"<p>Contains the <code>accessToken</code> provided by Meta during signup.</p>"
+    },
+    "WhatsAppSignupCallbackAccessTokenString":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "WhatsAppSignupCallbackCallbackUrlString":{
+      "type":"string",
+      "max":100,
+      "min":0
+    },
+    "WhatsAppSignupCallbackResult":{
+      "type":"structure",
+      "members":{
+        "associateInProgressToken":{
+          "shape":"AssociateInProgressToken",
+          "documentation":"<p>An Amazon Web Services access token generated by <code>WhatsAppSignupCallback</code> and used by <code>WhatsAppSetupFinalization</code>.</p>"
+        },
+        "linkedAccountsWithIncompleteSetup":{
+          "shape":"LinkedAccountWithIncompleteSetup",
+          "documentation":"<p>A LinkedWhatsAppBusinessAccountIdMetaData object map containing the details of any WhatsAppBusiness accounts that have incomplete setup.</p>"
+        }
+      },
+      "documentation":"<p>Contains the results of WhatsAppSignupCallback.</p>"
+    },
+    "ZeroTapTermsAccepted":{
+      "type":"boolean",
+      "box":true
+    }
+  },
+  "documentation":"<p> <i>Amazon Web Services End User Messaging Social</i>, also referred to as Social messaging, is a messaging service that enables application developers to incorporate WhatsApp into their existing workflows. The <i>Amazon Web Services End User Messaging Social API</i> provides information about the <i>Amazon Web Services End User Messaging Social API</i> resources, including supported HTTP methods, parameters, and schemas.</p> <p>The <i>Amazon Web Services End User Messaging Social API</i> provides programmatic access to options that are unique to the WhatsApp Business Platform.</p> <p>If you're new to the <i>Amazon Web Services End User Messaging Social API</i>, it's also helpful to review <a href=\"https://docs.aws.amazon.com/sms-voice/latest/userguide/what-is-service.html\">What is Amazon Web Services End User Messaging Social</a> in the <i>Amazon Web Services End User Messaging Social User Guide</i>. The <i>Amazon Web Services End User Messaging Social User Guide</i> provides tutorials, code samples, and procedures that demonstrate how to use <i>Amazon Web Services End User Messaging Social API</i> features programmatically and how to integrate functionality into applications. The guide also provides key information, such as integration with other Amazon Web Services services, and the quotas that apply to use of the service.</p> <p> <b>Regional availability</b> </p> <p>The <i>Amazon Web Services End User Messaging Social API</i> is available across several Amazon Web Services Regions and it provides a dedicated endpoint for each of these Regions. For a list of all the Regions and endpoints where the API is currently available, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/rande.html#pinpoint_region\">Amazon Web Services Service Endpoints</a> and <a href=\"https://docs.aws.amazon.com/general/latest/gr/end-user-messaging.html\">Amazon Web Services End User Messaging endpoints and quotas</a> in the Amazon Web Services General Reference. To learn more about Amazon Web Services Regions, see <a href=\"https://docs.aws.amazon.com/general/latest/gr/rande-manage.html\">Managing Amazon Web Services Regions</a> in the Amazon Web Services General Reference.</p> <p>In each Region, Amazon Web Services maintains multiple Availability Zones. These Availability Zones are physically isolated from each other, but are united by private, low-latency, high-throughput, and highly redundant network connections. These Availability Zones enable us to provide very high levels of availability and redundancy, while also minimizing latency. To learn more about the number of Availability Zones that are available in each Region, see <a href=\"https://aws.amazon.com/about-aws/global-infrastructure/\">Amazon Web Services Global Infrastructure.</a> </p>"
+}

@@ -1,0 +1,4976 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-02-26",
+    "endpointPrefix":"drs",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "serviceAbbreviation":"drs",
+    "serviceFullName":"Elastic Disaster Recovery Service",
+    "serviceId":"drs",
+    "signatureVersion":"v4",
+    "signingName":"drs",
+    "uid":"drs-2020-02-26"
+  },
+  "operations":{
+    "AssociateSourceNetworkStack":{
+      "name":"AssociateSourceNetworkStack",
+      "http":{
+        "method":"POST",
+        "requestUri":"/AssociateSourceNetworkStack",
+        "responseCode":202
+      },
+      "input":{"shape":"AssociateSourceNetworkStackRequest"},
+      "output":{"shape":"AssociateSourceNetworkStackResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Associate a Source Network to an existing CloudFormation Stack and modify launch templates to use this network. Can be used for reverting to previously deployed CloudFormation stacks.</p>"
+    },
+    "CreateExtendedSourceServer":{
+      "name":"CreateExtendedSourceServer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateExtendedSourceServer",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateExtendedSourceServerRequest"},
+      "output":{"shape":"CreateExtendedSourceServerResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Create an extended source server in the target Account based on the source server in staging account.</p>"
+    },
+    "CreateLaunchConfigurationTemplate":{
+      "name":"CreateLaunchConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateLaunchConfigurationTemplate",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateLaunchConfigurationTemplateRequest"},
+      "output":{"shape":"CreateLaunchConfigurationTemplateResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Creates a new Launch Configuration Template.</p>"
+    },
+    "CreateReplicationConfigurationTemplate":{
+      "name":"CreateReplicationConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateReplicationConfigurationTemplate",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateReplicationConfigurationTemplateRequest"},
+      "output":{"shape":"ReplicationConfigurationTemplate"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Creates a new ReplicationConfigurationTemplate.</p>"
+    },
+    "CreateSourceNetwork":{
+      "name":"CreateSourceNetwork",
+      "http":{
+        "method":"POST",
+        "requestUri":"/CreateSourceNetwork",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateSourceNetworkRequest"},
+      "output":{"shape":"CreateSourceNetworkResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Create a new Source Network resource for a provided VPC ID.</p>"
+    },
+    "DeleteJob":{
+      "name":"DeleteJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteJob",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteJobRequest"},
+      "output":{"shape":"DeleteJobResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a single Job by ID.</p>",
+      "idempotent":true
+    },
+    "DeleteLaunchAction":{
+      "name":"DeleteLaunchAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteLaunchAction",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteLaunchActionRequest"},
+      "output":{"shape":"DeleteLaunchActionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a resource launch action.</p>"
+    },
+    "DeleteLaunchConfigurationTemplate":{
+      "name":"DeleteLaunchConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteLaunchConfigurationTemplate",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteLaunchConfigurationTemplateRequest"},
+      "output":{"shape":"DeleteLaunchConfigurationTemplateResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a single Launch Configuration Template by ID.</p>",
+      "idempotent":true
+    },
+    "DeleteRecoveryInstance":{
+      "name":"DeleteRecoveryInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteRecoveryInstance",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteRecoveryInstanceRequest"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a single Recovery Instance by ID. This deletes the Recovery Instance resource from Elastic Disaster Recovery. The Recovery Instance must be disconnected first in order to delete it.</p>"
+    },
+    "DeleteReplicationConfigurationTemplate":{
+      "name":"DeleteReplicationConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteReplicationConfigurationTemplate",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteReplicationConfigurationTemplateRequest"},
+      "output":{"shape":"DeleteReplicationConfigurationTemplateResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a single Replication Configuration Template by ID</p>",
+      "idempotent":true
+    },
+    "DeleteSourceNetwork":{
+      "name":"DeleteSourceNetwork",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteSourceNetwork",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSourceNetworkRequest"},
+      "output":{"shape":"DeleteSourceNetworkResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Delete Source Network resource.</p>",
+      "idempotent":true
+    },
+    "DeleteSourceServer":{
+      "name":"DeleteSourceServer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DeleteSourceServer",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteSourceServerRequest"},
+      "output":{"shape":"DeleteSourceServerResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deletes a single Source Server by ID. The Source Server must be disconnected first.</p>",
+      "idempotent":true
+    },
+    "DescribeJobLogItems":{
+      "name":"DescribeJobLogItems",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeJobLogItems",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeJobLogItemsRequest"},
+      "output":{"shape":"DescribeJobLogItemsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Retrieves a detailed Job log with pagination.</p>"
+    },
+    "DescribeJobs":{
+      "name":"DescribeJobs",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeJobs",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeJobsRequest"},
+      "output":{"shape":"DescribeJobsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Returns a list of Jobs. Use the JobsID and fromDate and toDate filters to limit which jobs are returned. The response is sorted by creationDataTime - latest date first. Jobs are created by the StartRecovery, TerminateRecoveryInstances and StartFailbackLaunch APIs. Jobs are also created by DiagnosticLaunch and TerminateDiagnosticInstances, which are APIs available only to *Support* and only used in response to relevant support tickets.</p>"
+    },
+    "DescribeLaunchConfigurationTemplates":{
+      "name":"DescribeLaunchConfigurationTemplates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeLaunchConfigurationTemplates",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeLaunchConfigurationTemplatesRequest"},
+      "output":{"shape":"DescribeLaunchConfigurationTemplatesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Launch Configuration Templates, filtered by Launch Configuration Template IDs</p>"
+    },
+    "DescribeRecoveryInstances":{
+      "name":"DescribeRecoveryInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeRecoveryInstances",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeRecoveryInstancesRequest"},
+      "output":{"shape":"DescribeRecoveryInstancesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Recovery Instances or multiple Recovery Instances by ID.</p>"
+    },
+    "DescribeRecoverySnapshots":{
+      "name":"DescribeRecoverySnapshots",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeRecoverySnapshots",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeRecoverySnapshotsRequest"},
+      "output":{"shape":"DescribeRecoverySnapshotsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Recovery Snapshots for a single Source Server.</p>"
+    },
+    "DescribeReplicationConfigurationTemplates":{
+      "name":"DescribeReplicationConfigurationTemplates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeReplicationConfigurationTemplates",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeReplicationConfigurationTemplatesRequest"},
+      "output":{"shape":"DescribeReplicationConfigurationTemplatesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all ReplicationConfigurationTemplates, filtered by Source Server IDs.</p>"
+    },
+    "DescribeSourceNetworks":{
+      "name":"DescribeSourceNetworks",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeSourceNetworks",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeSourceNetworksRequest"},
+      "output":{"shape":"DescribeSourceNetworksResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Source Networks or multiple Source Networks filtered by ID.</p>"
+    },
+    "DescribeSourceServers":{
+      "name":"DescribeSourceServers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DescribeSourceServers",
+        "responseCode":200
+      },
+      "input":{"shape":"DescribeSourceServersRequest"},
+      "output":{"shape":"DescribeSourceServersResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Source Servers or multiple Source Servers filtered by ID.</p>"
+    },
+    "DisconnectRecoveryInstance":{
+      "name":"DisconnectRecoveryInstance",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DisconnectRecoveryInstance",
+        "responseCode":200
+      },
+      "input":{"shape":"DisconnectRecoveryInstanceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Disconnect a Recovery Instance from Elastic Disaster Recovery. Data replication is stopped immediately. All AWS resources created by Elastic Disaster Recovery for enabling the replication of the Recovery Instance will be terminated / deleted within 90 minutes. If the agent on the Recovery Instance has not been prevented from communicating with the Elastic Disaster Recovery service, then it will receive a command to uninstall itself (within approximately 10 minutes). The following properties of the Recovery Instance will be changed immediately: dataReplicationInfo.dataReplicationState will be set to DISCONNECTED; The totalStorageBytes property for each of dataReplicationInfo.replicatedDisks will be set to zero; dataReplicationInfo.lagDuration and dataReplicationInfo.lagDuration will be nullified.</p>"
+    },
+    "DisconnectSourceServer":{
+      "name":"DisconnectSourceServer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/DisconnectSourceServer",
+        "responseCode":200
+      },
+      "input":{"shape":"DisconnectSourceServerRequest"},
+      "output":{"shape":"SourceServer"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Disconnects a specific Source Server from Elastic Disaster Recovery. Data replication is stopped immediately. All AWS resources created by Elastic Disaster Recovery for enabling the replication of the Source Server will be terminated / deleted within 90 minutes. You cannot disconnect a Source Server if it has a Recovery Instance. If the agent on the Source Server has not been prevented from communicating with the Elastic Disaster Recovery service, then it will receive a command to uninstall itself (within approximately 10 minutes). The following properties of the SourceServer will be changed immediately: dataReplicationInfo.dataReplicationState will be set to DISCONNECTED; The totalStorageBytes property for each of dataReplicationInfo.replicatedDisks will be set to zero; dataReplicationInfo.lagDuration and dataReplicationInfo.lagDuration will be nullified.</p>"
+    },
+    "ExportSourceNetworkCfnTemplate":{
+      "name":"ExportSourceNetworkCfnTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ExportSourceNetworkCfnTemplate",
+        "responseCode":200
+      },
+      "input":{"shape":"ExportSourceNetworkCfnTemplateRequest"},
+      "output":{"shape":"ExportSourceNetworkCfnTemplateResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Export the Source Network CloudFormation template to an S3 bucket.</p>"
+    },
+    "GetFailbackReplicationConfiguration":{
+      "name":"GetFailbackReplicationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetFailbackReplicationConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetFailbackReplicationConfigurationRequest"},
+      "output":{"shape":"GetFailbackReplicationConfigurationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists all Failback ReplicationConfigurations, filtered by Recovery Instance ID.</p>"
+    },
+    "GetLaunchConfiguration":{
+      "name":"GetLaunchConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetLaunchConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLaunchConfigurationRequest"},
+      "output":{"shape":"LaunchConfiguration"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Gets a LaunchConfiguration, filtered by Source Server IDs.</p>"
+    },
+    "GetReplicationConfiguration":{
+      "name":"GetReplicationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/GetReplicationConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetReplicationConfigurationRequest"},
+      "output":{"shape":"ReplicationConfiguration"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Gets a ReplicationConfiguration, filtered by Source Server ID.</p>"
+    },
+    "InitializeService":{
+      "name":"InitializeService",
+      "http":{
+        "method":"POST",
+        "requestUri":"/InitializeService",
+        "responseCode":204
+      },
+      "input":{"shape":"InitializeServiceRequest"},
+      "output":{"shape":"InitializeServiceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Initialize Elastic Disaster Recovery.</p>"
+    },
+    "ListExtensibleSourceServers":{
+      "name":"ListExtensibleSourceServers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListExtensibleSourceServers",
+        "responseCode":200
+      },
+      "input":{"shape":"ListExtensibleSourceServersRequest"},
+      "output":{"shape":"ListExtensibleSourceServersResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Returns a list of source servers on a staging account that are extensible, which means that: a. The source server is not already extended into this Account. b. The source server on the Account we’re reading from is not an extension of another source server. </p>"
+    },
+    "ListLaunchActions":{
+      "name":"ListLaunchActions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ListLaunchActions",
+        "responseCode":200
+      },
+      "input":{"shape":"ListLaunchActionsRequest"},
+      "output":{"shape":"ListLaunchActionsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Lists resource launch actions.</p>"
+    },
+    "ListStagingAccounts":{
+      "name":"ListStagingAccounts",
+      "http":{
+        "method":"GET",
+        "requestUri":"/ListStagingAccounts",
+        "responseCode":200
+      },
+      "input":{"shape":"ListStagingAccountsRequest"},
+      "output":{"shape":"ListStagingAccountsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Returns an array of staging accounts for existing extended source servers.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List all tags for your Elastic Disaster Recovery resources.</p>"
+    },
+    "PutLaunchAction":{
+      "name":"PutLaunchAction",
+      "http":{
+        "method":"POST",
+        "requestUri":"/PutLaunchAction",
+        "responseCode":200
+      },
+      "input":{"shape":"PutLaunchActionRequest"},
+      "output":{"shape":"PutLaunchActionResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Puts a resource launch action.</p>"
+    },
+    "RetryDataReplication":{
+      "name":"RetryDataReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/RetryDataReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"RetryDataReplicationRequest"},
+      "output":{"shape":"SourceServer"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>WARNING: RetryDataReplication is deprecated. Causes the data replication initiation sequence to begin immediately upon next Handshake for the specified Source Server ID, regardless of when the previous initiation started. This command will work only if the Source Server is stalled or is in a DISCONNECTED or STOPPED state. </p>",
+      "deprecated":true,
+      "deprecatedMessage":"WARNING: RetryDataReplication is deprecated"
+    },
+    "ReverseReplication":{
+      "name":"ReverseReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/ReverseReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"ReverseReplicationRequest"},
+      "output":{"shape":"ReverseReplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Start replication to origin / target region - applies only to protected instances that originated in EC2. For recovery instances on target region - starts replication back to origin region. For failback instances on origin region - starts replication to target region to re-protect them. </p>"
+    },
+    "StartFailbackLaunch":{
+      "name":"StartFailbackLaunch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartFailbackLaunch",
+        "responseCode":200
+      },
+      "input":{"shape":"StartFailbackLaunchRequest"},
+      "output":{"shape":"StartFailbackLaunchResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Initiates a Job for launching the machine that is being failed back to from the specified Recovery Instance. This will run conversion on the failback client and will reboot your machine, thus completing the failback process.</p>"
+    },
+    "StartRecovery":{
+      "name":"StartRecovery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartRecovery",
+        "responseCode":202
+      },
+      "input":{"shape":"StartRecoveryRequest"},
+      "output":{"shape":"StartRecoveryResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Launches Recovery Instances for the specified Source Servers. For each Source Server you may choose a point in time snapshot to launch from, or use an on demand snapshot.</p>"
+    },
+    "StartReplication":{
+      "name":"StartReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"StartReplicationRequest"},
+      "output":{"shape":"StartReplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Starts replication for a stopped Source Server. This action would make the Source Server protected again and restart billing for it.</p>"
+    },
+    "StartSourceNetworkRecovery":{
+      "name":"StartSourceNetworkRecovery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartSourceNetworkRecovery",
+        "responseCode":202
+      },
+      "input":{"shape":"StartSourceNetworkRecoveryRequest"},
+      "output":{"shape":"StartSourceNetworkRecoveryResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Deploy VPC for the specified Source Network and modify launch templates to use this network. The VPC will be deployed using a dedicated CloudFormation stack.</p>"
+    },
+    "StartSourceNetworkReplication":{
+      "name":"StartSourceNetworkReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StartSourceNetworkReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"StartSourceNetworkReplicationRequest"},
+      "output":{"shape":"StartSourceNetworkReplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Starts replication for a Source Network. This action would make the Source Network protected.</p>"
+    },
+    "StopFailback":{
+      "name":"StopFailback",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StopFailback",
+        "responseCode":200
+      },
+      "input":{"shape":"StopFailbackRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Stops the failback process for a specified Recovery Instance. This changes the Failback State of the Recovery Instance back to FAILBACK_NOT_STARTED.</p>"
+    },
+    "StopReplication":{
+      "name":"StopReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StopReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"StopReplicationRequest"},
+      "output":{"shape":"StopReplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Stops replication for a Source Server. This action would make the Source Server unprotected, delete its existing snapshots and stop billing for it.</p>"
+    },
+    "StopSourceNetworkReplication":{
+      "name":"StopSourceNetworkReplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/StopSourceNetworkReplication",
+        "responseCode":200
+      },
+      "input":{"shape":"StopSourceNetworkReplicationRequest"},
+      "output":{"shape":"StopSourceNetworkReplicationResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Stops replication for a Source Network. This action would make the Source Network unprotected.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds or overwrites only the specified tags for the specified Elastic Disaster Recovery resource or resources. When you specify an existing tag key, the value is overwritten with the new value. Each resource can have a maximum of 50 tags. Each tag consists of a key and optional value.</p>",
+      "idempotent":true
+    },
+    "TerminateRecoveryInstances":{
+      "name":"TerminateRecoveryInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/TerminateRecoveryInstances",
+        "responseCode":200
+      },
+      "input":{"shape":"TerminateRecoveryInstancesRequest"},
+      "output":{"shape":"TerminateRecoveryInstancesResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Initiates a Job for terminating the EC2 resources associated with the specified Recovery Instances, and then will delete the Recovery Instances from the Elastic Disaster Recovery service.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the specified set of tags from the specified set of Elastic Disaster Recovery resources.</p>",
+      "idempotent":true
+    },
+    "UpdateFailbackReplicationConfiguration":{
+      "name":"UpdateFailbackReplicationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateFailbackReplicationConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateFailbackReplicationConfigurationRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Allows you to update the failback replication configuration of a Recovery Instance by ID.</p>"
+    },
+    "UpdateLaunchConfiguration":{
+      "name":"UpdateLaunchConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateLaunchConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLaunchConfigurationRequest"},
+      "output":{"shape":"LaunchConfiguration"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Updates a LaunchConfiguration by Source Server ID.</p>",
+      "idempotent":true
+    },
+    "UpdateLaunchConfigurationTemplate":{
+      "name":"UpdateLaunchConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateLaunchConfigurationTemplate",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateLaunchConfigurationTemplateRequest"},
+      "output":{"shape":"UpdateLaunchConfigurationTemplateResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Updates an existing Launch Configuration Template by ID.</p>"
+    },
+    "UpdateReplicationConfiguration":{
+      "name":"UpdateReplicationConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateReplicationConfiguration",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateReplicationConfigurationRequest"},
+      "output":{"shape":"ReplicationConfiguration"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Allows you to update a ReplicationConfiguration by Source Server ID.</p>",
+      "idempotent":true
+    },
+    "UpdateReplicationConfigurationTemplate":{
+      "name":"UpdateReplicationConfigurationTemplate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/UpdateReplicationConfigurationTemplate",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateReplicationConfigurationTemplateRequest"},
+      "output":{"shape":"ReplicationConfigurationTemplate"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"UninitializedAccountException"}
+      ],
+      "documentation":"<p>Updates a ReplicationConfigurationTemplate by ID.</p>"
+    }
+  },
+  "shapes":{
+    "ARN":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:.{16,2044}$"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "message":{"shape":"LargeBoundedString"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Account":{
+      "type":"structure",
+      "members":{
+        "accountID":{
+          "shape":"AccountID",
+          "documentation":"<p>Account ID of AWS account.</p>"
+        }
+      },
+      "documentation":"<p>AWS account.</p>"
+    },
+    "AccountID":{
+      "type":"string",
+      "max":12,
+      "min":12,
+      "pattern":"[0-9]{12,}"
+    },
+    "AccountIDs":{
+      "type":"list",
+      "member":{"shape":"AccountID"},
+      "max":200,
+      "min":0
+    },
+    "Accounts":{
+      "type":"list",
+      "member":{"shape":"Account"},
+      "max":50,
+      "min":0
+    },
+    "AgentVersion":{
+      "type":"string",
+      "pattern":"^[0-9]{1,5}.[0-9]{1,5}.[0-9]{1,5}(.[0-9]{4}.[0-9]{3}.[0-9]{4})?$"
+    },
+    "AssociateSourceNetworkStackRequest":{
+      "type":"structure",
+      "required":[
+        "cfnStackName",
+        "sourceNetworkID"
+      ],
+      "members":{
+        "cfnStackName":{
+          "shape":"CfnStackName",
+          "documentation":"<p>CloudFormation template to associate with a Source Network.</p>"
+        },
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>The Source Network ID to associate with CloudFormation template.</p>"
+        }
+      }
+    },
+    "AssociateSourceNetworkStackResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"Job",
+          "documentation":"<p>The Source Network association Job.</p>"
+        }
+      }
+    },
+    "AwsAvailabilityZone":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^(us(-gov)?|ap|ca|cn|eu|sa|af|me|il)-(central|north|(north(?:east|west))|south|south(?:east|west)|east|west)-[0-9][a-z]$"
+    },
+    "AwsRegion":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^(us(-gov)?|ap|ca|cn|eu|sa|af|me|il)-(central|north|(north(?:east|west))|south|south(?:east|west)|east|west)-[0-9]$"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "BoundedString":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "CPU":{
+      "type":"structure",
+      "members":{
+        "cores":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The number of CPU cores.</p>"
+        },
+        "modelName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The model name of the CPU.</p>"
+        }
+      },
+      "documentation":"<p>Information about a server's CPU.</p>"
+    },
+    "CfnStackName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[a-zA-Z][-a-zA-Z0-9]*$",
+      "sensitive":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "message":{"shape":"LargeBoundedString"},
+        "resourceId":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>The request could not be completed due to a conflict with the current state of the target resource.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ConversionMap":{
+      "type":"map",
+      "key":{"shape":"EbsSnapshot"},
+      "value":{"shape":"EbsSnapshot"}
+    },
+    "ConversionProperties":{
+      "type":"structure",
+      "members":{
+        "dataTimestamp":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The timestamp of when the snapshot being converted was taken</p>"
+        },
+        "forceUefi":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the volume being converted uses UEFI or not</p>"
+        },
+        "rootVolumeName":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The root volume name of a conversion job</p>"
+        },
+        "volumeToConversionMap":{
+          "shape":"VolumeToConversionMap",
+          "documentation":"<p>A mapping between the volumes being converted and the converted snapshot ids</p>"
+        },
+        "volumeToProductCodes":{
+          "shape":"VolumeToProductCodes",
+          "documentation":"<p>A mapping between the volumes being converted and the product codes associated with them</p>"
+        },
+        "volumeToVolumeSize":{
+          "shape":"VolumeToSizeMap",
+          "documentation":"<p>A mapping between the volumes and their sizes</p>"
+        }
+      },
+      "documentation":"<p>Properties of a conversion job</p>"
+    },
+    "Cpus":{
+      "type":"list",
+      "member":{"shape":"CPU"},
+      "max":256,
+      "min":0
+    },
+    "CreateExtendedSourceServerRequest":{
+      "type":"structure",
+      "required":["sourceServerArn"],
+      "members":{
+        "sourceServerArn":{
+          "shape":"SourceServerARN",
+          "documentation":"<p>This defines the ARN of the source server in staging Account based on which you want to create an extended source server.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A list of tags associated with the extended source server.</p>"
+        }
+      }
+    },
+    "CreateExtendedSourceServerResponse":{
+      "type":"structure",
+      "members":{
+        "sourceServer":{
+          "shape":"SourceServer",
+          "documentation":"<p>Created extended source server.</p>"
+        }
+      }
+    },
+    "CreateLaunchConfigurationTemplateRequest":{
+      "type":"structure",
+      "members":{
+        "copyPrivateIp":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy private IP.</p>"
+        },
+        "copyTags":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy tags.</p>"
+        },
+        "exportBucketArn":{
+          "shape":"ARN",
+          "documentation":"<p>S3 bucket ARN to export Source Network templates.</p>"
+        },
+        "launchDisposition":{
+          "shape":"LaunchDisposition",
+          "documentation":"<p>Launch disposition.</p>"
+        },
+        "launchIntoSourceInstance":{
+          "shape":"Boolean",
+          "documentation":"<p>DRS will set the 'launch into instance ID' of any source server when performing a drill, recovery or failback to the previous region or availability zone, using the instance ID of the source instance.</p>"
+        },
+        "licensing":{
+          "shape":"Licensing",
+          "documentation":"<p>Licensing.</p>"
+        },
+        "postLaunchEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to activate post-launch actions.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>Request to associate tags during creation of a Launch Configuration Template.</p>"
+        },
+        "targetInstanceTypeRightSizingMethod":{
+          "shape":"TargetInstanceTypeRightSizingMethod",
+          "documentation":"<p>Target instance type right-sizing method.</p>"
+        }
+      }
+    },
+    "CreateLaunchConfigurationTemplateResponse":{
+      "type":"structure",
+      "members":{
+        "launchConfigurationTemplate":{
+          "shape":"LaunchConfigurationTemplate",
+          "documentation":"<p>Created Launch Configuration Template.</p>"
+        }
+      }
+    },
+    "CreateReplicationConfigurationTemplateRequest":{
+      "type":"structure",
+      "required":[
+        "associateDefaultSecurityGroup",
+        "bandwidthThrottling",
+        "createPublicIP",
+        "dataPlaneRouting",
+        "defaultLargeStagingDiskType",
+        "ebsEncryption",
+        "pitPolicy",
+        "replicationServerInstanceType",
+        "replicationServersSecurityGroupsIDs",
+        "stagingAreaSubnetId",
+        "stagingAreaTags",
+        "useDedicatedReplicationServer"
+      ],
+      "members":{
+        "associateDefaultSecurityGroup":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration Template.</p>"
+        },
+        "autoReplicateNewDisks":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to allow the AWS replication agent to automatically replicate newly added disks.</p>"
+        },
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.</p>"
+        },
+        "createPublicIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to create a Public IP for the Recovery Instance by default.</p>"
+        },
+        "dataPlaneRouting":{
+          "shape":"ReplicationConfigurationDataPlaneRouting",
+          "documentation":"<p>The data plane routing mechanism that will be used for replication.</p>"
+        },
+        "defaultLargeStagingDiskType":{
+          "shape":"ReplicationConfigurationDefaultLargeStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "ebsEncryption":{
+          "shape":"ReplicationConfigurationEbsEncryption",
+          "documentation":"<p>The type of EBS encryption to be used during replication.</p>"
+        },
+        "ebsEncryptionKeyArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the EBS encryption key to be used during replication.</p>"
+        },
+        "pitPolicy":{
+          "shape":"PITPolicy",
+          "documentation":"<p>The Point in time (PIT) policy to manage snapshots taken during replication.</p>"
+        },
+        "replicationServerInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The instance type to be used for the replication server.</p>"
+        },
+        "replicationServersSecurityGroupsIDs":{
+          "shape":"ReplicationServersSecurityGroupsIDs",
+          "documentation":"<p>The security group IDs that will be used by the replication server.</p>"
+        },
+        "stagingAreaSubnetId":{
+          "shape":"SubnetID",
+          "documentation":"<p>The subnet to be used by the replication staging area.</p>"
+        },
+        "stagingAreaTags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with the Replication Configuration Template resource.</p>"
+        },
+        "useDedicatedReplicationServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use a dedicated Replication Server in the replication staging area.</p>"
+        }
+      }
+    },
+    "CreateSourceNetworkRequest":{
+      "type":"structure",
+      "required":[
+        "originAccountID",
+        "originRegion",
+        "vpcID"
+      ],
+      "members":{
+        "originAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>Account containing the VPC to protect.</p>"
+        },
+        "originRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>Region containing the VPC to protect.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with the Source Network resource.</p>"
+        },
+        "vpcID":{
+          "shape":"VpcID",
+          "documentation":"<p>Which VPC ID to protect.</p>"
+        }
+      }
+    },
+    "CreateSourceNetworkResponse":{
+      "type":"structure",
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>ID of the created Source Network.</p>"
+        }
+      }
+    },
+    "DataReplicationError":{
+      "type":"structure",
+      "members":{
+        "error":{
+          "shape":"DataReplicationErrorString",
+          "documentation":"<p>Error in data replication.</p>"
+        },
+        "rawError":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Error in data replication.</p>"
+        }
+      },
+      "documentation":"<p>Error in data replication.</p>"
+    },
+    "DataReplicationErrorString":{
+      "type":"string",
+      "enum":[
+        "AGENT_NOT_SEEN",
+        "SNAPSHOTS_FAILURE",
+        "NOT_CONVERGING",
+        "UNSTABLE_NETWORK",
+        "FAILED_TO_CREATE_SECURITY_GROUP",
+        "FAILED_TO_LAUNCH_REPLICATION_SERVER",
+        "FAILED_TO_BOOT_REPLICATION_SERVER",
+        "FAILED_TO_AUTHENTICATE_WITH_SERVICE",
+        "FAILED_TO_DOWNLOAD_REPLICATION_SOFTWARE",
+        "FAILED_TO_CREATE_STAGING_DISKS",
+        "FAILED_TO_ATTACH_STAGING_DISKS",
+        "FAILED_TO_PAIR_REPLICATION_SERVER_WITH_AGENT",
+        "FAILED_TO_CONNECT_AGENT_TO_REPLICATION_SERVER",
+        "FAILED_TO_START_DATA_TRANSFER"
+      ]
+    },
+    "DataReplicationInfo":{
+      "type":"structure",
+      "members":{
+        "dataReplicationError":{
+          "shape":"DataReplicationError",
+          "documentation":"<p>Error in data replication.</p>"
+        },
+        "dataReplicationInitiation":{
+          "shape":"DataReplicationInitiation",
+          "documentation":"<p>Information about whether the data replication has been initiated.</p>"
+        },
+        "dataReplicationState":{
+          "shape":"DataReplicationState",
+          "documentation":"<p>The state of the data replication.</p>"
+        },
+        "etaDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>An estimate of when the data replication will be completed.</p>"
+        },
+        "lagDuration":{
+          "shape":"ISO8601DurationString",
+          "documentation":"<p>Data replication lag duration.</p>"
+        },
+        "replicatedDisks":{
+          "shape":"DataReplicationInfoReplicatedDisks",
+          "documentation":"<p>The disks that should be replicated.</p>"
+        },
+        "stagingAvailabilityZone":{
+          "shape":"AwsAvailabilityZone",
+          "documentation":"<p>AWS Availability zone into which data is being replicated.</p>"
+        },
+        "stagingOutpostArn":{
+          "shape":"OutpostARN",
+          "documentation":"<p>The ARN of the staging Outpost</p>"
+        }
+      },
+      "documentation":"<p>Information about Data Replication</p>"
+    },
+    "DataReplicationInfoReplicatedDisk":{
+      "type":"structure",
+      "members":{
+        "backloggedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The size of the replication backlog in bytes.</p>"
+        },
+        "deviceName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The name of the device.</p>"
+        },
+        "replicatedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of data replicated so far in bytes.</p>"
+        },
+        "rescannedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of data to be rescanned in bytes.</p>"
+        },
+        "totalStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The total amount of data to be replicated in bytes.</p>"
+        },
+        "volumeStatus":{
+          "shape":"VolumeStatus",
+          "documentation":"<p>The status of the volume.</p>"
+        }
+      },
+      "documentation":"<p>A disk that should be replicated.</p>"
+    },
+    "DataReplicationInfoReplicatedDisks":{
+      "type":"list",
+      "member":{"shape":"DataReplicationInfoReplicatedDisk"},
+      "max":60,
+      "min":0
+    },
+    "DataReplicationInitiation":{
+      "type":"structure",
+      "members":{
+        "nextAttemptDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the next attempt to initiate data replication.</p>"
+        },
+        "startDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the current attempt to initiate data replication.</p>"
+        },
+        "steps":{
+          "shape":"DataReplicationInitiationSteps",
+          "documentation":"<p>The steps of the current attempt to initiate data replication.</p>"
+        }
+      },
+      "documentation":"<p>Data replication initiation.</p>"
+    },
+    "DataReplicationInitiationStep":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"DataReplicationInitiationStepName",
+          "documentation":"<p>The name of the step.</p>"
+        },
+        "status":{
+          "shape":"DataReplicationInitiationStepStatus",
+          "documentation":"<p>The status of the step.</p>"
+        }
+      },
+      "documentation":"<p>Data replication initiation step.</p>"
+    },
+    "DataReplicationInitiationStepName":{
+      "type":"string",
+      "enum":[
+        "WAIT",
+        "CREATE_SECURITY_GROUP",
+        "LAUNCH_REPLICATION_SERVER",
+        "BOOT_REPLICATION_SERVER",
+        "AUTHENTICATE_WITH_SERVICE",
+        "DOWNLOAD_REPLICATION_SOFTWARE",
+        "CREATE_STAGING_DISKS",
+        "ATTACH_STAGING_DISKS",
+        "PAIR_REPLICATION_SERVER_WITH_AGENT",
+        "CONNECT_AGENT_TO_REPLICATION_SERVER",
+        "START_DATA_TRANSFER"
+      ]
+    },
+    "DataReplicationInitiationStepStatus":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED",
+        "SKIPPED"
+      ]
+    },
+    "DataReplicationInitiationSteps":{
+      "type":"list",
+      "member":{"shape":"DataReplicationInitiationStep"}
+    },
+    "DataReplicationState":{
+      "type":"string",
+      "enum":[
+        "STOPPED",
+        "INITIATING",
+        "INITIAL_SYNC",
+        "BACKLOG",
+        "CREATING_SNAPSHOT",
+        "CONTINUOUS",
+        "PAUSED",
+        "RESCAN",
+        "STALLED",
+        "DISCONNECTED"
+      ]
+    },
+    "DeleteJobRequest":{
+      "type":"structure",
+      "required":["jobID"],
+      "members":{
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteJobResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteLaunchActionRequest":{
+      "type":"structure",
+      "required":[
+        "actionId",
+        "resourceId"
+      ],
+      "members":{
+        "actionId":{"shape":"LaunchActionId"},
+        "resourceId":{"shape":"LaunchActionResourceId"}
+      }
+    },
+    "DeleteLaunchActionResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteLaunchConfigurationTemplateRequest":{
+      "type":"structure",
+      "required":["launchConfigurationTemplateID"],
+      "members":{
+        "launchConfigurationTemplateID":{
+          "shape":"LaunchConfigurationTemplateID",
+          "documentation":"<p>The ID of the Launch Configuration Template to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteLaunchConfigurationTemplateResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteRecoveryInstanceRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteReplicationConfigurationTemplateRequest":{
+      "type":"structure",
+      "required":["replicationConfigurationTemplateID"],
+      "members":{
+        "replicationConfigurationTemplateID":{
+          "shape":"ReplicationConfigurationTemplateID",
+          "documentation":"<p>The ID of the Replication Configuration Template to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteReplicationConfigurationTemplateResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSourceNetworkRequest":{
+      "type":"structure",
+      "required":["sourceNetworkID"],
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>ID of the Source Network to delete.</p>"
+        }
+      }
+    },
+    "DeleteSourceNetworkResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteSourceServerRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server to be deleted.</p>"
+        }
+      }
+    },
+    "DeleteSourceServerResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeJobLogItemsRequest":{
+      "type":"structure",
+      "required":["jobID"],
+      "members":{
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job for which Job log items will be retrieved.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Job log items to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Job log items to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeJobLogItemsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"JobLogs",
+          "documentation":"<p>An array of Job log items.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Job log items to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeJobsRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"DescribeJobsRequestFilters",
+          "documentation":"<p>A set of filters by which to return Jobs.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Jobs to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Job to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeJobsRequestFilters":{
+      "type":"structure",
+      "members":{
+        "fromDate":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The start date in a date range query.</p>"
+        },
+        "jobIDs":{
+          "shape":"DescribeJobsRequestFiltersJobIDs",
+          "documentation":"<p>An array of Job IDs that should be returned. An empty array means all jobs.</p>"
+        },
+        "toDate":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The end date in a date range query.</p>"
+        }
+      },
+      "documentation":"<p>A set of filters by which to return Jobs.</p>"
+    },
+    "DescribeJobsRequestFiltersJobIDs":{
+      "type":"list",
+      "member":{"shape":"JobID"},
+      "max":1000,
+      "min":0
+    },
+    "DescribeJobsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"JobsList",
+          "documentation":"<p>An array of Jobs.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Job to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeLaunchConfigurationTemplatesRequest":{
+      "type":"structure",
+      "members":{
+        "launchConfigurationTemplateIDs":{
+          "shape":"LaunchConfigurationTemplateIDs",
+          "documentation":"<p>Request to filter Launch Configuration Templates list by Launch Configuration Template ID.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResultsType",
+          "documentation":"<p>Maximum results to be returned in DescribeLaunchConfigurationTemplates.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Launch Configuration Template to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeLaunchConfigurationTemplatesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"LaunchConfigurationTemplates",
+          "documentation":"<p>List of items returned by DescribeLaunchConfigurationTemplates.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Launch Configuration Template to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeRecoveryInstancesItems":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstance"}
+    },
+    "DescribeRecoveryInstancesRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"DescribeRecoveryInstancesRequestFilters",
+          "documentation":"<p>A set of filters by which to return Recovery Instances.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Recovery Instances to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Recovery Instance to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeRecoveryInstancesRequestFilters":{
+      "type":"structure",
+      "members":{
+        "recoveryInstanceIDs":{
+          "shape":"RecoveryInstanceIDs",
+          "documentation":"<p>An array of Recovery Instance IDs that should be returned. An empty array means all Recovery Instances.</p>"
+        },
+        "sourceServerIDs":{
+          "shape":"SourceServerIDs",
+          "documentation":"<p>An array of Source Server IDs for which associated Recovery Instances should be returned.</p>"
+        }
+      },
+      "documentation":"<p>A set of filters by which to return Recovery Instances.</p>"
+    },
+    "DescribeRecoveryInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"DescribeRecoveryInstancesItems",
+          "documentation":"<p>An array of Recovery Instances.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Recovery Instance to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeRecoverySnapshotsRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "filters":{
+          "shape":"DescribeRecoverySnapshotsRequestFilters",
+          "documentation":"<p>A set of filters by which to return Recovery Snapshots.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Recovery Snapshots to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Recovery Snapshot to retrieve.</p>"
+        },
+        "order":{
+          "shape":"RecoverySnapshotsOrder",
+          "documentation":"<p>The sorted ordering by which to return Recovery Snapshots.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>Filter Recovery Snapshots by Source Server ID.</p>"
+        }
+      }
+    },
+    "DescribeRecoverySnapshotsRequestFilters":{
+      "type":"structure",
+      "members":{
+        "fromDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The start date in a date range query.</p>"
+        },
+        "toDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The end date in a date range query.</p>"
+        }
+      },
+      "documentation":"<p>A set of filters by which to return Recovery Snapshots.</p>"
+    },
+    "DescribeRecoverySnapshotsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"RecoverySnapshotsList",
+          "documentation":"<p>An array of Recovery Snapshots.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Recovery Snapshot to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeReplicationConfigurationTemplatesRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Replication Configuration Templates to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Replication Configuration Template to retrieve.</p>"
+        },
+        "replicationConfigurationTemplateIDs":{
+          "shape":"ReplicationConfigurationTemplateIDs",
+          "documentation":"<p>The IDs of the Replication Configuration Templates to retrieve. An empty list means all Replication Configuration Templates.</p>"
+        }
+      }
+    },
+    "DescribeReplicationConfigurationTemplatesResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"ReplicationConfigurationTemplates",
+          "documentation":"<p>An array of Replication Configuration Templates.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Replication Configuration Template to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeSourceNetworksRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"DescribeSourceNetworksRequestFilters",
+          "documentation":"<p>A set of filters by which to return Source Networks.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Source Networks to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Source Networks to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeSourceNetworksRequestFilters":{
+      "type":"structure",
+      "members":{
+        "originAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>Filter Source Networks by account ID containing the protected VPCs.</p>"
+        },
+        "originRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>Filter Source Networks by the region containing the protected VPCs.</p>"
+        },
+        "sourceNetworkIDs":{
+          "shape":"DescribeSourceNetworksRequestFiltersIDs",
+          "documentation":"<p>An array of Source Network IDs that should be returned. An empty array means all Source Networks.</p>"
+        }
+      },
+      "documentation":"<p>A set of filters by which to return Source Networks.</p>"
+    },
+    "DescribeSourceNetworksRequestFiltersIDs":{
+      "type":"list",
+      "member":{"shape":"SourceNetworkID"},
+      "max":100,
+      "min":0
+    },
+    "DescribeSourceNetworksResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"SourceNetworksList",
+          "documentation":"<p>An array of Source Networks.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Source Networks to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeSourceServersRequest":{
+      "type":"structure",
+      "members":{
+        "filters":{
+          "shape":"DescribeSourceServersRequestFilters",
+          "documentation":"<p>A set of filters by which to return Source Servers.</p>"
+        },
+        "maxResults":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>Maximum number of Source Servers to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Source Server to retrieve.</p>"
+        }
+      }
+    },
+    "DescribeSourceServersRequestFilters":{
+      "type":"structure",
+      "members":{
+        "hardwareId":{
+          "shape":"BoundedString",
+          "documentation":"<p>An ID that describes the hardware of the Source Server. This is either an EC2 instance id, a VMware uuid or a mac address.</p>"
+        },
+        "sourceServerIDs":{
+          "shape":"DescribeSourceServersRequestFiltersIDs",
+          "documentation":"<p>An array of Source Servers IDs that should be returned. An empty array means all Source Servers.</p>"
+        },
+        "stagingAccountIDs":{
+          "shape":"AccountIDs",
+          "documentation":"<p>An array of staging account IDs that extended source servers belong to. An empty array means all source servers will be shown.</p>"
+        }
+      },
+      "documentation":"<p>A set of filters by which to return Source Servers.</p>"
+    },
+    "DescribeSourceServersRequestFiltersIDs":{
+      "type":"list",
+      "member":{"shape":"SourceServerID"},
+      "max":200,
+      "min":0
+    },
+    "DescribeSourceServersResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"SourceServersList",
+          "documentation":"<p>An array of Source Servers.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next Source Server to retrieve.</p>"
+        }
+      }
+    },
+    "DisconnectRecoveryInstanceRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance to disconnect.</p>"
+        }
+      }
+    },
+    "DisconnectSourceServerRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server to disconnect.</p>"
+        }
+      }
+    },
+    "Disk":{
+      "type":"structure",
+      "members":{
+        "bytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of storage on the disk in bytes.</p>"
+        },
+        "deviceName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The disk or device name.</p>"
+        }
+      },
+      "documentation":"<p>An object representing a data storage device on a server.</p>"
+    },
+    "Disks":{
+      "type":"list",
+      "member":{"shape":"Disk"},
+      "max":1000,
+      "min":0
+    },
+    "EC2InstanceID":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^i-[0-9a-fA-F]{8,}$"
+    },
+    "EC2InstanceState":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED",
+        "SHUTTING-DOWN",
+        "TERMINATED",
+        "NOT_FOUND"
+      ]
+    },
+    "EC2InstanceType":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "EbsSnapshot":{
+      "type":"string",
+      "pattern":"^snap-[0-9a-zA-Z]{17}$"
+    },
+    "EbsSnapshotsList":{
+      "type":"list",
+      "member":{"shape":"EbsSnapshot"}
+    },
+    "EbsVolumeID":{
+      "type":"string",
+      "max":19,
+      "min":10,
+      "pattern":"^vol-([0-9a-fA-F]{8}|[0-9a-fA-F]{17})$"
+    },
+    "EventResourceData":{
+      "type":"structure",
+      "members":{
+        "sourceNetworkData":{
+          "shape":"SourceNetworkData",
+          "documentation":"<p>Source Network properties.</p>"
+        }
+      },
+      "documentation":"<p>Properties of resource related to a job event.</p>",
+      "union":true
+    },
+    "ExportSourceNetworkCfnTemplateRequest":{
+      "type":"structure",
+      "required":["sourceNetworkID"],
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>The Source Network ID to export its CloudFormation template to an S3 bucket.</p>"
+        }
+      }
+    },
+    "ExportSourceNetworkCfnTemplateResponse":{
+      "type":"structure",
+      "members":{
+        "s3DestinationUrl":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>S3 bucket URL where the Source Network CloudFormation template was exported to.</p>"
+        }
+      }
+    },
+    "ExtensionStatus":{
+      "type":"string",
+      "enum":[
+        "EXTENDED",
+        "EXTENSION_ERROR",
+        "NOT_EXTENDED"
+      ]
+    },
+    "FailbackLaunchType":{
+      "type":"string",
+      "enum":[
+        "RECOVERY",
+        "DRILL"
+      ]
+    },
+    "FailbackReplicationError":{
+      "type":"string",
+      "enum":[
+        "AGENT_NOT_SEEN",
+        "FAILBACK_CLIENT_NOT_SEEN",
+        "NOT_CONVERGING",
+        "UNSTABLE_NETWORK",
+        "FAILED_TO_ESTABLISH_RECOVERY_INSTANCE_COMMUNICATION",
+        "FAILED_TO_DOWNLOAD_REPLICATION_SOFTWARE_TO_FAILBACK_CLIENT",
+        "FAILED_TO_CONFIGURE_REPLICATION_SOFTWARE",
+        "FAILED_TO_PAIR_AGENT_WITH_REPLICATION_SOFTWARE",
+        "FAILED_TO_ESTABLISH_AGENT_REPLICATOR_SOFTWARE_COMMUNICATION",
+        "FAILED_GETTING_REPLICATION_STATE",
+        "SNAPSHOTS_FAILURE",
+        "FAILED_TO_CREATE_SECURITY_GROUP",
+        "FAILED_TO_LAUNCH_REPLICATION_SERVER",
+        "FAILED_TO_BOOT_REPLICATION_SERVER",
+        "FAILED_TO_AUTHENTICATE_WITH_SERVICE",
+        "FAILED_TO_DOWNLOAD_REPLICATION_SOFTWARE",
+        "FAILED_TO_CREATE_STAGING_DISKS",
+        "FAILED_TO_ATTACH_STAGING_DISKS",
+        "FAILED_TO_PAIR_REPLICATION_SERVER_WITH_AGENT",
+        "FAILED_TO_CONNECT_AGENT_TO_REPLICATION_SERVER",
+        "FAILED_TO_START_DATA_TRANSFER"
+      ]
+    },
+    "FailbackState":{
+      "type":"string",
+      "enum":[
+        "FAILBACK_NOT_STARTED",
+        "FAILBACK_IN_PROGRESS",
+        "FAILBACK_READY_FOR_LAUNCH",
+        "FAILBACK_COMPLETED",
+        "FAILBACK_ERROR",
+        "FAILBACK_NOT_READY_FOR_LAUNCH",
+        "FAILBACK_LAUNCH_STATE_NOT_AVAILABLE"
+      ]
+    },
+    "FailureReason":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^[0-9a-zA-Z ():/.,'-_#*;]*$"
+    },
+    "GetFailbackReplicationConfigurationRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance whose failback replication configuration should be returned.</p>"
+        }
+      }
+    },
+    "GetFailbackReplicationConfigurationResponse":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Recovery Instance in Mbps.</p>"
+        },
+        "name":{
+          "shape":"BoundedString",
+          "documentation":"<p>The name of the Failback Replication Configuration.</p>"
+        },
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance.</p>"
+        },
+        "usePrivateIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use Private IP for the failback replication of the Recovery Instance.</p>"
+        }
+      }
+    },
+    "GetLaunchConfigurationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server that we want to retrieve a Launch Configuration for.</p>"
+        }
+      }
+    },
+    "GetReplicationConfigurationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Serve for this Replication Configuration.r</p>"
+        }
+      }
+    },
+    "IPsList":{
+      "type":"list",
+      "member":{"shape":"BoundedString"}
+    },
+    "ISO8601DatetimeString":{
+      "type":"string",
+      "max":32,
+      "min":19,
+      "pattern":"^[1-9][0-9]*-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?Z$"
+    },
+    "ISO8601DurationString":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "IdentificationHints":{
+      "type":"structure",
+      "members":{
+        "awsInstanceID":{
+          "shape":"EC2InstanceID",
+          "documentation":"<p>AWS Instance ID identification hint.</p>"
+        },
+        "fqdn":{
+          "shape":"BoundedString",
+          "documentation":"<p>Fully Qualified Domain Name identification hint.</p>"
+        },
+        "hostname":{
+          "shape":"BoundedString",
+          "documentation":"<p>Hostname identification hint.</p>"
+        },
+        "vmWareUuid":{
+          "shape":"BoundedString",
+          "documentation":"<p>vCenter VM path identification hint.</p>"
+        }
+      },
+      "documentation":"<p>Hints used to uniquely identify a machine.</p>"
+    },
+    "InitializeServiceRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "InitializeServiceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "InitiatedBy":{
+      "type":"string",
+      "enum":[
+        "START_RECOVERY",
+        "START_DRILL",
+        "FAILBACK",
+        "DIAGNOSTIC",
+        "TERMINATE_RECOVERY_INSTANCES",
+        "TARGET_ACCOUNT",
+        "CREATE_NETWORK_RECOVERY",
+        "UPDATE_NETWORK_RECOVERY",
+        "ASSOCIATE_NETWORK_RECOVERY"
+      ]
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"LargeBoundedString"},
+        "retryAfterSeconds":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The number of seconds after which the request should be safe to retry.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The request processing has failed because of an unknown error, exception or failure.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "Job":{
+      "type":"structure",
+      "required":["jobID"],
+      "members":{
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of a Job.</p>"
+        },
+        "creationDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of when the Job was created.</p>"
+        },
+        "endDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of when the Job ended.</p>"
+        },
+        "initiatedBy":{
+          "shape":"InitiatedBy",
+          "documentation":"<p>A string representing who initiated the Job.</p>"
+        },
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job.</p>"
+        },
+        "participatingResources":{
+          "shape":"ParticipatingResources",
+          "documentation":"<p>A list of resources that the Job is acting upon.</p>"
+        },
+        "participatingServers":{
+          "shape":"ParticipatingServers",
+          "documentation":"<p>A list of servers that the Job is acting upon.</p>"
+        },
+        "status":{
+          "shape":"JobStatus",
+          "documentation":"<p>The status of the Job.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A list of tags associated with the Job.</p>"
+        },
+        "type":{
+          "shape":"JobType",
+          "documentation":"<p>The type of the Job.</p>"
+        }
+      },
+      "documentation":"<p>A job is an asynchronous workflow.</p>"
+    },
+    "JobID":{
+      "type":"string",
+      "max":24,
+      "min":24,
+      "pattern":"^drsjob-[0-9a-zA-Z]{17}$"
+    },
+    "JobLog":{
+      "type":"structure",
+      "members":{
+        "event":{
+          "shape":"JobLogEvent",
+          "documentation":"<p>The event represents the type of a log.</p>"
+        },
+        "eventData":{
+          "shape":"JobLogEventData",
+          "documentation":"<p>Metadata associated with a Job log.</p>"
+        },
+        "logDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time the log was taken.</p>"
+        }
+      },
+      "documentation":"<p>A log outputted by a Job.</p>"
+    },
+    "JobLogEvent":{
+      "type":"string",
+      "enum":[
+        "JOB_START",
+        "SERVER_SKIPPED",
+        "CLEANUP_START",
+        "CLEANUP_END",
+        "CLEANUP_FAIL",
+        "SNAPSHOT_START",
+        "SNAPSHOT_END",
+        "SNAPSHOT_FAIL",
+        "USING_PREVIOUS_SNAPSHOT",
+        "USING_PREVIOUS_SNAPSHOT_FAILED",
+        "CONVERSION_START",
+        "CONVERSION_END",
+        "CONVERSION_FAIL",
+        "LAUNCH_START",
+        "LAUNCH_FAILED",
+        "JOB_CANCEL",
+        "JOB_END",
+        "DEPLOY_NETWORK_CONFIGURATION_START",
+        "DEPLOY_NETWORK_CONFIGURATION_END",
+        "DEPLOY_NETWORK_CONFIGURATION_FAILED",
+        "UPDATE_NETWORK_CONFIGURATION_START",
+        "UPDATE_NETWORK_CONFIGURATION_END",
+        "UPDATE_NETWORK_CONFIGURATION_FAILED",
+        "UPDATE_LAUNCH_TEMPLATE_START",
+        "UPDATE_LAUNCH_TEMPLATE_END",
+        "UPDATE_LAUNCH_TEMPLATE_FAILED",
+        "NETWORK_RECOVERY_FAIL"
+      ]
+    },
+    "JobLogEventData":{
+      "type":"structure",
+      "members":{
+        "conversionProperties":{
+          "shape":"ConversionProperties",
+          "documentation":"<p>Properties of a conversion job</p>"
+        },
+        "conversionServerID":{
+          "shape":"EC2InstanceID",
+          "documentation":"<p>The ID of a conversion server.</p>"
+        },
+        "eventResourceData":{
+          "shape":"EventResourceData",
+          "documentation":"<p>Properties of resource related to a job event.</p>"
+        },
+        "rawError":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>A string representing a job error.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of a Source Server.</p>"
+        },
+        "targetInstanceID":{
+          "shape":"EC2InstanceID",
+          "documentation":"<p>The ID of a Recovery Instance.</p>"
+        }
+      },
+      "documentation":"<p>Metadata associated with a Job log.</p>"
+    },
+    "JobLogs":{
+      "type":"list",
+      "member":{"shape":"JobLog"}
+    },
+    "JobStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "STARTED",
+        "COMPLETED"
+      ]
+    },
+    "JobType":{
+      "type":"string",
+      "enum":[
+        "LAUNCH",
+        "TERMINATE",
+        "CREATE_CONVERTED_SNAPSHOT"
+      ]
+    },
+    "JobsList":{
+      "type":"list",
+      "member":{"shape":"Job"}
+    },
+    "LargeBoundedString":{
+      "type":"string",
+      "max":65536,
+      "min":0
+    },
+    "LastLaunchResult":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "PENDING",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "LastLaunchType":{
+      "type":"string",
+      "enum":[
+        "RECOVERY",
+        "DRILL"
+      ]
+    },
+    "LaunchAction":{
+      "type":"structure",
+      "members":{
+        "actionCode":{
+          "shape":"SsmDocumentName",
+          "documentation":"<p>Launch action code.</p>"
+        },
+        "actionId":{"shape":"LaunchActionId"},
+        "actionVersion":{"shape":"LaunchActionVersion"},
+        "active":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch action is active.</p>"
+        },
+        "category":{"shape":"LaunchActionCategory"},
+        "description":{"shape":"LaunchActionDescription"},
+        "name":{"shape":"LaunchActionName"},
+        "optional":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch will not be marked as failed if this action fails.</p>"
+        },
+        "order":{"shape":"LaunchActionOrder"},
+        "parameters":{"shape":"LaunchActionParameters"},
+        "type":{
+          "shape":"LaunchActionType",
+          "documentation":"<p>Launch action type.</p>"
+        }
+      },
+      "documentation":"<p>Launch action.</p>"
+    },
+    "LaunchActionCategory":{
+      "type":"string",
+      "documentation":"<p>Launch action category.</p>",
+      "enum":[
+        "MONITORING",
+        "VALIDATION",
+        "CONFIGURATION",
+        "SECURITY",
+        "OTHER"
+      ]
+    },
+    "LaunchActionDescription":{
+      "type":"string",
+      "documentation":"<p>Launch action description.</p>",
+      "max":1024,
+      "min":0,
+      "pattern":"^[0-9a-zA-Z ():/.,'-_#*; ]*$"
+    },
+    "LaunchActionId":{
+      "type":"string",
+      "documentation":"<p>Launch action Id.</p>",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "LaunchActionIds":{
+      "type":"list",
+      "member":{"shape":"LaunchActionId"},
+      "max":100,
+      "min":0
+    },
+    "LaunchActionName":{
+      "type":"string",
+      "documentation":"<p>Launch action name.</p>",
+      "max":256,
+      "min":1,
+      "pattern":"^[A-Za-z0-9][A-Za-z0-9 /_-]*$"
+    },
+    "LaunchActionOrder":{
+      "type":"integer",
+      "documentation":"<p>Launch action order.</p>",
+      "box":true,
+      "max":10000,
+      "min":2
+    },
+    "LaunchActionParameter":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"LaunchActionParameterType",
+          "documentation":"<p>Type.</p>"
+        },
+        "value":{
+          "shape":"LaunchActionParameterValue",
+          "documentation":"<p>Value.</p>"
+        }
+      },
+      "documentation":"<p>Launch action parameter.</p>"
+    },
+    "LaunchActionParameterName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^([A-Za-z0-9])+$"
+    },
+    "LaunchActionParameterType":{
+      "type":"string",
+      "enum":[
+        "SSM_STORE",
+        "DYNAMIC"
+      ]
+    },
+    "LaunchActionParameterValue":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^[A-Za-z0-9.-]+$"
+    },
+    "LaunchActionParameters":{
+      "type":"map",
+      "key":{"shape":"LaunchActionParameterName"},
+      "value":{"shape":"LaunchActionParameter"},
+      "documentation":"<p>Launch action parameters.</p>",
+      "max":20,
+      "min":0
+    },
+    "LaunchActionResourceId":{
+      "type":"string",
+      "documentation":"<p>Launch configuration template Id or Source Server Id</p>",
+      "pattern":"^(s-[0-9a-zA-Z]{17}$|lct-[0-9a-zA-Z]{17})$"
+    },
+    "LaunchActionRun":{
+      "type":"structure",
+      "members":{
+        "action":{
+          "shape":"LaunchAction",
+          "documentation":"<p>Action.</p>"
+        },
+        "failureReason":{
+          "shape":"FailureReason",
+          "documentation":"<p>Failure reason.</p>"
+        },
+        "runId":{
+          "shape":"LaunchActionRunId",
+          "documentation":"<p>Run Id.</p>"
+        },
+        "status":{
+          "shape":"LaunchActionRunStatus",
+          "documentation":"<p>Run status.</p>"
+        }
+      },
+      "documentation":"<p>Launch action run.</p>"
+    },
+    "LaunchActionRunId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "LaunchActionRunStatus":{
+      "type":"string",
+      "enum":[
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "LaunchActionRuns":{
+      "type":"list",
+      "member":{"shape":"LaunchActionRun"}
+    },
+    "LaunchActionType":{
+      "type":"string",
+      "enum":[
+        "SSM_AUTOMATION",
+        "SSM_COMMAND"
+      ]
+    },
+    "LaunchActionVersion":{
+      "type":"string",
+      "documentation":"<p>Launch action version.</p>",
+      "max":10,
+      "min":1,
+      "pattern":"^(\\$DEFAULT|\\$LATEST|[0-9]+)$"
+    },
+    "LaunchActions":{
+      "type":"list",
+      "member":{"shape":"LaunchAction"},
+      "max":200,
+      "min":0
+    },
+    "LaunchActionsRequestFilters":{
+      "type":"structure",
+      "members":{
+        "actionIds":{
+          "shape":"LaunchActionIds",
+          "documentation":"<p>Launch actions Ids.</p>"
+        }
+      },
+      "documentation":"<p>Resource launch actions filter.</p>"
+    },
+    "LaunchActionsStatus":{
+      "type":"structure",
+      "members":{
+        "runs":{
+          "shape":"LaunchActionRuns",
+          "documentation":"<p>List of post launch action status.</p>"
+        },
+        "ssmAgentDiscoveryDatetime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>Time where the AWS Systems Manager was detected as running on the launched instance.</p>"
+        }
+      },
+      "documentation":"<p>Launch actions status.</p>"
+    },
+    "LaunchConfiguration":{
+      "type":"structure",
+      "members":{
+        "copyPrivateIp":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we should copy the Private IP of the Source Server to the Recovery Instance.</p>"
+        },
+        "copyTags":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to copy the tags of the Source Server to the EC2 machine of the Recovery Instance.</p>"
+        },
+        "ec2LaunchTemplateID":{
+          "shape":"BoundedString",
+          "documentation":"<p>The EC2 launch template ID of this launch configuration.</p>"
+        },
+        "launchDisposition":{
+          "shape":"LaunchDisposition",
+          "documentation":"<p>The state of the Recovery Instance in EC2 after the recovery operation.</p>"
+        },
+        "launchIntoInstanceProperties":{
+          "shape":"LaunchIntoInstanceProperties",
+          "documentation":"<p>Launch into existing instance properties.</p>"
+        },
+        "licensing":{
+          "shape":"Licensing",
+          "documentation":"<p>The licensing configuration to be used for this launch configuration.</p>"
+        },
+        "name":{
+          "shape":"SmallBoundedString",
+          "documentation":"<p>The name of the launch configuration.</p>"
+        },
+        "postLaunchEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to activate post-launch actions for the Source Server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server for this launch configuration.</p>"
+        },
+        "targetInstanceTypeRightSizingMethod":{
+          "shape":"TargetInstanceTypeRightSizingMethod",
+          "documentation":"<p>Whether Elastic Disaster Recovery should try to automatically choose the instance type that best matches the OS, CPU, and RAM of your Source Server.</p>"
+        }
+      }
+    },
+    "LaunchConfigurationTemplate":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the Launch Configuration Template.</p>"
+        },
+        "copyPrivateIp":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy private IP.</p>"
+        },
+        "copyTags":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy tags.</p>"
+        },
+        "exportBucketArn":{
+          "shape":"ARN",
+          "documentation":"<p>S3 bucket ARN to export Source Network templates.</p>"
+        },
+        "launchConfigurationTemplateID":{
+          "shape":"LaunchConfigurationTemplateID",
+          "documentation":"<p>ID of the Launch Configuration Template.</p>"
+        },
+        "launchDisposition":{
+          "shape":"LaunchDisposition",
+          "documentation":"<p>Launch disposition.</p>"
+        },
+        "launchIntoSourceInstance":{
+          "shape":"Boolean",
+          "documentation":"<p>DRS will set the 'launch into instance ID' of any source server when performing a drill, recovery or failback to the previous region or availability zone, using the instance ID of the source instance.</p>"
+        },
+        "licensing":{
+          "shape":"Licensing",
+          "documentation":"<p>Licensing.</p>"
+        },
+        "postLaunchEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Post-launch actions activated.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>Tags of the Launch Configuration Template.</p>"
+        },
+        "targetInstanceTypeRightSizingMethod":{
+          "shape":"TargetInstanceTypeRightSizingMethod",
+          "documentation":"<p>Target instance type right-sizing method.</p>"
+        }
+      },
+      "documentation":"<p>Account level Launch Configuration Template.</p>"
+    },
+    "LaunchConfigurationTemplateID":{
+      "type":"string",
+      "max":21,
+      "min":21,
+      "pattern":"^lct-[0-9a-zA-Z]{17}$"
+    },
+    "LaunchConfigurationTemplateIDs":{
+      "type":"list",
+      "member":{"shape":"LaunchConfigurationTemplateID"},
+      "max":1,
+      "min":0
+    },
+    "LaunchConfigurationTemplates":{
+      "type":"list",
+      "member":{"shape":"LaunchConfigurationTemplate"},
+      "max":200,
+      "min":0
+    },
+    "LaunchDisposition":{
+      "type":"string",
+      "enum":[
+        "STOPPED",
+        "STARTED"
+      ]
+    },
+    "LaunchIntoInstanceProperties":{
+      "type":"structure",
+      "members":{
+        "launchIntoEC2InstanceID":{
+          "shape":"EC2InstanceID",
+          "documentation":"<p>Optionally holds EC2 instance ID of an instance to launch into, instead of launching a new instance during drill, recovery or failback.</p>"
+        }
+      },
+      "documentation":"<p>Launch into existing instance.</p>"
+    },
+    "LaunchStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "IN_PROGRESS",
+        "LAUNCHED",
+        "FAILED",
+        "TERMINATED"
+      ]
+    },
+    "Licensing":{
+      "type":"structure",
+      "members":{
+        "osByol":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to enable \"Bring your own license\" or not.</p>"
+        }
+      },
+      "documentation":"<p>Configuration of a machine's license.</p>"
+    },
+    "LifeCycle":{
+      "type":"structure",
+      "members":{
+        "addedToServiceDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of when the Source Server was added to the service.</p>"
+        },
+        "elapsedReplicationDuration":{
+          "shape":"ISO8601DurationString",
+          "documentation":"<p>The amount of time that the Source Server has been replicating for.</p>"
+        },
+        "firstByteDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the first byte that was replicated from the Source Server.</p>"
+        },
+        "lastLaunch":{
+          "shape":"LifeCycleLastLaunch",
+          "documentation":"<p>An object containing information regarding the last launch of the Source Server.</p>"
+        },
+        "lastSeenByServiceDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time this Source Server was last seen by the service.</p>"
+        }
+      },
+      "documentation":"<p>An object representing the Source Server Lifecycle.</p>"
+    },
+    "LifeCycleLastLaunch":{
+      "type":"structure",
+      "members":{
+        "initiated":{
+          "shape":"LifeCycleLastLaunchInitiated",
+          "documentation":"<p>An object containing information regarding the initiation of the last launch of a Source Server.</p>"
+        },
+        "status":{
+          "shape":"LaunchStatus",
+          "documentation":"<p>Status of Source Server's last launch.</p>"
+        }
+      },
+      "documentation":"<p>An object containing information regarding the last launch of a Source Server.</p>"
+    },
+    "LifeCycleLastLaunchInitiated":{
+      "type":"structure",
+      "members":{
+        "apiCallDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time the last Source Server launch was initiated.</p>"
+        },
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job that was used to last launch the Source Server.</p>"
+        },
+        "type":{
+          "shape":"LastLaunchType",
+          "documentation":"<p>The Job type that was used to last launch the Source Server.</p>"
+        }
+      },
+      "documentation":"<p>An object containing information regarding the initiation of the last launch of a Source Server.</p>"
+    },
+    "ListExtensibleSourceServersRequest":{
+      "type":"structure",
+      "required":["stagingAccountID"],
+      "members":{
+        "maxResults":{
+          "shape":"MaxResultsReplicatingSourceServers",
+          "documentation":"<p>The maximum number of extensible source servers to retrieve.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next extensible source server to retrieve.</p>"
+        },
+        "stagingAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>The Id of the staging Account to retrieve extensible source servers from.</p>"
+        }
+      }
+    },
+    "ListExtensibleSourceServersResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"StagingSourceServersList",
+          "documentation":"<p>A list of source servers on a staging Account that are extensible.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next extensible source server to retrieve.</p>"
+        }
+      }
+    },
+    "ListLaunchActionsRequest":{
+      "type":"structure",
+      "required":["resourceId"],
+      "members":{
+        "filters":{
+          "shape":"LaunchActionsRequestFilters",
+          "documentation":"<p>Filters to apply when listing resource launch actions.</p>"
+        },
+        "maxResults":{
+          "shape":"MaxResultsType",
+          "documentation":"<p>Maximum amount of items to return when listing resource launch actions.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Next token to use when listing resource launch actions.</p>"
+        },
+        "resourceId":{"shape":"LaunchActionResourceId"}
+      }
+    },
+    "ListLaunchActionsResponse":{
+      "type":"structure",
+      "members":{
+        "items":{
+          "shape":"LaunchActions",
+          "documentation":"<p>List of resource launch actions.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>Next token returned when listing resource launch actions.</p>"
+        }
+      }
+    },
+    "ListStagingAccountsRequest":{
+      "type":"structure",
+      "members":{
+        "maxResults":{
+          "shape":"ListStagingAccountsRequestMaxResultsInteger",
+          "documentation":"<p>The maximum number of staging Accounts to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next staging Account to retrieve.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        }
+      }
+    },
+    "ListStagingAccountsRequestMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":50,
+      "min":1
+    },
+    "ListStagingAccountsResponse":{
+      "type":"structure",
+      "members":{
+        "accounts":{
+          "shape":"Accounts",
+          "documentation":"<p>An array of staging AWS Accounts.</p>"
+        },
+        "nextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token of the next staging Account to retrieve.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the resource whose tags should be returned.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>The tags of the requested resource.</p>"
+        }
+      }
+    },
+    "MaxResultsReplicatingSourceServers":{
+      "type":"integer",
+      "box":true,
+      "max":300,
+      "min":1
+    },
+    "MaxResultsType":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "NetworkInterface":{
+      "type":"structure",
+      "members":{
+        "ips":{
+          "shape":"IPsList",
+          "documentation":"<p>Network interface IPs.</p>"
+        },
+        "isPrimary":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether this is the primary network interface.</p>"
+        },
+        "macAddress":{
+          "shape":"BoundedString",
+          "documentation":"<p>The MAC address of the network interface.</p>"
+        }
+      },
+      "documentation":"<p>Network interface.</p>"
+    },
+    "NetworkInterfaces":{
+      "type":"list",
+      "member":{"shape":"NetworkInterface"},
+      "max":32,
+      "min":0
+    },
+    "OS":{
+      "type":"structure",
+      "members":{
+        "fullString":{
+          "shape":"BoundedString",
+          "documentation":"<p>The long name of the Operating System.</p>"
+        }
+      },
+      "documentation":"<p>Operating System.</p>"
+    },
+    "OriginEnvironment":{
+      "type":"string",
+      "enum":[
+        "ON_PREMISES",
+        "AWS"
+      ]
+    },
+    "OutpostARN":{
+      "type":"string",
+      "max":255,
+      "min":20,
+      "pattern":"^arn:aws([a-z-]+)?:outposts:[a-z\\d-]+:\\d{12}:outpost/op-[a-f0-9]{17}$"
+    },
+    "PITPolicy":{
+      "type":"list",
+      "member":{"shape":"PITPolicyRule"},
+      "max":10,
+      "min":1
+    },
+    "PITPolicyRule":{
+      "type":"structure",
+      "required":[
+        "interval",
+        "retentionDuration",
+        "units"
+      ],
+      "members":{
+        "enabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether this rule is enabled or not.</p>"
+        },
+        "interval":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>How often, in the chosen units, a snapshot should be taken.</p>"
+        },
+        "retentionDuration":{
+          "shape":"StrictlyPositiveInteger",
+          "documentation":"<p>The duration to retain a snapshot for, in the chosen units.</p>"
+        },
+        "ruleID":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The ID of the rule.</p>"
+        },
+        "units":{
+          "shape":"PITPolicyRuleUnits",
+          "documentation":"<p>The units used to measure the interval and retentionDuration.</p>"
+        }
+      },
+      "documentation":"<p>A rule in the Point in Time (PIT) policy representing when to take snapshots and how long to retain them for.</p>"
+    },
+    "PITPolicyRuleUnits":{
+      "type":"string",
+      "enum":[
+        "MINUTE",
+        "HOUR",
+        "DAY"
+      ]
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "ParticipatingResource":{
+      "type":"structure",
+      "members":{
+        "launchStatus":{
+          "shape":"LaunchStatus",
+          "documentation":"<p>The launch status of a participating resource.</p>"
+        },
+        "participatingResourceID":{
+          "shape":"ParticipatingResourceID",
+          "documentation":"<p>The ID of a participating resource.</p>"
+        }
+      },
+      "documentation":"<p>Represents a resource participating in an asynchronous Job.</p>"
+    },
+    "ParticipatingResourceID":{
+      "type":"structure",
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>Source Network ID.</p>"
+        }
+      },
+      "documentation":"<p>ID of a resource participating in an asynchronous Job.</p>",
+      "union":true
+    },
+    "ParticipatingResources":{
+      "type":"list",
+      "member":{"shape":"ParticipatingResource"}
+    },
+    "ParticipatingServer":{
+      "type":"structure",
+      "members":{
+        "launchActionsStatus":{
+          "shape":"LaunchActionsStatus",
+          "documentation":"<p>The post-launch action runs of a participating server.</p>"
+        },
+        "launchStatus":{
+          "shape":"LaunchStatus",
+          "documentation":"<p>The launch status of a participating server.</p>"
+        },
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The Recovery Instance ID of a participating server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The Source Server ID of a participating server.</p>"
+        }
+      },
+      "documentation":"<p>Represents a server participating in an asynchronous Job.</p>"
+    },
+    "ParticipatingServers":{
+      "type":"list",
+      "member":{"shape":"ParticipatingServer"}
+    },
+    "PositiveInteger":{
+      "type":"long",
+      "min":0
+    },
+    "ProductCode":{
+      "type":"structure",
+      "members":{
+        "productCodeId":{
+          "shape":"ProductCodeId",
+          "documentation":"<p>Id of a product code associated with a volume.</p>"
+        },
+        "productCodeMode":{
+          "shape":"ProductCodeMode",
+          "documentation":"<p>Mode of a product code associated with a volume.</p>"
+        }
+      },
+      "documentation":"<p>Properties of a product code associated with a volume.</p>"
+    },
+    "ProductCodeId":{
+      "type":"string",
+      "max":25,
+      "min":25,
+      "pattern":"^([A-Za-z0-9])+$"
+    },
+    "ProductCodeMode":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "ProductCodes":{
+      "type":"list",
+      "member":{"shape":"ProductCode"}
+    },
+    "PutLaunchActionRequest":{
+      "type":"structure",
+      "required":[
+        "actionCode",
+        "actionId",
+        "actionVersion",
+        "active",
+        "category",
+        "description",
+        "name",
+        "optional",
+        "order",
+        "resourceId"
+      ],
+      "members":{
+        "actionCode":{
+          "shape":"SsmDocumentName",
+          "documentation":"<p>Launch action code.</p>"
+        },
+        "actionId":{"shape":"LaunchActionId"},
+        "actionVersion":{"shape":"LaunchActionVersion"},
+        "active":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch action is active.</p>"
+        },
+        "category":{"shape":"LaunchActionCategory"},
+        "description":{"shape":"LaunchActionDescription"},
+        "name":{"shape":"LaunchActionName"},
+        "optional":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch will not be marked as failed if this action fails.</p>"
+        },
+        "order":{"shape":"LaunchActionOrder"},
+        "parameters":{"shape":"LaunchActionParameters"},
+        "resourceId":{"shape":"LaunchActionResourceId"}
+      }
+    },
+    "PutLaunchActionResponse":{
+      "type":"structure",
+      "members":{
+        "actionCode":{
+          "shape":"SsmDocumentName",
+          "documentation":"<p>Launch action code.</p>"
+        },
+        "actionId":{"shape":"LaunchActionId"},
+        "actionVersion":{"shape":"LaunchActionVersion"},
+        "active":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch action is active.</p>"
+        },
+        "category":{"shape":"LaunchActionCategory"},
+        "description":{"shape":"LaunchActionDescription"},
+        "name":{"shape":"LaunchActionName"},
+        "optional":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether the launch will not be marked as failed if this action fails.</p>"
+        },
+        "order":{"shape":"LaunchActionOrder"},
+        "parameters":{"shape":"LaunchActionParameters"},
+        "resourceId":{"shape":"LaunchActionResourceId"},
+        "type":{
+          "shape":"LaunchActionType",
+          "documentation":"<p>Launch action type.</p>"
+        }
+      }
+    },
+    "RecoveryInstance":{
+      "type":"structure",
+      "members":{
+        "agentVersion":{
+          "shape":"AgentVersion",
+          "documentation":"<p>The version of the DRS agent installed on the recovery instance</p>"
+        },
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the Recovery Instance.</p>"
+        },
+        "dataReplicationInfo":{
+          "shape":"RecoveryInstanceDataReplicationInfo",
+          "documentation":"<p>The Data Replication Info of the Recovery Instance.</p>"
+        },
+        "ec2InstanceID":{
+          "shape":"EC2InstanceID",
+          "documentation":"<p>The EC2 instance ID of the Recovery Instance.</p>"
+        },
+        "ec2InstanceState":{
+          "shape":"EC2InstanceState",
+          "documentation":"<p>The state of the EC2 instance for this Recovery Instance.</p>"
+        },
+        "failback":{
+          "shape":"RecoveryInstanceFailback",
+          "documentation":"<p>An object representing failback related information of the Recovery Instance.</p>"
+        },
+        "isDrill":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether this Recovery Instance was created for a drill or for an actual Recovery event.</p>"
+        },
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job that created the Recovery Instance.</p>"
+        },
+        "originAvailabilityZone":{
+          "shape":"AwsAvailabilityZone",
+          "documentation":"<p>AWS availability zone associated with the recovery instance.</p>"
+        },
+        "originEnvironment":{
+          "shape":"OriginEnvironment",
+          "documentation":"<p>Environment (On Premises / AWS) of the instance that the recovery instance originated from.</p>"
+        },
+        "pointInTimeSnapshotDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the Point in Time (PIT) snapshot that this Recovery Instance was launched from.</p>"
+        },
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance.</p>"
+        },
+        "recoveryInstanceProperties":{
+          "shape":"RecoveryInstanceProperties",
+          "documentation":"<p>Properties of the Recovery Instance machine.</p>"
+        },
+        "sourceOutpostArn":{
+          "shape":"OutpostARN",
+          "documentation":"<p>The ARN of the source Outpost</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The Source Server ID that this Recovery Instance is associated with.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>An array of tags that are associated with the Recovery Instance.</p>"
+        }
+      },
+      "documentation":"<p>A Recovery Instance is a replica of a Source Server running on EC2.</p>"
+    },
+    "RecoveryInstanceDataReplicationError":{
+      "type":"structure",
+      "members":{
+        "error":{
+          "shape":"FailbackReplicationError",
+          "documentation":"<p>Error in data replication.</p>"
+        },
+        "rawError":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Error in data replication.</p>"
+        }
+      },
+      "documentation":"<p>Error in data replication.</p>"
+    },
+    "RecoveryInstanceDataReplicationInfo":{
+      "type":"structure",
+      "members":{
+        "dataReplicationError":{
+          "shape":"RecoveryInstanceDataReplicationError",
+          "documentation":"<p>Information about Data Replication</p>"
+        },
+        "dataReplicationInitiation":{
+          "shape":"RecoveryInstanceDataReplicationInitiation",
+          "documentation":"<p>Information about whether the data replication has been initiated.</p>"
+        },
+        "dataReplicationState":{
+          "shape":"RecoveryInstanceDataReplicationState",
+          "documentation":"<p>The state of the data replication.</p>"
+        },
+        "etaDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>An estimate of when the data replication will be completed.</p>"
+        },
+        "lagDuration":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>Data replication lag duration.</p>"
+        },
+        "replicatedDisks":{
+          "shape":"RecoveryInstanceDataReplicationInfoReplicatedDisks",
+          "documentation":"<p>The disks that should be replicated.</p>"
+        },
+        "stagingAvailabilityZone":{
+          "shape":"AwsAvailabilityZone",
+          "documentation":"<p>AWS Availability zone into which data is being replicated.</p>"
+        },
+        "stagingOutpostArn":{
+          "shape":"OutpostARN",
+          "documentation":"<p>The ARN of the staging Outpost</p>"
+        }
+      },
+      "documentation":"<p>Information about Data Replication</p>"
+    },
+    "RecoveryInstanceDataReplicationInfoReplicatedDisk":{
+      "type":"structure",
+      "members":{
+        "backloggedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The size of the replication backlog in bytes.</p>"
+        },
+        "deviceName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The name of the device.</p>"
+        },
+        "replicatedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of data replicated so far in bytes.</p>"
+        },
+        "rescannedStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of data to be rescanned in bytes.</p>"
+        },
+        "totalStorageBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The total amount of data to be replicated in bytes.</p>"
+        }
+      },
+      "documentation":"<p>A disk that should be replicated.</p>"
+    },
+    "RecoveryInstanceDataReplicationInfoReplicatedDisks":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceDataReplicationInfoReplicatedDisk"},
+      "max":60,
+      "min":0
+    },
+    "RecoveryInstanceDataReplicationInitiation":{
+      "type":"structure",
+      "members":{
+        "startDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the current attempt to initiate data replication.</p>"
+        },
+        "steps":{
+          "shape":"RecoveryInstanceDataReplicationInitiationSteps",
+          "documentation":"<p>The steps of the current attempt to initiate data replication.</p>"
+        }
+      },
+      "documentation":"<p>Data replication initiation.</p>"
+    },
+    "RecoveryInstanceDataReplicationInitiationStep":{
+      "type":"structure",
+      "members":{
+        "name":{
+          "shape":"RecoveryInstanceDataReplicationInitiationStepName",
+          "documentation":"<p>The name of the step.</p>"
+        },
+        "status":{
+          "shape":"RecoveryInstanceDataReplicationInitiationStepStatus",
+          "documentation":"<p>The status of the step.</p>"
+        }
+      },
+      "documentation":"<p>Data replication initiation step.</p>"
+    },
+    "RecoveryInstanceDataReplicationInitiationStepName":{
+      "type":"string",
+      "enum":[
+        "LINK_FAILBACK_CLIENT_WITH_RECOVERY_INSTANCE",
+        "COMPLETE_VOLUME_MAPPING",
+        "ESTABLISH_RECOVERY_INSTANCE_COMMUNICATION",
+        "DOWNLOAD_REPLICATION_SOFTWARE_TO_FAILBACK_CLIENT",
+        "CONFIGURE_REPLICATION_SOFTWARE",
+        "PAIR_AGENT_WITH_REPLICATION_SOFTWARE",
+        "ESTABLISH_AGENT_REPLICATOR_SOFTWARE_COMMUNICATION",
+        "WAIT",
+        "CREATE_SECURITY_GROUP",
+        "LAUNCH_REPLICATION_SERVER",
+        "BOOT_REPLICATION_SERVER",
+        "AUTHENTICATE_WITH_SERVICE",
+        "DOWNLOAD_REPLICATION_SOFTWARE",
+        "CREATE_STAGING_DISKS",
+        "ATTACH_STAGING_DISKS",
+        "PAIR_REPLICATION_SERVER_WITH_AGENT",
+        "CONNECT_AGENT_TO_REPLICATION_SERVER",
+        "START_DATA_TRANSFER"
+      ]
+    },
+    "RecoveryInstanceDataReplicationInitiationStepStatus":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "IN_PROGRESS",
+        "SUCCEEDED",
+        "FAILED",
+        "SKIPPED"
+      ]
+    },
+    "RecoveryInstanceDataReplicationInitiationSteps":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceDataReplicationInitiationStep"}
+    },
+    "RecoveryInstanceDataReplicationState":{
+      "type":"string",
+      "enum":[
+        "STOPPED",
+        "INITIATING",
+        "INITIAL_SYNC",
+        "BACKLOG",
+        "CREATING_SNAPSHOT",
+        "CONTINUOUS",
+        "PAUSED",
+        "RESCAN",
+        "STALLED",
+        "DISCONNECTED",
+        "REPLICATION_STATE_NOT_AVAILABLE",
+        "NOT_STARTED"
+      ]
+    },
+    "RecoveryInstanceDisk":{
+      "type":"structure",
+      "members":{
+        "bytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of storage on the disk in bytes.</p>"
+        },
+        "ebsVolumeID":{
+          "shape":"EbsVolumeID",
+          "documentation":"<p>The EBS Volume ID of this disk.</p>"
+        },
+        "internalDeviceName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The internal device name of this disk. This is the name that is visible on the machine itself and not from the EC2 console.</p>"
+        }
+      },
+      "documentation":"<p>An object representing a block storage device on the Recovery Instance.</p>"
+    },
+    "RecoveryInstanceDisks":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceDisk"},
+      "max":1000,
+      "min":0
+    },
+    "RecoveryInstanceFailback":{
+      "type":"structure",
+      "members":{
+        "agentLastSeenByServiceDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time the agent on the Recovery Instance was last seen by the service.</p>"
+        },
+        "elapsedReplicationDuration":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The amount of time that the Recovery Instance has been replicating for.</p>"
+        },
+        "failbackClientID":{
+          "shape":"BoundedString",
+          "documentation":"<p>The ID of the failback client that this Recovery Instance is associated with.</p>"
+        },
+        "failbackClientLastSeenByServiceDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time that the failback client was last seen by the service.</p>"
+        },
+        "failbackInitiationTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time that the failback initiation started.</p>"
+        },
+        "failbackJobID":{
+          "shape":"JobID",
+          "documentation":"<p>The Job ID of the last failback log for this Recovery Instance.</p>"
+        },
+        "failbackLaunchType":{
+          "shape":"FailbackLaunchType",
+          "documentation":"<p>The launch type (Recovery / Drill) of the last launch for the failback replication of this recovery instance.</p>"
+        },
+        "failbackToOriginalServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we are failing back to the original Source Server for this Recovery Instance.</p>"
+        },
+        "firstByteDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time of the first byte that was replicated from the Recovery Instance.</p>"
+        },
+        "state":{
+          "shape":"FailbackState",
+          "documentation":"<p>The state of the failback process that this Recovery Instance is in.</p>"
+        }
+      },
+      "documentation":"<p>An object representing failback related information of the Recovery Instance.</p>"
+    },
+    "RecoveryInstanceID":{
+      "type":"string",
+      "max":19,
+      "min":10,
+      "pattern":"^i-[0-9a-fA-F]{8,}$"
+    },
+    "RecoveryInstanceIDs":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceID"},
+      "max":200,
+      "min":0
+    },
+    "RecoveryInstanceProperties":{
+      "type":"structure",
+      "members":{
+        "cpus":{
+          "shape":"Cpus",
+          "documentation":"<p>An array of CPUs.</p>"
+        },
+        "disks":{
+          "shape":"RecoveryInstanceDisks",
+          "documentation":"<p>An array of disks.</p>"
+        },
+        "identificationHints":{
+          "shape":"IdentificationHints",
+          "documentation":"<p>Hints used to uniquely identify a machine.</p>"
+        },
+        "lastUpdatedDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time the Recovery Instance properties were last updated on.</p>"
+        },
+        "networkInterfaces":{
+          "shape":"NetworkInterfaces",
+          "documentation":"<p>An array of network interfaces.</p>"
+        },
+        "os":{
+          "shape":"OS",
+          "documentation":"<p>Operating system.</p>"
+        },
+        "ramBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of RAM in bytes.</p>"
+        }
+      },
+      "documentation":"<p>Properties of the Recovery Instance machine.</p>"
+    },
+    "RecoveryInstancesForTerminationRequest":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceID"},
+      "max":200,
+      "min":1
+    },
+    "RecoveryLifeCycle":{
+      "type":"structure",
+      "members":{
+        "apiCallDateTime":{
+          "shape":"SyntheticTimestamp_date_time",
+          "documentation":"<p>The date and time the last Source Network recovery was initiated.</p>"
+        },
+        "jobID":{
+          "shape":"JobID",
+          "documentation":"<p>The ID of the Job that was used to last recover the Source Network.</p>"
+        },
+        "lastRecoveryResult":{
+          "shape":"RecoveryResult",
+          "documentation":"<p>The status of the last recovery status of this Source Network.</p>"
+        }
+      },
+      "documentation":"<p>An object representing the Source Network recovery Lifecycle.</p>"
+    },
+    "RecoveryResult":{
+      "type":"string",
+      "enum":[
+        "NOT_STARTED",
+        "IN_PROGRESS",
+        "SUCCESS",
+        "FAIL",
+        "PARTIAL_SUCCESS",
+        "ASSOCIATE_SUCCESS",
+        "ASSOCIATE_FAIL"
+      ]
+    },
+    "RecoverySnapshot":{
+      "type":"structure",
+      "required":[
+        "expectedTimestamp",
+        "snapshotID",
+        "sourceServerID"
+      ],
+      "members":{
+        "ebsSnapshots":{
+          "shape":"EbsSnapshotsList",
+          "documentation":"<p>A list of EBS snapshots.</p>"
+        },
+        "expectedTimestamp":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The timestamp of when we expect the snapshot to be taken.</p>"
+        },
+        "snapshotID":{
+          "shape":"RecoverySnapshotID",
+          "documentation":"<p>The ID of the Recovery Snapshot.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server that the snapshot was taken for.</p>"
+        },
+        "timestamp":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The actual timestamp that the snapshot was taken.</p>"
+        }
+      },
+      "documentation":"<p>A snapshot of a Source Server used during recovery.</p>"
+    },
+    "RecoverySnapshotID":{
+      "type":"string",
+      "max":21,
+      "min":21,
+      "pattern":"^pit-[0-9a-zA-Z]{17}$"
+    },
+    "RecoverySnapshotsList":{
+      "type":"list",
+      "member":{"shape":"RecoverySnapshot"}
+    },
+    "RecoverySnapshotsOrder":{
+      "type":"string",
+      "enum":[
+        "ASC",
+        "DESC"
+      ]
+    },
+    "ReplicationConfiguration":{
+      "type":"structure",
+      "members":{
+        "associateDefaultSecurityGroup":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration.</p>"
+        },
+        "autoReplicateNewDisks":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to allow the AWS replication agent to automatically replicate newly added disks.</p>"
+        },
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.</p>"
+        },
+        "createPublicIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to create a Public IP for the Recovery Instance by default.</p>"
+        },
+        "dataPlaneRouting":{
+          "shape":"ReplicationConfigurationDataPlaneRouting",
+          "documentation":"<p>The data plane routing mechanism that will be used for replication.</p>"
+        },
+        "defaultLargeStagingDiskType":{
+          "shape":"ReplicationConfigurationDefaultLargeStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "ebsEncryption":{
+          "shape":"ReplicationConfigurationEbsEncryption",
+          "documentation":"<p>The type of EBS encryption to be used during replication.</p>"
+        },
+        "ebsEncryptionKeyArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the EBS encryption key to be used during replication.</p>"
+        },
+        "name":{
+          "shape":"SmallBoundedString",
+          "documentation":"<p>The name of the Replication Configuration.</p>"
+        },
+        "pitPolicy":{
+          "shape":"PITPolicy",
+          "documentation":"<p>The Point in time (PIT) policy to manage snapshots taken during replication.</p>"
+        },
+        "replicatedDisks":{
+          "shape":"ReplicationConfigurationReplicatedDisks",
+          "documentation":"<p>The configuration of the disks of the Source Server to be replicated.</p>"
+        },
+        "replicationServerInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The instance type to be used for the replication server.</p>"
+        },
+        "replicationServersSecurityGroupsIDs":{
+          "shape":"ReplicationServersSecurityGroupsIDs",
+          "documentation":"<p>The security group IDs that will be used by the replication server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server for this Replication Configuration.</p>"
+        },
+        "stagingAreaSubnetId":{
+          "shape":"SubnetID",
+          "documentation":"<p>The subnet to be used by the replication staging area.</p>"
+        },
+        "stagingAreaTags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.</p>"
+        },
+        "useDedicatedReplicationServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use a dedicated Replication Server in the replication staging area.</p>"
+        }
+      }
+    },
+    "ReplicationConfigurationDataPlaneRouting":{
+      "type":"string",
+      "enum":[
+        "PRIVATE_IP",
+        "PUBLIC_IP"
+      ]
+    },
+    "ReplicationConfigurationDefaultLargeStagingDiskType":{
+      "type":"string",
+      "enum":[
+        "GP2",
+        "GP3",
+        "ST1",
+        "AUTO"
+      ]
+    },
+    "ReplicationConfigurationEbsEncryption":{
+      "type":"string",
+      "enum":[
+        "DEFAULT",
+        "CUSTOM",
+        "NONE"
+      ]
+    },
+    "ReplicationConfigurationReplicatedDisk":{
+      "type":"structure",
+      "members":{
+        "deviceName":{
+          "shape":"BoundedString",
+          "documentation":"<p>The name of the device.</p>"
+        },
+        "iops":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The requested number of I/O operations per second (IOPS).</p>"
+        },
+        "isBootDisk":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to boot from this disk or not.</p>"
+        },
+        "optimizedStagingDiskType":{
+          "shape":"ReplicationConfigurationReplicatedDiskStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication when <code>stagingDiskType</code> is set to Auto. This is a read-only field.</p>"
+        },
+        "stagingDiskType":{
+          "shape":"ReplicationConfigurationReplicatedDiskStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "throughput":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The throughput to use for the EBS volume in MiB/s. This parameter is valid only for gp3 volumes.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of a disk of the Source Server to be replicated.</p>"
+    },
+    "ReplicationConfigurationReplicatedDiskStagingDiskType":{
+      "type":"string",
+      "enum":[
+        "AUTO",
+        "GP2",
+        "GP3",
+        "IO1",
+        "SC1",
+        "ST1",
+        "STANDARD"
+      ]
+    },
+    "ReplicationConfigurationReplicatedDisks":{
+      "type":"list",
+      "member":{"shape":"ReplicationConfigurationReplicatedDisk"},
+      "max":60,
+      "min":0
+    },
+    "ReplicationConfigurationTemplate":{
+      "type":"structure",
+      "required":["replicationConfigurationTemplateID"],
+      "members":{
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The Replication Configuration Template ARN.</p>"
+        },
+        "associateDefaultSecurityGroup":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration Template.</p>"
+        },
+        "autoReplicateNewDisks":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to allow the AWS replication agent to automatically replicate newly added disks.</p>"
+        },
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.</p>"
+        },
+        "createPublicIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to create a Public IP for the Recovery Instance by default.</p>"
+        },
+        "dataPlaneRouting":{
+          "shape":"ReplicationConfigurationDataPlaneRouting",
+          "documentation":"<p>The data plane routing mechanism that will be used for replication.</p>"
+        },
+        "defaultLargeStagingDiskType":{
+          "shape":"ReplicationConfigurationDefaultLargeStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "ebsEncryption":{
+          "shape":"ReplicationConfigurationEbsEncryption",
+          "documentation":"<p>The type of EBS encryption to be used during replication.</p>"
+        },
+        "ebsEncryptionKeyArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the EBS encryption key to be used during replication.</p>"
+        },
+        "pitPolicy":{
+          "shape":"PITPolicy",
+          "documentation":"<p>The Point in time (PIT) policy to manage snapshots taken during replication.</p>"
+        },
+        "replicationConfigurationTemplateID":{
+          "shape":"ReplicationConfigurationTemplateID",
+          "documentation":"<p>The Replication Configuration Template ID.</p>"
+        },
+        "replicationServerInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The instance type to be used for the replication server.</p>"
+        },
+        "replicationServersSecurityGroupsIDs":{
+          "shape":"ReplicationServersSecurityGroupsIDs",
+          "documentation":"<p>The security group IDs that will be used by the replication server.</p>"
+        },
+        "stagingAreaSubnetId":{
+          "shape":"SubnetID",
+          "documentation":"<p>The subnet to be used by the replication staging area.</p>"
+        },
+        "stagingAreaTags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with the Replication Configuration Template resource.</p>"
+        },
+        "useDedicatedReplicationServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use a dedicated Replication Server in the replication staging area.</p>"
+        }
+      }
+    },
+    "ReplicationConfigurationTemplateID":{
+      "type":"string",
+      "max":21,
+      "min":21,
+      "pattern":"^rct-[0-9a-zA-Z]{17}$"
+    },
+    "ReplicationConfigurationTemplateIDs":{
+      "type":"list",
+      "member":{"shape":"ReplicationConfigurationTemplateID"},
+      "max":200,
+      "min":0
+    },
+    "ReplicationConfigurationTemplates":{
+      "type":"list",
+      "member":{"shape":"ReplicationConfigurationTemplate"}
+    },
+    "ReplicationDirection":{
+      "type":"string",
+      "documentation":"<p>Replication direction designates if this is a failover replication, or a failback replication. When a DRS agent is installed on an instance, the replication direction is failover. In cases where a recovery launch was made in the recovery location and a new recovery instance was created, and then a failback replication was initiated from that recovery instance back to the origin location, then the replication direction will be failback.</p>",
+      "enum":[
+        "FAILOVER",
+        "FAILBACK"
+      ]
+    },
+    "ReplicationServersSecurityGroupsIDs":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupID"},
+      "max":32,
+      "min":0
+    },
+    "ReplicationStatus":{
+      "type":"string",
+      "enum":[
+        "STOPPED",
+        "IN_PROGRESS",
+        "PROTECTED",
+        "ERROR"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "message":{"shape":"LargeBoundedString"},
+        "resourceId":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>The resource for this operation was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RetryDataReplicationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server whose data replication should be retried.</p>"
+        }
+      },
+      "deprecated":true,
+      "deprecatedMessage":"WARNING: RetryDataReplication is deprecated"
+    },
+    "ReverseReplicationRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance that we want to reverse the replication for.</p>"
+        }
+      }
+    },
+    "ReverseReplicationResponse":{
+      "type":"structure",
+      "members":{
+        "reversedDirectionSourceServerArn":{
+          "shape":"SourceServerARN",
+          "documentation":"<p>ARN of created SourceServer.</p>"
+        }
+      }
+    },
+    "SecurityGroupID":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^sg-[0-9a-fA-F]{8,}$"
+    },
+    "SensitiveBoundedString":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "sensitive":true
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "message":{"shape":"LargeBoundedString"},
+        "quotaCode":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Quota code.</p>"
+        },
+        "resourceId":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The ID of the resource.</p>"
+        },
+        "resourceType":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The type of the resource.</p>"
+        },
+        "serviceCode":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Service code.</p>"
+        }
+      },
+      "documentation":"<p>The request could not be completed because its exceeded the service quota.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "SmallBoundedString":{
+      "type":"string",
+      "max":128,
+      "min":0
+    },
+    "SourceCloudProperties":{
+      "type":"structure",
+      "members":{
+        "originAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>AWS Account ID for an EC2-originated Source Server.</p>"
+        },
+        "originAvailabilityZone":{
+          "shape":"AwsAvailabilityZone",
+          "documentation":"<p>AWS Availability Zone for an EC2-originated Source Server.</p>"
+        },
+        "originRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>AWS Region for an EC2-originated Source Server.</p>"
+        },
+        "sourceOutpostArn":{
+          "shape":"OutpostARN",
+          "documentation":"<p>The ARN of the source Outpost</p>"
+        }
+      },
+      "documentation":"<p>Properties of the cloud environment where this Source Server originated from.</p>"
+    },
+    "SourceNetwork":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the Source Network.</p>"
+        },
+        "cfnStackName":{
+          "shape":"CfnStackName",
+          "documentation":"<p>CloudFormation stack name that was deployed for recovering the Source Network.</p>"
+        },
+        "lastRecovery":{
+          "shape":"RecoveryLifeCycle",
+          "documentation":"<p>An object containing information regarding the last recovery of the Source Network.</p>"
+        },
+        "launchedVpcID":{
+          "shape":"VpcID",
+          "documentation":"<p>ID of the recovered VPC following Source Network recovery.</p>"
+        },
+        "replicationStatus":{
+          "shape":"ReplicationStatus",
+          "documentation":"<p>Status of Source Network Replication. Possible values: (a) STOPPED - Source Network is not replicating. (b) IN_PROGRESS - Source Network is being replicated. (c) PROTECTED - Source Network was replicated successfully and is being synchronized for changes. (d) ERROR - Source Network replication has failed</p>"
+        },
+        "replicationStatusDetails":{
+          "shape":"SensitiveBoundedString",
+          "documentation":"<p>Error details in case Source Network replication status is ERROR.</p>"
+        },
+        "sourceAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>Account ID containing the VPC protected by the Source Network.</p>"
+        },
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>Source Network ID.</p>"
+        },
+        "sourceRegion":{
+          "shape":"AwsRegion",
+          "documentation":"<p>Region containing the VPC protected by the Source Network.</p>"
+        },
+        "sourceVpcID":{
+          "shape":"VpcID",
+          "documentation":"<p>VPC ID protected by the Source Network.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A list of tags associated with the Source Network.</p>"
+        }
+      },
+      "documentation":"<p>The ARN of the Source Network.</p>"
+    },
+    "SourceNetworkData":{
+      "type":"structure",
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>Source Network ID.</p>"
+        },
+        "sourceVpc":{
+          "shape":"VpcID",
+          "documentation":"<p>VPC ID protected by the Source Network.</p>"
+        },
+        "stackName":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>CloudFormation stack name that was deployed for recovering the Source Network.</p>"
+        },
+        "targetVpc":{
+          "shape":"VpcID",
+          "documentation":"<p>ID of the recovered VPC following Source Network recovery.</p>"
+        }
+      },
+      "documentation":"<p>Properties of Source Network related to a job event.</p>"
+    },
+    "SourceNetworkID":{
+      "type":"string",
+      "max":20,
+      "min":20,
+      "pattern":"^sn-[0-9a-zA-Z]{17}$"
+    },
+    "SourceNetworksList":{
+      "type":"list",
+      "member":{"shape":"SourceNetwork"}
+    },
+    "SourceProperties":{
+      "type":"structure",
+      "members":{
+        "cpus":{
+          "shape":"Cpus",
+          "documentation":"<p>An array of CPUs.</p>"
+        },
+        "disks":{
+          "shape":"Disks",
+          "documentation":"<p>An array of disks.</p>"
+        },
+        "identificationHints":{
+          "shape":"IdentificationHints",
+          "documentation":"<p>Hints used to uniquely identify a machine.</p>"
+        },
+        "lastUpdatedDateTime":{
+          "shape":"ISO8601DatetimeString",
+          "documentation":"<p>The date and time the Source Properties were last updated on.</p>"
+        },
+        "networkInterfaces":{
+          "shape":"NetworkInterfaces",
+          "documentation":"<p>An array of network interfaces.</p>"
+        },
+        "os":{
+          "shape":"OS",
+          "documentation":"<p>Operating system.</p>"
+        },
+        "ramBytes":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>The amount of RAM in bytes.</p>"
+        },
+        "recommendedInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The recommended EC2 instance type that will be used when recovering the Source Server.</p>"
+        },
+        "supportsNitroInstances":{
+          "shape":"Boolean",
+          "documentation":"<p>Are EC2 nitro instance types supported when recovering the Source Server.</p>"
+        }
+      },
+      "documentation":"<p>Properties of the Source Server machine.</p>"
+    },
+    "SourceServer":{
+      "type":"structure",
+      "members":{
+        "agentVersion":{
+          "shape":"AgentVersion",
+          "documentation":"<p>The version of the DRS agent installed on the source server</p>"
+        },
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the Source Server.</p>"
+        },
+        "dataReplicationInfo":{
+          "shape":"DataReplicationInfo",
+          "documentation":"<p>The Data Replication Info of the Source Server.</p>"
+        },
+        "lastLaunchResult":{
+          "shape":"LastLaunchResult",
+          "documentation":"<p>The status of the last recovery launch of this Source Server.</p>"
+        },
+        "lifeCycle":{
+          "shape":"LifeCycle",
+          "documentation":"<p>The lifecycle information of this Source Server.</p>"
+        },
+        "recoveryInstanceId":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance associated with this Source Server.</p>"
+        },
+        "replicationDirection":{
+          "shape":"ReplicationDirection",
+          "documentation":"<p>Replication direction of the Source Server.</p>"
+        },
+        "reversedDirectionSourceServerArn":{
+          "shape":"SourceServerARN",
+          "documentation":"<p>For EC2-originated Source Servers which have been failed over and then failed back, this value will mean the ARN of the Source Server on the opposite replication direction.</p>"
+        },
+        "sourceCloudProperties":{
+          "shape":"SourceCloudProperties",
+          "documentation":"<p>Source cloud properties of the Source Server.</p>"
+        },
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>ID of the Source Network which is protecting this Source Server's network.</p>"
+        },
+        "sourceProperties":{
+          "shape":"SourceProperties",
+          "documentation":"<p>The source properties of the Source Server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server.</p>"
+        },
+        "stagingArea":{
+          "shape":"StagingArea",
+          "documentation":"<p>The staging area of the source server.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>The tags associated with the Source Server.</p>"
+        }
+      }
+    },
+    "SourceServerARN":{
+      "type":"string",
+      "max":2048,
+      "min":20,
+      "pattern":"^arn:(?:[0-9a-zA-Z_-]+:){3}([0-9]{12,}):source-server/(s-[0-9a-zA-Z]{17})$"
+    },
+    "SourceServerID":{
+      "type":"string",
+      "max":19,
+      "min":19,
+      "pattern":"^s-[0-9a-zA-Z]{17}$"
+    },
+    "SourceServerIDs":{
+      "type":"list",
+      "member":{"shape":"SourceServerID"}
+    },
+    "SourceServersList":{
+      "type":"list",
+      "member":{"shape":"SourceServer"}
+    },
+    "SsmDocumentName":{
+      "type":"string",
+      "max":1011,
+      "min":1,
+      "pattern":"^([A-Za-z0-9-/:])+$"
+    },
+    "StagingArea":{
+      "type":"structure",
+      "members":{
+        "errorMessage":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Shows an error message that occurred when DRS tried to access the staging source server. In this case StagingArea$status will have value EXTENSION_ERROR</p>"
+        },
+        "stagingAccountID":{
+          "shape":"AccountID",
+          "documentation":"<p>Account ID of the account to which source server belongs. If this source server is extended - shows Account ID of staging source server.</p>"
+        },
+        "stagingSourceServerArn":{
+          "shape":"ARN",
+          "documentation":"<p>Arn of the staging source server if this source server is extended</p>"
+        },
+        "status":{
+          "shape":"ExtensionStatus",
+          "documentation":"<p>Status of Source server extension. Possible values: (a) NOT_EXTENDED - This is a source server that is replicating in the current account. (b) EXTENDED - Source server is extended from a staging source server. In this case, the value of stagingSourceServerArn is pointing to the Arn of the source server in the staging account. (c) EXTENSION_ERROR - Some issue occurred when accessing staging source server. In this case, errorMessage field will contain an error message that explains what happened.</p>"
+        }
+      },
+      "documentation":"<p>Staging information related to source server.</p>"
+    },
+    "StagingSourceServer":{
+      "type":"structure",
+      "members":{
+        "arn":{
+          "shape":"SourceServerARN",
+          "documentation":"<p>The ARN of the source server.</p>"
+        },
+        "hostname":{
+          "shape":"BoundedString",
+          "documentation":"<p>Hostname of staging source server.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A list of tags associated with the staging source server.</p>"
+        }
+      },
+      "documentation":"<p>Source server in staging account that extended source server connected to.</p>"
+    },
+    "StagingSourceServersList":{
+      "type":"list",
+      "member":{"shape":"StagingSourceServer"}
+    },
+    "StartFailbackLaunchRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceIDs"],
+      "members":{
+        "recoveryInstanceIDs":{
+          "shape":"StartFailbackRequestRecoveryInstanceIDs",
+          "documentation":"<p>The IDs of the Recovery Instance whose failback launch we want to request.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>The tags to be associated with the failback launch Job.</p>"
+        }
+      }
+    },
+    "StartFailbackLaunchResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"Job",
+          "documentation":"<p>The failback launch Job.</p>"
+        }
+      }
+    },
+    "StartFailbackRequestRecoveryInstanceIDs":{
+      "type":"list",
+      "member":{"shape":"RecoveryInstanceID"},
+      "max":200,
+      "min":1
+    },
+    "StartRecoveryRequest":{
+      "type":"structure",
+      "required":["sourceServers"],
+      "members":{
+        "isDrill":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether this Source Server Recovery operation is a drill or not.</p>"
+        },
+        "sourceServers":{
+          "shape":"StartRecoveryRequestSourceServers",
+          "documentation":"<p>The Source Servers that we want to start a Recovery Job for.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>The tags to be associated with the Recovery Job.</p>"
+        }
+      }
+    },
+    "StartRecoveryRequestSourceServer":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "recoverySnapshotID":{
+          "shape":"RecoverySnapshotID",
+          "documentation":"<p>The ID of a Recovery Snapshot we want to recover from. Omit this field to launch from the latest data by taking an on-demand snapshot.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server you want to recover.</p>"
+        }
+      },
+      "documentation":"<p>An object representing the Source Server to recover.</p>"
+    },
+    "StartRecoveryRequestSourceServers":{
+      "type":"list",
+      "member":{"shape":"StartRecoveryRequestSourceServer"},
+      "max":200,
+      "min":1
+    },
+    "StartRecoveryResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"Job",
+          "documentation":"<p>The Recovery Job.</p>"
+        }
+      }
+    },
+    "StartReplicationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server to start replication for.</p>"
+        }
+      }
+    },
+    "StartReplicationResponse":{
+      "type":"structure",
+      "members":{
+        "sourceServer":{
+          "shape":"SourceServer",
+          "documentation":"<p>The Source Server that this action was targeted on.</p>"
+        }
+      }
+    },
+    "StartSourceNetworkRecoveryRequest":{
+      "type":"structure",
+      "required":["sourceNetworks"],
+      "members":{
+        "deployAsNew":{
+          "shape":"Boolean",
+          "documentation":"<p>Don't update existing CloudFormation Stack, recover the network using a new stack.</p>"
+        },
+        "sourceNetworks":{
+          "shape":"StartSourceNetworkRecoveryRequestNetworkEntries",
+          "documentation":"<p>The Source Networks that we want to start a Recovery Job for.</p>"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>The tags to be associated with the Source Network recovery Job.</p>"
+        }
+      }
+    },
+    "StartSourceNetworkRecoveryRequestNetworkEntries":{
+      "type":"list",
+      "member":{"shape":"StartSourceNetworkRecoveryRequestNetworkEntry"},
+      "max":100,
+      "min":1
+    },
+    "StartSourceNetworkRecoveryRequestNetworkEntry":{
+      "type":"structure",
+      "required":["sourceNetworkID"],
+      "members":{
+        "cfnStackName":{
+          "shape":"CfnStackName",
+          "documentation":"<p>CloudFormation stack name to be used for recovering the network.</p>"
+        },
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>The ID of the Source Network you want to recover.</p>"
+        }
+      },
+      "documentation":"<p>An object representing the Source Network to recover.</p>"
+    },
+    "StartSourceNetworkRecoveryResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"Job",
+          "documentation":"<p>The Source Network recovery Job.</p>"
+        }
+      }
+    },
+    "StartSourceNetworkReplicationRequest":{
+      "type":"structure",
+      "required":["sourceNetworkID"],
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>ID of the Source Network to replicate.</p>"
+        }
+      }
+    },
+    "StartSourceNetworkReplicationResponse":{
+      "type":"structure",
+      "members":{
+        "sourceNetwork":{
+          "shape":"SourceNetwork",
+          "documentation":"<p>Source Network which was requested for replication.</p>"
+        }
+      }
+    },
+    "StopFailbackRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance we want to stop failback for.</p>"
+        }
+      }
+    },
+    "StopReplicationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server to stop replication for.</p>"
+        }
+      }
+    },
+    "StopReplicationResponse":{
+      "type":"structure",
+      "members":{
+        "sourceServer":{
+          "shape":"SourceServer",
+          "documentation":"<p>The Source Server that this action was targeted on.</p>"
+        }
+      }
+    },
+    "StopSourceNetworkReplicationRequest":{
+      "type":"structure",
+      "required":["sourceNetworkID"],
+      "members":{
+        "sourceNetworkID":{
+          "shape":"SourceNetworkID",
+          "documentation":"<p>ID of the Source Network to stop replication.</p>"
+        }
+      }
+    },
+    "StopSourceNetworkReplicationResponse":{
+      "type":"structure",
+      "members":{
+        "sourceNetwork":{
+          "shape":"SourceNetwork",
+          "documentation":"<p>Source Network which was requested to stop replication.</p>"
+        }
+      }
+    },
+    "StrictlyPositiveInteger":{
+      "type":"integer",
+      "box":true,
+      "min":1
+    },
+    "SubnetID":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^subnet-[0-9a-fA-F]{8,}$"
+    },
+    "SyntheticTimestamp_date_time":{
+      "type":"timestamp",
+      "timestampFormat":"iso8601"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "sensitive":true
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the resource for which tags are to be added or updated.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagsMap",
+          "documentation":"<p>Array of tags to be added or updated.</p>"
+        }
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TagsMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "sensitive":true
+    },
+    "TargetInstanceTypeRightSizingMethod":{
+      "type":"string",
+      "enum":[
+        "NONE",
+        "BASIC",
+        "IN_AWS"
+      ]
+    },
+    "TerminateRecoveryInstancesRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceIDs"],
+      "members":{
+        "recoveryInstanceIDs":{
+          "shape":"RecoveryInstancesForTerminationRequest",
+          "documentation":"<p>The IDs of the Recovery Instances that should be terminated.</p>"
+        }
+      }
+    },
+    "TerminateRecoveryInstancesResponse":{
+      "type":"structure",
+      "members":{
+        "job":{
+          "shape":"Job",
+          "documentation":"<p>The Job for terminating the Recovery Instances.</p>"
+        }
+      }
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"LargeBoundedString"},
+        "quotaCode":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Quota code.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>The number of seconds after which the request should be safe to retry.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        },
+        "serviceCode":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Service code.</p>"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UninitializedAccountException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "message":{"shape":"LargeBoundedString"}
+      },
+      "documentation":"<p>The account performing the request has not been initialized.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"ARN",
+          "documentation":"<p>ARN of the resource for which tags are to be removed.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>Array of tags to be removed.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UpdateFailbackReplicationConfigurationRequest":{
+      "type":"structure",
+      "required":["recoveryInstanceID"],
+      "members":{
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Recovery Instance in Mbps.</p>"
+        },
+        "name":{
+          "shape":"BoundedString",
+          "documentation":"<p>The name of the Failback Replication Configuration.</p>"
+        },
+        "recoveryInstanceID":{
+          "shape":"RecoveryInstanceID",
+          "documentation":"<p>The ID of the Recovery Instance.</p>"
+        },
+        "usePrivateIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use Private IP for the failback replication of the Recovery Instance.</p>"
+        }
+      }
+    },
+    "UpdateLaunchConfigurationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "copyPrivateIp":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we should copy the Private IP of the Source Server to the Recovery Instance.</p>"
+        },
+        "copyTags":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to copy the tags of the Source Server to the EC2 machine of the Recovery Instance.</p>"
+        },
+        "launchDisposition":{
+          "shape":"LaunchDisposition",
+          "documentation":"<p>The state of the Recovery Instance in EC2 after the recovery operation.</p>"
+        },
+        "launchIntoInstanceProperties":{
+          "shape":"LaunchIntoInstanceProperties",
+          "documentation":"<p>Launch into existing instance properties.</p>"
+        },
+        "licensing":{
+          "shape":"Licensing",
+          "documentation":"<p>The licensing configuration to be used for this launch configuration.</p>"
+        },
+        "name":{
+          "shape":"SmallBoundedString",
+          "documentation":"<p>The name of the launch configuration.</p>"
+        },
+        "postLaunchEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to enable post-launch actions for the Source Server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server that we want to retrieve a Launch Configuration for.</p>"
+        },
+        "targetInstanceTypeRightSizingMethod":{
+          "shape":"TargetInstanceTypeRightSizingMethod",
+          "documentation":"<p>Whether Elastic Disaster Recovery should try to automatically choose the instance type that best matches the OS, CPU, and RAM of your Source Server.</p>"
+        }
+      }
+    },
+    "UpdateLaunchConfigurationTemplateRequest":{
+      "type":"structure",
+      "required":["launchConfigurationTemplateID"],
+      "members":{
+        "copyPrivateIp":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy private IP.</p>"
+        },
+        "copyTags":{
+          "shape":"Boolean",
+          "documentation":"<p>Copy tags.</p>"
+        },
+        "exportBucketArn":{
+          "shape":"ARN",
+          "documentation":"<p>S3 bucket ARN to export Source Network templates.</p>"
+        },
+        "launchConfigurationTemplateID":{
+          "shape":"LaunchConfigurationTemplateID",
+          "documentation":"<p>Launch Configuration Template ID.</p>"
+        },
+        "launchDisposition":{
+          "shape":"LaunchDisposition",
+          "documentation":"<p>Launch disposition.</p>"
+        },
+        "launchIntoSourceInstance":{
+          "shape":"Boolean",
+          "documentation":"<p>DRS will set the 'launch into instance ID' of any source server when performing a drill, recovery or failback to the previous region or availability zone, using the instance ID of the source instance.</p>"
+        },
+        "licensing":{
+          "shape":"Licensing",
+          "documentation":"<p>Licensing.</p>"
+        },
+        "postLaunchEnabled":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether we want to activate post-launch actions.</p>"
+        },
+        "targetInstanceTypeRightSizingMethod":{
+          "shape":"TargetInstanceTypeRightSizingMethod",
+          "documentation":"<p>Target instance type right-sizing method.</p>"
+        }
+      }
+    },
+    "UpdateLaunchConfigurationTemplateResponse":{
+      "type":"structure",
+      "members":{
+        "launchConfigurationTemplate":{
+          "shape":"LaunchConfigurationTemplate",
+          "documentation":"<p>Updated Launch Configuration Template.</p>"
+        }
+      }
+    },
+    "UpdateReplicationConfigurationRequest":{
+      "type":"structure",
+      "required":["sourceServerID"],
+      "members":{
+        "associateDefaultSecurityGroup":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration.</p>"
+        },
+        "autoReplicateNewDisks":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to allow the AWS replication agent to automatically replicate newly added disks.</p>"
+        },
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.</p>"
+        },
+        "createPublicIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to create a Public IP for the Recovery Instance by default.</p>"
+        },
+        "dataPlaneRouting":{
+          "shape":"ReplicationConfigurationDataPlaneRouting",
+          "documentation":"<p>The data plane routing mechanism that will be used for replication.</p>"
+        },
+        "defaultLargeStagingDiskType":{
+          "shape":"ReplicationConfigurationDefaultLargeStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "ebsEncryption":{
+          "shape":"ReplicationConfigurationEbsEncryption",
+          "documentation":"<p>The type of EBS encryption to be used during replication.</p>"
+        },
+        "ebsEncryptionKeyArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the EBS encryption key to be used during replication.</p>"
+        },
+        "name":{
+          "shape":"SmallBoundedString",
+          "documentation":"<p>The name of the Replication Configuration.</p>"
+        },
+        "pitPolicy":{
+          "shape":"PITPolicy",
+          "documentation":"<p>The Point in time (PIT) policy to manage snapshots taken during replication.</p>"
+        },
+        "replicatedDisks":{
+          "shape":"ReplicationConfigurationReplicatedDisks",
+          "documentation":"<p>The configuration of the disks of the Source Server to be replicated.</p>"
+        },
+        "replicationServerInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The instance type to be used for the replication server.</p>"
+        },
+        "replicationServersSecurityGroupsIDs":{
+          "shape":"ReplicationServersSecurityGroupsIDs",
+          "documentation":"<p>The security group IDs that will be used by the replication server.</p>"
+        },
+        "sourceServerID":{
+          "shape":"SourceServerID",
+          "documentation":"<p>The ID of the Source Server for this Replication Configuration.</p>"
+        },
+        "stagingAreaSubnetId":{
+          "shape":"SubnetID",
+          "documentation":"<p>The subnet to be used by the replication staging area.</p>"
+        },
+        "stagingAreaTags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.</p>"
+        },
+        "useDedicatedReplicationServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use a dedicated Replication Server in the replication staging area.</p>"
+        }
+      }
+    },
+    "UpdateReplicationConfigurationTemplateRequest":{
+      "type":"structure",
+      "required":["replicationConfigurationTemplateID"],
+      "members":{
+        "arn":{
+          "shape":"ARN",
+          "documentation":"<p>The Replication Configuration Template ARN.</p>"
+        },
+        "associateDefaultSecurityGroup":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to associate the default Elastic Disaster Recovery Security group with the Replication Configuration Template.</p>"
+        },
+        "autoReplicateNewDisks":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to allow the AWS replication agent to automatically replicate newly added disks.</p>"
+        },
+        "bandwidthThrottling":{
+          "shape":"PositiveInteger",
+          "documentation":"<p>Configure bandwidth throttling for the outbound data transfer rate of the Source Server in Mbps.</p>"
+        },
+        "createPublicIP":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to create a Public IP for the Recovery Instance by default.</p>"
+        },
+        "dataPlaneRouting":{
+          "shape":"ReplicationConfigurationDataPlaneRouting",
+          "documentation":"<p>The data plane routing mechanism that will be used for replication.</p>"
+        },
+        "defaultLargeStagingDiskType":{
+          "shape":"ReplicationConfigurationDefaultLargeStagingDiskType",
+          "documentation":"<p>The Staging Disk EBS volume type to be used during replication.</p>"
+        },
+        "ebsEncryption":{
+          "shape":"ReplicationConfigurationEbsEncryption",
+          "documentation":"<p>The type of EBS encryption to be used during replication.</p>"
+        },
+        "ebsEncryptionKeyArn":{
+          "shape":"ARN",
+          "documentation":"<p>The ARN of the EBS encryption key to be used during replication.</p>"
+        },
+        "pitPolicy":{
+          "shape":"PITPolicy",
+          "documentation":"<p>The Point in time (PIT) policy to manage snapshots taken during replication.</p>"
+        },
+        "replicationConfigurationTemplateID":{
+          "shape":"ReplicationConfigurationTemplateID",
+          "documentation":"<p>The Replication Configuration Template ID.</p>"
+        },
+        "replicationServerInstanceType":{
+          "shape":"EC2InstanceType",
+          "documentation":"<p>The instance type to be used for the replication server.</p>"
+        },
+        "replicationServersSecurityGroupsIDs":{
+          "shape":"ReplicationServersSecurityGroupsIDs",
+          "documentation":"<p>The security group IDs that will be used by the replication server.</p>"
+        },
+        "stagingAreaSubnetId":{
+          "shape":"SubnetID",
+          "documentation":"<p>The subnet to be used by the replication staging area.</p>"
+        },
+        "stagingAreaTags":{
+          "shape":"TagsMap",
+          "documentation":"<p>A set of tags to be associated with all resources created in the replication staging area: EC2 replication server, EBS volumes, EBS snapshots, etc.</p>"
+        },
+        "useDedicatedReplicationServer":{
+          "shape":"Boolean",
+          "documentation":"<p>Whether to use a dedicated Replication Server in the replication staging area.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "code":{"shape":"LargeBoundedString"},
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>A list of fields that failed validation.</p>"
+        },
+        "message":{"shape":"LargeBoundedString"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>Validation exception reason.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by the AWS service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Validate exception field message.</p>"
+        },
+        "name":{
+          "shape":"LargeBoundedString",
+          "documentation":"<p>Validate exception field name.</p>"
+        }
+      },
+      "documentation":"<p>Validate exception field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "VolumeStatus":{
+      "type":"string",
+      "enum":[
+        "REGULAR",
+        "CONTAINS_MARKETPLACE_PRODUCT_CODES",
+        "MISSING_VOLUME_ATTRIBUTES",
+        "MISSING_VOLUME_ATTRIBUTES_AND_PRECHECK_UNAVAILABLE",
+        "PENDING"
+      ]
+    },
+    "VolumeToConversionMap":{
+      "type":"map",
+      "key":{"shape":"LargeBoundedString"},
+      "value":{"shape":"ConversionMap"}
+    },
+    "VolumeToProductCodes":{
+      "type":"map",
+      "key":{"shape":"LargeBoundedString"},
+      "value":{"shape":"ProductCodes"}
+    },
+    "VolumeToSizeMap":{
+      "type":"map",
+      "key":{"shape":"LargeBoundedString"},
+      "value":{"shape":"PositiveInteger"}
+    },
+    "VpcID":{
+      "type":"string",
+      "max":21,
+      "min":12,
+      "pattern":"^vpc-[0-9a-fA-F]{8,}$"
+    }
+  },
+  "documentation":"<p>AWS Elastic Disaster Recovery Service.</p>"
+}

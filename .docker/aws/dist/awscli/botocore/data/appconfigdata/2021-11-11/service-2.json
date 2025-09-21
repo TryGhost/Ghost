@@ -1,0 +1,270 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-11-11",
+    "endpointPrefix":"appconfigdata",
+    "jsonVersion":"1.0",
+    "protocol":"rest-json",
+    "serviceFullName":"AWS AppConfig Data",
+    "serviceId":"AppConfigData",
+    "signatureVersion":"v4",
+    "signingName":"appconfig",
+    "uid":"appconfigdata-2021-11-11"
+  },
+  "operations":{
+    "GetLatestConfiguration":{
+      "name":"GetLatestConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/configuration",
+        "responseCode":200
+      },
+      "input":{"shape":"GetLatestConfigurationRequest"},
+      "output":{"shape":"GetLatestConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Retrieves the latest deployed configuration. This API may return empty configuration data if the client already has the latest version. For more information about this API action and to view example CLI commands that show how to use it with the <a>StartConfigurationSession</a> API action, see <a href=\"http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration\">Retrieving the configuration</a> in the <i>AppConfig User Guide</i>. </p> <important> <p>Note the following important information.</p> <ul> <li> <p>Each configuration token is only valid for one call to <code>GetLatestConfiguration</code>. The <code>GetLatestConfiguration</code> response includes a <code>NextPollConfigurationToken</code> that should always replace the token used for the just-completed call in preparation for the next one. </p> </li> <li> <p> <code>GetLatestConfiguration</code> is a priced call. For more information, see <a href=\"https://aws.amazon.com/systems-manager/pricing/\">Pricing</a>.</p> </li> </ul> </important>"
+    },
+    "StartConfigurationSession":{
+      "name":"StartConfigurationSession",
+      "http":{
+        "method":"POST",
+        "requestUri":"/configurationsessions",
+        "responseCode":201
+      },
+      "input":{"shape":"StartConfigurationSessionRequest"},
+      "output":{"shape":"StartConfigurationSessionResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a configuration session used to retrieve a deployed configuration. For more information about this API action and to view example CLI commands that show how to use it with the <a>GetLatestConfiguration</a> API action, see <a href=\"http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration\">Retrieving the configuration</a> in the <i>AppConfig User Guide</i>. </p>"
+    }
+  },
+  "shapes":{
+    "BadRequestDetails":{
+      "type":"structure",
+      "members":{
+        "InvalidParameters":{
+          "shape":"InvalidParameterMap",
+          "documentation":"<p>One or more specified parameters are not valid for the call.</p>"
+        }
+      },
+      "documentation":"<p>Detailed information about the input that failed to satisfy the constraints specified by a call.</p>",
+      "union":true
+    },
+    "BadRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "Reason":{
+          "shape":"BadRequestReason",
+          "documentation":"<p>Code indicating the reason the request was invalid.</p>"
+        },
+        "Details":{
+          "shape":"BadRequestDetails",
+          "documentation":"<p>Details describing why the request was invalid.</p>"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by the service.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "BadRequestReason":{
+      "type":"string",
+      "enum":["InvalidParameters"]
+    },
+    "GetLatestConfigurationRequest":{
+      "type":"structure",
+      "required":["ConfigurationToken"],
+      "members":{
+        "ConfigurationToken":{
+          "shape":"Token",
+          "documentation":"<p>Token describing the current state of the configuration session. To obtain a token, first call the <a>StartConfigurationSession</a> API. Note that every call to <code>GetLatestConfiguration</code> will return a new <code>ConfigurationToken</code> (<code>NextPollConfigurationToken</code> in the response) and <i>must</i> be provided to subsequent <code>GetLatestConfiguration</code> API calls.</p> <important> <p>This token should only be used once. To support long poll use cases, the token is valid for up to 24 hours. If a <code>GetLatestConfiguration</code> call uses an expired token, the system returns <code>BadRequestException</code>.</p> </important>",
+          "location":"querystring",
+          "locationName":"configuration_token"
+        }
+      }
+    },
+    "GetLatestConfigurationResponse":{
+      "type":"structure",
+      "members":{
+        "NextPollConfigurationToken":{
+          "shape":"Token",
+          "documentation":"<p>The latest token describing the current state of the configuration session. This <i>must</i> be provided to the next call to <code>GetLatestConfiguration.</code> </p> <important> <p>This token should only be used once. To support long poll use cases, the token is valid for up to 24 hours. If a <code>GetLatestConfiguration</code> call uses an expired token, the system returns <code>BadRequestException</code>.</p> </important>",
+          "location":"header",
+          "locationName":"Next-Poll-Configuration-Token"
+        },
+        "NextPollIntervalInSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The amount of time the client should wait before polling for configuration updates again. Use <code>RequiredMinimumPollIntervalInSeconds</code> to set the desired poll interval.</p>",
+          "location":"header",
+          "locationName":"Next-Poll-Interval-In-Seconds"
+        },
+        "ContentType":{
+          "shape":"String",
+          "documentation":"<p>A standard MIME type describing the format of the configuration content.</p>",
+          "location":"header",
+          "locationName":"Content-Type"
+        },
+        "Configuration":{
+          "shape":"SensitiveBlob",
+          "documentation":"<p>The data of the configuration. This may be empty if the client already has the latest version of configuration.</p>"
+        },
+        "VersionLabel":{
+          "shape":"String",
+          "documentation":"<p>The user-defined label for the AppConfig hosted configuration version. This attribute doesn't apply if the configuration is not from an AppConfig hosted configuration version. If the client already has the latest version of the configuration data, this value is empty.</p>",
+          "location":"header",
+          "locationName":"Version-Label"
+        }
+      },
+      "payload":"Configuration"
+    },
+    "Identifier":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "Integer":{"type":"integer"},
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>There was an internal failure in the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidParameterDetail":{
+      "type":"structure",
+      "members":{
+        "Problem":{
+          "shape":"InvalidParameterProblem",
+          "documentation":"<p>The reason the parameter is invalid.</p>"
+        }
+      },
+      "documentation":"<p>Information about an invalid parameter.</p>"
+    },
+    "InvalidParameterMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"InvalidParameterDetail"}
+    },
+    "InvalidParameterProblem":{
+      "type":"string",
+      "enum":[
+        "Corrupted",
+        "Expired",
+        "PollIntervalNotSatisfied"
+      ]
+    },
+    "OptionalPollSeconds":{
+      "type":"integer",
+      "box":true,
+      "max":86400,
+      "min":15
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceType":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of resource that was not found.</p>"
+        },
+        "ReferencedBy":{
+          "shape":"StringMap",
+          "documentation":"<p>A map indicating which parameters in the request reference the resource that was not found.</p>"
+        }
+      },
+      "documentation":"<p>The requested resource could not be found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"string",
+      "enum":[
+        "Application",
+        "ConfigurationProfile",
+        "Deployment",
+        "Environment",
+        "Configuration"
+      ]
+    },
+    "SensitiveBlob":{
+      "type":"blob",
+      "sensitive":true
+    },
+    "StartConfigurationSessionRequest":{
+      "type":"structure",
+      "required":[
+        "ApplicationIdentifier",
+        "EnvironmentIdentifier",
+        "ConfigurationProfileIdentifier"
+      ],
+      "members":{
+        "ApplicationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The application ID or the application name.</p>"
+        },
+        "EnvironmentIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The environment ID or the environment name.</p>"
+        },
+        "ConfigurationProfileIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>The configuration profile ID or the configuration profile name.</p>"
+        },
+        "RequiredMinimumPollIntervalInSeconds":{
+          "shape":"OptionalPollSeconds",
+          "documentation":"<p>Sets a constraint on a session. If you specify a value of, for example, 60 seconds, then the client that established the session can't call <a>GetLatestConfiguration</a> more frequently than every 60 seconds.</p>"
+        }
+      }
+    },
+    "StartConfigurationSessionResponse":{
+      "type":"structure",
+      "members":{
+        "InitialConfigurationToken":{
+          "shape":"Token",
+          "documentation":"<p>Token encapsulating state about the configuration session. Provide this token to the <code>GetLatestConfiguration</code> API to retrieve configuration data.</p> <important> <p>This token should only be used once in your first call to <code>GetLatestConfiguration</code>. You <i>must</i> use the new token in the <code>GetLatestConfiguration</code> response (<code>NextPollConfigurationToken</code>) in each subsequent call to <code>GetLatestConfiguration</code>.</p> <p>The <code>InitialConfigurationToken</code> and <code>NextPollConfigurationToken</code> should only be used once. To support long poll use cases, the tokens are valid for up to 24 hours. If a <code>GetLatestConfiguration</code> call uses an expired token, the system returns <code>BadRequestException</code>.</p> </important>"
+        }
+      }
+    },
+    "String":{"type":"string"},
+    "StringMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Token":{
+      "type":"string",
+      "pattern":"\\S{1,8192}"
+    }
+  },
+  "documentation":"<p>AppConfig Data provides the data plane APIs your application uses to retrieve configuration data. Here's how it works:</p> <p>Your application retrieves configuration data by first establishing a configuration session using the AppConfig Data <a>StartConfigurationSession</a> API action. Your session's client then makes periodic calls to <a>GetLatestConfiguration</a> to check for and retrieve the latest data available.</p> <p>When calling <code>StartConfigurationSession</code>, your code sends the following information:</p> <ul> <li> <p>Identifiers (ID or name) of an AppConfig application, environment, and configuration profile that the session tracks.</p> </li> <li> <p>(Optional) The minimum amount of time the session's client must wait between calls to <code>GetLatestConfiguration</code>.</p> </li> </ul> <p>In response, AppConfig provides an <code>InitialConfigurationToken</code> to be given to the session's client and used the first time it calls <code>GetLatestConfiguration</code> for that session.</p> <important> <p>This token should only be used once in your first call to <code>GetLatestConfiguration</code>. You <i>must</i> use the new token in the <code>GetLatestConfiguration</code> response (<code>NextPollConfigurationToken</code>) in each subsequent call to <code>GetLatestConfiguration</code>.</p> </important> <p>When calling <code>GetLatestConfiguration</code>, your client code sends the most recent <code>ConfigurationToken</code> value it has and receives in response:</p> <ul> <li> <p> <code>NextPollConfigurationToken</code>: the <code>ConfigurationToken</code> value to use on the next call to <code>GetLatestConfiguration</code>.</p> </li> <li> <p> <code>NextPollIntervalInSeconds</code>: the duration the client should wait before making its next call to <code>GetLatestConfiguration</code>. This duration may vary over the course of the session, so it should be used instead of the value sent on the <code>StartConfigurationSession</code> call.</p> </li> <li> <p>The configuration: the latest data intended for the session. This may be empty if the client already has the latest version of the configuration.</p> </li> </ul> <important> <p>The <code>InitialConfigurationToken</code> and <code>NextPollConfigurationToken</code> should only be used once. To support long poll use cases, the tokens are valid for up to 24 hours. If a <code>GetLatestConfiguration</code> call uses an expired token, the system returns <code>BadRequestException</code>.</p> </important> <p>For more information and to view example CLI commands that show how to retrieve a configuration using the AppConfig Data <code>StartConfigurationSession</code> and <code>GetLatestConfiguration</code> API actions, see <a href=\"http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration\">Retrieving the configuration</a> in the <i>AppConfig User Guide</i>.</p>"
+}

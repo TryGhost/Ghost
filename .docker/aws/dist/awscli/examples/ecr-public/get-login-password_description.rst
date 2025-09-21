@@ -1,0 +1,3 @@
+**To log in to an Amazon ECR public registry**
+
+Retrieves and displays an authentication token using the GetAuthorizationToken API that you can use to authenticate to an Amazon ECR public registry. You can pass the authorization token to the login command of the container client of your preference, such as the Docker CLI. After you have authenticated to an Amazon ECR public registry with this command, you can use the client to push and pull images from that registry as long as your IAM principal has access to do so until the token expires. The authorization token is valid for 12 hours. This command requires the 'ecr-public:GetAuthorizationToken' and 'sts:GetServiceBearerToken' permissions.

@@ -1,0 +1,755 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2024-09-09",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"cassandra-streams",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceFullName":"Amazon Keyspaces Streams",
+    "serviceId":"KeyspacesStreams",
+    "signatureVersion":"v4",
+    "signingName":"cassandra",
+    "targetPrefix":"KeyspacesStreams",
+    "uid":"keyspacesstreams-2024-09-09"
+  },
+  "operations":{
+    "GetRecords":{
+      "name":"GetRecords",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRecordsInput"},
+      "output":{"shape":"GetRecordsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Retrieves data records from a specified shard in an Amazon Keyspaces data stream. This operation returns a collection of data records from the shard, including the primary key columns and information about modifications made to the captured table data. Each record represents a single data modification in the Amazon Keyspaces table and includes metadata about when the change occurred.</p>"
+    },
+    "GetShardIterator":{
+      "name":"GetShardIterator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetShardIteratorInput"},
+      "output":{"shape":"GetShardIteratorOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a shard iterator that serves as a bookmark for reading data from a specific position in an Amazon Keyspaces data stream's shard. The shard iterator specifies the shard position from which to start reading data records sequentially. You can specify whether to begin reading at the latest record, the oldest record, or at a particular sequence number within the shard.</p>"
+    },
+    "GetStream":{
+      "name":"GetStream",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetStreamInput"},
+      "output":{"shape":"GetStreamOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns detailed information about a specific data capture stream for an Amazon Keyspaces table. The information includes the stream's Amazon Resource Name (ARN), creation time, current status, retention period, shard composition, and associated table details. This operation helps you monitor and manage the configuration of your Amazon Keyspaces data streams.</p>"
+    },
+    "ListStreams":{
+      "name":"ListStreams",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListStreamsInput"},
+      "output":{"shape":"ListStreamsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns a list of all data capture streams associated with your Amazon Keyspaces account or for a specific keyspace or table. The response includes information such as stream ARNs, table associations, creation timestamps, and current status. This operation helps you discover and manage all active data streams in your Amazon Keyspaces environment.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>You don't have sufficient permissions to perform this action.</p>"
+        }
+      },
+      "documentation":"<p>You don't have sufficient access permissions to perform this operation. </p> <p>This exception occurs when your IAM user or role lacks the required permissions to access the Amazon Keyspaces resource or perform the requested action. Check your IAM policies and ensure they grant the necessary permissions.</p>",
+      "exception":true
+    },
+    "Blob":{"type":"blob"},
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "Date":{"type":"timestamp"},
+    "GetRecordsInput":{
+      "type":"structure",
+      "required":["shardIterator"],
+      "members":{
+        "shardIterator":{
+          "shape":"ShardIterator",
+          "documentation":"<p> The unique identifier of the shard iterator. A shard iterator specifies the position in the shard from which you want to start reading data records sequentially. You obtain this value by calling the <code>GetShardIterator</code> operation. Each shard iterator is valid for 15 minutes after creation. </p>"
+        },
+        "maxResults":{
+          "shape":"GetRecordsInputMaxResultsInteger",
+          "documentation":"<p> The maximum number of records to return in a single <code>GetRecords</code> request. Default value is 1000. You can specify a limit between 1 and 1000, but the actual number returned might be less than the specified maximum if the size of the data for the returned records exceeds the internal size limit. </p>"
+        }
+      }
+    },
+    "GetRecordsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "GetRecordsOutput":{
+      "type":"structure",
+      "members":{
+        "changeRecords":{
+          "shape":"RecordList",
+          "documentation":"<p> An array of change data records retrieved from the specified shard. Each record represents a single data modification (insert, update, or delete) to a row in the Amazon Keyspaces table. Records include the primary key columns and information about what data was modified. </p>"
+        },
+        "nextShardIterator":{
+          "shape":"ShardIterator",
+          "documentation":"<p> The next position in the shard from which to start sequentially reading data records. If null, the shard has been closed and the requested iterator doesn't return any more data. </p>"
+        }
+      }
+    },
+    "GetShardIteratorInput":{
+      "type":"structure",
+      "required":[
+        "streamArn",
+        "shardId",
+        "shardIteratorType"
+      ],
+      "members":{
+        "streamArn":{
+          "shape":"StreamArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the stream for which to get the shard iterator. The ARN uniquely identifies the stream within Amazon Keyspaces. </p>"
+        },
+        "shardId":{
+          "shape":"ShardId",
+          "documentation":"<p> The identifier of the shard within the stream. The shard ID uniquely identifies a subset of the stream's data records that you want to access. </p>"
+        },
+        "shardIteratorType":{
+          "shape":"ShardIteratorType",
+          "documentation":"<p> Determines how the shard iterator is positioned. Must be one of the following:</p> <ul> <li> <p> <code>TRIM_HORIZON</code> - Start reading at the last untrimmed record in the shard, which is the oldest data record in the shard.</p> </li> <li> <p> <code>AT_SEQUENCE_NUMBER</code> - Start reading exactly from the specified sequence number.</p> </li> <li> <p> <code>AFTER_SEQUENCE_NUMBER</code> - Start reading right after the specified sequence number.</p> </li> <li> <p> <code>LATEST</code> - Start reading just after the most recent record in the shard, so that you always read the most recent data.</p> </li> </ul>"
+        },
+        "sequenceNumber":{
+          "shape":"SequenceNumber",
+          "documentation":"<p> The sequence number of the data record in the shard from which to start reading. Required if <code>ShardIteratorType</code> is <code>AT_SEQUENCE_NUMBER</code> or <code>AFTER_SEQUENCE_NUMBER</code>. This parameter is ignored for other iterator types. </p>"
+        }
+      }
+    },
+    "GetShardIteratorOutput":{
+      "type":"structure",
+      "members":{
+        "shardIterator":{
+          "shape":"ShardIterator",
+          "documentation":"<p> The unique identifier for the shard iterator. This value is used in the <code>GetRecords</code> operation to retrieve data records from the specified shard. Each shard iterator expires 15 minutes after it is returned to the requester. </p>"
+        }
+      }
+    },
+    "GetStreamInput":{
+      "type":"structure",
+      "required":["streamArn"],
+      "members":{
+        "streamArn":{
+          "shape":"StreamArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) of the stream for which detailed information is requested. This uniquely identifies the specific stream you want to get information about. </p>"
+        },
+        "maxResults":{
+          "shape":"GetStreamInputMaxResultsInteger",
+          "documentation":"<p> The maximum number of shard objects to return in a single <code>GetStream</code> request. Default value is 100. The minimum value is 1 and the maximum value is 100. </p>"
+        },
+        "shardFilter":{
+          "shape":"ShardFilter",
+          "documentation":"<p> Optional filter criteria to apply when retrieving shards. You can filter shards based on their state or other attributes to narrow down the results returned by the <code>GetStream</code> operation. </p>"
+        },
+        "nextToken":{
+          "shape":"ShardIdToken",
+          "documentation":"<p> An optional pagination token provided by a previous <code>GetStream</code> operation. If this parameter is specified, the response includes only records beyond the token, up to the value specified by <code>maxResults</code>. </p>"
+        }
+      }
+    },
+    "GetStreamInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "GetStreamOutput":{
+      "type":"structure",
+      "required":[
+        "streamArn",
+        "streamLabel",
+        "streamStatus",
+        "streamViewType",
+        "creationRequestDateTime",
+        "keyspaceName",
+        "tableName"
+      ],
+      "members":{
+        "streamArn":{
+          "shape":"StreamArn",
+          "documentation":"<p> The Amazon Resource Name (ARN) that uniquely identifies the stream within Amazon Keyspaces. This ARN can be used in other API operations to reference this specific stream. </p>"
+        },
+        "streamLabel":{
+          "shape":"String",
+          "documentation":"<p> A timestamp that serves as a unique identifier for this stream, used for debugging and monitoring purposes. The stream label represents the point in time when the stream was created. </p>"
+        },
+        "streamStatus":{
+          "shape":"StreamStatus",
+          "documentation":"<p> The current status of the stream. Values can be <code>ENABLING</code>, <code>ENABLED</code>, <code>DISABLING</code>, or <code>DISABLED</code>. Operations on the stream depend on its current status. </p>"
+        },
+        "streamViewType":{
+          "shape":"StreamViewType",
+          "documentation":"<p> The format of the data records in this stream. Currently, this can be one of the following options:</p> <ul> <li> <p> <code>NEW_AND_OLD_IMAGES</code> - both versions of the row, before and after the change. This is the default.</p> </li> <li> <p> <code>NEW_IMAGE</code> - the version of the row after the change.</p> </li> <li> <p> <code>OLD_IMAGE</code> - the version of the row before the change.</p> </li> <li> <p> <code>KEYS_ONLY</code> - the partition and clustering keys of the row that was changed.</p> </li> </ul>"
+        },
+        "creationRequestDateTime":{
+          "shape":"Date",
+          "documentation":"<p> The date and time when the request to create this stream was issued. The value is represented in ISO 8601 format. </p>"
+        },
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace containing the table associated with this stream. The keyspace name is part of the table's hierarchical identifier in Amazon Keyspaces. </p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p> The name of the table associated with this stream. The stream captures changes to rows in this Amazon Keyspaces table. </p>"
+        },
+        "shards":{
+          "shape":"ShardDescriptionList",
+          "documentation":"<p> An array of shard objects associated with this stream. Each shard contains a subset of the stream's data records and has its own unique identifier. The collection of shards represents the complete stream data. </p>"
+        },
+        "nextToken":{
+          "shape":"ShardIdToken",
+          "documentation":"<p> A pagination token that can be used in a subsequent <code>GetStream</code> request. This token is returned if the response contains more shards than can be returned in a single response. </p>"
+        }
+      }
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The service encountered an internal error. Try your request again.</p>"
+        }
+      },
+      "documentation":"<p>The Amazon Keyspaces service encountered an unexpected error while processing the request. </p> <p>This internal server error is not related to your request parameters. Retry your request after a brief delay. If the issue persists, contact Amazon Web Services Support with details of your request to help identify and resolve the problem.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "KeyspaceName":{
+      "type":"string",
+      "max":48,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_]{0,47}"
+    },
+    "KeyspacesCell":{
+      "type":"structure",
+      "members":{
+        "value":{
+          "shape":"KeyspacesCellValue",
+          "documentation":"<p>The value stored in this cell, which can be of various data types supported by Amazon Keyspaces.</p>"
+        },
+        "metadata":{
+          "shape":"KeyspacesMetadata",
+          "documentation":"<p>Metadata associated with this cell, such as time-to-live (TTL) expiration time and write timestamp.</p>"
+        }
+      },
+      "documentation":"<p>Represents a cell in an Amazon Keyspaces table, containing both the value and metadata about the cell.</p>"
+    },
+    "KeyspacesCellList":{
+      "type":"list",
+      "member":{"shape":"KeyspacesCell"}
+    },
+    "KeyspacesCellMap":{
+      "type":"list",
+      "member":{"shape":"KeyspacesCellMapDefinition"}
+    },
+    "KeyspacesCellMapDefinition":{
+      "type":"structure",
+      "members":{
+        "key":{
+          "shape":"KeyspacesCellValue",
+          "documentation":"<p>The key of this map entry in the Amazon Keyspaces cell.</p>"
+        },
+        "value":{
+          "shape":"KeyspacesCellValue",
+          "documentation":"<p>The value associated with the key in this map entry.</p>"
+        },
+        "metadata":{
+          "shape":"KeyspacesMetadata",
+          "documentation":"<p>Metadata for this specific key-value pair within the map, such as timestamps and TTL information.</p>"
+        }
+      },
+      "documentation":"<p>Represents a key-value pair within a map data type in Amazon Keyspaces, including the associated metadata.</p>"
+    },
+    "KeyspacesCellValue":{
+      "type":"structure",
+      "members":{
+        "asciiT":{
+          "shape":"String",
+          "documentation":"<p>A value of ASCII text type, containing US-ASCII characters. </p>"
+        },
+        "bigintT":{
+          "shape":"String",
+          "documentation":"<p>A 64-bit signed integer value. </p>"
+        },
+        "blobT":{
+          "shape":"Blob",
+          "documentation":"<p>A binary large object (BLOB) value stored as a Base64-encoded string. </p>"
+        },
+        "boolT":{
+          "shape":"Boolean",
+          "documentation":"<p>A Boolean value, either <code>true</code> or <code>false</code>. </p>"
+        },
+        "counterT":{
+          "shape":"String",
+          "documentation":"<p>A distributed counter value that can be incremented and decremented. </p>"
+        },
+        "dateT":{
+          "shape":"String",
+          "documentation":"<p>A date value without a time component, represented as days since epoch (January 1, 1970). </p>"
+        },
+        "decimalT":{
+          "shape":"String",
+          "documentation":"<p>A variable-precision decimal number value. </p>"
+        },
+        "doubleT":{
+          "shape":"String",
+          "documentation":"<p>A 64-bit double-precision floating point value. </p>"
+        },
+        "floatT":{
+          "shape":"String",
+          "documentation":"<p>A 32-bit single-precision floating point value. </p>"
+        },
+        "inetT":{
+          "shape":"String",
+          "documentation":"<p>An IP address value, either IPv4 or IPv6 format. </p>"
+        },
+        "intT":{
+          "shape":"String",
+          "documentation":"<p>A 32-bit signed integer value. </p>"
+        },
+        "listT":{
+          "shape":"KeyspacesCellList",
+          "documentation":"<p>An ordered collection of elements that can contain duplicate values. </p>"
+        },
+        "mapT":{
+          "shape":"KeyspacesCellMap",
+          "documentation":"<p>A collection of key-value pairs where each key is unique. </p>"
+        },
+        "setT":{
+          "shape":"KeyspacesCellList",
+          "documentation":"<p>An unordered collection of unique elements. </p>"
+        },
+        "smallintT":{
+          "shape":"String",
+          "documentation":"<p>A 16-bit signed integer value. </p>"
+        },
+        "textT":{
+          "shape":"String",
+          "documentation":"<p>A UTF-8 encoded string value. </p>"
+        },
+        "timeT":{
+          "shape":"String",
+          "documentation":"<p>A time value without a date component, with nanosecond precision. </p>"
+        },
+        "timestampT":{
+          "shape":"String",
+          "documentation":"<p>A timestamp value representing date and time with millisecond precision. </p>"
+        },
+        "timeuuidT":{
+          "shape":"String",
+          "documentation":"<p>A universally unique identifier (UUID) that includes a timestamp component, ensuring both uniqueness and time ordering. </p>"
+        },
+        "tinyintT":{
+          "shape":"String",
+          "documentation":"<p>An 8-bit signed integer value. </p>"
+        },
+        "tupleT":{
+          "shape":"KeyspacesCellList",
+          "documentation":"<p>A fixed-length ordered list of elements, where each element can be of a different data type. </p>"
+        },
+        "uuidT":{
+          "shape":"String",
+          "documentation":"<p>A universally unique identifier (UUID) value. </p>"
+        },
+        "varcharT":{
+          "shape":"String",
+          "documentation":"<p>A UTF-8 encoded string value, functionally equivalent to text type. </p>"
+        },
+        "varintT":{
+          "shape":"String",
+          "documentation":"<p>A variable precision integer value with arbitrary length. </p>"
+        },
+        "udtT":{
+          "shape":"KeyspacesUdtMap",
+          "documentation":"<p>A user-defined type (UDT) value consisting of named fields, each with its own data type. </p>"
+        }
+      },
+      "documentation":"<p>Represents the value of a cell in an Amazon Keyspaces table, supporting various data types with type-specific fields.</p>",
+      "union":true
+    },
+    "KeyspacesCells":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"KeyspacesCell"}
+    },
+    "KeyspacesKeysMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"KeyspacesCellValue"}
+    },
+    "KeyspacesMetadata":{
+      "type":"structure",
+      "members":{
+        "expirationTime":{
+          "shape":"String",
+          "documentation":"<p>The time at which the associated data will expire, based on the time-to-live (TTL) setting.</p>"
+        },
+        "writeTime":{
+          "shape":"String",
+          "documentation":"<p>The timestamp at which the associated data was written to the database.</p>"
+        }
+      },
+      "documentation":"<p>Contains metadata information associated with Amazon Keyspaces cells and rows.</p>"
+    },
+    "KeyspacesRow":{
+      "type":"structure",
+      "members":{
+        "valueCells":{
+          "shape":"KeyspacesCells",
+          "documentation":"<p>A map of regular (non-static) column cells in the row, where keys are column names and values are the corresponding cells.</p>"
+        },
+        "staticCells":{
+          "shape":"KeyspacesCells",
+          "documentation":"<p>A map of static column cells shared by all rows with the same partition key, where keys are column names and values are the corresponding cells.</p>"
+        },
+        "rowMetadata":{
+          "shape":"KeyspacesMetadata",
+          "documentation":"<p>Metadata that applies to the entire row, such as timestamps and TTL information.</p>"
+        }
+      },
+      "documentation":"<p>Represents a row in an Amazon Keyspaces table, containing regular column values, static column values, and row-level metadata.</p>"
+    },
+    "KeyspacesUdtMap":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"KeyspacesCell"}
+    },
+    "ListStreamsInput":{
+      "type":"structure",
+      "members":{
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p> The name of the keyspace for which to list streams. If specified, only streams associated with tables in this keyspace are returned. If omitted, streams from all keyspaces are included in the results. </p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p> The name of the table for which to list streams. Must be used together with <code>keyspaceName</code>. If specified, only streams associated with this specific table are returned. </p>"
+        },
+        "maxResults":{
+          "shape":"ListStreamsInputMaxResultsInteger",
+          "documentation":"<p> The maximum number of streams to return in a single <code>ListStreams</code> request. Default value is 100. The minimum value is 1 and the maximum value is 100. </p>"
+        },
+        "nextToken":{
+          "shape":"StreamArnToken",
+          "documentation":"<p> An optional pagination token provided by a previous <code>ListStreams</code> operation. If this parameter is specified, the response includes only records beyond the token, up to the value specified by <code>maxResults</code>. </p>"
+        }
+      }
+    },
+    "ListStreamsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "ListStreamsOutput":{
+      "type":"structure",
+      "members":{
+        "streams":{
+          "shape":"StreamList",
+          "documentation":"<p> An array of stream objects, each containing summary information about a stream including its ARN, status, and associated table information. This list includes all streams that match the request criteria. </p>"
+        },
+        "nextToken":{
+          "shape":"StreamArnToken",
+          "documentation":"<p> A pagination token that can be used in a subsequent <code>ListStreams</code> request. This token is returned if the response contains more streams than can be returned in a single response based on the <code>MaxResults</code> parameter. </p>"
+        }
+      }
+    },
+    "OriginType":{
+      "type":"string",
+      "enum":[
+        "USER",
+        "REPLICATION",
+        "TTL"
+      ]
+    },
+    "Record":{
+      "type":"structure",
+      "members":{
+        "eventVersion":{
+          "shape":"String",
+          "documentation":"<p>The version of the record format, used to track the evolution of the record structure over time.</p>"
+        },
+        "createdAt":{
+          "shape":"Date",
+          "documentation":"<p>The timestamp indicating when this change data capture record was created.</p>"
+        },
+        "origin":{
+          "shape":"OriginType",
+          "documentation":"<p>The origin or source of this change data capture record.</p>"
+        },
+        "partitionKeys":{
+          "shape":"KeyspacesKeysMap",
+          "documentation":"<p>The partition key columns and their values for the affected row.</p>"
+        },
+        "clusteringKeys":{
+          "shape":"KeyspacesKeysMap",
+          "documentation":"<p>The clustering key columns and their values for the affected row, which determine the order of rows within a partition.</p>"
+        },
+        "newImage":{
+          "shape":"KeyspacesRow",
+          "documentation":"<p>The state of the row after the change operation that generated this record.</p>"
+        },
+        "oldImage":{
+          "shape":"KeyspacesRow",
+          "documentation":"<p>The state of the row before the change operation that generated this record.</p>"
+        },
+        "sequenceNumber":{
+          "shape":"SequenceNumber",
+          "documentation":"<p>A unique identifier assigned to this record within the shard, used for ordering and tracking purposes.</p>"
+        }
+      },
+      "documentation":"<p>Represents a change data capture record for a row in an Amazon Keyspaces table, containing both the new and old states of the row.</p>"
+    },
+    "RecordList":{
+      "type":"list",
+      "member":{"shape":"Record"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The requested resource wasn't found. Verify that the resource exists and try again.</p>"
+        }
+      },
+      "documentation":"<p>The requested resource doesn't exist or could not be found. </p> <p>This exception occurs when you attempt to access a keyspace, table, stream, or other Amazon Keyspaces resource that doesn't exist or that has been deleted. Verify that the resource identifier is correct and that the resource exists in your account.</p>",
+      "exception":true
+    },
+    "SequenceNumber":{
+      "type":"string",
+      "max":48,
+      "min":21
+    },
+    "SequenceNumberRange":{
+      "type":"structure",
+      "members":{
+        "startingSequenceNumber":{
+          "shape":"SequenceNumber",
+          "documentation":"<p>The starting sequence number of the range.</p>"
+        },
+        "endingSequenceNumber":{
+          "shape":"SequenceNumber",
+          "documentation":"<p>The ending sequence number of the range, which may be null for open-ended ranges.</p>"
+        }
+      },
+      "documentation":"<p>Defines a range of sequence numbers within a change data capture stream's shard for Amazon Keyspaces.</p>"
+    },
+    "Shard":{
+      "type":"structure",
+      "members":{
+        "shardId":{
+          "shape":"ShardId",
+          "documentation":"<p>A unique identifier for this shard within the stream.</p>"
+        },
+        "sequenceNumberRange":{
+          "shape":"SequenceNumberRange",
+          "documentation":"<p>The range of sequence numbers contained within this shard.</p>"
+        },
+        "parentShardIds":{
+          "shape":"ShardIdList",
+          "documentation":"<p>The identifiers of parent shards that this shard evolved from, if this shard was created through resharding.</p>"
+        }
+      },
+      "documentation":"<p>Represents a uniquely identified group of change records within a change data capture stream for Amazon Keyspaces.</p>"
+    },
+    "ShardDescriptionList":{
+      "type":"list",
+      "member":{"shape":"Shard"}
+    },
+    "ShardFilter":{
+      "type":"structure",
+      "members":{
+        "type":{
+          "shape":"ShardFilterType",
+          "documentation":"<p>The type of shard filter to use, which determines how the shardId parameter is interpreted.</p>"
+        },
+        "shardId":{
+          "shape":"ShardId",
+          "documentation":"<p>The identifier of a specific shard used to filter results based on the specified filter type.</p>"
+        }
+      },
+      "documentation":"<p>A filter used to limit the shards returned by a <code>GetStream</code> operation.</p>"
+    },
+    "ShardFilterType":{
+      "type":"string",
+      "enum":["CHILD_SHARDS"]
+    },
+    "ShardId":{
+      "type":"string",
+      "max":65,
+      "min":28
+    },
+    "ShardIdList":{
+      "type":"list",
+      "member":{"shape":"ShardId"}
+    },
+    "ShardIdToken":{
+      "type":"string",
+      "max":3000,
+      "min":80
+    },
+    "ShardIterator":{
+      "type":"string",
+      "max":4096,
+      "min":1
+    },
+    "ShardIteratorType":{
+      "type":"string",
+      "enum":[
+        "TRIM_HORIZON",
+        "LATEST",
+        "AT_SEQUENCE_NUMBER",
+        "AFTER_SEQUENCE_NUMBER"
+      ]
+    },
+    "Stream":{
+      "type":"structure",
+      "required":[
+        "streamArn",
+        "keyspaceName",
+        "tableName",
+        "streamLabel"
+      ],
+      "members":{
+        "streamArn":{
+          "shape":"StreamArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) that uniquely identifies this stream.</p>"
+        },
+        "keyspaceName":{
+          "shape":"KeyspaceName",
+          "documentation":"<p>The name of the keyspace containing the table associated with this stream.</p>"
+        },
+        "tableName":{
+          "shape":"TableName",
+          "documentation":"<p>The name of the table associated with this stream.</p>"
+        },
+        "streamLabel":{
+          "shape":"String",
+          "documentation":"<p>A unique identifier for this stream that can be used in stream operations.</p>"
+        }
+      },
+      "documentation":"<p>Represents a change data capture stream for an Amazon Keyspaces table, which enables tracking and processing of data changes.</p>"
+    },
+    "StreamArn":{
+      "type":"string",
+      "max":1024,
+      "min":37
+    },
+    "StreamArnToken":{
+      "type":"string",
+      "max":3000,
+      "min":80
+    },
+    "StreamList":{
+      "type":"list",
+      "member":{"shape":"Stream"}
+    },
+    "StreamStatus":{
+      "type":"string",
+      "enum":[
+        "ENABLING",
+        "ENABLED",
+        "DISABLING",
+        "DISABLED"
+      ]
+    },
+    "StreamViewType":{
+      "type":"string",
+      "enum":[
+        "NEW_IMAGE",
+        "OLD_IMAGE",
+        "NEW_AND_OLD_IMAGES",
+        "KEYS_ONLY"
+      ]
+    },
+    "String":{"type":"string"},
+    "TableName":{
+      "type":"string",
+      "max":48,
+      "min":1,
+      "pattern":"[a-zA-Z0-9][a-zA-Z0-9_]{0,47}"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The request was denied due to request throttling. Reduce the frequency of requests and try again.</p>"
+        }
+      },
+      "documentation":"<p>The request rate is too high and exceeds the service's throughput limits. </p> <p>This exception occurs when you send too many requests in a short period of time. Implement exponential backoff in your retry strategy to handle this exception. Reducing your request frequency or distributing requests more evenly can help avoid throughput exceptions.</p>",
+      "exception":true
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The input fails to satisfy the constraints specified by the service. Check the error details and modify your request.</p>"
+        },
+        "errorCode":{
+          "shape":"ValidationExceptionType",
+          "documentation":"<p>An error occurred validating your request. See the error message for details.</p>"
+        }
+      },
+      "documentation":"<p>The request validation failed because one or more input parameters failed validation. </p> <p>This exception occurs when there are syntax errors in the request, field constraints are violated, or required parameters are missing. To help you fix the issue, the exception message provides details about which parameter failed and why.</p>",
+      "exception":true
+    },
+    "ValidationExceptionType":{
+      "type":"string",
+      "enum":[
+        "InvalidFormat",
+        "TrimmedDataAccess",
+        "ExpiredIterator",
+        "ExpiredNextToken"
+      ]
+    }
+  },
+  "documentation":"<p>Amazon Keyspaces (for Apache Cassandra) change data capture (CDC) records change events for Amazon Keyspaces tables. The change events captured in a stream are time-ordered and de-duplicated write operations. Using stream data you can build event driven applications that incorporate near-real time change events from Amazon Keyspaces tables. </p> <p>Amazon Keyspaces CDC is serverless and scales the infrastructure for change events automatically based on the volume of changes on your table. </p> <p> This API reference describes the Amazon Keyspaces CDC stream API in detail. </p> <p>For more information about Amazon Keyspaces CDC, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/cdc.html\">Working with change data capture (CDC) streams in Amazon Keyspaces</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>To learn how Amazon Keyspaces CDC API actions are recorded with CloudTrail, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/logging-using-cloudtrail.html#service-name-info-in-cloudtrail\">Amazon Keyspaces information in CloudTrail</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p> <p>To see the metrics Amazon Keyspaces CDC sends to Amazon CloudWatch, see <a href=\"https://docs.aws.amazon.com/keyspaces/latest/devguide/metrics-dimensions.html#keyspaces-cdc-metrics\">Amazon Keyspaces change data capture (CDC) CloudWatch metrics</a> in the <i>Amazon Keyspaces Developer Guide</i>.</p>"
+}

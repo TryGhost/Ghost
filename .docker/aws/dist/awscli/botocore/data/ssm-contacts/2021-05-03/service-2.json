@@ -1,0 +1,3126 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2021-05-03",
+    "endpointPrefix":"ssm-contacts",
+    "jsonVersion":"1.1",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"SSM Contacts",
+    "serviceFullName":"AWS Systems Manager Incident Manager Contacts",
+    "serviceId":"SSM Contacts",
+    "signatureVersion":"v4",
+    "signingName":"ssm-contacts",
+    "targetPrefix":"SSMContacts",
+    "uid":"ssm-contacts-2021-05-03",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AcceptPage":{
+      "name":"AcceptPage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AcceptPageRequest"},
+      "output":{"shape":"AcceptPageResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Used to acknowledge an engagement to a contact channel during an incident.</p>"
+    },
+    "ActivateContactChannel":{
+      "name":"ActivateContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ActivateContactChannelRequest"},
+      "output":{"shape":"ActivateContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Activates a contact's contact channel. Incident Manager can't engage a contact until the contact channel has been activated.</p>"
+    },
+    "CreateContact":{
+      "name":"CreateContact",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateContactRequest"},
+      "output":{"shape":"CreateContactResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataEncryptionException"}
+      ],
+      "documentation":"<p>Contacts are either the contacts that Incident Manager engages during an incident or the escalation plans that Incident Manager uses to engage contacts in phases during an incident.</p>"
+    },
+    "CreateContactChannel":{
+      "name":"CreateContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateContactChannelRequest"},
+      "output":{"shape":"CreateContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>A contact channel is the method that Incident Manager uses to engage your contact.</p>"
+    },
+    "CreateRotation":{
+      "name":"CreateRotation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRotationRequest"},
+      "output":{"shape":"CreateRotationResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a rotation in an on-call schedule.</p>"
+    },
+    "CreateRotationOverride":{
+      "name":"CreateRotationOverride",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateRotationOverrideRequest"},
+      "output":{"shape":"CreateRotationOverrideResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an override for a rotation in an on-call schedule.</p>"
+    },
+    "DeactivateContactChannel":{
+      "name":"DeactivateContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeactivateContactChannelRequest"},
+      "output":{"shape":"DeactivateContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>To no longer receive Incident Manager engagements to a contact channel, you can deactivate the channel.</p>"
+    },
+    "DeleteContact":{
+      "name":"DeleteContact",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteContactRequest"},
+      "output":{"shape":"DeleteContactResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>To remove a contact from Incident Manager, you can delete the contact. However, deleting a contact does not remove it from escalation plans and related response plans. Deleting an escalation plan also does not remove it from all related response plans. To modify an escalation plan, we recommend using the <a>UpdateContact</a> action to specify a different existing contact.</p>"
+    },
+    "DeleteContactChannel":{
+      "name":"DeleteContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteContactChannelRequest"},
+      "output":{"shape":"DeleteContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>To stop receiving engagements on a contact channel, you can delete the channel from a contact. Deleting the contact channel does not remove it from the contact's engagement plan, but the stage that includes the channel will be ignored. If you delete the only contact channel for a contact, you'll no longer be able to engage that contact during an incident.</p>"
+    },
+    "DeleteRotation":{
+      "name":"DeleteRotation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRotationRequest"},
+      "output":{"shape":"DeleteRotationResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes a rotation from the system. If a rotation belongs to more than one on-call schedule, this operation deletes it from all of them.</p>"
+    },
+    "DeleteRotationOverride":{
+      "name":"DeleteRotationOverride",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteRotationOverrideRequest"},
+      "output":{"shape":"DeleteRotationOverrideResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes an existing override for an on-call rotation.</p>"
+    },
+    "DescribeEngagement":{
+      "name":"DescribeEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEngagementRequest"},
+      "output":{"shape":"DescribeEngagementResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Incident Manager uses engagements to engage contacts and escalation plans during an incident. Use this command to describe the engagement that occurred during an incident.</p>"
+    },
+    "DescribePage":{
+      "name":"DescribePage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribePageRequest"},
+      "output":{"shape":"DescribePageResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists details of the engagement to a contact channel.</p>"
+    },
+    "GetContact":{
+      "name":"GetContact",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetContactRequest"},
+      "output":{"shape":"GetContactResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataEncryptionException"}
+      ],
+      "documentation":"<p>Retrieves information about the specified contact or escalation plan.</p>"
+    },
+    "GetContactChannel":{
+      "name":"GetContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetContactChannelRequest"},
+      "output":{"shape":"GetContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>List details about a specific contact channel.</p>"
+    },
+    "GetContactPolicy":{
+      "name":"GetContactPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetContactPolicyRequest"},
+      "output":{"shape":"GetContactPolicyResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves the resource policies attached to the specified contact or escalation plan.</p>"
+    },
+    "GetRotation":{
+      "name":"GetRotation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRotationRequest"},
+      "output":{"shape":"GetRotationResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves information about an on-call rotation.</p>"
+    },
+    "GetRotationOverride":{
+      "name":"GetRotationOverride",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetRotationOverrideRequest"},
+      "output":{"shape":"GetRotationOverrideResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves information about an override to an on-call rotation.</p>"
+    },
+    "ListContactChannels":{
+      "name":"ListContactChannels",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListContactChannelsRequest"},
+      "output":{"shape":"ListContactChannelsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all contact channels for the specified contact.</p>"
+    },
+    "ListContacts":{
+      "name":"ListContacts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListContactsRequest"},
+      "output":{"shape":"ListContactsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all contacts and escalation plans in Incident Manager.</p>"
+    },
+    "ListEngagements":{
+      "name":"ListEngagements",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListEngagementsRequest"},
+      "output":{"shape":"ListEngagementsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all engagements that have happened in an incident.</p>"
+    },
+    "ListPageReceipts":{
+      "name":"ListPageReceipts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPageReceiptsRequest"},
+      "output":{"shape":"ListPageReceiptsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all of the engagements to contact channels that have been acknowledged.</p>"
+    },
+    "ListPageResolutions":{
+      "name":"ListPageResolutions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPageResolutionsRequest"},
+      "output":{"shape":"ListPageResolutionsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the resolution path of an engagement. For example, the escalation plan engaged in an incident might target an on-call schedule that includes several contacts in a rotation, but just one contact on-call when the incident starts. The resolution path indicates the hierarchy of <i>escalation plan &gt; on-call schedule &gt; contact</i>.</p>"
+    },
+    "ListPagesByContact":{
+      "name":"ListPagesByContact",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPagesByContactRequest"},
+      "output":{"shape":"ListPagesByContactResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the engagements to a contact's contact channels.</p>"
+    },
+    "ListPagesByEngagement":{
+      "name":"ListPagesByEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPagesByEngagementRequest"},
+      "output":{"shape":"ListPagesByEngagementResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists the engagements to contact channels that occurred by engaging a contact.</p>"
+    },
+    "ListPreviewRotationShifts":{
+      "name":"ListPreviewRotationShifts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPreviewRotationShiftsRequest"},
+      "output":{"shape":"ListPreviewRotationShiftsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of shifts based on rotation configuration parameters.</p> <note> <p>The Incident Manager primarily uses this operation to populate the <b>Preview</b> calendar. It is not typically run by end users.</p> </note>"
+    },
+    "ListRotationOverrides":{
+      "name":"ListRotationOverrides",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRotationOverridesRequest"},
+      "output":{"shape":"ListRotationOverridesResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves a list of overrides currently specified for an on-call rotation.</p>"
+    },
+    "ListRotationShifts":{
+      "name":"ListRotationShifts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRotationShiftsRequest"},
+      "output":{"shape":"ListRotationShiftsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of shifts generated by an existing rotation in the system.</p>"
+    },
+    "ListRotations":{
+      "name":"ListRotations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListRotationsRequest"},
+      "output":{"shape":"ListRotationsResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Retrieves a list of on-call rotations.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists the tags of a contact, escalation plan, rotation, or on-call schedule.</p>"
+    },
+    "PutContactPolicy":{
+      "name":"PutContactPolicy",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutContactPolicyRequest"},
+      "output":{"shape":"PutContactPolicyResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Adds a resource policy to the specified contact or escalation plan. The resource policy is used to share the contact or escalation plan using Resource Access Manager (RAM). For more information about cross-account sharing, see <a href=\"https://docs.aws.amazon.com/incident-manager/latest/userguide/xa.html\">Setting up cross-account functionality</a>.</p>"
+    },
+    "SendActivationCode":{
+      "name":"SendActivationCode",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"SendActivationCodeRequest"},
+      "output":{"shape":"SendActivationCodeResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Sends an activation code to a contact channel. The contact can use this code to activate the contact channel in the console or with the <code>ActivateChannel</code> operation. Incident Manager can't engage a contact channel until it has been activated.</p>"
+    },
+    "StartEngagement":{
+      "name":"StartEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartEngagementRequest"},
+      "output":{"shape":"StartEngagementResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Starts an engagement to a contact or escalation plan. The engagement engages each contact specified in the incident.</p>"
+    },
+    "StopEngagement":{
+      "name":"StopEngagement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopEngagementRequest"},
+      "output":{"shape":"StopEngagementResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Stops an engagement before it finishes the final stage of the escalation plan or engagement plan. Further contacts aren't engaged.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Tags a contact or escalation plan. You can tag only contacts and escalation plans in the first region of your replication set.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Removes tags from the specified resource.</p>"
+    },
+    "UpdateContact":{
+      "name":"UpdateContact",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateContactRequest"},
+      "output":{"shape":"UpdateContactResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"DataEncryptionException"}
+      ],
+      "documentation":"<p>Updates the contact or escalation plan specified.</p>"
+    },
+    "UpdateContactChannel":{
+      "name":"UpdateContactChannel",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateContactChannelRequest"},
+      "output":{"shape":"UpdateContactChannelResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"DataEncryptionException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a contact's contact channel.</p>"
+    },
+    "UpdateRotation":{
+      "name":"UpdateRotation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateRotationRequest"},
+      "output":{"shape":"UpdateRotationResult"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates the information specified for an on-call rotation.</p>"
+    }
+  },
+  "shapes":{
+    "AcceptCode":{
+      "type":"string",
+      "max":10,
+      "min":6,
+      "pattern":"^[0-9]*$"
+    },
+    "AcceptCodeValidation":{
+      "type":"string",
+      "enum":[
+        "IGNORE",
+        "ENFORCE"
+      ]
+    },
+    "AcceptPageRequest":{
+      "type":"structure",
+      "required":[
+        "PageId",
+        "AcceptType",
+        "AcceptCode"
+      ],
+      "members":{
+        "PageId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement to a contact channel.</p>"
+        },
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact channel.</p>"
+        },
+        "AcceptType":{
+          "shape":"AcceptType",
+          "documentation":"<p>The type indicates if the page was <code>DELIVERED</code> or <code>READ</code>.</p>"
+        },
+        "Note":{
+          "shape":"ReceiptInfo",
+          "documentation":"<p>Information provided by the user when the user acknowledges the page.</p>"
+        },
+        "AcceptCode":{
+          "shape":"AcceptCode",
+          "documentation":"<p>A 6-digit code used to acknowledge the page.</p>"
+        },
+        "AcceptCodeValidation":{
+          "shape":"AcceptCodeValidation",
+          "documentation":"<p>An optional field that Incident Manager uses to <code>ENFORCE</code> <code>AcceptCode</code> validation when acknowledging an page. Acknowledgement can occur by replying to a page, or when entering the AcceptCode in the console. Enforcing AcceptCode validation causes Incident Manager to verify that the code entered by the user matches the code sent by Incident Manager with the page.</p> <p>Incident Manager can also <code>IGNORE</code> <code>AcceptCode</code> validation. Ignoring <code>AcceptCode</code> validation causes Incident Manager to accept any value entered for the <code>AcceptCode</code>.</p>"
+        }
+      }
+    },
+    "AcceptPageResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "AcceptType":{
+      "type":"string",
+      "enum":[
+        "DELIVERED",
+        "READ"
+      ]
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>You don't have sufficient access to perform this operation.</p>",
+      "exception":true
+    },
+    "ActivateContactChannelRequest":{
+      "type":"structure",
+      "required":[
+        "ContactChannelId",
+        "ActivationCode"
+      ],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        },
+        "ActivationCode":{
+          "shape":"ActivationCode",
+          "documentation":"<p>The code sent to the contact channel when it was created in the contact.</p>"
+        }
+      }
+    },
+    "ActivateContactChannelResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "ActivationCode":{
+      "type":"string",
+      "max":10,
+      "min":6,
+      "pattern":"^[0-9]*$"
+    },
+    "ActivationStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVATED",
+        "NOT_ACTIVATED"
+      ]
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":1011,
+      "min":1
+    },
+    "ChannelName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[\\p{L}\\p{Z}\\p{N}_.\\-]*$"
+    },
+    "ChannelTargetInfo":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        },
+        "RetryIntervalInMinutes":{
+          "shape":"RetryIntervalInMinutes",
+          "documentation":"<p>The number of minutes to wait before retrying to send engagement if the engagement initially failed.</p>"
+        }
+      },
+      "documentation":"<p>Information about the contact channel that Incident Manager uses to engage the contact.</p>"
+    },
+    "ChannelType":{
+      "type":"string",
+      "enum":[
+        "SMS",
+        "VOICE",
+        "EMAIL"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"Identifier of the resource in use"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"Type of the resource in use"
+        },
+        "DependentEntities":{
+          "shape":"DependentEntityList",
+          "documentation":"List of dependent entities containing information on relation type and resourceArns linked to the resource in use"
+        }
+      },
+      "documentation":"<p>Updating or deleting a resource causes an inconsistent state.</p>",
+      "exception":true
+    },
+    "Contact":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "Alias",
+        "Type"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        },
+        "Alias":{
+          "shape":"ContactAlias",
+          "documentation":"<p>The unique and identifiable alias of the contact or escalation plan.</p>"
+        },
+        "DisplayName":{
+          "shape":"ContactName",
+          "documentation":"<p>The full name of the contact or escalation plan.</p>"
+        },
+        "Type":{
+          "shape":"ContactType",
+          "documentation":"<p>The type of contact.</p> <ul> <li> <p> <code>PERSONAL</code>: A single, individual contact.</p> </li> <li> <p> <code>ESCALATION</code>: An escalation plan.</p> </li> <li> <p> <code>ONCALL_SCHEDULE</code>: An on-call schedule.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>A personal contact or escalation plan that Incident Manager engages during an incident.</p>"
+    },
+    "ContactAlias":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-z0-9_\\-]*$"
+    },
+    "ContactChannel":{
+      "type":"structure",
+      "required":[
+        "ContactChannelArn",
+        "ContactArn",
+        "Name",
+        "DeliveryAddress",
+        "ActivationStatus"
+      ],
+      "members":{
+        "ContactChannelArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        },
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact that contains the contact channel.</p>"
+        },
+        "Name":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name of the contact channel.</p>"
+        },
+        "Type":{
+          "shape":"ChannelType",
+          "documentation":"<p>The type of the contact channel. Incident Manager supports three contact methods:</p> <ul> <li> <p>SMS</p> </li> <li> <p>VOICE</p> </li> <li> <p>EMAIL</p> </li> </ul>"
+        },
+        "DeliveryAddress":{
+          "shape":"ContactChannelAddress",
+          "documentation":"<p>The details that Incident Manager uses when trying to engage the contact channel.</p>"
+        },
+        "ActivationStatus":{
+          "shape":"ActivationStatus",
+          "documentation":"<p>A Boolean value describing if the contact channel has been activated or not. If the contact channel isn't activated, Incident Manager can't engage the contact through it.</p>"
+        }
+      },
+      "documentation":"<p>The method that Incident Manager uses to engage a contact.</p>"
+    },
+    "ContactChannelAddress":{
+      "type":"structure",
+      "members":{
+        "SimpleAddress":{
+          "shape":"SimpleAddress",
+          "documentation":"<p>The format is dependent on the type of the contact channel. The following are the expected formats:</p> <ul> <li> <p>SMS - '+' followed by the country code and phone number</p> </li> <li> <p>VOICE - '+' followed by the country code and phone number</p> </li> <li> <p>EMAIL - any standard email format</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>The details that Incident Manager uses when trying to engage the contact channel.</p>"
+    },
+    "ContactChannelList":{
+      "type":"list",
+      "member":{"shape":"ContactChannel"}
+    },
+    "ContactName":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"^[\\p{L}\\p{Z}\\p{N}_.\\-]*$"
+    },
+    "ContactTargetInfo":{
+      "type":"structure",
+      "required":["IsEssential"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact.</p>"
+        },
+        "IsEssential":{
+          "shape":"IsEssential",
+          "documentation":"<p>A Boolean value determining if the contact's acknowledgement stops the progress of stages in the plan.</p>"
+        }
+      },
+      "documentation":"<p>The contact that Incident Manager is engaging during an incident.</p>"
+    },
+    "ContactType":{
+      "type":"string",
+      "enum":[
+        "PERSONAL",
+        "ESCALATION",
+        "ONCALL_SCHEDULE"
+      ]
+    },
+    "ContactsList":{
+      "type":"list",
+      "member":{"shape":"Contact"}
+    },
+    "Content":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "CoverageTime":{
+      "type":"structure",
+      "members":{
+        "Start":{
+          "shape":"HandOffTime",
+          "documentation":"<p>Information about when the on-call rotation shift begins.</p>"
+        },
+        "End":{
+          "shape":"HandOffTime",
+          "documentation":"<p>Information about when the on-call rotation shift ends.</p>"
+        }
+      },
+      "documentation":"<p>Information about when an on-call shift begins and ends.</p>"
+    },
+    "CoverageTimes":{
+      "type":"list",
+      "member":{"shape":"CoverageTime"}
+    },
+    "CreateContactChannelRequest":{
+      "type":"structure",
+      "required":[
+        "ContactId",
+        "Name",
+        "Type",
+        "DeliveryAddress"
+      ],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact you are adding the contact channel to.</p>"
+        },
+        "Name":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name of the contact channel.</p>"
+        },
+        "Type":{
+          "shape":"ChannelType",
+          "documentation":"<p>Incident Manager supports three types of contact channels:</p> <ul> <li> <p> <code>SMS</code> </p> </li> <li> <p> <code>VOICE</code> </p> </li> <li> <p> <code>EMAIL</code> </p> </li> </ul>"
+        },
+        "DeliveryAddress":{
+          "shape":"ContactChannelAddress",
+          "documentation":"<p>The details that Incident Manager uses when trying to engage the contact channel. The format is dependent on the type of the contact channel. The following are the expected formats:</p> <ul> <li> <p>SMS - '+' followed by the country code and phone number</p> </li> <li> <p>VOICE - '+' followed by the country code and phone number</p> </li> <li> <p>EMAIL - any standard email format</p> </li> </ul>"
+        },
+        "DeferActivation":{
+          "shape":"DeferActivation",
+          "documentation":"<p>If you want to activate the channel at a later time, you can choose to defer activation. Incident Manager can't engage your contact channel until it has been activated.</p>"
+        },
+        "IdempotencyToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateContactChannelResult":{
+      "type":"structure",
+      "required":["ContactChannelArn"],
+      "members":{
+        "ContactChannelArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        }
+      }
+    },
+    "CreateContactRequest":{
+      "type":"structure",
+      "required":[
+        "Alias",
+        "Type",
+        "Plan"
+      ],
+      "members":{
+        "Alias":{
+          "shape":"ContactAlias",
+          "documentation":"<p>The short name to quickly identify a contact or escalation plan. The contact alias must be unique and identifiable.</p>"
+        },
+        "DisplayName":{
+          "shape":"ContactName",
+          "documentation":"<p>The full name of the contact or escalation plan.</p>"
+        },
+        "Type":{
+          "shape":"ContactType",
+          "documentation":"<p>The type of contact to create.</p> <ul> <li> <p> <code>PERSONAL</code>: A single, individual contact.</p> </li> <li> <p> <code>ESCALATION</code>: An escalation plan.</p> </li> <li> <p> <code>ONCALL_SCHEDULE</code>: An on-call schedule.</p> </li> </ul>"
+        },
+        "Plan":{
+          "shape":"Plan",
+          "documentation":"<p>A list of stages. A contact has an engagement plan with stages that contact specified contact channels. An escalation plan uses stages that contact specified contacts.</p>"
+        },
+        "Tags":{
+          "shape":"TagsList",
+          "documentation":"<p>Adds a tag to the target. You can only tag resources created in the first Region of your replication set.</p>"
+        },
+        "IdempotencyToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateContactResult":{
+      "type":"structure",
+      "required":["ContactArn"],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the created contact or escalation plan.</p>"
+        }
+      }
+    },
+    "CreateRotationOverrideRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "NewContactIds",
+        "StartTime",
+        "EndTime"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation to create an override for.</p>"
+        },
+        "NewContactIds":{
+          "shape":"RotationOverrideContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts to replace those in the current on-call rotation with.</p> <p>If you want to include any current team members in the override shift, you must include their ARNs in the new contact ID list.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time when the override goes into effect.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time when the override ends.</p>"
+        },
+        "IdempotencyToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token that ensures that the operation is called only once with the specified details.</p>"
+        }
+      }
+    },
+    "CreateRotationOverrideResult":{
+      "type":"structure",
+      "required":["RotationOverrideId"],
+      "members":{
+        "RotationOverrideId":{
+          "shape":"Uuid",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the created rotation override.</p>"
+        }
+      }
+    },
+    "CreateRotationRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ContactIds",
+        "TimeZoneId",
+        "Recurrence"
+      ],
+      "members":{
+        "Name":{
+          "shape":"RotationName",
+          "documentation":"<p>The name of the rotation.</p>"
+        },
+        "ContactIds":{
+          "shape":"RotationContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts to add to the rotation.</p> <note> <p>Only the <code>PERSONAL</code> contact type is supported. The contact types <code>ESCALATION</code> and <code>ONCALL_SCHEDULE</code> are not supported for this operation. </p> </note> <p>The order that you list the contacts in is their shift order in the rotation schedule. To change the order of the contact's shifts, use the <a>UpdateRotation</a> operation.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time that the rotation goes into effect.</p>"
+        },
+        "TimeZoneId":{
+          "shape":"TimeZoneId",
+          "documentation":"<p>The time zone to base the rotation’s activity on in Internet Assigned Numbers Authority (IANA) format. For example: \"America/Los_Angeles\", \"UTC\", or \"Asia/Seoul\". For more information, see the <a href=\"https://www.iana.org/time-zones\">Time Zone Database</a> on the IANA website.</p> <note> <p>Designators for time zones that don’t support Daylight Savings Time rules, such as Pacific Standard Time (PST), are not supported.</p> </note>"
+        },
+        "Recurrence":{
+          "shape":"RecurrenceSettings",
+          "documentation":"<p>Information about the rule that specifies when a shift's team members rotate.</p>"
+        },
+        "Tags":{
+          "shape":"TagsList",
+          "documentation":"<p>Optional metadata to assign to the rotation. Tags enable you to categorize a resource in different ways, such as by purpose, owner, or environment. For more information, see <a href=\"https://docs.aws.amazon.com/incident-manager/latest/userguide/tagging.html\">Tagging Incident Manager resources</a> in the <i>Incident Manager User Guide</i>.</p>"
+        },
+        "IdempotencyToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token that ensures that the operation is called only once with the specified details.</p>"
+        }
+      }
+    },
+    "CreateRotationResult":{
+      "type":"structure",
+      "required":["RotationArn"],
+      "members":{
+        "RotationArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the created rotation.</p>"
+        }
+      }
+    },
+    "DailySettings":{
+      "type":"list",
+      "member":{"shape":"HandOffTime"}
+    },
+    "DataEncryptionException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "documentation":"<p>The operation failed to due an encryption key error.</p>",
+      "exception":true
+    },
+    "DateTime":{"type":"timestamp"},
+    "DayOfMonth":{
+      "type":"integer",
+      "max":31,
+      "min":1
+    },
+    "DayOfWeek":{
+      "type":"string",
+      "enum":[
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT",
+        "SUN"
+      ]
+    },
+    "DeactivateContactChannelRequest":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel you're deactivating.</p>"
+        }
+      }
+    },
+    "DeactivateContactChannelResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeferActivation":{
+      "type":"boolean",
+      "box":true
+    },
+    "DeleteContactChannelRequest":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        }
+      }
+    },
+    "DeleteContactChannelResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteContactRequest":{
+      "type":"structure",
+      "required":["ContactId"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact that you're deleting.</p>"
+        }
+      }
+    },
+    "DeleteContactResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteRotationOverrideRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "RotationOverrideId"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation that was overridden.</p>"
+        },
+        "RotationOverrideId":{
+          "shape":"Uuid",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation override to delete.</p>"
+        }
+      }
+    },
+    "DeleteRotationOverrideResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteRotationRequest":{
+      "type":"structure",
+      "required":["RotationId"],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation to delete.</p>"
+        }
+      }
+    },
+    "DeleteRotationResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "DependentEntity":{
+      "type":"structure",
+      "required":[
+        "RelationType",
+        "DependentResourceIds"
+      ],
+      "members":{
+        "RelationType":{
+          "shape":"String",
+          "documentation":"<p>The type of relationship between one resource and the other resource that it is related to or depends on.</p>"
+        },
+        "DependentResourceIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the dependent resources.</p>"
+        }
+      },
+      "documentation":"<p>Information about a resource that another resource is related to or depends on.</p> <p>For example, if a contact is a member of a rotation, the rotation is a dependent entity of the contact.</p>"
+    },
+    "DependentEntityList":{
+      "type":"list",
+      "member":{"shape":"DependentEntity"}
+    },
+    "DescribeEngagementRequest":{
+      "type":"structure",
+      "required":["EngagementId"],
+      "members":{
+        "EngagementId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement you want the details of.</p>"
+        }
+      }
+    },
+    "DescribeEngagementResult":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "EngagementArn",
+        "Sender",
+        "Subject",
+        "Content"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the escalation plan or contacts involved in the engagement.</p>"
+        },
+        "EngagementArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the engagement.</p>"
+        },
+        "Sender":{
+          "shape":"Sender",
+          "documentation":"<p>The user that started the engagement.</p>"
+        },
+        "Subject":{
+          "shape":"Subject",
+          "documentation":"<p>The secure subject of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> and <code>EMAIL</code>.</p>"
+        },
+        "Content":{
+          "shape":"Content",
+          "documentation":"<p>The secure content of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> and <code>EMAIL</code>.</p>"
+        },
+        "PublicSubject":{
+          "shape":"PublicSubject",
+          "documentation":"<p>The insecure subject of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "PublicContent":{
+          "shape":"PublicContent",
+          "documentation":"<p>The insecure content of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The ARN of the incident in which the engagement occurred.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the engagement started.</p>"
+        },
+        "StopTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the engagement ended.</p>"
+        }
+      }
+    },
+    "DescribePageRequest":{
+      "type":"structure",
+      "required":["PageId"],
+      "members":{
+        "PageId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ID of the engagement to a contact channel.</p>"
+        }
+      }
+    },
+    "DescribePageResult":{
+      "type":"structure",
+      "required":[
+        "PageArn",
+        "EngagementArn",
+        "ContactArn",
+        "Sender",
+        "Subject",
+        "Content"
+      ],
+      "members":{
+        "PageArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement to a contact channel.</p>"
+        },
+        "EngagementArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the engagement that engaged the contact channel.</p>"
+        },
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact that was engaged.</p>"
+        },
+        "Sender":{
+          "shape":"Sender",
+          "documentation":"<p>The user that started the engagement.</p>"
+        },
+        "Subject":{
+          "shape":"Subject",
+          "documentation":"<p>The secure subject of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> and <code>EMAIL</code>.</p>"
+        },
+        "Content":{
+          "shape":"Content",
+          "documentation":"<p>The secure content of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> and <code>EMAIL</code>.</p>"
+        },
+        "PublicSubject":{
+          "shape":"PublicSubject",
+          "documentation":"<p>The insecure subject of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "PublicContent":{
+          "shape":"PublicContent",
+          "documentation":"<p>The insecure content of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The ARN of the incident that engaged the contact channel.</p>"
+        },
+        "SentTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time the engagement was sent to the contact channel.</p>"
+        },
+        "ReadTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the contact channel acknowledged the engagement.</p>"
+        },
+        "DeliveryTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the contact channel received the engagement.</p>"
+        }
+      }
+    },
+    "Engagement":{
+      "type":"structure",
+      "required":[
+        "EngagementArn",
+        "ContactArn",
+        "Sender"
+      ],
+      "members":{
+        "EngagementArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement.</p>"
+        },
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the escalation plan or contact that Incident Manager is engaging.</p>"
+        },
+        "Sender":{
+          "shape":"Sender",
+          "documentation":"<p>The user that started the engagement.</p>"
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The ARN of the incident that's engaging the contact.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the engagement began.</p>"
+        },
+        "StopTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the engagement ended.</p>"
+        }
+      },
+      "documentation":"<p>Incident Manager reaching out to a contact or escalation plan to engage contact during an incident.</p>"
+    },
+    "EngagementsList":{
+      "type":"list",
+      "member":{"shape":"Engagement"}
+    },
+    "GetContactChannelRequest":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel you want information about.</p>"
+        }
+      }
+    },
+    "GetContactChannelResult":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "ContactChannelArn",
+        "Name",
+        "Type",
+        "DeliveryAddress"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact that the channel belongs to.</p>"
+        },
+        "ContactChannelArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact channel.</p>"
+        },
+        "Name":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name of the contact channel</p>"
+        },
+        "Type":{
+          "shape":"ChannelType",
+          "documentation":"<p>The type of contact channel. The type is <code>SMS</code>, <code>VOICE</code>, or <code>EMAIL</code>.</p>"
+        },
+        "DeliveryAddress":{
+          "shape":"ContactChannelAddress",
+          "documentation":"<p>The details that Incident Manager uses when trying to engage the contact channel.</p>"
+        },
+        "ActivationStatus":{
+          "shape":"ActivationStatus",
+          "documentation":"<p>A Boolean value indicating if the contact channel has been activated or not.</p>"
+        }
+      }
+    },
+    "GetContactPolicyRequest":{
+      "type":"structure",
+      "required":["ContactArn"],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        }
+      }
+    },
+    "GetContactPolicyResult":{
+      "type":"structure",
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact or escalation plan.</p>"
+        },
+        "Policy":{
+          "shape":"Policy",
+          "documentation":"<p>Details about the resource policy attached to the contact or escalation plan.</p>"
+        }
+      }
+    },
+    "GetContactRequest":{
+      "type":"structure",
+      "required":["ContactId"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        }
+      }
+    },
+    "GetContactResult":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "Alias",
+        "Type",
+        "Plan"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact or escalation plan.</p>"
+        },
+        "Alias":{
+          "shape":"ContactAlias",
+          "documentation":"<p>The alias of the contact or escalation plan. The alias is unique and identifiable.</p>"
+        },
+        "DisplayName":{
+          "shape":"ContactName",
+          "documentation":"<p>The full name of the contact or escalation plan.</p>"
+        },
+        "Type":{
+          "shape":"ContactType",
+          "documentation":"<p>The type of contact.</p>"
+        },
+        "Plan":{
+          "shape":"Plan",
+          "documentation":"<p>Details about the specific timing or stages and targets of the escalation plan or engagement plan.</p>"
+        }
+      }
+    },
+    "GetRotationOverrideRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "RotationOverrideId"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the overridden rotation to retrieve information about.</p>"
+        },
+        "RotationOverrideId":{
+          "shape":"Uuid",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation override to retrieve information about.</p>"
+        }
+      }
+    },
+    "GetRotationOverrideResult":{
+      "type":"structure",
+      "members":{
+        "RotationOverrideId":{
+          "shape":"Uuid",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the override to an on-call rotation.</p>"
+        },
+        "RotationArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation that was overridden.</p>"
+        },
+        "NewContactIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts assigned to the override of the on-call rotation.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time when the override goes into effect.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time when the override ends.</p>"
+        },
+        "CreateTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time when the override was created.</p>"
+        }
+      }
+    },
+    "GetRotationRequest":{
+      "type":"structure",
+      "required":["RotationId"],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation to retrieve information about.</p>"
+        }
+      }
+    },
+    "GetRotationResult":{
+      "type":"structure",
+      "required":[
+        "RotationArn",
+        "Name",
+        "ContactIds",
+        "StartTime",
+        "TimeZoneId",
+        "Recurrence"
+      ],
+      "members":{
+        "RotationArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the on-call rotation.</p>"
+        },
+        "Name":{
+          "shape":"RotationName",
+          "documentation":"<p>The name of the on-call rotation.</p>"
+        },
+        "ContactIds":{
+          "shape":"RotationContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts assigned to the on-call rotation team.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The specified start time for the on-call rotation.</p>"
+        },
+        "TimeZoneId":{
+          "shape":"TimeZoneId",
+          "documentation":"<p>The time zone that the rotation’s activity is based on, in Internet Assigned Numbers Authority (IANA) format.</p>"
+        },
+        "Recurrence":{
+          "shape":"RecurrenceSettings",
+          "documentation":"<p>Specifies how long a rotation lasts before restarting at the beginning of the shift order.</p>"
+        }
+      }
+    },
+    "HandOffTime":{
+      "type":"structure",
+      "required":[
+        "HourOfDay",
+        "MinuteOfHour"
+      ],
+      "members":{
+        "HourOfDay":{
+          "shape":"HourOfDay",
+          "documentation":"<p>The hour when an on-call rotation shift begins or ends.</p>"
+        },
+        "MinuteOfHour":{
+          "shape":"MinuteOfHour",
+          "documentation":"<p>The minute when an on-call rotation shift begins or ends.</p>"
+        }
+      },
+      "documentation":"<p>Details about when an on-call rotation shift begins or ends.</p>"
+    },
+    "HourOfDay":{
+      "type":"integer",
+      "max":23,
+      "min":0
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "max":2048,
+      "pattern":"^[\\\\\\/a-zA-Z0-9_+=\\-]*$"
+    },
+    "IncidentId":{
+      "type":"string",
+      "max":1024,
+      "pattern":"^[\\\\a-zA-Z0-9_@#%*+=:?.\\/!\\s-]*$"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"Advice to clients on when the call can be safely retried"
+        }
+      },
+      "documentation":"<p>Unexpected error occurred while processing the request.</p>",
+      "exception":true,
+      "fault":true
+    },
+    "IsEssential":{
+      "type":"boolean",
+      "box":true
+    },
+    "ListContactChannelsRequest":{
+      "type":"structure",
+      "required":["ContactId"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of contact channels per page.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListContactChannelsResult":{
+      "type":"structure",
+      "required":["ContactChannels"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "ContactChannels":{
+          "shape":"ContactChannelList",
+          "documentation":"<p>A list of contact channels related to the specified contact.</p>"
+        }
+      }
+    },
+    "ListContactsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of contacts and escalation plans per page of results.</p>",
+          "box":true
+        },
+        "AliasPrefix":{
+          "shape":"ContactAlias",
+          "documentation":"<p>Used to list only contacts who's aliases start with the specified prefix.</p>"
+        },
+        "Type":{
+          "shape":"ContactType",
+          "documentation":"<p>The type of contact.</p>"
+        }
+      }
+    },
+    "ListContactsResult":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "Contacts":{
+          "shape":"ContactsList",
+          "documentation":"<p>A list of the contacts and escalation plans in your Incident Manager account.</p>"
+        }
+      }
+    },
+    "ListEngagementsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of engagements per page of results.</p>",
+          "box":true
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the incident you're listing engagements for.</p>"
+        },
+        "TimeRangeValue":{
+          "shape":"TimeRange",
+          "documentation":"<p>The time range to lists engagements for an incident.</p>"
+        }
+      }
+    },
+    "ListEngagementsResult":{
+      "type":"structure",
+      "required":["Engagements"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "Engagements":{
+          "shape":"EngagementsList",
+          "documentation":"<p>A list of each engagement that occurred during the specified time range of an incident.</p>"
+        }
+      }
+    },
+    "ListPageReceiptsRequest":{
+      "type":"structure",
+      "required":["PageId"],
+      "members":{
+        "PageId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement to a specific contact channel.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of acknowledgements per page of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListPageReceiptsResult":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "Receipts":{
+          "shape":"ReceiptsList",
+          "documentation":"<p>A list of each acknowledgement.</p>"
+        }
+      }
+    },
+    "ListPageResolutionsRequest":{
+      "type":"structure",
+      "required":["PageId"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token to start the list. Use this token to get the next set of results.</p>"
+        },
+        "PageId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact engaged for the incident.</p>"
+        }
+      }
+    },
+    "ListPageResolutionsResult":{
+      "type":"structure",
+      "required":["PageResolutions"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. Use this token to get the next set of results.</p>"
+        },
+        "PageResolutions":{
+          "shape":"ResolutionList",
+          "documentation":"<p>Information about the resolution for an engagement.</p>"
+        }
+      }
+    },
+    "ListPagesByContactRequest":{
+      "type":"structure",
+      "required":["ContactId"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact you are retrieving engagements for.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of engagements to contact channels to list per page of results. </p>",
+          "box":true
+        }
+      }
+    },
+    "ListPagesByContactResult":{
+      "type":"structure",
+      "required":["Pages"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "Pages":{
+          "shape":"PagesList",
+          "documentation":"<p>The list of engagements to a contact's contact channel.</p>"
+        }
+      }
+    },
+    "ListPagesByEngagementRequest":{
+      "type":"structure",
+      "required":["EngagementId"],
+      "members":{
+        "EngagementId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of engagements to contact channels to list per page of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListPagesByEngagementResult":{
+      "type":"structure",
+      "required":["Pages"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The pagination token to continue to the next page of results.</p>"
+        },
+        "Pages":{
+          "shape":"PagesList",
+          "documentation":"<p>The list of engagements to contact channels.</p>"
+        }
+      }
+    },
+    "ListPreviewRotationShiftsRequest":{
+      "type":"structure",
+      "required":[
+        "EndTime",
+        "Members",
+        "TimeZoneId",
+        "Recurrence"
+      ],
+      "members":{
+        "RotationStartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time a rotation would begin. The first shift is calculated from this date and time.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Used to filter the range of calculated shifts before sending the response back to the user. </p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time a rotation shift would end.</p>"
+        },
+        "Members":{
+          "shape":"RotationPreviewMemberList",
+          "documentation":"<p>The contacts that would be assigned to a rotation.</p>"
+        },
+        "TimeZoneId":{
+          "shape":"TimeZoneId",
+          "documentation":"<p>The time zone the rotation’s activity would be based on, in Internet Assigned Numbers Authority (IANA) format. For example: \"America/Los_Angeles\", \"UTC\", or \"Asia/Seoul\". </p>"
+        },
+        "Recurrence":{
+          "shape":"RecurrenceSettings",
+          "documentation":"<p>Information about how long a rotation would last before restarting at the beginning of the shift order.</p>"
+        },
+        "Overrides":{
+          "shape":"OverrideList",
+          "documentation":"<p>Information about changes that would be made in a rotation override.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token to start the list. This token is used to get the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that can be specified in a subsequent call to get the next set of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListPreviewRotationShiftsResult":{
+      "type":"structure",
+      "members":{
+        "RotationShifts":{
+          "shape":"RotationShifts",
+          "documentation":"<p>Details about a rotation shift, including times, types, and contacts.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. This token is used to get the next set of results.</p>"
+        }
+      }
+    },
+    "ListRotationOverridesRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "StartTime",
+        "EndTime"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation to retrieve information about.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time for the beginning of a time range for listing overrides.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time for the end of a time range for listing overrides.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token to start the list. Use this token to get the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that you can specify in a subsequent call to get the next set of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListRotationOverridesResult":{
+      "type":"structure",
+      "members":{
+        "RotationOverrides":{
+          "shape":"RotationOverrides",
+          "documentation":"<p>A list of rotation overrides in the specified time range.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. Use this token to get the next set of results.</p>"
+        }
+      }
+    },
+    "ListRotationShiftsRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "EndTime"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation to retrieve shift information about. </p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time for the beginning of the time range to list shifts for.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time for the end of the time range to list shifts for.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token to start the list. Use this token to get the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that you can specify in a subsequent call to get the next set of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListRotationShiftsResult":{
+      "type":"structure",
+      "members":{
+        "RotationShifts":{
+          "shape":"RotationShifts",
+          "documentation":"<p>Information about shifts that meet the filter criteria.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. Use this token to get the next set of results.</p>"
+        }
+      }
+    },
+    "ListRotationsRequest":{
+      "type":"structure",
+      "members":{
+        "RotationNamePrefix":{
+          "shape":"RotationName",
+          "documentation":"<p>A filter to include rotations in list results based on their common prefix. For example, entering prod returns a list of all rotation names that begin with <code>prod</code>, such as <code>production</code> and <code>prod-1</code>.</p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>A token to start the list. Use this token to get the next set of results.</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of items to return for this call. The call also returns a token that you can specify in a subsequent call to get the next set of results.</p>",
+          "box":true
+        }
+      }
+    },
+    "ListRotationsResult":{
+      "type":"structure",
+      "required":["Rotations"],
+      "members":{
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p>The token for the next set of items to return. Use this token to get the next set of results.</p>"
+        },
+        "Rotations":{
+          "shape":"Rotations",
+          "documentation":"<p>Information about rotations that meet the filter criteria.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact, escalation plan, rotation, or on-call schedule.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResult":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagsList",
+          "documentation":"<p>The tags related to the contact or escalation plan.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":1024,
+      "min":0
+    },
+    "Member":{
+      "type":"string",
+      "max":512,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "MinuteOfHour":{
+      "type":"integer",
+      "max":59,
+      "min":0
+    },
+    "MonthlySetting":{
+      "type":"structure",
+      "required":[
+        "DayOfMonth",
+        "HandOffTime"
+      ],
+      "members":{
+        "DayOfMonth":{
+          "shape":"DayOfMonth",
+          "documentation":"<p>The day of the month when monthly recurring on-call rotations begin.</p>"
+        },
+        "HandOffTime":{
+          "shape":"HandOffTime",
+          "documentation":"<p>The time of day when a monthly recurring on-call shift rotation begins.</p>"
+        }
+      },
+      "documentation":"<p>Information about on-call rotations that recur monthly.</p>"
+    },
+    "MonthlySettings":{
+      "type":"list",
+      "member":{"shape":"MonthlySetting"}
+    },
+    "NumberOfOnCalls":{
+      "type":"integer",
+      "min":1
+    },
+    "OverrideList":{
+      "type":"list",
+      "member":{"shape":"PreviewOverride"}
+    },
+    "Page":{
+      "type":"structure",
+      "required":[
+        "PageArn",
+        "EngagementArn",
+        "ContactArn",
+        "Sender"
+      ],
+      "members":{
+        "PageArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the page to the contact channel.</p>"
+        },
+        "EngagementArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the engagement that this page is part of.</p>"
+        },
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the contact that Incident Manager is engaging.</p>"
+        },
+        "Sender":{
+          "shape":"Sender",
+          "documentation":"<p>The user that started the engagement.</p>"
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The ARN of the incident that's engaging the contact channel.</p>"
+        },
+        "SentTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that Incident Manager engaged the contact channel.</p>"
+        },
+        "DeliveryTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time the message was delivered to the contact channel.</p>"
+        },
+        "ReadTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time that the contact channel acknowledged engagement.</p>"
+        }
+      },
+      "documentation":"<p>Incident Manager engaging a contact's contact channel.</p>"
+    },
+    "PagesList":{
+      "type":"list",
+      "member":{"shape":"Page"}
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "pattern":"^[\\\\\\/a-zA-Z0-9_+=\\-]*$"
+    },
+    "Plan":{
+      "type":"structure",
+      "members":{
+        "Stages":{
+          "shape":"StagesList",
+          "documentation":"<p>A list of stages that the escalation plan or engagement plan uses to engage contacts and contact methods.</p>"
+        },
+        "RotationIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the on-call rotations associated with the plan. </p>"
+        }
+      },
+      "documentation":"<p>Information about the stages and on-call rotation teams associated with an escalation plan or engagement plan. </p>"
+    },
+    "Policy":{
+      "type":"string",
+      "max":395000,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "PreviewOverride":{
+      "type":"structure",
+      "members":{
+        "NewMembers":{
+          "shape":"RotationOverridePreviewMemberList",
+          "documentation":"<p>Information about contacts to add to an on-call rotation override.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Information about the time a rotation override would begin.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>Information about the time a rotation override would end.</p>"
+        }
+      },
+      "documentation":"<p>Information about contacts and times that an on-call override replaces.</p>"
+    },
+    "PublicContent":{
+      "type":"string",
+      "max":8192,
+      "min":1,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "PublicSubject":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "PutContactPolicyRequest":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "Policy"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        },
+        "Policy":{
+          "shape":"Policy",
+          "documentation":"<p>Details of the resource policy.</p>"
+        }
+      }
+    },
+    "PutContactPolicyResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "Receipt":{
+      "type":"structure",
+      "required":[
+        "ReceiptType",
+        "ReceiptTime"
+      ],
+      "members":{
+        "ContactChannelArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel Incident Manager engaged.</p>"
+        },
+        "ReceiptType":{
+          "shape":"ReceiptType",
+          "documentation":"<p>The type follows the engagement cycle, <code>SENT</code>, <code>DELIVERED</code>, and <code>READ</code>.</p>"
+        },
+        "ReceiptInfo":{
+          "shape":"ReceiptInfo",
+          "documentation":"<p>Information provided during the page acknowledgement.</p>"
+        },
+        "ReceiptTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time receipt was <code>SENT</code>, <code>DELIVERED</code>, or <code>READ</code>.</p>"
+        }
+      },
+      "documentation":"<p>Records events during an engagement.</p>"
+    },
+    "ReceiptInfo":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "ReceiptType":{
+      "type":"string",
+      "enum":[
+        "DELIVERED",
+        "ERROR",
+        "READ",
+        "SENT",
+        "STOP"
+      ]
+    },
+    "ReceiptsList":{
+      "type":"list",
+      "member":{"shape":"Receipt"}
+    },
+    "RecurrenceMultiplier":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "RecurrenceSettings":{
+      "type":"structure",
+      "required":[
+        "NumberOfOnCalls",
+        "RecurrenceMultiplier"
+      ],
+      "members":{
+        "MonthlySettings":{
+          "shape":"MonthlySettings",
+          "documentation":"<p>Information about on-call rotations that recur monthly.</p>"
+        },
+        "WeeklySettings":{
+          "shape":"WeeklySettings",
+          "documentation":"<p>Information about on-call rotations that recur weekly.</p>"
+        },
+        "DailySettings":{
+          "shape":"DailySettings",
+          "documentation":"<p>Information about on-call rotations that recur daily.</p>"
+        },
+        "NumberOfOnCalls":{
+          "shape":"NumberOfOnCalls",
+          "documentation":"<p>The number of contacts, or shift team members designated to be on call concurrently during a shift. For example, in an on-call schedule that contains ten contacts, a value of <code>2</code> designates that two of them are on call at any given time.</p>",
+          "box":true
+        },
+        "ShiftCoverages":{
+          "shape":"ShiftCoveragesMap",
+          "documentation":"<p>Information about the days of the week that the on-call rotation coverage includes.</p>"
+        },
+        "RecurrenceMultiplier":{
+          "shape":"RecurrenceMultiplier",
+          "documentation":"<p>The number of days, weeks, or months a single rotation lasts.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>Information about when an on-call rotation is in effect and how long the rotation period lasts.</p>"
+    },
+    "ResolutionContact":{
+      "type":"structure",
+      "required":[
+        "ContactArn",
+        "Type"
+      ],
+      "members":{
+        "ContactArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of a contact in the engagement resolution process. </p>"
+        },
+        "Type":{
+          "shape":"ContactType",
+          "documentation":"<p>The type of contact for a resolution step.</p>"
+        },
+        "StageIndex":{
+          "shape":"StageIndex",
+          "documentation":"<p>The stage in the escalation plan that resolves to this contact.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>Information about the engagement resolution steps. The resolution starts from the first contact, which can be an escalation plan, then resolves to an on-call rotation, and finally to a personal contact.</p> <p>The <code>ResolutionContact</code> structure describes the information for each node or step in that process. It contains information about different contact types, such as the escalation, rotation, and personal contacts.</p>"
+    },
+    "ResolutionList":{
+      "type":"list",
+      "member":{"shape":"ResolutionContact"}
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "ResourceId",
+        "ResourceType"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"Hypothetical resource identifier that was not found"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"Hypothetical resource type that was not found"
+        }
+      },
+      "documentation":"<p>Request references a resource that doesn't exist.</p>",
+      "exception":true
+    },
+    "RetryAfterSeconds":{"type":"integer"},
+    "RetryIntervalInMinutes":{
+      "type":"integer",
+      "box":true,
+      "max":60,
+      "min":0
+    },
+    "Rotation":{
+      "type":"structure",
+      "required":[
+        "RotationArn",
+        "Name"
+      ],
+      "members":{
+        "RotationArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation.</p>"
+        },
+        "Name":{
+          "shape":"RotationName",
+          "documentation":"<p>The name of the rotation.</p>"
+        },
+        "ContactIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts assigned to the rotation team.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time the rotation becomes active.</p>"
+        },
+        "TimeZoneId":{
+          "shape":"TimeZoneId",
+          "documentation":"<p>The time zone the rotation’s activity is based on, in Internet Assigned Numbers Authority (IANA) format. For example: \"America/Los_Angeles\", \"UTC\", or \"Asia/Seoul\". </p>"
+        },
+        "Recurrence":{
+          "shape":"RecurrenceSettings",
+          "documentation":"<p>Information about when an on-call rotation is in effect and how long the rotation period lasts.</p>"
+        }
+      },
+      "documentation":"<p>Information about a rotation in an on-call schedule.</p>"
+    },
+    "RotationContactsArnList":{
+      "type":"list",
+      "member":{"shape":"SsmContactsArn"},
+      "max":30,
+      "min":1
+    },
+    "RotationName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9_\\-\\s\\.]*$"
+    },
+    "RotationOverride":{
+      "type":"structure",
+      "required":[
+        "RotationOverrideId",
+        "NewContactIds",
+        "StartTime",
+        "EndTime",
+        "CreateTime"
+      ],
+      "members":{
+        "RotationOverrideId":{
+          "shape":"Uuid",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the override to an on-call rotation.</p>"
+        },
+        "NewContactIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts assigned to the override of the on-call rotation.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time a rotation override begins.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time a rotation override ends.</p>"
+        },
+        "CreateTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time a rotation override was created.</p>"
+        }
+      },
+      "documentation":"<p>Information about an override specified for an on-call rotation.</p>"
+    },
+    "RotationOverrideContactsArnList":{
+      "type":"list",
+      "member":{"shape":"SsmContactsArn"},
+      "max":30,
+      "min":0
+    },
+    "RotationOverridePreviewMemberList":{
+      "type":"list",
+      "member":{"shape":"Member"},
+      "max":30,
+      "min":0
+    },
+    "RotationOverrides":{
+      "type":"list",
+      "member":{"shape":"RotationOverride"}
+    },
+    "RotationPreviewMemberList":{
+      "type":"list",
+      "member":{"shape":"Member"},
+      "max":30,
+      "min":1
+    },
+    "RotationShift":{
+      "type":"structure",
+      "required":[
+        "StartTime",
+        "EndTime"
+      ],
+      "members":{
+        "ContactIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts who are part of the shift rotation. </p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time a shift rotation begins.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The time a shift rotation ends.</p>"
+        },
+        "Type":{
+          "shape":"ShiftType",
+          "documentation":"<p>The type of shift rotation.</p>"
+        },
+        "ShiftDetails":{
+          "shape":"ShiftDetails",
+          "documentation":"<p>Additional information about an on-call rotation shift.</p>"
+        }
+      },
+      "documentation":"<p>Information about a shift that belongs to an on-call rotation.</p>"
+    },
+    "RotationShifts":{
+      "type":"list",
+      "member":{"shape":"RotationShift"}
+    },
+    "Rotations":{
+      "type":"list",
+      "member":{"shape":"Rotation"}
+    },
+    "SendActivationCodeRequest":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel.</p>"
+        }
+      }
+    },
+    "SendActivationCodeResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "Sender":{
+      "type":"string",
+      "max":255,
+      "pattern":"^[\\\\a-zA-Z0-9_@#%*+=:?.\\/!\\s-]*$"
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":[
+        "Message",
+        "QuotaCode",
+        "ServiceCode"
+      ],
+      "members":{
+        "Message":{"shape":"String"},
+        "ResourceId":{
+          "shape":"String",
+          "documentation":"Identifier of the resource affected"
+        },
+        "ResourceType":{
+          "shape":"String",
+          "documentation":"Type of the resource affected"
+        },
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"Service Quotas requirement to identify originating service"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"Service Quotas requirement to identify originating quota"
+        }
+      },
+      "documentation":"<p>Request would cause a service quota to be exceeded.</p>",
+      "exception":true
+    },
+    "ShiftCoveragesMap":{
+      "type":"map",
+      "key":{"shape":"DayOfWeek"},
+      "value":{"shape":"CoverageTimes"}
+    },
+    "ShiftDetails":{
+      "type":"structure",
+      "required":["OverriddenContactIds"],
+      "members":{
+        "OverriddenContactIds":{
+          "shape":"SsmContactsArnList",
+          "documentation":"<p>The Amazon Resources Names (ARNs) of the contacts who were replaced in a shift when an override was created. If the override is deleted, these contacts are restored to the shift.</p>"
+        }
+      },
+      "documentation":"<p>Information about overrides to an on-call rotation shift.</p>"
+    },
+    "ShiftType":{
+      "type":"string",
+      "enum":[
+        "REGULAR",
+        "OVERRIDDEN"
+      ]
+    },
+    "SimpleAddress":{
+      "type":"string",
+      "max":320,
+      "min":1
+    },
+    "SsmContactsArn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"arn:(aws|aws-cn|aws-us-gov):ssm-contacts:[-\\w+=\\/,.@]*:[0-9]+:([\\w+=\\/,.@:-]+)*"
+    },
+    "SsmContactsArnList":{
+      "type":"list",
+      "member":{"shape":"SsmContactsArn"},
+      "max":25,
+      "min":0
+    },
+    "Stage":{
+      "type":"structure",
+      "required":[
+        "DurationInMinutes",
+        "Targets"
+      ],
+      "members":{
+        "DurationInMinutes":{
+          "shape":"StageDurationInMins",
+          "documentation":"<p>The time to wait until beginning the next stage. The duration can only be set to 0 if a target is specified.</p>"
+        },
+        "Targets":{
+          "shape":"TargetsList",
+          "documentation":"<p>The contacts or contact methods that the escalation plan or engagement plan is engaging.</p>"
+        }
+      },
+      "documentation":"<p>A set amount of time that an escalation plan or engagement plan engages the specified contacts or contact methods.</p>"
+    },
+    "StageDurationInMins":{
+      "type":"integer",
+      "box":true,
+      "max":30,
+      "min":0
+    },
+    "StageIndex":{
+      "type":"integer",
+      "max":100,
+      "min":0
+    },
+    "StagesList":{
+      "type":"list",
+      "member":{"shape":"Stage"}
+    },
+    "StartEngagementRequest":{
+      "type":"structure",
+      "required":[
+        "ContactId",
+        "Sender",
+        "Subject",
+        "Content"
+      ],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact being engaged.</p>"
+        },
+        "Sender":{
+          "shape":"Sender",
+          "documentation":"<p>The user that started the engagement.</p>"
+        },
+        "Subject":{
+          "shape":"Subject",
+          "documentation":"<p>The secure subject of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> or <code>EMAIL</code>.</p>"
+        },
+        "Content":{
+          "shape":"Content",
+          "documentation":"<p>The secure content of the message that was sent to the contact. Use this field for engagements to <code>VOICE</code> or <code>EMAIL</code>.</p>"
+        },
+        "PublicSubject":{
+          "shape":"PublicSubject",
+          "documentation":"<p>The insecure subject of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "PublicContent":{
+          "shape":"PublicContent",
+          "documentation":"<p>The insecure content of the message that was sent to the contact. Use this field for engagements to <code>SMS</code>.</p>"
+        },
+        "IncidentId":{
+          "shape":"IncidentId",
+          "documentation":"<p>The ARN of the incident that the engagement is part of.</p>"
+        },
+        "IdempotencyToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A token ensuring that the operation is called only once with the specified details.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "StartEngagementResult":{
+      "type":"structure",
+      "required":["EngagementArn"],
+      "members":{
+        "EngagementArn":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The ARN of the engagement.</p>"
+        }
+      }
+    },
+    "StopEngagementRequest":{
+      "type":"structure",
+      "required":["EngagementId"],
+      "members":{
+        "EngagementId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the engagement.</p>"
+        },
+        "Reason":{
+          "shape":"StopReason",
+          "documentation":"<p>The reason that you're stopping the engagement.</p>"
+        }
+      }
+    },
+    "StopEngagementResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "StopReason":{
+      "type":"string",
+      "max":255,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "String":{"type":"string"},
+    "Subject":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[.\\s\\S]*$"
+    },
+    "Tag":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>Name of the object key.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>Value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>A container of a key-value name pair.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[\\\\\\/a-zA-Z0-9_+=\\-]*$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        },
+        "Tags":{
+          "shape":"TagsList",
+          "documentation":"<p>A list of tags that you are adding to the contact or escalation plan.</p>"
+        }
+      }
+    },
+    "TagResourceResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^[\\p{L}\\p{Z}\\p{N}_.:\\/=+\\-@]*$"
+    },
+    "TagsList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":50,
+      "min":0
+    },
+    "Target":{
+      "type":"structure",
+      "members":{
+        "ChannelTargetInfo":{
+          "shape":"ChannelTargetInfo",
+          "documentation":"<p>Information about the contact channel that Incident Manager engages.</p>"
+        },
+        "ContactTargetInfo":{
+          "shape":"ContactTargetInfo",
+          "documentation":"<p>Information about the contact that Incident Manager engages.</p>"
+        }
+      },
+      "documentation":"<p>The contact or contact channel that's being engaged.</p>"
+    },
+    "TargetsList":{
+      "type":"list",
+      "member":{"shape":"Target"}
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "QuotaCode":{
+          "shape":"String",
+          "documentation":"Service Quotas requirement to identify originating service"
+        },
+        "ServiceCode":{
+          "shape":"String",
+          "documentation":"Service Quotas requirement to identify originating quota"
+        },
+        "RetryAfterSeconds":{
+          "shape":"RetryAfterSeconds",
+          "documentation":"Advice to clients on when the call can be safely retried"
+        }
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "exception":true
+    },
+    "TimeRange":{
+      "type":"structure",
+      "members":{
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The start of the time range.</p>"
+        },
+        "EndTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The end of the time range.</p>"
+        }
+      },
+      "documentation":"<p>A range of between two set times</p>"
+    },
+    "TimeZoneId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[:a-zA-Z0-9_\\-\\s\\.\\\\/]*$"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The key of the tag that you want to remove.</p>"
+        }
+      }
+    },
+    "UntagResourceResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateContactChannelRequest":{
+      "type":"structure",
+      "required":["ContactChannelId"],
+      "members":{
+        "ContactChannelId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact channel you want to update.</p>"
+        },
+        "Name":{
+          "shape":"ChannelName",
+          "documentation":"<p>The name of the contact channel.</p>"
+        },
+        "DeliveryAddress":{
+          "shape":"ContactChannelAddress",
+          "documentation":"<p>The details that Incident Manager uses when trying to engage the contact channel.</p>"
+        }
+      }
+    },
+    "UpdateContactChannelResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateContactRequest":{
+      "type":"structure",
+      "required":["ContactId"],
+      "members":{
+        "ContactId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the contact or escalation plan you're updating.</p>"
+        },
+        "DisplayName":{
+          "shape":"ContactName",
+          "documentation":"<p>The full name of the contact or escalation plan.</p>"
+        },
+        "Plan":{
+          "shape":"Plan",
+          "documentation":"<p>A list of stages. A contact has an engagement plan with stages for specified contact channels. An escalation plan uses these stages to contact specified contacts.</p>"
+        }
+      }
+    },
+    "UpdateContactResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateRotationRequest":{
+      "type":"structure",
+      "required":[
+        "RotationId",
+        "Recurrence"
+      ],
+      "members":{
+        "RotationId":{
+          "shape":"SsmContactsArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rotation to update.</p>"
+        },
+        "ContactIds":{
+          "shape":"RotationContactsArnList",
+          "documentation":"<p>The Amazon Resource Names (ARNs) of the contacts to include in the updated rotation. </p> <note> <p>Only the <code>PERSONAL</code> contact type is supported. The contact types <code>ESCALATION</code> and <code>ONCALL_SCHEDULE</code> are not supported for this operation. </p> </note> <p>The order in which you list the contacts is their shift order in the rotation schedule.</p>"
+        },
+        "StartTime":{
+          "shape":"DateTime",
+          "documentation":"<p>The date and time the rotation goes into effect.</p>"
+        },
+        "TimeZoneId":{
+          "shape":"TimeZoneId",
+          "documentation":"<p>The time zone to base the updated rotation’s activity on, in Internet Assigned Numbers Authority (IANA) format. For example: \"America/Los_Angeles\", \"UTC\", or \"Asia/Seoul\". For more information, see the <a href=\"https://www.iana.org/time-zones\">Time Zone Database</a> on the IANA website.</p> <note> <p>Designators for time zones that don’t support Daylight Savings Time Rules, such as Pacific Standard Time (PST), aren't supported.</p> </note>"
+        },
+        "Recurrence":{
+          "shape":"RecurrenceSettings",
+          "documentation":"<p>Information about how long the updated rotation lasts before restarting at the beginning of the shift order.</p>"
+        }
+      }
+    },
+    "UpdateRotationResult":{
+      "type":"structure",
+      "members":{}
+    },
+    "Uuid":{
+      "type":"string",
+      "max":39,
+      "min":36,
+      "pattern":"([a-fA-Z0-9]{8,11}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}"
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["Message"],
+      "members":{
+        "Message":{"shape":"String"},
+        "Reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"Reason the request failed validation"
+        },
+        "Fields":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"The fields that caused the error"
+        }
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by an Amazon Web Services service.</p>",
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Message"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>The name of the field that caused the exception.</p>"
+        },
+        "Message":{
+          "shape":"String",
+          "documentation":"<p>Information about what caused the field to cause an exception.</p>"
+        }
+      },
+      "documentation":"<p>Provides information about which field caused the exception.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "UNKNOWN_OPERATION",
+        "CANNOT_PARSE",
+        "FIELD_VALIDATION_FAILED",
+        "OTHER"
+      ]
+    },
+    "WeeklySetting":{
+      "type":"structure",
+      "required":[
+        "DayOfWeek",
+        "HandOffTime"
+      ],
+      "members":{
+        "DayOfWeek":{
+          "shape":"DayOfWeek",
+          "documentation":"<p>The day of the week when weekly recurring on-call shift rotations begins.</p>"
+        },
+        "HandOffTime":{
+          "shape":"HandOffTime",
+          "documentation":"<p>The time of day when a weekly recurring on-call shift rotation begins.</p>"
+        }
+      },
+      "documentation":"<p>Information about rotations that recur weekly.</p>"
+    },
+    "WeeklySettings":{
+      "type":"list",
+      "member":{"shape":"WeeklySetting"}
+    }
+  },
+  "documentation":"<p>Systems Manager Incident Manager is an incident management console designed to help users mitigate and recover from incidents affecting their Amazon Web Services-hosted applications. An incident is any unplanned interruption or reduction in quality of services.</p> <p>Incident Manager increases incident resolution by notifying responders of impact, highlighting relevant troubleshooting data, and providing collaboration tools to get services back up and running. To achieve the primary goal of reducing the time-to-resolution of critical incidents, Incident Manager automates response plans and enables responder team escalation.</p>"
+}

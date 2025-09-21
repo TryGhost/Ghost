@@ -1,0 +1,446 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Detector": {
+      "operation": "ListDetectors",
+      "resourceIdentifier": {
+        "DetectorId": "DetectorIds[]"
+      }
+    },
+    "Invitation": {
+      "operation": "ListInvitations",
+      "resourceIdentifier": {
+        "AccountId": "Invitations[].AccountId",
+        "InvitationId": "Invitations[].InvitationId"
+      }
+    }
+  },
+  "operations": {
+    "AcceptInvitation": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      },
+      "InvitationId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "InvitationId"
+          }
+        ]
+      }
+    },
+    "ArchiveFindings": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DeclineInvitations": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      }
+    },
+    "DeleteDetector": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DeleteFilter": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DeleteIPSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DeleteInvitations": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      }
+    },
+    "DeleteMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DeleteThreatIntelSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DisassociateFromMasterAccount": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "DisassociateMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetDetector": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetFilter": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetFindings": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetFindingsStatistics": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetIPSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetMasterAccount": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "GetThreatIntelSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "InviteMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "ListFilters": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "ListFindings": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "ListIPSets": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "ListMembers": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "ListThreatIntelSets": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "StartMonitoringMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "StopMonitoringMembers": {
+      "AccountIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Invitation",
+            "resourceIdentifier": "AccountId"
+          }
+        ]
+      },
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UnarchiveFindings": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UpdateDetector": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UpdateFilter": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UpdateFindingsFeedback": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UpdateIPSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    },
+    "UpdateThreatIntelSet": {
+      "DetectorId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Detector",
+            "resourceIdentifier": "DetectorId"
+          }
+        ]
+      }
+    }
+  }
+}

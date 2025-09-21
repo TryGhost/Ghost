@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Cluster": {
+      "operation": "ListClusters",
+      "resourceIdentifier": {
+        "identifier": "clusters[].identifier",
+        "arn": "clusters[].arn"
+      }
+    }
+  },
+  "operations": {
+    "DeleteCluster": {
+      "identifier": {
+        "completions": [
+          {
+            "resourceName": "Cluster",
+            "resourceIdentifier": "identifier",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    "GetCluster": {
+      "identifier": {
+        "completions": [
+          {
+            "resourceName": "Cluster",
+            "resourceIdentifier": "identifier",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    "GetVpcEndpointServiceName": {
+      "identifier": {
+        "completions": [
+          {
+            "resourceName": "Cluster",
+            "resourceIdentifier": "identifier",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    "UpdateCluster": {
+      "identifier": {
+        "completions": [
+          {
+            "resourceName": "Cluster",
+            "resourceIdentifier": "identifier",
+            "parameters": {}
+          }
+        ]
+      }
+    }
+  }
+}

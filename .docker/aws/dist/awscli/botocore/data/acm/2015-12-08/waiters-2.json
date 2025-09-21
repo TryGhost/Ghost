@@ -1,0 +1,30 @@
+{
+  "version" : 2,
+  "waiters" : {
+    "CertificateValidated" : {
+      "delay" : 60,
+      "maxAttempts" : 5,
+      "operation" : "DescribeCertificate",
+      "acceptors" : [ {
+        "matcher" : "pathAll",
+        "argument" : "Certificate.DomainValidationOptions[].ValidationStatus",
+        "state" : "success",
+        "expected" : "SUCCESS"
+      }, {
+        "matcher" : "pathAny",
+        "argument" : "Certificate.DomainValidationOptions[].ValidationStatus",
+        "state" : "retry",
+        "expected" : "PENDING_VALIDATION"
+      }, {
+        "matcher" : "path",
+        "argument" : "Certificate.Status",
+        "state" : "failure",
+        "expected" : "FAILED"
+      }, {
+        "matcher" : "error",
+        "state" : "failure",
+        "expected" : "ResourceNotFoundException"
+      } ]
+    }
+  }
+}

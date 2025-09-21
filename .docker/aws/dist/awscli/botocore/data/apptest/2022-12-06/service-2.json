@@ -1,0 +1,3510 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2022-12-06",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"apptest",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"AWS Mainframe Modernization Application Testing",
+    "serviceId":"AppTest",
+    "signatureVersion":"v4",
+    "signingName":"apptest",
+    "uid":"apptest-2022-12-06"
+  },
+  "operations":{
+    "CreateTestCase":{
+      "name":"CreateTestCase",
+      "http":{
+        "method":"POST",
+        "requestUri":"/testcase",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateTestCaseRequest"},
+      "output":{"shape":"CreateTestCaseResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a test case.</p>",
+      "idempotent":true
+    },
+    "CreateTestConfiguration":{
+      "name":"CreateTestConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/testconfiguration",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateTestConfigurationRequest"},
+      "output":{"shape":"CreateTestConfigurationResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a test configuration.</p>",
+      "idempotent":true
+    },
+    "CreateTestSuite":{
+      "name":"CreateTestSuite",
+      "http":{
+        "method":"POST",
+        "requestUri":"/testsuite",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateTestSuiteRequest"},
+      "output":{"shape":"CreateTestSuiteResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Creates a test suite.</p>",
+      "idempotent":true
+    },
+    "DeleteTestCase":{
+      "name":"DeleteTestCase",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/testcases/{testCaseId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTestCaseRequest"},
+      "output":{"shape":"DeleteTestCaseResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a test case.</p>",
+      "idempotent":true
+    },
+    "DeleteTestConfiguration":{
+      "name":"DeleteTestConfiguration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/testconfigurations/{testConfigurationId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTestConfigurationRequest"},
+      "output":{"shape":"DeleteTestConfigurationResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a test configuration.</p>",
+      "idempotent":true
+    },
+    "DeleteTestRun":{
+      "name":"DeleteTestRun",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/testruns/{testRunId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTestRunRequest"},
+      "output":{"shape":"DeleteTestRunResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a test run.</p>",
+      "idempotent":true
+    },
+    "DeleteTestSuite":{
+      "name":"DeleteTestSuite",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/testsuites/{testSuiteId}",
+        "responseCode":204
+      },
+      "input":{"shape":"DeleteTestSuiteRequest"},
+      "output":{"shape":"DeleteTestSuiteResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Deletes a test suite.</p>",
+      "idempotent":true
+    },
+    "GetTestCase":{
+      "name":"GetTestCase",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testcases/{testCaseId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTestCaseRequest"},
+      "output":{"shape":"GetTestCaseResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a test case.</p>"
+    },
+    "GetTestConfiguration":{
+      "name":"GetTestConfiguration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testconfigurations/{testConfigurationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTestConfigurationRequest"},
+      "output":{"shape":"GetTestConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a test configuration.</p>"
+    },
+    "GetTestRunStep":{
+      "name":"GetTestRunStep",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testruns/{testRunId}/steps/{stepName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTestRunStepRequest"},
+      "output":{"shape":"GetTestRunStepResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a test run step.</p>"
+    },
+    "GetTestSuite":{
+      "name":"GetTestSuite",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testsuites/{testSuiteId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetTestSuiteRequest"},
+      "output":{"shape":"GetTestSuiteResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Gets a test suite.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists tags for a resource.</p>"
+    },
+    "ListTestCases":{
+      "name":"ListTestCases",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testcases",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestCasesRequest"},
+      "output":{"shape":"ListTestCasesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test cases.</p>"
+    },
+    "ListTestConfigurations":{
+      "name":"ListTestConfigurations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testconfigurations",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestConfigurationsRequest"},
+      "output":{"shape":"ListTestConfigurationsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test configurations.</p>"
+    },
+    "ListTestRunSteps":{
+      "name":"ListTestRunSteps",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testruns/{testRunId}/steps",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestRunStepsRequest"},
+      "output":{"shape":"ListTestRunStepsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test run steps.</p>"
+    },
+    "ListTestRunTestCases":{
+      "name":"ListTestRunTestCases",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testruns/{testRunId}/testcases",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestRunTestCasesRequest"},
+      "output":{"shape":"ListTestRunTestCasesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test run test cases.</p>"
+    },
+    "ListTestRuns":{
+      "name":"ListTestRuns",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testruns",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestRunsRequest"},
+      "output":{"shape":"ListTestRunsResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test runs.</p>"
+    },
+    "ListTestSuites":{
+      "name":"ListTestSuites",
+      "http":{
+        "method":"GET",
+        "requestUri":"/testsuites",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTestSuitesRequest"},
+      "output":{"shape":"ListTestSuitesResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Lists test suites.</p>"
+    },
+    "StartTestRun":{
+      "name":"StartTestRun",
+      "http":{
+        "method":"POST",
+        "requestUri":"/testrun",
+        "responseCode":200
+      },
+      "input":{"shape":"StartTestRunRequest"},
+      "output":{"shape":"StartTestRunResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Starts a test run.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Specifies tags of a resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Untags a resource.</p>",
+      "idempotent":true
+    },
+    "UpdateTestCase":{
+      "name":"UpdateTestCase",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/testcases/{testCaseId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTestCaseRequest"},
+      "output":{"shape":"UpdateTestCaseResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a test case.</p>"
+    },
+    "UpdateTestConfiguration":{
+      "name":"UpdateTestConfiguration",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/testconfigurations/{testConfigurationId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTestConfigurationRequest"},
+      "output":{"shape":"UpdateTestConfigurationResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a test configuration.</p>"
+    },
+    "UpdateTestSuite":{
+      "name":"UpdateTestSuite",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/testsuites/{testSuiteId}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateTestSuiteRequest"},
+      "output":{"shape":"UpdateTestSuiteResponse"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"}
+      ],
+      "documentation":"<p>Updates a test suite.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"}
+      },
+      "documentation":"<p>The account or role doesn't have the right permissions to make the request.</p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "Arn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-cn|aws-iso|aws-iso-[a-z]{1}|aws-us-gov):[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:([a-z]{2}-((iso[a-z]{0,1}-)|(gov-)){0,1}[a-z]+-[0-9]):[0-9]{12}:[A-Za-z0-9/][A-Za-z0-9:_/+=,@.-]{0,1023}"
+    },
+    "Batch":{
+      "type":"structure",
+      "required":["batchJobName"],
+      "members":{
+        "batchJobName":{
+          "shape":"Variable",
+          "documentation":"<p>The job name of the batch.</p>"
+        },
+        "batchJobParameters":{
+          "shape":"BatchJobParameters",
+          "documentation":"<p>The batch job parameters of the batch.</p>"
+        },
+        "exportDataSetNames":{
+          "shape":"ExportDataSetNames",
+          "documentation":"<p>The export data set names of the batch.</p>"
+        }
+      },
+      "documentation":"<p>Defines a batch.</p>"
+    },
+    "BatchJobParameters":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "BatchStepInput":{
+      "type":"structure",
+      "required":[
+        "resource",
+        "batchJobName"
+      ],
+      "members":{
+        "resource":{
+          "shape":"MainframeResourceSummary",
+          "documentation":"<p>The resource of the batch step input.</p>"
+        },
+        "batchJobName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The batch job name of the batch step input.</p>"
+        },
+        "batchJobParameters":{
+          "shape":"BatchJobParameters",
+          "documentation":"<p>The batch job parameters of the batch step input.</p>"
+        },
+        "exportDataSetNames":{
+          "shape":"ExportDataSetNames",
+          "documentation":"<p>The export data set names of the batch step input.</p>"
+        },
+        "properties":{
+          "shape":"MainframeActionProperties",
+          "documentation":"<p>The properties of the batch step input.</p>"
+        }
+      },
+      "documentation":"<p>Defines a batch step input.</p>"
+    },
+    "BatchStepOutput":{
+      "type":"structure",
+      "members":{
+        "dataSetExportLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The data set export location of the batch step output.</p>"
+        },
+        "dmsOutputLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The Database Migration Service (DMS) output location of the batch step output.</p>"
+        },
+        "dataSetDetails":{
+          "shape":"DataSetList",
+          "documentation":"<p>The data set details of the batch step output.</p>"
+        }
+      },
+      "documentation":"<p>Defines a batch step output.</p>"
+    },
+    "BatchSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"BatchStepInput",
+          "documentation":"<p>The step input of the batch summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"BatchStepOutput",
+          "documentation":"<p>The step output of the batch summary.</p>"
+        }
+      },
+      "documentation":"<p>Summarizes a batch job.</p>"
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "CaptureTool":{
+      "type":"string",
+      "enum":[
+        "Precisely",
+        "AWS DMS"
+      ]
+    },
+    "CloudFormation":{
+      "type":"structure",
+      "required":["templateLocation"],
+      "members":{
+        "templateLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The template location of the CloudFormation template.</p>"
+        },
+        "parameters":{
+          "shape":"Properties",
+          "documentation":"<p>The CloudFormation properties in the CloudFormation template.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the CloudFormation template and its parameters.</p>"
+    },
+    "CloudFormationAction":{
+      "type":"structure",
+      "required":["resource"],
+      "members":{
+        "resource":{
+          "shape":"Variable",
+          "documentation":"<p>The resource of the CloudFormation action.</p>"
+        },
+        "actionType":{
+          "shape":"CloudFormationActionType",
+          "documentation":"<p>The action type of the CloudFormation action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the CloudFormation action.</p>"
+    },
+    "CloudFormationActionType":{
+      "type":"string",
+      "enum":[
+        "Create",
+        "Delete"
+      ]
+    },
+    "CloudFormationStepSummary":{
+      "type":"structure",
+      "members":{
+        "createCloudformation":{
+          "shape":"CreateCloudFormationSummary",
+          "documentation":"<p>Creates the CloudFormation summary of the step.</p>"
+        },
+        "deleteCloudformation":{
+          "shape":"DeleteCloudFormationSummary",
+          "documentation":"<p>Deletes the CloudFormation summary of the CloudFormation step summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the CloudFormation step summary.</p>",
+      "union":true
+    },
+    "CompareAction":{
+      "type":"structure",
+      "required":["input"],
+      "members":{
+        "input":{
+          "shape":"Input",
+          "documentation":"<p>The input of the compare action.</p>"
+        },
+        "output":{
+          "shape":"Output",
+          "documentation":"<p>The output of the compare action.</p>"
+        }
+      },
+      "documentation":"<p>Compares the action.</p>"
+    },
+    "CompareActionSummary":{
+      "type":"structure",
+      "required":["type"],
+      "members":{
+        "type":{
+          "shape":"File",
+          "documentation":"<p>The type of the compare action summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the compare action summary.</p>"
+    },
+    "CompareDataSetsStepInput":{
+      "type":"structure",
+      "required":[
+        "sourceLocation",
+        "targetLocation",
+        "sourceDataSets",
+        "targetDataSets"
+      ],
+      "members":{
+        "sourceLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The source location of the compare data sets step input location.</p>"
+        },
+        "targetLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The target location of the compare data sets step input location.</p>"
+        },
+        "sourceDataSets":{
+          "shape":"DataSetList",
+          "documentation":"<p>The source data sets of the compare data sets step input location.</p>"
+        },
+        "targetDataSets":{
+          "shape":"DataSetList",
+          "documentation":"<p>The target data sets of the compare data sets step input location.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the compare data sets step input.</p>"
+    },
+    "CompareDataSetsStepOutput":{
+      "type":"structure",
+      "required":[
+        "comparisonOutputLocation",
+        "comparisonStatus"
+      ],
+      "members":{
+        "comparisonOutputLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The comparison output location of the compare data sets step output.</p>"
+        },
+        "comparisonStatus":{
+          "shape":"ComparisonStatusEnum",
+          "documentation":"<p>The comparison status of the compare data sets step output.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the compare data sets step output.</p>"
+    },
+    "CompareDataSetsSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"CompareDataSetsStepInput",
+          "documentation":"<p>The step input of the compare data sets summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"CompareDataSetsStepOutput",
+          "documentation":"<p>The step output of the compare data sets summary.</p>"
+        }
+      },
+      "documentation":"<p>Compares data sets summary.</p>"
+    },
+    "CompareDatabaseCDCStepInput":{
+      "type":"structure",
+      "required":[
+        "sourceLocation",
+        "targetLocation",
+        "sourceMetadata",
+        "targetMetadata"
+      ],
+      "members":{
+        "sourceLocation":{
+          "shape":"String",
+          "documentation":"<p>The source location of the compare database CDC step input.</p>"
+        },
+        "targetLocation":{
+          "shape":"String",
+          "documentation":"<p>The target location of the compare database CDC step input.</p>"
+        },
+        "outputLocation":{
+          "shape":"String",
+          "documentation":"<p>The output location of the compare database CDC step input.</p>"
+        },
+        "sourceMetadata":{
+          "shape":"SourceDatabaseMetadata",
+          "documentation":"<p>The source metadata of the compare database CDC step input.</p>"
+        },
+        "targetMetadata":{
+          "shape":"TargetDatabaseMetadata",
+          "documentation":"<p>The target metadata location of the compare database CDC step input.</p>"
+        }
+      },
+      "documentation":"<p>Compares the database Change Data Capture (CDC) step input.</p>"
+    },
+    "CompareDatabaseCDCStepOutput":{
+      "type":"structure",
+      "required":[
+        "comparisonOutputLocation",
+        "comparisonStatus"
+      ],
+      "members":{
+        "comparisonOutputLocation":{
+          "shape":"String",
+          "documentation":"<p>The comparison output of the compare database CDC step output.</p>"
+        },
+        "comparisonStatus":{
+          "shape":"ComparisonStatusEnum",
+          "documentation":"<p>The comparison status of the compare database CDC step output.</p>"
+        }
+      },
+      "documentation":"<p>Compares the database CDC step output.</p>"
+    },
+    "CompareDatabaseCDCSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"CompareDatabaseCDCStepInput",
+          "documentation":"<p>The step input of the compare database CDC summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"CompareDatabaseCDCStepOutput",
+          "documentation":"<p>The step output of the compare database CDC summary.</p>"
+        }
+      },
+      "documentation":"<p>Compares the database CDC summary.</p>"
+    },
+    "CompareFileType":{
+      "type":"structure",
+      "members":{
+        "datasets":{
+          "shape":"CompareDataSetsSummary",
+          "documentation":"<p>The data sets in the compare file type.</p>"
+        },
+        "databaseCDC":{
+          "shape":"CompareDatabaseCDCSummary",
+          "documentation":"<p>The database CDC of the compare file type.</p>"
+        }
+      },
+      "documentation":"<p>Compares the file type.</p>",
+      "union":true
+    },
+    "ComparisonStatusEnum":{
+      "type":"string",
+      "enum":[
+        "Different",
+        "Equivalent",
+        "Equal"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID of the conflicts with existing resources.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type of the conflicts with existing resources.</p>"
+        }
+      },
+      "documentation":"<p>The parameters provided in the request conflict with existing resources.</p>",
+      "error":{
+        "httpStatusCode":409,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateCloudFormationStepInput":{
+      "type":"structure",
+      "required":["templateLocation"],
+      "members":{
+        "templateLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The template location of the CloudFormation step input.</p>"
+        },
+        "parameters":{
+          "shape":"Properties",
+          "documentation":"<p>The CloudFormation properties of the CloudFormation step input.</p>"
+        }
+      },
+      "documentation":"<p>Creates the CloudFormation step input.</p>"
+    },
+    "CreateCloudFormationStepOutput":{
+      "type":"structure",
+      "required":["stackId"],
+      "members":{
+        "stackId":{
+          "shape":"String",
+          "documentation":"<p>The stack ID of the CloudFormation step output.</p>"
+        },
+        "exports":{
+          "shape":"Properties",
+          "documentation":"<p>The exports of the CloudFormation step output.</p>"
+        }
+      },
+      "documentation":"<p>Creates a CloudFormation step output.</p>"
+    },
+    "CreateCloudFormationSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"CreateCloudFormationStepInput",
+          "documentation":"<p>The step input of the CloudFormation summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"CreateCloudFormationStepOutput",
+          "documentation":"<p>The step output of the CloudFormation summary.</p>"
+        }
+      },
+      "documentation":"<p>Creates a CloudFormation summary.</p>"
+    },
+    "CreateTestCaseRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "steps"
+      ],
+      "members":{
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test case.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test case.</p>"
+        },
+        "steps":{
+          "shape":"StepList",
+          "documentation":"<p>The steps in the test case.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyTokenString",
+          "documentation":"<p>The client token of the test case.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The specified tags of the test case.</p>"
+        }
+      }
+    },
+    "CreateTestCaseResponse":{
+      "type":"structure",
+      "required":[
+        "testCaseId",
+        "testCaseVersion"
+      ],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test case.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test case.</p>"
+        }
+      }
+    },
+    "CreateTestConfigurationRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "resources"
+      ],
+      "members":{
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test configuration.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test configuration.</p>"
+        },
+        "resources":{
+          "shape":"ResourceList",
+          "documentation":"<p>The defined resources of the test configuration.</p>"
+        },
+        "properties":{
+          "shape":"Properties",
+          "documentation":"<p>The properties of the test configuration.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyTokenString",
+          "documentation":"<p>The client token of the test configuration.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test configuration.</p>"
+        },
+        "serviceSettings":{
+          "shape":"ServiceSettings",
+          "documentation":"<p>The service settings of the test configuration.</p>"
+        }
+      }
+    },
+    "CreateTestConfigurationResponse":{
+      "type":"structure",
+      "required":[
+        "testConfigurationId",
+        "testConfigurationVersion"
+      ],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test configuration ID.</p>"
+        },
+        "testConfigurationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test configuration version.</p>"
+        }
+      }
+    },
+    "CreateTestSuiteRequest":{
+      "type":"structure",
+      "required":[
+        "name",
+        "testCases"
+      ],
+      "members":{
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test suite.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test suite.</p>"
+        },
+        "beforeSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The before steps of the test suite.</p>"
+        },
+        "afterSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The after steps of the test suite.</p>"
+        },
+        "testCases":{
+          "shape":"TestCases",
+          "documentation":"<p>The test cases in the test suite.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyTokenString",
+          "documentation":"<p>The client token of the test suite.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test suite.</p>"
+        }
+      }
+    },
+    "CreateTestSuiteResponse":{
+      "type":"structure",
+      "required":[
+        "testSuiteId",
+        "testSuiteVersion"
+      ],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The suite ID of the test suite.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The suite version of the test suite.</p>"
+        }
+      }
+    },
+    "DataSet":{
+      "type":"structure",
+      "required":[
+        "type",
+        "name",
+        "ccsid",
+        "format",
+        "length"
+      ],
+      "members":{
+        "type":{
+          "shape":"DataSetType",
+          "documentation":"<p>The type of the data set.</p>"
+        },
+        "name":{
+          "shape":"String100",
+          "documentation":"<p>The name of the data set.</p>"
+        },
+        "ccsid":{
+          "shape":"String50",
+          "documentation":"<p>The CCSID of the data set.</p>"
+        },
+        "format":{
+          "shape":"Format",
+          "documentation":"<p>The format of the data set.</p>"
+        },
+        "length":{
+          "shape":"Integer",
+          "documentation":"<p>The length of the data set.</p>"
+        }
+      },
+      "documentation":"<p>Defines a data set.</p>"
+    },
+    "DataSetList":{
+      "type":"list",
+      "member":{"shape":"DataSet"}
+    },
+    "DataSetType":{
+      "type":"string",
+      "enum":["PS"]
+    },
+    "DatabaseCDC":{
+      "type":"structure",
+      "required":[
+        "sourceMetadata",
+        "targetMetadata"
+      ],
+      "members":{
+        "sourceMetadata":{
+          "shape":"SourceDatabaseMetadata",
+          "documentation":"<p>The source metadata of the database CDC.</p>"
+        },
+        "targetMetadata":{
+          "shape":"TargetDatabaseMetadata",
+          "documentation":"<p>The target metadata of the database CDC.</p>"
+        }
+      },
+      "documentation":"<p>Defines the Change Data Capture (CDC) of the database.</p>"
+    },
+    "DeleteCloudFormationStepInput":{
+      "type":"structure",
+      "required":["stackId"],
+      "members":{
+        "stackId":{
+          "shape":"String",
+          "documentation":"<p>The stack ID of the deleted CloudFormation step input.</p>"
+        }
+      },
+      "documentation":"<p>Deletes the CloudFormation step input.</p>"
+    },
+    "DeleteCloudFormationStepOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Deletes the CloudFormation summary step output.</p>"
+    },
+    "DeleteCloudFormationSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"DeleteCloudFormationStepInput",
+          "documentation":"<p>The step input of the deleted CloudFormation summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"DeleteCloudFormationStepOutput",
+          "documentation":"<p>The step output of the deleted CloudFormation summary.</p>"
+        }
+      },
+      "documentation":"<p>Deletes the CloudFormation summary.</p>"
+    },
+    "DeleteTestCaseRequest":{
+      "type":"structure",
+      "required":["testCaseId"],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test case.</p>",
+          "location":"uri",
+          "locationName":"testCaseId"
+        }
+      }
+    },
+    "DeleteTestCaseResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTestConfigurationRequest":{
+      "type":"structure",
+      "required":["testConfigurationId"],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test ID of the test configuration.</p>",
+          "location":"uri",
+          "locationName":"testConfigurationId"
+        }
+      }
+    },
+    "DeleteTestConfigurationResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTestRunRequest":{
+      "type":"structure",
+      "required":["testRunId"],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The run ID of the test run.</p>",
+          "location":"uri",
+          "locationName":"testRunId"
+        }
+      }
+    },
+    "DeleteTestRunResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteTestSuiteRequest":{
+      "type":"structure",
+      "required":["testSuiteId"],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test ID of the test suite.</p>",
+          "location":"uri",
+          "locationName":"testSuiteId"
+        }
+      }
+    },
+    "DeleteTestSuiteResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "ExportDataSetNames":{
+      "type":"list",
+      "member":{"shape":"String100"}
+    },
+    "File":{
+      "type":"structure",
+      "members":{
+        "fileType":{
+          "shape":"CompareFileType",
+          "documentation":"<p>The file type of the file.</p>"
+        }
+      },
+      "documentation":"<p>Defines a file.</p>",
+      "union":true
+    },
+    "FileMetadata":{
+      "type":"structure",
+      "members":{
+        "dataSets":{
+          "shape":"DataSetList",
+          "documentation":"<p>The data sets of the file metadata.</p>"
+        },
+        "databaseCDC":{
+          "shape":"DatabaseCDC",
+          "documentation":"<p>The database CDC of the file metadata.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a file metadata.</p>",
+      "union":true
+    },
+    "Format":{
+      "type":"string",
+      "enum":[
+        "FIXED",
+        "VARIABLE",
+        "LINE_SEQUENTIAL"
+      ]
+    },
+    "GetTestCaseRequest":{
+      "type":"structure",
+      "required":["testCaseId"],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The request test ID of the test case.</p>",
+          "location":"uri",
+          "locationName":"testCaseId"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test case.</p>",
+          "location":"querystring",
+          "locationName":"testCaseVersion"
+        }
+      }
+    },
+    "GetTestCaseResponse":{
+      "type":"structure",
+      "required":[
+        "testCaseId",
+        "testCaseArn",
+        "name",
+        "latestVersion",
+        "testCaseVersion",
+        "status",
+        "creationTime",
+        "lastUpdateTime",
+        "steps"
+      ],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The response test ID of the test case.</p>"
+        },
+        "testCaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the test case.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test case.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test case.</p>"
+        },
+        "latestVersion":{
+          "shape":"TestCaseLatestVersion",
+          "documentation":"<p>The latest version of the test case.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The case version of the test case.</p>"
+        },
+        "status":{
+          "shape":"TestCaseLifecycle",
+          "documentation":"<p>The status of the test case.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test case.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test case.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test case.</p>"
+        },
+        "steps":{
+          "shape":"StepList",
+          "documentation":"<p>The steps of the test case.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test case.</p>"
+        }
+      }
+    },
+    "GetTestConfigurationRequest":{
+      "type":"structure",
+      "required":["testConfigurationId"],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The request test configuration ID.</p>",
+          "location":"uri",
+          "locationName":"testConfigurationId"
+        },
+        "testConfigurationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test configuration version.</p>",
+          "location":"querystring",
+          "locationName":"testConfigurationVersion"
+        }
+      }
+    },
+    "GetTestConfigurationResponse":{
+      "type":"structure",
+      "required":[
+        "testConfigurationId",
+        "name",
+        "testConfigurationArn",
+        "latestVersion",
+        "testConfigurationVersion",
+        "status",
+        "creationTime",
+        "lastUpdateTime",
+        "resources",
+        "properties"
+      ],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The response test configuration ID.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The test configuration name</p>"
+        },
+        "testConfigurationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test configuration Amazon Resource Name (ARN).</p>"
+        },
+        "latestVersion":{
+          "shape":"TestConfigurationLatestVersion",
+          "documentation":"<p>The latest version of the test configuration.</p>"
+        },
+        "testConfigurationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test configuration version.</p>"
+        },
+        "status":{
+          "shape":"TestConfigurationLifecycle",
+          "documentation":"<p>The status of the test configuration.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test configuration.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test configuration.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test configuration.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test configuration.</p>"
+        },
+        "resources":{
+          "shape":"ResourceList",
+          "documentation":"<p>The resources of the test configuration.</p>"
+        },
+        "properties":{
+          "shape":"Properties",
+          "documentation":"<p>The properties of the test configuration.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test configuration.</p>"
+        },
+        "serviceSettings":{
+          "shape":"ServiceSettings",
+          "documentation":"<p>The service settings of the test configuration.</p>"
+        }
+      }
+    },
+    "GetTestRunStepRequest":{
+      "type":"structure",
+      "required":[
+        "testRunId",
+        "stepName"
+      ],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run step.</p>",
+          "location":"uri",
+          "locationName":"testRunId"
+        },
+        "stepName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The step name of the test run step.</p>",
+          "location":"uri",
+          "locationName":"stepName"
+        },
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of a test run step.</p>",
+          "location":"querystring",
+          "locationName":"testCaseId"
+        },
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of a test run step.</p>",
+          "location":"querystring",
+          "locationName":"testSuiteId"
+        }
+      }
+    },
+    "GetTestRunStepResponse":{
+      "type":"structure",
+      "required":[
+        "stepName",
+        "testRunId",
+        "status",
+        "runStartTime"
+      ],
+      "members":{
+        "stepName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The step name of the test run step.</p>"
+        },
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run step.</p>"
+        },
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test run step.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test run step.</p>"
+        },
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test run step.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test suite version of the test run step.</p>"
+        },
+        "beforeStep":{
+          "shape":"Boolean",
+          "documentation":"<p>The before steps of the test run step.</p>"
+        },
+        "afterStep":{
+          "shape":"Boolean",
+          "documentation":"<p>The after steps of the test run step.</p>"
+        },
+        "status":{
+          "shape":"StepRunStatus",
+          "documentation":"<p>The status of the test run step.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test run step.</p>"
+        },
+        "runStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run start time of the test run step.</p>"
+        },
+        "runEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run end time of the test run step.</p>"
+        },
+        "stepRunSummary":{
+          "shape":"StepRunSummary",
+          "documentation":"<p>The step run summary of the test run step.</p>"
+        }
+      }
+    },
+    "GetTestSuiteRequest":{
+      "type":"structure",
+      "required":["testSuiteId"],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The ID of the test suite.</p>",
+          "location":"uri",
+          "locationName":"testSuiteId"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the test suite.</p>",
+          "location":"querystring",
+          "locationName":"testSuiteVersion"
+        }
+      }
+    },
+    "GetTestSuiteResponse":{
+      "type":"structure",
+      "required":[
+        "testSuiteId",
+        "name",
+        "latestVersion",
+        "testSuiteVersion",
+        "testSuiteArn",
+        "creationTime",
+        "lastUpdateTime",
+        "beforeSteps",
+        "afterSteps",
+        "testCases"
+      ],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The response ID of the test suite.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test suite.</p>"
+        },
+        "latestVersion":{
+          "shape":"TestSuiteLatestVersion",
+          "documentation":"<p>The latest version of the test suite.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The version of the test suite.</p>"
+        },
+        "status":{
+          "shape":"TestSuiteLifecycle",
+          "documentation":"<p>The status of the test suite.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test suite.</p>"
+        },
+        "testSuiteArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test suite Amazon Resource Name (ARN).</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test suite.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test suite.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test suite.</p>"
+        },
+        "beforeSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The before steps of the test suite.</p>"
+        },
+        "afterSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The after steps of the test suite. </p>"
+        },
+        "testCases":{
+          "shape":"TestCases",
+          "documentation":"<p>The test cases of the test suite.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test suite.</p>"
+        }
+      }
+    },
+    "IdempotencyTokenString":{
+      "type":"string",
+      "pattern":"[A-Za-z0-9\\-]{1,64}"
+    },
+    "Identifier":{
+      "type":"string",
+      "pattern":"[A-Za-z0-9:/\\-]{1,100}"
+    },
+    "Input":{
+      "type":"structure",
+      "members":{
+        "file":{
+          "shape":"InputFile",
+          "documentation":"<p>The file in the input.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the input.</p>",
+      "union":true
+    },
+    "InputFile":{
+      "type":"structure",
+      "required":[
+        "sourceLocation",
+        "targetLocation",
+        "fileMetadata"
+      ],
+      "members":{
+        "sourceLocation":{
+          "shape":"Variable",
+          "documentation":"<p>The source location of the input file.</p>"
+        },
+        "targetLocation":{
+          "shape":"Variable",
+          "documentation":"<p>The target location of the input file.</p>"
+        },
+        "fileMetadata":{
+          "shape":"FileMetadata",
+          "documentation":"<p>The file metadata of the input file.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the input file.</p>"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to retry the query.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>An unexpected error occurred during the processing of the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the resource.</p>"
+        }
+      }
+    },
+    "ListTestCasesRequest":{
+      "type":"structure",
+      "members":{
+        "testCaseIds":{
+          "shape":"TestCaseIdList",
+          "documentation":"<p>The IDs of the test cases.</p>",
+          "location":"querystring",
+          "locationName":"testCaseIds"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token of the test cases.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum results of the test case.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestCasesResponse":{
+      "type":"structure",
+      "required":["testCases"],
+      "members":{
+        "testCases":{
+          "shape":"TestCaseSummaryList",
+          "documentation":"<p>The test cases in an application.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token in test cases.</p>"
+        }
+      }
+    },
+    "ListTestConfigurationsRequest":{
+      "type":"structure",
+      "members":{
+        "testConfigurationIds":{
+          "shape":"TestConfigurationIdList",
+          "documentation":"<p>The configuration IDs of the test configurations.</p>",
+          "location":"querystring",
+          "locationName":"testConfigurationIds"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token for the test configurations.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum results of the test configuration.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestConfigurationsResponse":{
+      "type":"structure",
+      "required":["testConfigurations"],
+      "members":{
+        "testConfigurations":{
+          "shape":"TestConfigurationList",
+          "documentation":"<p>The test configurations.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token in the test configurations.</p>"
+        }
+      }
+    },
+    "ListTestRunStepsRequest":{
+      "type":"structure",
+      "required":["testRunId"],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run steps.</p>",
+          "location":"uri",
+          "locationName":"testRunId"
+        },
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test run steps.</p>",
+          "location":"querystring",
+          "locationName":"testCaseId"
+        },
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test run steps.</p>",
+          "location":"querystring",
+          "locationName":"testSuiteId"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous step to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of test run steps to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestRunStepsResponse":{
+      "type":"structure",
+      "required":["testRunSteps"],
+      "members":{
+        "testRunSteps":{
+          "shape":"TestRunStepSummaryList",
+          "documentation":"<p>The test run steps of the response query.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous request to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListTestRunTestCasesRequest":{
+      "type":"structure",
+      "required":["testRunId"],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test cases.</p>",
+          "location":"uri",
+          "locationName":"testRunId"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of test run test cases to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestRunTestCasesResponse":{
+      "type":"structure",
+      "required":["testRunTestCases"],
+      "members":{
+        "testRunTestCases":{
+          "shape":"TestCaseRunSummaryList",
+          "documentation":"<p>The test run of the test cases.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous request to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListTestRunsRequest":{
+      "type":"structure",
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test runs.</p>",
+          "location":"querystring",
+          "locationName":"testSuiteId"
+        },
+        "testRunIds":{
+          "shape":"TestRunIdList",
+          "documentation":"<p>The test run IDs of the test runs.</p>",
+          "location":"querystring",
+          "locationName":"testrunIds"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from the previous request to retrieve the next page of test run results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of test runs to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestRunsResponse":{
+      "type":"structure",
+      "required":["testRuns"],
+      "members":{
+        "testRuns":{
+          "shape":"TestRunSummaryList",
+          "documentation":"<p>The test runs of the response query.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from the previous request to retrieve the next page of results.</p>"
+        }
+      }
+    },
+    "ListTestSuitesRequest":{
+      "type":"structure",
+      "members":{
+        "testSuiteIds":{
+          "shape":"TestSuiteIdList",
+          "documentation":"<p>The suite ID of the test suites.</p>",
+          "location":"querystring",
+          "locationName":"testSuiteIds"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous request to retrieve the next page of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of test suites to return in one page of results.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListTestSuitesResponse":{
+      "type":"structure",
+      "required":["testSuites"],
+      "members":{
+        "testSuites":{
+          "shape":"TestSuiteList",
+          "documentation":"<p>The test suites returned with the response query.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token from a previous request to retrieve the next page of test suites results.</p>"
+        }
+      }
+    },
+    "M2ManagedActionProperties":{
+      "type":"structure",
+      "members":{
+        "forceStop":{
+          "shape":"Boolean",
+          "documentation":"<p>Force stops the AWS Mainframe Modernization managed action properties.</p>"
+        },
+        "importDataSetLocation":{
+          "shape":"Variable",
+          "documentation":"<p>The import data set location of the AWS Mainframe Modernization managed action properties.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed action properties.</p>"
+    },
+    "M2ManagedActionType":{
+      "type":"string",
+      "enum":[
+        "Configure",
+        "Deconfigure"
+      ]
+    },
+    "M2ManagedApplication":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "runtime"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Variable",
+          "documentation":"<p>The application ID of the AWS Mainframe Modernization managed application.</p>"
+        },
+        "runtime":{
+          "shape":"M2ManagedRuntime",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization managed application.</p>"
+        },
+        "vpcEndpointServiceName":{
+          "shape":"Variable",
+          "documentation":"<p>The VPC endpoint service name of the AWS Mainframe Modernization managed application.</p>"
+        },
+        "listenerPort":{
+          "shape":"Variable",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization managed application.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application.</p>"
+    },
+    "M2ManagedApplicationAction":{
+      "type":"structure",
+      "required":[
+        "resource",
+        "actionType"
+      ],
+      "members":{
+        "resource":{
+          "shape":"Variable",
+          "documentation":"<p>The resource of the AWS Mainframe Modernization managed application action.</p>"
+        },
+        "actionType":{
+          "shape":"M2ManagedActionType",
+          "documentation":"<p>The action type of the AWS Mainframe Modernization managed application action.</p>"
+        },
+        "properties":{
+          "shape":"M2ManagedActionProperties",
+          "documentation":"<p>The properties of the AWS Mainframe Modernization managed application action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application action.</p>"
+    },
+    "M2ManagedApplicationStepInput":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "runtime",
+        "actionType"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"String",
+          "documentation":"<p>The application ID of the AWS Mainframe Modernization managed application step input.</p>"
+        },
+        "runtime":{
+          "shape":"String",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization managed application step input.</p>"
+        },
+        "vpcEndpointServiceName":{
+          "shape":"String",
+          "documentation":"<p>The VPC endpoint service name of the AWS Mainframe Modernization managed application step input.</p>"
+        },
+        "listenerPort":{
+          "shape":"Integer",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization managed application step input.</p>"
+        },
+        "actionType":{
+          "shape":"M2ManagedActionType",
+          "documentation":"<p>The action type of the AWS Mainframe Modernization managed application step input.</p>"
+        },
+        "properties":{
+          "shape":"M2ManagedActionProperties",
+          "documentation":"<p>The properties of the AWS Mainframe Modernization managed application step input.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application step input.</p>"
+    },
+    "M2ManagedApplicationStepOutput":{
+      "type":"structure",
+      "members":{
+        "importDataSetSummary":{
+          "shape":"Properties",
+          "documentation":"<p>The import data set summary of the AWS Mainframe Modernization managed application step output.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application step output.</p>"
+    },
+    "M2ManagedApplicationStepSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"M2ManagedApplicationStepInput",
+          "documentation":"<p>The step input of the AWS Mainframe Modernization managed application step summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"M2ManagedApplicationStepOutput",
+          "documentation":"<p>The step output of the AWS Mainframe Modernization managed application step summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application step summary.</p>"
+    },
+    "M2ManagedApplicationSummary":{
+      "type":"structure",
+      "required":[
+        "applicationId",
+        "runtime"
+      ],
+      "members":{
+        "applicationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The application ID of the AWS Mainframe Modernization managed application summary.</p>"
+        },
+        "runtime":{
+          "shape":"M2ManagedRuntime",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization managed application summary.</p>"
+        },
+        "listenerPort":{
+          "shape":"Integer",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization managed application summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization managed application summary.</p>"
+    },
+    "M2ManagedRuntime":{
+      "type":"string",
+      "enum":["MicroFocus"]
+    },
+    "M2NonManagedActionType":{
+      "type":"string",
+      "enum":[
+        "Configure",
+        "Deconfigure"
+      ]
+    },
+    "M2NonManagedApplication":{
+      "type":"structure",
+      "required":[
+        "vpcEndpointServiceName",
+        "listenerPort",
+        "runtime"
+      ],
+      "members":{
+        "vpcEndpointServiceName":{
+          "shape":"Variable",
+          "documentation":"<p>The VPC endpoint service name of the AWS Mainframe Modernization non-managed application.</p>"
+        },
+        "listenerPort":{
+          "shape":"Variable",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization non-managed application.</p>"
+        },
+        "runtime":{
+          "shape":"M2NonManagedRuntime",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization non-managed application.</p>"
+        },
+        "webAppName":{
+          "shape":"Variable",
+          "documentation":"<p>The web application name of the AWS Mainframe Modernization non-managed application.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application.</p>"
+    },
+    "M2NonManagedApplicationAction":{
+      "type":"structure",
+      "required":[
+        "resource",
+        "actionType"
+      ],
+      "members":{
+        "resource":{
+          "shape":"Variable",
+          "documentation":"<p>The resource of the AWS Mainframe Modernization non-managed application action.</p>"
+        },
+        "actionType":{
+          "shape":"M2NonManagedActionType",
+          "documentation":"<p>The action type of the AWS Mainframe Modernization non-managed application action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application action.</p>"
+    },
+    "M2NonManagedApplicationStepInput":{
+      "type":"structure",
+      "required":[
+        "vpcEndpointServiceName",
+        "listenerPort",
+        "runtime",
+        "actionType"
+      ],
+      "members":{
+        "vpcEndpointServiceName":{
+          "shape":"String",
+          "documentation":"<p>The VPC endpoint service name of the AWS Mainframe Modernization non-managed application step input.</p>"
+        },
+        "listenerPort":{
+          "shape":"Integer",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization non-managed application step input.</p>"
+        },
+        "runtime":{
+          "shape":"M2NonManagedRuntime",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization non-managed application step input.</p>"
+        },
+        "webAppName":{
+          "shape":"String",
+          "documentation":"<p>The web app name of the AWS Mainframe Modernization non-managed application step input.</p>"
+        },
+        "actionType":{
+          "shape":"M2NonManagedActionType",
+          "documentation":"<p>The action type of the AWS Mainframe Modernization non-managed application step input.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application step input.</p>"
+    },
+    "M2NonManagedApplicationStepOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application step output.</p>"
+    },
+    "M2NonManagedApplicationStepSummary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"M2NonManagedApplicationStepInput",
+          "documentation":"<p>The step input of the AWS Mainframe Modernization non-managed application step summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"M2NonManagedApplicationStepOutput",
+          "documentation":"<p>The step output of the AWS Mainframe Modernization non-managed application step summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application step summary.</p>"
+    },
+    "M2NonManagedApplicationSummary":{
+      "type":"structure",
+      "required":[
+        "vpcEndpointServiceName",
+        "listenerPort",
+        "runtime"
+      ],
+      "members":{
+        "vpcEndpointServiceName":{
+          "shape":"String",
+          "documentation":"<p>The VPC endpoint service name of the AWS Mainframe Modernization non-managed application summary.</p>"
+        },
+        "listenerPort":{
+          "shape":"Integer",
+          "documentation":"<p>The listener port of the AWS Mainframe Modernization non-managed application summary.</p>"
+        },
+        "runtime":{
+          "shape":"M2NonManagedRuntime",
+          "documentation":"<p>The runtime of the AWS Mainframe Modernization non-managed application summary.</p>"
+        },
+        "webAppName":{
+          "shape":"String",
+          "documentation":"<p>The web application name of the AWS Mainframe Modernization non-managed application summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the AWS Mainframe Modernization non-managed application summary.</p>"
+    },
+    "M2NonManagedRuntime":{
+      "type":"string",
+      "enum":["BluAge"]
+    },
+    "MainframeAction":{
+      "type":"structure",
+      "required":[
+        "resource",
+        "actionType"
+      ],
+      "members":{
+        "resource":{
+          "shape":"Variable",
+          "documentation":"<p>The resource of the mainframe action.</p>"
+        },
+        "actionType":{
+          "shape":"MainframeActionType",
+          "documentation":"<p>The action type of the mainframe action.</p>"
+        },
+        "properties":{
+          "shape":"MainframeActionProperties",
+          "documentation":"<p>The properties of the mainframe action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mainframe action.</p>"
+    },
+    "MainframeActionProperties":{
+      "type":"structure",
+      "members":{
+        "dmsTaskArn":{
+          "shape":"Variable",
+          "documentation":"<p>The DMS task ARN of the mainframe action properties.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mainframe action properties.</p>"
+    },
+    "MainframeActionSummary":{
+      "type":"structure",
+      "members":{
+        "batch":{
+          "shape":"BatchSummary",
+          "documentation":"<p>The batch of the mainframe action summary.</p>"
+        },
+        "tn3270":{
+          "shape":"TN3270Summary",
+          "documentation":"<p>The tn3270 port of the mainframe action summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mainframe action summary.</p>",
+      "union":true
+    },
+    "MainframeActionType":{
+      "type":"structure",
+      "members":{
+        "batch":{
+          "shape":"Batch",
+          "documentation":"<p>The batch of the mainframe action type.</p>"
+        },
+        "tn3270":{
+          "shape":"TN3270",
+          "documentation":"<p>The tn3270 port of the mainframe action type.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mainframe action type.</p>",
+      "union":true
+    },
+    "MainframeResourceSummary":{
+      "type":"structure",
+      "members":{
+        "m2ManagedApplication":{
+          "shape":"M2ManagedApplicationSummary",
+          "documentation":"<p>The AWS Mainframe Modernization managed application in the mainframe resource summary.</p>"
+        },
+        "m2NonManagedApplication":{
+          "shape":"M2NonManagedApplicationSummary",
+          "documentation":"<p>The AWS Mainframe Modernization non-managed application in the mainframe resource summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the mainframe resource summary.</p>",
+      "union":true
+    },
+    "MaxResults":{
+      "type":"integer",
+      "box":true,
+      "max":100,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "pattern":"\\S{1,2000}"
+    },
+    "Output":{
+      "type":"structure",
+      "members":{
+        "file":{
+          "shape":"OutputFile",
+          "documentation":"<p>The file of the output.</p>"
+        }
+      },
+      "documentation":"<p>Specifies an output.</p>",
+      "union":true
+    },
+    "OutputFile":{
+      "type":"structure",
+      "members":{
+        "fileLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The file location of the output file.</p>"
+        }
+      },
+      "documentation":"<p>Specifies an output file.</p>"
+    },
+    "Properties":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"String"}
+    },
+    "Resource":{
+      "type":"structure",
+      "required":[
+        "name",
+        "type"
+      ],
+      "members":{
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the resource.</p>"
+        },
+        "type":{
+          "shape":"ResourceType",
+          "documentation":"<p>The type of the resource.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a resource.</p>"
+    },
+    "ResourceAction":{
+      "type":"structure",
+      "members":{
+        "m2ManagedApplicationAction":{
+          "shape":"M2ManagedApplicationAction",
+          "documentation":"<p>The AWS Mainframe Modernization managed application action of the resource action.</p>"
+        },
+        "m2NonManagedApplicationAction":{
+          "shape":"M2NonManagedApplicationAction",
+          "documentation":"<p>The AWS Mainframe Modernization non-managed application action of the resource action.</p>"
+        },
+        "cloudFormationAction":{
+          "shape":"CloudFormationAction",
+          "documentation":"<p>The CloudFormation action of the resource action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a resource action.</p>",
+      "union":true
+    },
+    "ResourceActionSummary":{
+      "type":"structure",
+      "members":{
+        "cloudFormation":{
+          "shape":"CloudFormationStepSummary",
+          "documentation":"<p>The CloudFormation template of the resource action summary.</p>"
+        },
+        "m2ManagedApplication":{
+          "shape":"M2ManagedApplicationStepSummary",
+          "documentation":"<p>The AWS Mainframe Modernization managed application of the resource action summary.</p>"
+        },
+        "m2NonManagedApplication":{
+          "shape":"M2NonManagedApplicationStepSummary",
+          "documentation":"<p>The AWS Mainframe Modernization non-managed application of the resource action summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the resource action summary.</p>",
+      "union":true
+    },
+    "ResourceDescription":{
+      "type":"string",
+      "max":1000,
+      "min":0
+    },
+    "ResourceList":{
+      "type":"list",
+      "member":{"shape":"Resource"},
+      "max":20,
+      "min":1
+    },
+    "ResourceName":{
+      "type":"string",
+      "pattern":"[A-Za-z][A-Za-z0-9_\\-]{1,59}"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID of the resource not found.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type of the resource not found.</p>"
+        }
+      },
+      "documentation":"<p>The specified resource was not found.</p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceType":{
+      "type":"structure",
+      "members":{
+        "cloudFormation":{
+          "shape":"CloudFormation",
+          "documentation":"<p>The CloudFormation template of the resource type.</p>"
+        },
+        "m2ManagedApplication":{
+          "shape":"M2ManagedApplication",
+          "documentation":"<p>The AWS Mainframe Modernization managed application of the resource type.</p>"
+        },
+        "m2NonManagedApplication":{
+          "shape":"M2NonManagedApplication",
+          "documentation":"<p>The AWS Mainframe Modernization non-managed application of the resource type.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the resource type.</p>",
+      "union":true
+    },
+    "S3Uri":{
+      "type":"string",
+      "max":1024,
+      "min":0
+    },
+    "Script":{
+      "type":"structure",
+      "required":[
+        "scriptLocation",
+        "type"
+      ],
+      "members":{
+        "scriptLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The script location of the scripts.</p>"
+        },
+        "type":{
+          "shape":"ScriptType",
+          "documentation":"<p>The type of the scripts.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the script.</p>"
+    },
+    "ScriptSummary":{
+      "type":"structure",
+      "required":[
+        "scriptLocation",
+        "type"
+      ],
+      "members":{
+        "scriptLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The script location of the script summary.</p>"
+        },
+        "type":{
+          "shape":"ScriptType",
+          "documentation":"<p>The type of the script summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the scripts summary.</p>"
+    },
+    "ScriptType":{
+      "type":"string",
+      "enum":["Selenium"]
+    },
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "resourceId":{
+          "shape":"String",
+          "documentation":"<p>The resource ID of AWS Application Testing that exceeded the limit.</p>"
+        },
+        "resourceType":{
+          "shape":"String",
+          "documentation":"<p>The resource type of AWS Application Testing that exceeded the limit.</p>"
+        },
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The service code of AWS Application Testing that exceeded the limit.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The quote codes of AWS Application Testing that exceeded the limit.</p>"
+        }
+      },
+      "documentation":"<p>One or more quotas for AWS Application Testing exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ServiceSettings":{
+      "type":"structure",
+      "members":{
+        "kmsKeyId":{
+          "shape":"String",
+          "documentation":"<p>The KMS key ID of the service settings.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the service settings.</p>"
+    },
+    "SourceDatabase":{
+      "type":"string",
+      "enum":["z/OS-DB2"]
+    },
+    "SourceDatabaseMetadata":{
+      "type":"structure",
+      "required":[
+        "type",
+        "captureTool"
+      ],
+      "members":{
+        "type":{
+          "shape":"SourceDatabase",
+          "documentation":"<p>The type of the source database metadata.</p>"
+        },
+        "captureTool":{
+          "shape":"CaptureTool",
+          "documentation":"<p>The capture tool of the source database metadata.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the source database metadata.</p>"
+    },
+    "StartTestRunRequest":{
+      "type":"structure",
+      "required":["testSuiteId"],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test run.</p>"
+        },
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The configuration ID of the test run.</p>"
+        },
+        "clientToken":{
+          "shape":"IdempotencyTokenString",
+          "documentation":"<p>The client token of the test run.</p>",
+          "idempotencyToken":true
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the test run.</p>"
+        }
+      }
+    },
+    "StartTestRunResponse":{
+      "type":"structure",
+      "required":[
+        "testRunId",
+        "testRunStatus"
+      ],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run.</p>"
+        },
+        "testRunStatus":{
+          "shape":"TestRunStatus",
+          "documentation":"<p>The test run status of the test run.</p>"
+        }
+      }
+    },
+    "Step":{
+      "type":"structure",
+      "required":[
+        "name",
+        "action"
+      ],
+      "members":{
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the step.</p>"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the step.</p>"
+        },
+        "action":{
+          "shape":"StepAction",
+          "documentation":"<p>The action of the step.</p>"
+        }
+      },
+      "documentation":"<p>Defines a step.</p>"
+    },
+    "StepAction":{
+      "type":"structure",
+      "members":{
+        "resourceAction":{
+          "shape":"ResourceAction",
+          "documentation":"<p>The resource action of the step action.</p>"
+        },
+        "mainframeAction":{
+          "shape":"MainframeAction",
+          "documentation":"<p>The mainframe action of the step action.</p>"
+        },
+        "compareAction":{
+          "shape":"CompareAction",
+          "documentation":"<p>The compare action of the step action.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a step action.</p>",
+      "union":true
+    },
+    "StepList":{
+      "type":"list",
+      "member":{"shape":"Step"},
+      "max":20,
+      "min":1
+    },
+    "StepRunStatus":{
+      "type":"string",
+      "enum":[
+        "Success",
+        "Failed",
+        "Running"
+      ]
+    },
+    "StepRunSummary":{
+      "type":"structure",
+      "members":{
+        "mainframeAction":{
+          "shape":"MainframeActionSummary",
+          "documentation":"<p>The mainframe action of the step run summary.</p>"
+        },
+        "compareAction":{
+          "shape":"CompareActionSummary",
+          "documentation":"<p>The compare action of the step run summary.</p>"
+        },
+        "resourceAction":{
+          "shape":"ResourceActionSummary",
+          "documentation":"<p>The resource action of the step run summary.</p>"
+        }
+      },
+      "documentation":"<p>Defines the step run summary.</p>",
+      "union":true
+    },
+    "String":{"type":"string"},
+    "String100":{
+      "type":"string",
+      "pattern":"\\S{1,100}"
+    },
+    "String50":{
+      "type":"string",
+      "pattern":"\\S{1,50}"
+    },
+    "TN3270":{
+      "type":"structure",
+      "required":["script"],
+      "members":{
+        "script":{
+          "shape":"Script",
+          "documentation":"<p>The script of the TN3270 protocol.</p>"
+        },
+        "exportDataSetNames":{
+          "shape":"ExportDataSetNames",
+          "documentation":"<p>The data set names of the TN3270 protocol.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the TN3270 protocol.</p>"
+    },
+    "TN3270StepInput":{
+      "type":"structure",
+      "required":[
+        "resource",
+        "script"
+      ],
+      "members":{
+        "resource":{
+          "shape":"MainframeResourceSummary",
+          "documentation":"<p>The resource of the TN3270 step input.</p>"
+        },
+        "script":{
+          "shape":"ScriptSummary",
+          "documentation":"<p>The script of the TN3270 step input.</p>"
+        },
+        "exportDataSetNames":{
+          "shape":"ExportDataSetNames",
+          "documentation":"<p>The export data set names of the TN3270 step input.</p>"
+        },
+        "properties":{
+          "shape":"MainframeActionProperties",
+          "documentation":"<p>The properties of the TN3270 step input.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a TN3270 step input.</p>"
+    },
+    "TN3270StepOutput":{
+      "type":"structure",
+      "required":["scriptOutputLocation"],
+      "members":{
+        "dataSetExportLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The data set export location of the TN3270 step output.</p>"
+        },
+        "dmsOutputLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The output location of the TN3270 step output.</p>"
+        },
+        "dataSetDetails":{
+          "shape":"DataSetList",
+          "documentation":"<p>The data set details of the TN3270 step output.</p>"
+        },
+        "scriptOutputLocation":{
+          "shape":"S3Uri",
+          "documentation":"<p>The script output location of the TN3270 step output.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a TN3270 step output.</p>"
+    },
+    "TN3270Summary":{
+      "type":"structure",
+      "required":["stepInput"],
+      "members":{
+        "stepInput":{
+          "shape":"TN3270StepInput",
+          "documentation":"<p>The step input of the TN3270 summary.</p>"
+        },
+        "stepOutput":{
+          "shape":"TN3270StepOutput",
+          "documentation":"<p>The step output of the TN3270 summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a TN3270 summary.</p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"(?!aws:).+"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the tag resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags of the resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TargetDatabase":{
+      "type":"string",
+      "enum":["PostgreSQL"]
+    },
+    "TargetDatabaseMetadata":{
+      "type":"structure",
+      "required":[
+        "type",
+        "captureTool"
+      ],
+      "members":{
+        "type":{
+          "shape":"TargetDatabase",
+          "documentation":"<p>The type of the target database metadata.</p>"
+        },
+        "captureTool":{
+          "shape":"CaptureTool",
+          "documentation":"<p>The capture tool of the target database metadata.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a target database metadata.</p>"
+    },
+    "TestCaseIdList":{
+      "type":"list",
+      "member":{"shape":"Identifier"}
+    },
+    "TestCaseLatestVersion":{
+      "type":"structure",
+      "required":[
+        "version",
+        "status"
+      ],
+      "members":{
+        "version":{
+          "shape":"Version",
+          "documentation":"<p>The version of the test case latest version.</p>"
+        },
+        "status":{
+          "shape":"TestCaseLifecycle",
+          "documentation":"<p>The status of the test case latest version.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test case latest version.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the latest version of a test case.</p>"
+    },
+    "TestCaseLifecycle":{
+      "type":"string",
+      "enum":[
+        "Active",
+        "Deleting"
+      ]
+    },
+    "TestCaseList":{
+      "type":"list",
+      "member":{"shape":"Identifier"}
+    },
+    "TestCaseRunStatus":{
+      "type":"string",
+      "enum":[
+        "Success",
+        "Running",
+        "Failed"
+      ]
+    },
+    "TestCaseRunSummary":{
+      "type":"structure",
+      "required":[
+        "testCaseId",
+        "testCaseVersion",
+        "testRunId",
+        "status",
+        "runStartTime"
+      ],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case id of the test case run summary.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test case run summary.</p>"
+        },
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run id of the test case run summary.</p>"
+        },
+        "status":{
+          "shape":"TestCaseRunStatus",
+          "documentation":"<p>The status of the test case run summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test case run summary.</p>"
+        },
+        "runStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run start time of the test case run summary.</p>"
+        },
+        "runEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run end time of the test case run summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the test case run summary.</p>"
+    },
+    "TestCaseRunSummaryList":{
+      "type":"list",
+      "member":{"shape":"TestCaseRunSummary"}
+    },
+    "TestCaseSummary":{
+      "type":"structure",
+      "required":[
+        "testCaseId",
+        "testCaseArn",
+        "name",
+        "latestVersion",
+        "status",
+        "creationTime",
+        "lastUpdateTime"
+      ],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test case summary.</p>"
+        },
+        "testCaseArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test case Amazon Resource Name (ARN) of the test case summary.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test case summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test case summary.</p>"
+        },
+        "latestVersion":{
+          "shape":"Version",
+          "documentation":"<p>The latest version of the test case summary.</p>"
+        },
+        "status":{
+          "shape":"TestCaseLifecycle",
+          "documentation":"<p>The status of the test case summary.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test case summary.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test case summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a test case summary.</p>"
+    },
+    "TestCaseSummaryList":{
+      "type":"list",
+      "member":{"shape":"TestCaseSummary"}
+    },
+    "TestCases":{
+      "type":"structure",
+      "members":{
+        "sequential":{
+          "shape":"TestCaseList",
+          "documentation":"<p>The sequential of the test case.</p>"
+        }
+      },
+      "documentation":"<p>Specifies test cases.</p>",
+      "union":true
+    },
+    "TestConfigurationIdList":{
+      "type":"list",
+      "member":{"shape":"Identifier"}
+    },
+    "TestConfigurationLatestVersion":{
+      "type":"structure",
+      "required":[
+        "version",
+        "status"
+      ],
+      "members":{
+        "version":{
+          "shape":"Version",
+          "documentation":"<p>The version of the test configuration latest version.</p>"
+        },
+        "status":{
+          "shape":"TestConfigurationLifecycle",
+          "documentation":"<p>The status of the test configuration latest version.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test configuration latest version.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the latest version of the test configuration.</p>"
+    },
+    "TestConfigurationLifecycle":{
+      "type":"string",
+      "enum":[
+        "Active",
+        "Deleting"
+      ]
+    },
+    "TestConfigurationList":{
+      "type":"list",
+      "member":{"shape":"TestConfigurationSummary"}
+    },
+    "TestConfigurationSummary":{
+      "type":"structure",
+      "required":[
+        "testConfigurationId",
+        "name",
+        "latestVersion",
+        "testConfigurationArn",
+        "status",
+        "creationTime",
+        "lastUpdateTime"
+      ],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test configuration ID of the test configuration summary.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test configuration summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test configuration summary.</p>"
+        },
+        "latestVersion":{
+          "shape":"Version",
+          "documentation":"<p>The latest version of the test configuration summary.</p>"
+        },
+        "testConfigurationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test configuration ARN of the test configuration summary.</p>"
+        },
+        "status":{
+          "shape":"TestConfigurationLifecycle",
+          "documentation":"<p>The status of the test configuration summary.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test configuration summary.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test configuration summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a test configuration summary.</p>"
+    },
+    "TestRunIdList":{
+      "type":"list",
+      "member":{"shape":"Identifier"}
+    },
+    "TestRunStatus":{
+      "type":"string",
+      "enum":[
+        "Success",
+        "Running",
+        "Failed",
+        "Deleting"
+      ]
+    },
+    "TestRunStepSummary":{
+      "type":"structure",
+      "required":[
+        "stepName",
+        "testRunId",
+        "status",
+        "runStartTime"
+      ],
+      "members":{
+        "stepName":{
+          "shape":"ResourceName",
+          "documentation":"<p>The step name of the test run step summary.</p>"
+        },
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run step summary.</p>"
+        },
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test run step summary.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test run step summary.</p>"
+        },
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test run step summary.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test suite version of the test run step summary.</p>"
+        },
+        "beforeStep":{
+          "shape":"Boolean",
+          "documentation":"<p>The before step of the test run step summary.</p>"
+        },
+        "afterStep":{
+          "shape":"Boolean",
+          "documentation":"<p>The after step of the test run step summary.</p>"
+        },
+        "status":{
+          "shape":"StepRunStatus",
+          "documentation":"<p>The status of the test run step summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test run step summary.</p>"
+        },
+        "runStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run start time of the test run step summary.</p>"
+        },
+        "runEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run end time of the test run step summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a test run step summary.</p>"
+    },
+    "TestRunStepSummaryList":{
+      "type":"list",
+      "member":{"shape":"TestRunStepSummary"}
+    },
+    "TestRunSummary":{
+      "type":"structure",
+      "required":[
+        "testRunId",
+        "testRunArn",
+        "testSuiteId",
+        "testSuiteVersion",
+        "status",
+        "runStartTime"
+      ],
+      "members":{
+        "testRunId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test run ID of the test run summary.</p>"
+        },
+        "testRunArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test run ARN of the test run summary.</p>"
+        },
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test run summary.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test suite version of the test run summary.</p>"
+        },
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test configuration ID of the test run summary.</p>"
+        },
+        "testConfigurationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test configuration version of the test run summary.</p>"
+        },
+        "status":{
+          "shape":"TestRunStatus",
+          "documentation":"<p>The status of the test run summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test run summary.</p>"
+        },
+        "runStartTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run start time of the test run summary.</p>"
+        },
+        "runEndTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The run end time of the test run summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a test run summary.</p>"
+    },
+    "TestRunSummaryList":{
+      "type":"list",
+      "member":{"shape":"TestRunSummary"}
+    },
+    "TestSuiteIdList":{
+      "type":"list",
+      "member":{"shape":"Identifier"}
+    },
+    "TestSuiteLatestVersion":{
+      "type":"structure",
+      "required":[
+        "version",
+        "status"
+      ],
+      "members":{
+        "version":{
+          "shape":"Version",
+          "documentation":"<p>The version of the test suite latest version.</p>"
+        },
+        "status":{
+          "shape":"TestSuiteLifecycle",
+          "documentation":"<p>The status of the test suite latest version.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test suite latest version.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the latest version of a test suite.</p>"
+    },
+    "TestSuiteLifecycle":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Updating",
+        "Active",
+        "Failed",
+        "Deleting"
+      ]
+    },
+    "TestSuiteList":{
+      "type":"list",
+      "member":{"shape":"TestSuiteSummary"}
+    },
+    "TestSuiteSummary":{
+      "type":"structure",
+      "required":[
+        "testSuiteId",
+        "name",
+        "latestVersion",
+        "testSuiteArn",
+        "status",
+        "creationTime",
+        "lastUpdateTime"
+      ],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test suite summary.</p>"
+        },
+        "name":{
+          "shape":"ResourceName",
+          "documentation":"<p>The name of the test suite summary.</p>"
+        },
+        "statusReason":{
+          "shape":"String",
+          "documentation":"<p>The status reason of the test suite summary.</p>"
+        },
+        "latestVersion":{
+          "shape":"Version",
+          "documentation":"<p>The latest version of the test suite summary.</p>"
+        },
+        "testSuiteArn":{
+          "shape":"Arn",
+          "documentation":"<p>The test suite Amazon Resource Name (ARN) of the test suite summary.</p>"
+        },
+        "status":{
+          "shape":"TestSuiteLifecycle",
+          "documentation":"<p>The status of the test suite summary.</p>"
+        },
+        "creationTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The creation time of the test suite summary.</p>"
+        },
+        "lastUpdateTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last update time of the test suite summary.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the test suite summary.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "serviceCode":{
+          "shape":"String",
+          "documentation":"<p>The service code of requests that exceed the limit.</p>"
+        },
+        "quotaCode":{
+          "shape":"String",
+          "documentation":"<p>The quota code of requests that exceed the limit.</p>"
+        },
+        "retryAfterSeconds":{
+          "shape":"Integer",
+          "documentation":"<p>The number of seconds to retry after for requests that exceed the limit.</p>",
+          "location":"header",
+          "locationName":"Retry-After"
+        }
+      },
+      "documentation":"<p>The number of requests made exceeds the limit.</p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys of the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "UpdateTestCaseRequest":{
+      "type":"structure",
+      "required":["testCaseId"],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test case.</p>",
+          "location":"uri",
+          "locationName":"testCaseId"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test case.</p>"
+        },
+        "steps":{
+          "shape":"StepList",
+          "documentation":"<p>The steps of the test case.</p>"
+        }
+      }
+    },
+    "UpdateTestCaseResponse":{
+      "type":"structure",
+      "required":[
+        "testCaseId",
+        "testCaseVersion"
+      ],
+      "members":{
+        "testCaseId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test case ID of the test case.</p>"
+        },
+        "testCaseVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test case version of the test case.</p>"
+        }
+      }
+    },
+    "UpdateTestConfigurationRequest":{
+      "type":"structure",
+      "required":["testConfigurationId"],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test configuration ID of the test configuration.</p>",
+          "location":"uri",
+          "locationName":"testConfigurationId"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test configuration.</p>"
+        },
+        "resources":{
+          "shape":"ResourceList",
+          "documentation":"<p>The resources of the test configuration.</p>"
+        },
+        "properties":{
+          "shape":"Properties",
+          "documentation":"<p>The properties of the test configuration.</p>"
+        },
+        "serviceSettings":{
+          "shape":"ServiceSettings",
+          "documentation":"<p>The service settings of the test configuration.</p>"
+        }
+      }
+    },
+    "UpdateTestConfigurationResponse":{
+      "type":"structure",
+      "required":[
+        "testConfigurationId",
+        "testConfigurationVersion"
+      ],
+      "members":{
+        "testConfigurationId":{
+          "shape":"Identifier",
+          "documentation":"<p>The configuration ID of the test configuration.</p>"
+        },
+        "testConfigurationVersion":{
+          "shape":"Version",
+          "documentation":"<p>The configuration version of the test configuration.</p>"
+        }
+      }
+    },
+    "UpdateTestSuiteRequest":{
+      "type":"structure",
+      "required":["testSuiteId"],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test suite.</p>",
+          "location":"uri",
+          "locationName":"testSuiteId"
+        },
+        "description":{
+          "shape":"ResourceDescription",
+          "documentation":"<p>The description of the test suite.</p>"
+        },
+        "beforeSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The before steps for the test suite.</p>"
+        },
+        "afterSteps":{
+          "shape":"StepList",
+          "documentation":"<p>The after steps of the test suite.</p>"
+        },
+        "testCases":{
+          "shape":"TestCases",
+          "documentation":"<p>The test cases in the test suite.</p>"
+        }
+      }
+    },
+    "UpdateTestSuiteResponse":{
+      "type":"structure",
+      "required":["testSuiteId"],
+      "members":{
+        "testSuiteId":{
+          "shape":"Identifier",
+          "documentation":"<p>The test suite ID of the test suite.</p>"
+        },
+        "testSuiteVersion":{
+          "shape":"Version",
+          "documentation":"<p>The test suite version of the test suite.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{"shape":"String"},
+        "reason":{
+          "shape":"ValidationExceptionReason",
+          "documentation":"<p>The reason for the validation exception.</p>"
+        },
+        "fieldList":{
+          "shape":"ValidationExceptionFieldList",
+          "documentation":"<p>The field list of the validation exception.</p>"
+        }
+      },
+      "documentation":"<p>One or more parameter provided in the request is not valid.</p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ValidationExceptionField":{
+      "type":"structure",
+      "required":[
+        "name",
+        "message"
+      ],
+      "members":{
+        "name":{
+          "shape":"String",
+          "documentation":"<p>The name of the validation exception field.</p>"
+        },
+        "message":{
+          "shape":"String",
+          "documentation":"<p>The message stating reason for why service validation failed.</p>"
+        }
+      },
+      "documentation":"<p>Specifies a validation exception field.</p>"
+    },
+    "ValidationExceptionFieldList":{
+      "type":"list",
+      "member":{"shape":"ValidationExceptionField"}
+    },
+    "ValidationExceptionReason":{
+      "type":"string",
+      "enum":[
+        "unknownOperation",
+        "cannotParse",
+        "fieldValidationFailed",
+        "other"
+      ]
+    },
+    "Variable":{
+      "type":"string",
+      "pattern":"\\S{1,1000}"
+    },
+    "Version":{
+      "type":"integer",
+      "box":true
+    }
+  },
+  "documentation":"<p>AWS Mainframe Modernization Application Testing provides tools and resources for automated functional equivalence testing for your migration projects.</p>"
+}

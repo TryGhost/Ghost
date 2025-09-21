@@ -1,0 +1,161 @@
+{
+  "version": "1.0",
+  "resources": {
+    "WorkspaceBundle": {
+      "operation": "DescribeWorkspaceBundles",
+      "resourceIdentifier": {
+        "Owner": "Bundles[].Owner"
+      }
+    },
+    "Workspace": {
+      "operation": "DescribeWorkspaces",
+      "resourceIdentifier": {
+        "DirectoryId": "Workspaces[].DirectoryId",
+        "UserName": "Workspaces[].UserName",
+        "BundleId": "Workspaces[].BundleId",
+        "WorkspaceProperties": "Workspaces[].WorkspaceProperties"
+      }
+    },
+    "WorkspacesConnectionStatu": {
+      "operation": "DescribeWorkspacesConnectionStatus",
+      "resourceIdentifier": {
+        "WorkspaceId": "WorkspacesConnectionStatus[].WorkspaceId"
+      }
+    }
+  },
+  "operations": {
+    "AssociateIpGroups": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DescribeWorkspaceBundles": {
+      "BundleIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "BundleId"
+          }
+        ]
+      },
+      "Owner": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkspaceBundle",
+            "resourceIdentifier": "Owner"
+          }
+        ]
+      }
+    },
+    "DescribeWorkspaceDirectories": {
+      "DirectoryIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "DescribeWorkspaces": {
+      "WorkspaceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkspacesConnectionStatu",
+            "resourceIdentifier": "WorkspaceId"
+          }
+        ]
+      },
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      },
+      "UserName": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "UserName"
+          }
+        ]
+      },
+      "BundleId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "BundleId"
+          }
+        ]
+      }
+    },
+    "DescribeWorkspacesConnectionStatus": {
+      "WorkspaceIds": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkspacesConnectionStatu",
+            "resourceIdentifier": "WorkspaceId"
+          }
+        ]
+      }
+    },
+    "DisassociateIpGroups": {
+      "DirectoryId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "DirectoryId"
+          }
+        ]
+      }
+    },
+    "ModifyWorkspaceProperties": {
+      "WorkspaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkspacesConnectionStatu",
+            "resourceIdentifier": "WorkspaceId"
+          }
+        ]
+      },
+      "WorkspaceProperties": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Workspace",
+            "resourceIdentifier": "WorkspaceProperties"
+          }
+        ]
+      }
+    },
+    "ModifyWorkspaceState": {
+      "WorkspaceId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "WorkspacesConnectionStatu",
+            "resourceIdentifier": "WorkspaceId"
+          }
+        ]
+      }
+    }
+  }
+}

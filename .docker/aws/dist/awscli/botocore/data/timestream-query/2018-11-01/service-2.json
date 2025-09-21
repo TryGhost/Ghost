@@ -1,0 +1,1926 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-11-01",
+    "endpointPrefix":"query.timestream",
+    "jsonVersion":"1.0",
+    "protocol":"json",
+    "protocols":["json"],
+    "serviceAbbreviation":"Timestream Query",
+    "serviceFullName":"Amazon Timestream Query",
+    "serviceId":"Timestream Query",
+    "signatureVersion":"v4",
+    "signingName":"timestream",
+    "targetPrefix":"Timestream_20181101",
+    "uid":"timestream-query-2018-11-01",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CancelQuery":{
+      "name":"CancelQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CancelQueryRequest"},
+      "output":{"shape":"CancelQueryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p> Cancels a query that has been issued. Cancellation is provided only if the query has not completed running before the cancellation request was issued. Because cancellation is an idempotent operation, subsequent cancellation requests will return a <code>CancellationMessage</code>, indicating that the query has already been canceled. See <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/code-samples.cancel-query.html\">code sample</a> for details. </p>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "CreateScheduledQuery":{
+      "name":"CreateScheduledQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateScheduledQueryRequest"},
+      "output":{"shape":"CreateScheduledQueryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p> Create a scheduled query that will be run on your behalf at the configured schedule. Timestream assumes the execution role provided as part of the <code>ScheduledQueryExecutionRoleArn</code> parameter to run the query. You can use the <code>NotificationConfiguration</code> parameter to configure notification for your scheduled query operations.</p>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "DeleteScheduledQuery":{
+      "name":"DeleteScheduledQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteScheduledQueryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Deletes a given scheduled query. This is an irreversible operation. </p>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "DescribeAccountSettings":{
+      "name":"DescribeAccountSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeAccountSettingsRequest"},
+      "output":{"shape":"DescribeAccountSettingsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Describes the settings for your account that include the query pricing model and the configured maximum TCUs the service can use for your query workload.</p> <p>You're charged only for the duration of compute units used for your workloads.</p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "DescribeEndpoints":{
+      "name":"DescribeEndpoints",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEndpointsRequest"},
+      "output":{"shape":"DescribeEndpointsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>DescribeEndpoints returns a list of available endpoints to make Timestream API calls against. This API is available through both Write and Query.</p> <p>Because the Timestream SDKs are designed to transparently work with the service’s architecture, including the management and mapping of the service endpoints, <i>it is not recommended that you use this API unless</i>:</p> <ul> <li> <p>You are using <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/VPCEndpoints\">VPC endpoints (Amazon Web Services PrivateLink) with Timestream </a> </p> </li> <li> <p>Your application uses a programming language that does not yet have SDK support</p> </li> <li> <p>You require better control over the client-side implementation</p> </li> </ul> <p>For detailed information on how and when to use and implement DescribeEndpoints, see <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/Using.API.html#Using-API.endpoint-discovery\">The Endpoint Discovery Pattern</a>.</p>",
+      "endpointoperation":true
+    },
+    "DescribeScheduledQuery":{
+      "name":"DescribeScheduledQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeScheduledQueryRequest"},
+      "output":{"shape":"DescribeScheduledQueryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Provides detailed information about a scheduled query.</p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "ExecuteScheduledQuery":{
+      "name":"ExecuteScheduledQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ExecuteScheduledQueryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p> You can use this API to run a scheduled query manually. </p> <p>If you enabled <code>QueryInsights</code>, this API also returns insights and metrics related to the query that you executed as part of an Amazon SNS notification. <code>QueryInsights</code> helps with performance tuning of your query. For more information about <code>QueryInsights</code>, see <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/using-query-insights.html\">Using query insights to optimize queries in Amazon Timestream</a>.</p>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "ListScheduledQueries":{
+      "name":"ListScheduledQueries",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListScheduledQueriesRequest"},
+      "output":{"shape":"ListScheduledQueriesResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Gets a list of all scheduled queries in the caller's Amazon account and Region. <code>ListScheduledQueries</code> is eventually consistent. </p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>List all tags on a Timestream query resource.</p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "PrepareQuery":{
+      "name":"PrepareQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PrepareQueryRequest"},
+      "output":{"shape":"PrepareQueryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>A synchronous operation that allows you to submit a query with parameters to be stored by Timestream for later running. Timestream only supports using this operation with <code>ValidateOnly</code> set to <code>true</code>. </p>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "Query":{
+      "name":"Query",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"QueryRequest"},
+      "output":{"shape":"QueryResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"InternalServerException"},
+        {"shape":"QueryExecutionException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p> <code>Query</code> is a synchronous operation that enables you to run a query against your Amazon Timestream data.</p> <p>If you enabled <code>QueryInsights</code>, this API also returns insights and metrics related to the query that you executed. <code>QueryInsights</code> helps with performance tuning of your query. For more information about <code>QueryInsights</code>, see <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/using-query-insights.html\">Using query insights to optimize queries in Amazon Timestream</a>.</p> <note> <p>The maximum number of <code>Query</code> API requests you're allowed to make with <code>QueryInsights</code> enabled is 1 query per second (QPS). If you exceed this query rate, it might result in throttling.</p> </note> <p> <code>Query</code> will time out after 60 seconds. You must update the default timeout in the SDK to support a timeout of 60 seconds. See the <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/code-samples.run-query.html\">code sample</a> for details. </p> <p>Your query request will fail in the following cases:</p> <ul> <li> <p> If you submit a <code>Query</code> request with the same client token outside of the 5-minute idempotency window. </p> </li> <li> <p> If you submit a <code>Query</code> request with the same client token, but change other parameters, within the 5-minute idempotency window. </p> </li> <li> <p> If the size of the row (including the query metadata) exceeds 1 MB, then the query will fail with the following error message: </p> <p> <code>Query aborted as max page response size has been exceeded by the output result row</code> </p> </li> <li> <p> If the IAM principal of the query initiator and the result reader are not the same and/or the query initiator and the result reader do not have the same query string in the query requests, the query will fail with an <code>Invalid pagination token</code> error. </p> </li> </ul>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ServiceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Associate a set of tags with a Timestream resource. You can then activate these user-defined tags so that they appear on the Billing and Cost Management console for cost allocation tracking. </p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Removes the association of tags from a Timestream query resource.</p>",
+      "endpointdiscovery":{"required":true}
+    },
+    "UpdateAccountSettings":{
+      "name":"UpdateAccountSettings",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateAccountSettingsRequest"},
+      "output":{"shape":"UpdateAccountSettingsResponse"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Transitions your account to use TCUs for query pricing and modifies the maximum query compute units that you've configured. If you reduce the value of <code>MaxQueryTCU</code> to a desired configuration, the new value can take up to 24 hours to be effective.</p> <note> <p>After you've transitioned your account to use TCUs for query pricing, you can't transition to using bytes scanned for query pricing.</p> </note>",
+      "endpointdiscovery":{"required":true},
+      "idempotent":true
+    },
+    "UpdateScheduledQuery":{
+      "name":"UpdateScheduledQuery",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateScheduledQueryRequest"},
+      "errors":[
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ValidationException"},
+        {"shape":"InvalidEndpointException"}
+      ],
+      "documentation":"<p>Update a scheduled query.</p>",
+      "endpointdiscovery":{"required":true}
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ServiceErrorMessage"}
+      },
+      "documentation":"<p>You do not have the necessary permissions to access the account settings.</p>",
+      "exception":true,
+      "synthetic":true
+    },
+    "AccountSettingsNotificationConfiguration":{
+      "type":"structure",
+      "required":["RoleArn"],
+      "members":{
+        "SnsConfiguration":{"shape":"SnsConfiguration"},
+        "RoleArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>An Amazon Resource Name (ARN) that grants Timestream permission to publish notifications. This field is only visible if SNS Topic is provided when updating the account settings.</p>"
+        }
+      },
+      "documentation":"<p>Configuration settings for notifications related to account settings.</p>"
+    },
+    "AmazonResourceName":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "CancelQueryRequest":{
+      "type":"structure",
+      "required":["QueryId"],
+      "members":{
+        "QueryId":{
+          "shape":"QueryId",
+          "documentation":"<p> The ID of the query that needs to be cancelled. <code>QueryID</code> is returned as part of the query result. </p>"
+        }
+      }
+    },
+    "CancelQueryResponse":{
+      "type":"structure",
+      "members":{
+        "CancellationMessage":{
+          "shape":"String",
+          "documentation":"<p> A <code>CancellationMessage</code> is returned when a <code>CancelQuery</code> request for the query specified by <code>QueryId</code> has already been issued. </p>"
+        }
+      }
+    },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":128,
+      "min":32,
+      "sensitive":true
+    },
+    "ClientToken":{
+      "type":"string",
+      "max":128,
+      "min":32,
+      "sensitive":true
+    },
+    "ColumnInfo":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p> The name of the result set column. The name of the result set is available for columns of all data types except for arrays. </p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The data type of the result set column. The data type can be a scalar or complex. Scalar data types are integers, strings, doubles, Booleans, and others. Complex data types are types such as arrays, rows, and others. </p>"
+        }
+      },
+      "documentation":"<p> Contains the metadata for query results such as the column names, data types, and other attributes. </p>"
+    },
+    "ColumnInfoList":{
+      "type":"list",
+      "member":{"shape":"ColumnInfo"}
+    },
+    "ComputeMode":{
+      "type":"string",
+      "enum":[
+        "ON_DEMAND",
+        "PROVISIONED"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p> Unable to poll results for a cancelled query. </p>",
+      "exception":true
+    },
+    "CreateScheduledQueryRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "QueryString",
+        "ScheduleConfiguration",
+        "NotificationConfiguration",
+        "ScheduledQueryExecutionRoleArn",
+        "ErrorReportConfiguration"
+      ],
+      "members":{
+        "Name":{
+          "shape":"ScheduledQueryName",
+          "documentation":"<p>Name of the scheduled query.</p>"
+        },
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p>The query string to run. Parameter names can be specified in the query string <code>@</code> character followed by an identifier. The named Parameter <code>@scheduled_runtime</code> is reserved and can be used in the query to get the time at which the query is scheduled to run.</p> <p>The timestamp calculated according to the ScheduleConfiguration parameter, will be the value of <code>@scheduled_runtime</code> paramater for each query run. For example, consider an instance of a scheduled query executing on 2021-12-01 00:00:00. For this instance, the <code>@scheduled_runtime</code> parameter is initialized to the timestamp 2021-12-01 00:00:00 when invoking the query.</p>"
+        },
+        "ScheduleConfiguration":{
+          "shape":"ScheduleConfiguration",
+          "documentation":"<p>The schedule configuration for the query.</p>"
+        },
+        "NotificationConfiguration":{
+          "shape":"NotificationConfiguration",
+          "documentation":"<p>Notification configuration for the scheduled query. A notification is sent by Timestream when a query run finishes, when the state is updated or when you delete it. </p>"
+        },
+        "TargetConfiguration":{
+          "shape":"TargetConfiguration",
+          "documentation":"<p>Configuration used for writing the result of a query.</p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Using a ClientToken makes the call to CreateScheduledQuery idempotent, in other words, making the same request repeatedly will produce the same result. Making multiple identical CreateScheduledQuery requests has the same effect as making a single request. </p> <ul> <li> <p> If CreateScheduledQuery is called without a <code>ClientToken</code>, the Query SDK generates a <code>ClientToken</code> on your behalf.</p> </li> <li> <p> After 8 hours, any request with the same <code>ClientToken</code> is treated as a new request. </p> </li> </ul>",
+          "idempotencyToken":true
+        },
+        "ScheduledQueryExecutionRoleArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN for the IAM role that Timestream will assume when running the scheduled query. </p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>A list of key-value pairs to label the scheduled query.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"StringValue2048",
+          "documentation":"<p>The Amazon KMS key used to encrypt the scheduled query resource, at-rest. If the Amazon KMS key is not specified, the scheduled query resource will be encrypted with a Timestream owned Amazon KMS key. To specify a KMS key, use the key ID, key ARN, alias name, or alias ARN. When using an alias name, prefix the name with <i>alias/</i> </p> <p>If ErrorReportConfiguration uses <code>SSE_KMS</code> as encryption type, the same KmsKeyId is used to encrypt the error report at rest.</p>"
+        },
+        "ErrorReportConfiguration":{
+          "shape":"ErrorReportConfiguration",
+          "documentation":"<p>Configuration for error reporting. Error reports will be generated when a problem is encountered when writing the query results. </p>"
+        }
+      }
+    },
+    "CreateScheduledQueryResponse":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>ARN for the created scheduled query.</p>"
+        }
+      }
+    },
+    "Datum":{
+      "type":"structure",
+      "members":{
+        "ScalarValue":{
+          "shape":"ScalarValue",
+          "documentation":"<p> Indicates if the data point is a scalar value such as integer, string, double, or Boolean. </p>"
+        },
+        "TimeSeriesValue":{
+          "shape":"TimeSeriesDataPointList",
+          "documentation":"<p> Indicates if the data point is a timeseries data type. </p>"
+        },
+        "ArrayValue":{
+          "shape":"DatumList",
+          "documentation":"<p> Indicates if the data point is an array. </p>"
+        },
+        "RowValue":{
+          "shape":"Row",
+          "documentation":"<p> Indicates if the data point is a row. </p>"
+        },
+        "NullValue":{
+          "shape":"NullableBoolean",
+          "documentation":"<p> Indicates if the data point is null. </p>"
+        }
+      },
+      "documentation":"<p> Datum represents a single data point in a query result. </p>"
+    },
+    "DatumList":{
+      "type":"list",
+      "member":{"shape":"Datum"}
+    },
+    "DeleteScheduledQueryRequest":{
+      "type":"structure",
+      "required":["ScheduledQueryArn"],
+      "members":{
+        "ScheduledQueryArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN of the scheduled query. </p>"
+        }
+      }
+    },
+    "DescribeAccountSettingsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeAccountSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "MaxQueryTCU":{
+          "shape":"MaxQueryCapacity",
+          "documentation":"<p>The maximum number of <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/tcu.html\">Timestream compute units</a> (TCUs) the service will use at any point in time to serve your queries. To run queries, you must set a minimum capacity of 4 TCU. You can set the maximum number of TCU in multiples of 4, for example, 4, 8, 16, 32, and so on. This configuration is applicable only for on-demand usage of (TCUs). </p>"
+        },
+        "QueryPricingModel":{
+          "shape":"QueryPricingModel",
+          "documentation":"<p>The pricing model for queries in your account.</p> <note> <p>The <code>QueryPricingModel</code> parameter is used by several Timestream operations; however, the <code>UpdateAccountSettings</code> API operation doesn't recognize any values other than <code>COMPUTE_UNITS</code>.</p> </note>"
+        },
+        "QueryCompute":{
+          "shape":"QueryComputeResponse",
+          "documentation":"<p>An object that contains the usage settings for Timestream Compute Units (TCUs) in your account for the query workload. </p>"
+        }
+      }
+    },
+    "DescribeEndpointsRequest":{
+      "type":"structure",
+      "members":{}
+    },
+    "DescribeEndpointsResponse":{
+      "type":"structure",
+      "required":["Endpoints"],
+      "members":{
+        "Endpoints":{
+          "shape":"Endpoints",
+          "documentation":"<p>An <code>Endpoints</code> object is returned when a <code>DescribeEndpoints</code> request is made.</p>"
+        }
+      }
+    },
+    "DescribeScheduledQueryRequest":{
+      "type":"structure",
+      "required":["ScheduledQueryArn"],
+      "members":{
+        "ScheduledQueryArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN of the scheduled query.</p>"
+        }
+      }
+    },
+    "DescribeScheduledQueryResponse":{
+      "type":"structure",
+      "required":["ScheduledQuery"],
+      "members":{
+        "ScheduledQuery":{
+          "shape":"ScheduledQueryDescription",
+          "documentation":"<p>The scheduled query.</p>"
+        }
+      }
+    },
+    "DimensionMapping":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "DimensionValueType"
+      ],
+      "members":{
+        "Name":{
+          "shape":"SchemaName",
+          "documentation":"<p>Column name from query result.</p>"
+        },
+        "DimensionValueType":{
+          "shape":"DimensionValueType",
+          "documentation":"<p>Type for the dimension. </p>"
+        }
+      },
+      "documentation":"<p>This type is used to map column(s) from the query result to a dimension in the destination table.</p>"
+    },
+    "DimensionMappingList":{
+      "type":"list",
+      "member":{"shape":"DimensionMapping"}
+    },
+    "DimensionValueType":{
+      "type":"string",
+      "enum":["VARCHAR"]
+    },
+    "Double":{"type":"double"},
+    "Endpoint":{
+      "type":"structure",
+      "required":[
+        "Address",
+        "CachePeriodInMinutes"
+      ],
+      "members":{
+        "Address":{
+          "shape":"String",
+          "documentation":"<p>An endpoint address.</p>"
+        },
+        "CachePeriodInMinutes":{
+          "shape":"Long",
+          "documentation":"<p>The TTL for the endpoint, in minutes.</p>"
+        }
+      },
+      "documentation":"<p>Represents an available endpoint against which to make API calls against, as well as the TTL for that endpoint.</p>"
+    },
+    "Endpoints":{
+      "type":"list",
+      "member":{"shape":"Endpoint"}
+    },
+    "ErrorMessage":{"type":"string"},
+    "ErrorReportConfiguration":{
+      "type":"structure",
+      "required":["S3Configuration"],
+      "members":{
+        "S3Configuration":{
+          "shape":"S3Configuration",
+          "documentation":"<p>The S3 configuration for the error reports.</p>"
+        }
+      },
+      "documentation":"<p>Configuration required for error reporting.</p>"
+    },
+    "ErrorReportLocation":{
+      "type":"structure",
+      "members":{
+        "S3ReportLocation":{
+          "shape":"S3ReportLocation",
+          "documentation":"<p>The S3 location where error reports are written.</p>"
+        }
+      },
+      "documentation":"<p>This contains the location of the error report for a single scheduled query call. </p>"
+    },
+    "ExecuteScheduledQueryRequest":{
+      "type":"structure",
+      "required":[
+        "ScheduledQueryArn",
+        "InvocationTime"
+      ],
+      "members":{
+        "ScheduledQueryArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>ARN of the scheduled query.</p>"
+        },
+        "InvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>The timestamp in UTC. Query will be run as if it was invoked at this timestamp. </p>"
+        },
+        "ClientToken":{
+          "shape":"ClientToken",
+          "documentation":"<p>Not used. </p>",
+          "idempotencyToken":true
+        },
+        "QueryInsights":{
+          "shape":"ScheduledQueryInsights",
+          "documentation":"<p>Encapsulates settings for enabling <code>QueryInsights</code>.</p> <p>Enabling <code>QueryInsights</code> returns insights and metrics as a part of the Amazon SNS notification for the query that you executed. You can use <code>QueryInsights</code> to tune your query performance and cost.</p>"
+        }
+      }
+    },
+    "ExecutionStats":{
+      "type":"structure",
+      "members":{
+        "ExecutionTimeInMillis":{
+          "shape":"Long",
+          "documentation":"<p>Total time, measured in milliseconds, that was needed for the scheduled query run to complete.</p>"
+        },
+        "DataWrites":{
+          "shape":"Long",
+          "documentation":"<p>Data writes metered for records ingested in a single scheduled query run.</p>"
+        },
+        "BytesMetered":{
+          "shape":"Long",
+          "documentation":"<p>Bytes metered for a single scheduled query run.</p>"
+        },
+        "CumulativeBytesScanned":{
+          "shape":"Long",
+          "documentation":"<p>Bytes scanned for a single scheduled query run.</p>"
+        },
+        "RecordsIngested":{
+          "shape":"Long",
+          "documentation":"<p>The number of records ingested for a single scheduled query run. </p>"
+        },
+        "QueryResultRows":{
+          "shape":"Long",
+          "documentation":"<p>Number of rows present in the output from running a query before ingestion to destination data source.</p>"
+        }
+      },
+      "documentation":"<p>Statistics for a single scheduled query run.</p>"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>An internal server error occurred while processing the request.</p>",
+      "exception":true
+    },
+    "InvalidEndpointException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The requested endpoint is invalid.</p>",
+      "exception":true
+    },
+    "LastUpdate":{
+      "type":"structure",
+      "members":{
+        "TargetQueryTCU":{
+          "shape":"QueryTCU",
+          "documentation":"<p>The number of TimeStream Compute Units (TCUs) requested in the last account settings update.</p>"
+        },
+        "Status":{
+          "shape":"LastUpdateStatus",
+          "documentation":"<p>The status of the last update. Can be either <code>PENDING</code>, <code>FAILED</code>, or <code>SUCCEEDED</code>.</p>"
+        },
+        "StatusMessage":{
+          "shape":"String",
+          "documentation":"<p>Error message describing the last account settings update status, visible only if an error occurred.</p>"
+        }
+      },
+      "documentation":"<p>Configuration object that contains the most recent account settings update, visible only if settings have been updated previously.</p>"
+    },
+    "LastUpdateStatus":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "FAILED",
+        "SUCCEEDED"
+      ]
+    },
+    "ListScheduledQueriesRequest":{
+      "type":"structure",
+      "members":{
+        "MaxResults":{
+          "shape":"MaxScheduledQueriesResults",
+          "documentation":"<p>The maximum number of items to return in the output. If the total number of items available is more than the value specified, a <code>NextToken</code> is provided in the output. To resume pagination, provide the <code>NextToken</code> value as the argument to the subsequent call to <code>ListScheduledQueriesRequest</code>.</p>"
+        },
+        "NextToken":{
+          "shape":"NextScheduledQueriesResultsToken",
+          "documentation":"<p> A pagination token to resume pagination.</p>"
+        }
+      }
+    },
+    "ListScheduledQueriesResponse":{
+      "type":"structure",
+      "required":["ScheduledQueries"],
+      "members":{
+        "ScheduledQueries":{
+          "shape":"ScheduledQueryList",
+          "documentation":"<p>A list of scheduled queries.</p>"
+        },
+        "NextToken":{
+          "shape":"NextScheduledQueriesResultsToken",
+          "documentation":"<p>A token to specify where to start paginating. This is the NextToken from a previously truncated response.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceARN"],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Timestream resource with tags to be listed. This value is an Amazon Resource Name (ARN).</p>"
+        },
+        "MaxResults":{
+          "shape":"MaxTagsForResourceResult",
+          "documentation":"<p>The maximum number of tags to return.</p>"
+        },
+        "NextToken":{
+          "shape":"NextTagsForResourceResultsToken",
+          "documentation":"<p>A pagination token to resume pagination.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "required":["Tags"],
+      "members":{
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags currently associated with the Timestream resource. </p>"
+        },
+        "NextToken":{
+          "shape":"NextTagsForResourceResultsToken",
+          "documentation":"<p>A pagination token to resume pagination with a subsequent call to <code>ListTagsForResourceResponse</code>.</p>"
+        }
+      }
+    },
+    "Long":{"type":"long"},
+    "MaxQueryCapacity":{"type":"integer"},
+    "MaxQueryResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "MaxScheduledQueriesResults":{
+      "type":"integer",
+      "box":true,
+      "max":1000,
+      "min":1
+    },
+    "MaxTagsForResourceResult":{
+      "type":"integer",
+      "box":true,
+      "max":200,
+      "min":1
+    },
+    "MeasureValueType":{
+      "type":"string",
+      "enum":[
+        "BIGINT",
+        "BOOLEAN",
+        "DOUBLE",
+        "VARCHAR",
+        "MULTI"
+      ]
+    },
+    "MixedMeasureMapping":{
+      "type":"structure",
+      "required":["MeasureValueType"],
+      "members":{
+        "MeasureName":{
+          "shape":"SchemaName",
+          "documentation":"<p>Refers to the value of measure_name in a result row. This field is required if MeasureNameColumn is provided.</p>"
+        },
+        "SourceColumn":{
+          "shape":"SchemaName",
+          "documentation":"<p>This field refers to the source column from which measure-value is to be read for result materialization.</p>"
+        },
+        "TargetMeasureName":{
+          "shape":"SchemaName",
+          "documentation":"<p>Target measure name to be used. If not provided, the target measure name by default would be measure-name if provided, or sourceColumn otherwise. </p>"
+        },
+        "MeasureValueType":{
+          "shape":"MeasureValueType",
+          "documentation":"<p>Type of the value that is to be read from sourceColumn. If the mapping is for MULTI, use MeasureValueType.MULTI.</p>"
+        },
+        "MultiMeasureAttributeMappings":{
+          "shape":"MultiMeasureAttributeMappingList",
+          "documentation":"<p>Required when measureValueType is MULTI. Attribute mappings for MULTI value measures.</p>"
+        }
+      },
+      "documentation":"<p>MixedMeasureMappings are mappings that can be used to ingest data into a mixture of narrow and multi measures in the derived table.</p>"
+    },
+    "MixedMeasureMappingList":{
+      "type":"list",
+      "member":{"shape":"MixedMeasureMapping"},
+      "min":1
+    },
+    "MultiMeasureAttributeMapping":{
+      "type":"structure",
+      "required":[
+        "SourceColumn",
+        "MeasureValueType"
+      ],
+      "members":{
+        "SourceColumn":{
+          "shape":"SchemaName",
+          "documentation":"<p>Source column from where the attribute value is to be read.</p>"
+        },
+        "TargetMultiMeasureAttributeName":{
+          "shape":"SchemaName",
+          "documentation":"<p>Custom name to be used for attribute name in derived table. If not provided, source column name would be used.</p>"
+        },
+        "MeasureValueType":{
+          "shape":"ScalarMeasureValueType",
+          "documentation":"<p>Type of the attribute to be read from the source column.</p>"
+        }
+      },
+      "documentation":"<p>Attribute mapping for MULTI value measures.</p>"
+    },
+    "MultiMeasureAttributeMappingList":{
+      "type":"list",
+      "member":{"shape":"MultiMeasureAttributeMapping"},
+      "min":1
+    },
+    "MultiMeasureMappings":{
+      "type":"structure",
+      "required":["MultiMeasureAttributeMappings"],
+      "members":{
+        "TargetMultiMeasureName":{
+          "shape":"SchemaName",
+          "documentation":"<p>The name of the target multi-measure name in the derived table. This input is required when measureNameColumn is not provided. If MeasureNameColumn is provided, then value from that column will be used as multi-measure name.</p>"
+        },
+        "MultiMeasureAttributeMappings":{
+          "shape":"MultiMeasureAttributeMappingList",
+          "documentation":"<p>Required. Attribute mappings to be used for mapping query results to ingest data for multi-measure attributes.</p>"
+        }
+      },
+      "documentation":"<p>Only one of MixedMeasureMappings or MultiMeasureMappings is to be provided. MultiMeasureMappings can be used to ingest data as multi measures in the derived table.</p>"
+    },
+    "NextScheduledQueriesResultsToken":{"type":"string"},
+    "NextTagsForResourceResultsToken":{"type":"string"},
+    "NotificationConfiguration":{
+      "type":"structure",
+      "required":["SnsConfiguration"],
+      "members":{
+        "SnsConfiguration":{
+          "shape":"SnsConfiguration",
+          "documentation":"<p>Details about the Amazon Simple Notification Service (SNS) configuration. This field is visible only when SNS Topic is provided when updating the account settings. </p>"
+        }
+      },
+      "documentation":"<p>Notification configuration for a scheduled query. A notification is sent by Timestream when a scheduled query is created, its state is updated or when it is deleted. </p>"
+    },
+    "NullableBoolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "PaginationToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ParameterMapping":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Type"
+      ],
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Parameter name.</p>"
+        },
+        "Type":{"shape":"Type"}
+      },
+      "documentation":"<p>Mapping for named parameters.</p>"
+    },
+    "ParameterMappingList":{
+      "type":"list",
+      "member":{"shape":"ParameterMapping"}
+    },
+    "PartitionKey":{"type":"string"},
+    "PartitionKeyList":{
+      "type":"list",
+      "member":{"shape":"PartitionKey"}
+    },
+    "PrepareQueryRequest":{
+      "type":"structure",
+      "required":["QueryString"],
+      "members":{
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p>The Timestream query string that you want to use as a prepared statement. Parameter names can be specified in the query string <code>@</code> character followed by an identifier. </p>"
+        },
+        "ValidateOnly":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>By setting this value to <code>true</code>, Timestream will only validate that the query string is a valid Timestream query, and not store the prepared query for later use.</p>"
+        }
+      }
+    },
+    "PrepareQueryResponse":{
+      "type":"structure",
+      "required":[
+        "QueryString",
+        "Columns",
+        "Parameters"
+      ],
+      "members":{
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p>The query string that you want prepare.</p>"
+        },
+        "Columns":{
+          "shape":"SelectColumnList",
+          "documentation":"<p>A list of SELECT clause columns of the submitted query string. </p>"
+        },
+        "Parameters":{
+          "shape":"ParameterMappingList",
+          "documentation":"<p>A list of parameters used in the submitted query string. </p>"
+        }
+      }
+    },
+    "ProvisionedCapacityRequest":{
+      "type":"structure",
+      "required":["TargetQueryTCU"],
+      "members":{
+        "TargetQueryTCU":{
+          "shape":"QueryTCU",
+          "documentation":"<p>The target compute capacity for querying data, specified in Timestream Compute Units (TCUs).</p>"
+        },
+        "NotificationConfiguration":{
+          "shape":"AccountSettingsNotificationConfiguration",
+          "documentation":"<p>Configuration settings for notifications related to the provisioned capacity update.</p>"
+        }
+      },
+      "documentation":"<p>A request to update the provisioned capacity settings for querying data.</p>"
+    },
+    "ProvisionedCapacityResponse":{
+      "type":"structure",
+      "members":{
+        "ActiveQueryTCU":{
+          "shape":"QueryTCU",
+          "documentation":"<p>The number of Timestream Compute Units (TCUs) provisioned in the account. This field is only visible when the compute mode is <code>PROVISIONED</code>.</p>"
+        },
+        "NotificationConfiguration":{
+          "shape":"AccountSettingsNotificationConfiguration",
+          "documentation":"<p>An object that contains settings for notifications that are sent whenever the provisioned capacity settings are modified. This field is only visible when the compute mode is <code>PROVISIONED</code>.</p>"
+        },
+        "LastUpdate":{
+          "shape":"LastUpdate",
+          "documentation":"<p>Information about the last update to the provisioned capacity settings.</p>"
+        }
+      },
+      "documentation":"<p>The response to a request to update the provisioned capacity settings for querying data.</p>"
+    },
+    "QueryComputeRequest":{
+      "type":"structure",
+      "members":{
+        "ComputeMode":{
+          "shape":"ComputeMode",
+          "documentation":"<p>The mode in which Timestream Compute Units (TCUs) are allocated and utilized within an account. Note that in the Asia Pacific (Mumbai) region, the API operation only recognizes the value <code>PROVISIONED</code>.</p>"
+        },
+        "ProvisionedCapacity":{
+          "shape":"ProvisionedCapacityRequest",
+          "documentation":"<p>Configuration object that contains settings for provisioned Timestream Compute Units (TCUs) in your account.</p>"
+        }
+      },
+      "documentation":"<p>A request to retrieve or update the compute capacity settings for querying data.</p>"
+    },
+    "QueryComputeResponse":{
+      "type":"structure",
+      "members":{
+        "ComputeMode":{
+          "shape":"ComputeMode",
+          "documentation":"<p>The mode in which Timestream Compute Units (TCUs) are allocated and utilized within an account. Note that in the Asia Pacific (Mumbai) region, the API operation only recognizes the value <code>PROVISIONED</code>.</p>"
+        },
+        "ProvisionedCapacity":{
+          "shape":"ProvisionedCapacityResponse",
+          "documentation":"<p>Configuration object that contains settings for provisioned Timestream Compute Units (TCUs) in your account.</p>"
+        }
+      },
+      "documentation":"<p>The response to a request to retrieve or update the compute capacity settings for querying data.</p>"
+    },
+    "QueryExecutionException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p> Timestream was unable to run the query successfully. </p>",
+      "exception":true
+    },
+    "QueryId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9]+"
+    },
+    "QueryInsights":{
+      "type":"structure",
+      "required":["Mode"],
+      "members":{
+        "Mode":{
+          "shape":"QueryInsightsMode",
+          "documentation":"<p>Provides the following modes to enable <code>QueryInsights</code>:</p> <ul> <li> <p> <code>ENABLED_WITH_RATE_CONTROL</code> – Enables <code>QueryInsights</code> for the queries being processed. This mode also includes a rate control mechanism, which limits the <code>QueryInsights</code> feature to 1 query per second (QPS).</p> </li> <li> <p> <code>DISABLED</code> – Disables <code>QueryInsights</code>.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p> <code>QueryInsights</code> is a performance tuning feature that helps you optimize your queries, reducing costs and improving performance. With <code>QueryInsights</code>, you can assess the pruning efficiency of your queries and identify areas for improvement to enhance query performance. With <code>QueryInsights</code>, you can also analyze the effectiveness of your queries in terms of temporal and spatial pruning, and identify opportunities to improve performance. Specifically, you can evaluate how well your queries use time-based and partition key-based indexing strategies to optimize data retrieval. To optimize query performance, it's essential that you fine-tune both the temporal and spatial parameters that govern query execution.</p> <p>The key metrics provided by <code>QueryInsights</code> are <code>QuerySpatialCoverage</code> and <code>QueryTemporalRange</code>. <code>QuerySpatialCoverage</code> indicates how much of the spatial axis the query scans, with lower values being more efficient. <code>QueryTemporalRange</code> shows the time range scanned, with narrower ranges being more performant.</p> <p> <b>Benefits of QueryInsights</b> </p> <p>The following are the key benefits of using <code>QueryInsights</code>:</p> <ul> <li> <p> <b>Identifying inefficient queries</b> – <code>QueryInsights</code> provides information on the time-based and attribute-based pruning of the tables accessed by the query. This information helps you identify the tables that are sub-optimally accessed.</p> </li> <li> <p> <b>Optimizing your data model and partitioning</b> – You can use the <code>QueryInsights</code> information to access and fine-tune your data model and partitioning strategy.</p> </li> <li> <p> <b>Tuning queries</b> – <code>QueryInsights</code> highlights opportunities to use indexes more effectively.</p> </li> </ul> <note> <p>The maximum number of <code>Query</code> API requests you're allowed to make with <code>QueryInsights</code> enabled is 1 query per second (QPS). If you exceed this query rate, it might result in throttling.</p> </note>"
+    },
+    "QueryInsightsMode":{
+      "type":"string",
+      "enum":[
+        "ENABLED_WITH_RATE_CONTROL",
+        "DISABLED"
+      ]
+    },
+    "QueryInsightsResponse":{
+      "type":"structure",
+      "members":{
+        "QuerySpatialCoverage":{
+          "shape":"QuerySpatialCoverage",
+          "documentation":"<p>Provides insights into the spatial coverage of the query, including the table with sub-optimal (max) spatial pruning. This information can help you identify areas for improvement in your partitioning strategy to enhance spatial pruning. </p>"
+        },
+        "QueryTemporalRange":{
+          "shape":"QueryTemporalRange",
+          "documentation":"<p>Provides insights into the temporal range of the query, including the table with the largest (max) time range. Following are some of the potential options for optimizing time-based pruning:</p> <ul> <li> <p>Add missing time-predicates.</p> </li> <li> <p>Remove functions around the time predicates.</p> </li> <li> <p>Add time predicates to all the sub-queries.</p> </li> </ul>"
+        },
+        "QueryTableCount":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the number of tables in the query.</p>",
+          "box":true
+        },
+        "OutputRows":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the total number of rows returned as part of the query result set. You can use this data to validate if the number of rows in the result set have changed as part of the query tuning exercise.</p>",
+          "box":true
+        },
+        "OutputBytes":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the size of query result set in bytes. You can use this data to validate if the result set has changed as part of the query tuning exercise.</p>",
+          "box":true
+        },
+        "UnloadPartitionCount":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the partitions created by the <code>Unload</code> operation.</p>",
+          "box":true
+        },
+        "UnloadWrittenRows":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the rows written by the <code>Unload</code> query.</p>",
+          "box":true
+        },
+        "UnloadWrittenBytes":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the size, in bytes, written by the <code>Unload</code> operation.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>Provides various insights and metrics related to the query that you executed.</p>"
+    },
+    "QueryPricingModel":{
+      "type":"string",
+      "enum":[
+        "BYTES_SCANNED",
+        "COMPUTE_UNITS"
+      ]
+    },
+    "QueryRequest":{
+      "type":"structure",
+      "required":["QueryString"],
+      "members":{
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p> The query to be run by Timestream. </p>"
+        },
+        "ClientToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p> Unique, case-sensitive string of up to 64 ASCII characters specified when a <code>Query</code> request is made. Providing a <code>ClientToken</code> makes the call to <code>Query</code> <i>idempotent</i>. This means that running the same query repeatedly will produce the same result. In other words, making multiple identical <code>Query</code> requests has the same effect as making a single request. When using <code>ClientToken</code> in a query, note the following: </p> <ul> <li> <p> If the Query API is instantiated without a <code>ClientToken</code>, the Query SDK generates a <code>ClientToken</code> on your behalf.</p> </li> <li> <p>If the <code>Query</code> invocation only contains the <code>ClientToken</code> but does not include a <code>NextToken</code>, that invocation of <code>Query</code> is assumed to be a new query run.</p> </li> <li> <p>If the invocation contains <code>NextToken</code>, that particular invocation is assumed to be a subsequent invocation of a prior call to the Query API, and a result set is returned.</p> </li> <li> <p> After 4 hours, any request with the same <code>ClientToken</code> is treated as a new request. </p> </li> </ul>",
+          "idempotencyToken":true
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> A pagination token used to return a set of results. When the <code>Query</code> API is invoked using <code>NextToken</code>, that particular invocation is assumed to be a subsequent invocation of a prior call to <code>Query</code>, and a result set is returned. However, if the <code>Query</code> invocation only contains the <code>ClientToken</code>, that invocation of <code>Query</code> is assumed to be a new query run. </p> <p>Note the following when using NextToken in a query:</p> <ul> <li> <p>A pagination token can be used for up to five <code>Query</code> invocations, OR for a duration of up to 1 hour – whichever comes first.</p> </li> <li> <p>Using the same <code>NextToken</code> will return the same set of records. To keep paginating through the result set, you must to use the most recent <code>nextToken</code>.</p> </li> <li> <p>Suppose a <code>Query</code> invocation returns two <code>NextToken</code> values, <code>TokenA</code> and <code>TokenB</code>. If <code>TokenB</code> is used in a subsequent <code>Query</code> invocation, then <code>TokenA</code> is invalidated and cannot be reused.</p> </li> <li> <p>To request a previous result set from a query after pagination has begun, you must re-invoke the Query API.</p> </li> <li> <p>The latest <code>NextToken</code> should be used to paginate until <code>null</code> is returned, at which point a new <code>NextToken</code> should be used.</p> </li> <li> <p> If the IAM principal of the query initiator and the result reader are not the same and/or the query initiator and the result reader do not have the same query string in the query requests, the query will fail with an <code>Invalid pagination token</code> error. </p> </li> </ul>"
+        },
+        "MaxRows":{
+          "shape":"MaxQueryResults",
+          "documentation":"<p> The total number of rows to be returned in the <code>Query</code> output. The initial run of <code>Query</code> with a <code>MaxRows</code> value specified will return the result set of the query in two cases: </p> <ul> <li> <p>The size of the result is less than <code>1MB</code>.</p> </li> <li> <p>The number of rows in the result set is less than the value of <code>maxRows</code>.</p> </li> </ul> <p>Otherwise, the initial invocation of <code>Query</code> only returns a <code>NextToken</code>, which can then be used in subsequent calls to fetch the result set. To resume pagination, provide the <code>NextToken</code> value in the subsequent command.</p> <p>If the row size is large (e.g. a row has many columns), Timestream may return fewer rows to keep the response size from exceeding the 1 MB limit. If <code>MaxRows</code> is not provided, Timestream will send the necessary number of rows to meet the 1 MB limit.</p>"
+        },
+        "QueryInsights":{
+          "shape":"QueryInsights",
+          "documentation":"<p>Encapsulates settings for enabling <code>QueryInsights</code>.</p> <p>Enabling <code>QueryInsights</code> returns insights and metrics in addition to query results for the query that you executed. You can use <code>QueryInsights</code> to tune your query performance.</p>"
+        }
+      }
+    },
+    "QueryResponse":{
+      "type":"structure",
+      "required":[
+        "QueryId",
+        "Rows",
+        "ColumnInfo"
+      ],
+      "members":{
+        "QueryId":{
+          "shape":"QueryId",
+          "documentation":"<p> A unique ID for the given query. </p>"
+        },
+        "NextToken":{
+          "shape":"PaginationToken",
+          "documentation":"<p> A pagination token that can be used again on a <code>Query</code> call to get the next set of results. </p>"
+        },
+        "Rows":{
+          "shape":"RowList",
+          "documentation":"<p> The result set rows returned by the query. </p>"
+        },
+        "ColumnInfo":{
+          "shape":"ColumnInfoList",
+          "documentation":"<p> The column data types of the returned result set. </p>"
+        },
+        "QueryStatus":{
+          "shape":"QueryStatus",
+          "documentation":"<p>Information about the status of the query, including progress and bytes scanned.</p>"
+        },
+        "QueryInsightsResponse":{
+          "shape":"QueryInsightsResponse",
+          "documentation":"<p>Encapsulates <code>QueryInsights</code> containing insights and metrics related to the query that you executed.</p>"
+        }
+      }
+    },
+    "QuerySpatialCoverage":{
+      "type":"structure",
+      "members":{
+        "Max":{
+          "shape":"QuerySpatialCoverageMax",
+          "documentation":"<p>Provides insights into the spatial coverage of the executed query and the table with the most inefficient spatial pruning.</p> <ul> <li> <p> <code>Value</code> – The maximum ratio of spatial coverage.</p> </li> <li> <p> <code>TableArn</code> – The Amazon Resource Name (ARN) of the table with sub-optimal spatial pruning.</p> </li> <li> <p> <code>PartitionKey</code> – The partition key used for partitioning, which can be a default <code>measure_name</code> or a CDPK.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Provides insights into the spatial coverage of the query, including the table with sub-optimal (max) spatial pruning. This information can help you identify areas for improvement in your partitioning strategy to enhance spatial pruning</p> <p>For example, you can do the following with the <code>QuerySpatialCoverage</code> information:</p> <ul> <li> <p>Add measure_name or use <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/customer-defined-partition-keys.html\">customer-defined partition key</a> (CDPK) predicates.</p> </li> <li> <p>If you've already done the preceding action, remove functions around them or clauses, such as <code>LIKE</code>.</p> </li> </ul>"
+    },
+    "QuerySpatialCoverageMax":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"Double",
+          "documentation":"<p>The maximum ratio of spatial coverage.</p>"
+        },
+        "TableArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the table with the most sub-optimal spatial pruning.</p>"
+        },
+        "PartitionKey":{
+          "shape":"PartitionKeyList",
+          "documentation":"<p>The partition key used for partitioning, which can be a default <code>measure_name</code> or a <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/customer-defined-partition-keys.html\">customer defined partition key</a>.</p>"
+        }
+      },
+      "documentation":"<p>Provides insights into the table with the most sub-optimal spatial range scanned by your query.</p>"
+    },
+    "QueryStatus":{
+      "type":"structure",
+      "members":{
+        "ProgressPercentage":{
+          "shape":"Double",
+          "documentation":"<p>The progress of the query, expressed as a percentage.</p>"
+        },
+        "CumulativeBytesScanned":{
+          "shape":"Long",
+          "documentation":"<p>The amount of data scanned by the query in bytes. This is a cumulative sum and represents the total amount of bytes scanned since the query was started. </p>"
+        },
+        "CumulativeBytesMetered":{
+          "shape":"Long",
+          "documentation":"<p>The amount of data scanned by the query in bytes that you will be charged for. This is a cumulative sum and represents the total amount of data that you will be charged for since the query was started. The charge is applied only once and is either applied when the query completes running or when the query is cancelled. </p>"
+        }
+      },
+      "documentation":"<p>Information about the status of the query, including progress and bytes scanned.</p>"
+    },
+    "QueryString":{
+      "type":"string",
+      "max":262144,
+      "min":1,
+      "sensitive":true
+    },
+    "QueryTCU":{"type":"integer"},
+    "QueryTemporalRange":{
+      "type":"structure",
+      "members":{
+        "Max":{
+          "shape":"QueryTemporalRangeMax",
+          "documentation":"<p>Encapsulates the following properties that provide insights into the most sub-optimal performing table on the temporal axis:</p> <ul> <li> <p> <code>Value</code> – The maximum duration in nanoseconds between the start and end of the query.</p> </li> <li> <p> <code>TableArn</code> – The Amazon Resource Name (ARN) of the table which is queried with the largest time range.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Provides insights into the temporal range of the query, including the table with the largest (max) time range.</p>"
+    },
+    "QueryTemporalRangeMax":{
+      "type":"structure",
+      "members":{
+        "Value":{
+          "shape":"Long",
+          "documentation":"<p>The maximum duration in nanoseconds between the start and end of the query.</p>"
+        },
+        "TableArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the table which is queried with the largest time range.</p>"
+        }
+      },
+      "documentation":"<p>Provides insights into the table with the most sub-optimal temporal pruning scanned by your query.</p>"
+    },
+    "ResourceName":{"type":"string"},
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"},
+        "ScheduledQueryArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The ARN of the scheduled query.</p>"
+        }
+      },
+      "documentation":"<p>The requested resource could not be found.</p>",
+      "exception":true
+    },
+    "Row":{
+      "type":"structure",
+      "required":["Data"],
+      "members":{
+        "Data":{
+          "shape":"DatumList",
+          "documentation":"<p>List of data points in a single row of the result set.</p>"
+        }
+      },
+      "documentation":"<p>Represents a single row in the query results.</p>"
+    },
+    "RowList":{
+      "type":"list",
+      "member":{"shape":"Row"}
+    },
+    "S3BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9]"
+    },
+    "S3Configuration":{
+      "type":"structure",
+      "required":["BucketName"],
+      "members":{
+        "BucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p> Name of the S3 bucket under which error reports will be created.</p>"
+        },
+        "ObjectKeyPrefix":{
+          "shape":"S3ObjectKeyPrefix",
+          "documentation":"<p> Prefix for the error report key. Timestream by default adds the following prefix to the error report path. </p>"
+        },
+        "EncryptionOption":{
+          "shape":"S3EncryptionOption",
+          "documentation":"<p> Encryption at rest options for the error reports. If no encryption option is specified, Timestream will choose SSE_S3 as default. </p>"
+        }
+      },
+      "documentation":"<p>Details on S3 location for error reports that result from running a query. </p>"
+    },
+    "S3EncryptionOption":{
+      "type":"string",
+      "enum":[
+        "SSE_S3",
+        "SSE_KMS"
+      ]
+    },
+    "S3ObjectKey":{"type":"string"},
+    "S3ObjectKeyPrefix":{
+      "type":"string",
+      "max":896,
+      "min":1,
+      "pattern":"[a-zA-Z0-9|!\\-_*'\\(\\)]([a-zA-Z0-9]|[!\\-_*'\\(\\)\\/.])+"
+    },
+    "S3ReportLocation":{
+      "type":"structure",
+      "members":{
+        "BucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p> S3 bucket name. </p>"
+        },
+        "ObjectKey":{
+          "shape":"S3ObjectKey",
+          "documentation":"<p>S3 key. </p>"
+        }
+      },
+      "documentation":"<p> S3 report location for the scheduled query run.</p>"
+    },
+    "ScalarMeasureValueType":{
+      "type":"string",
+      "enum":[
+        "BIGINT",
+        "BOOLEAN",
+        "DOUBLE",
+        "VARCHAR",
+        "TIMESTAMP"
+      ]
+    },
+    "ScalarType":{
+      "type":"string",
+      "enum":[
+        "VARCHAR",
+        "BOOLEAN",
+        "BIGINT",
+        "DOUBLE",
+        "TIMESTAMP",
+        "DATE",
+        "TIME",
+        "INTERVAL_DAY_TO_SECOND",
+        "INTERVAL_YEAR_TO_MONTH",
+        "UNKNOWN",
+        "INTEGER"
+      ]
+    },
+    "ScalarValue":{"type":"string"},
+    "ScheduleConfiguration":{
+      "type":"structure",
+      "required":["ScheduleExpression"],
+      "members":{
+        "ScheduleExpression":{
+          "shape":"ScheduleExpression",
+          "documentation":"<p>An expression that denotes when to trigger the scheduled query run. This can be a cron expression or a rate expression. </p>"
+        }
+      },
+      "documentation":"<p>Configuration of the schedule of the query.</p>"
+    },
+    "ScheduleExpression":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "ScheduledQuery":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Name",
+        "State"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Amazon Resource Name.</p>"
+        },
+        "Name":{
+          "shape":"ScheduledQueryName",
+          "documentation":"<p>The name of the scheduled query.</p>"
+        },
+        "CreationTime":{
+          "shape":"Time",
+          "documentation":"<p>The creation time of the scheduled query.</p>"
+        },
+        "State":{
+          "shape":"ScheduledQueryState",
+          "documentation":"<p>State of scheduled query. </p>"
+        },
+        "PreviousInvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>The last time the scheduled query was run.</p>"
+        },
+        "NextInvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>The next time the scheduled query is to be run.</p>"
+        },
+        "ErrorReportConfiguration":{
+          "shape":"ErrorReportConfiguration",
+          "documentation":"<p>Configuration for scheduled query error reporting.</p>"
+        },
+        "TargetDestination":{
+          "shape":"TargetDestination",
+          "documentation":"<p>Target data source where final scheduled query result will be written.</p>"
+        },
+        "LastRunStatus":{
+          "shape":"ScheduledQueryRunStatus",
+          "documentation":"<p>Status of the last scheduled query run.</p>"
+        }
+      },
+      "documentation":"<p>Scheduled Query</p>"
+    },
+    "ScheduledQueryDescription":{
+      "type":"structure",
+      "required":[
+        "Arn",
+        "Name",
+        "QueryString",
+        "State",
+        "ScheduleConfiguration",
+        "NotificationConfiguration"
+      ],
+      "members":{
+        "Arn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>Scheduled query ARN.</p>"
+        },
+        "Name":{
+          "shape":"ScheduledQueryName",
+          "documentation":"<p>Name of the scheduled query.</p>"
+        },
+        "QueryString":{
+          "shape":"QueryString",
+          "documentation":"<p>The query to be run.</p>"
+        },
+        "CreationTime":{
+          "shape":"Time",
+          "documentation":"<p>Creation time of the scheduled query.</p>"
+        },
+        "State":{
+          "shape":"ScheduledQueryState",
+          "documentation":"<p>State of the scheduled query. </p>"
+        },
+        "PreviousInvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>Last time the query was run.</p>"
+        },
+        "NextInvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>The next time the scheduled query is scheduled to run.</p>"
+        },
+        "ScheduleConfiguration":{
+          "shape":"ScheduleConfiguration",
+          "documentation":"<p>Schedule configuration.</p>"
+        },
+        "NotificationConfiguration":{
+          "shape":"NotificationConfiguration",
+          "documentation":"<p>Notification configuration.</p>"
+        },
+        "TargetConfiguration":{
+          "shape":"TargetConfiguration",
+          "documentation":"<p>Scheduled query target store configuration.</p>"
+        },
+        "ScheduledQueryExecutionRoleArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>IAM role that Timestream uses to run the schedule query.</p>"
+        },
+        "KmsKeyId":{
+          "shape":"StringValue2048",
+          "documentation":"<p>A customer provided KMS key used to encrypt the scheduled query resource.</p>"
+        },
+        "ErrorReportConfiguration":{
+          "shape":"ErrorReportConfiguration",
+          "documentation":"<p>Error-reporting configuration for the scheduled query.</p>"
+        },
+        "LastRunSummary":{
+          "shape":"ScheduledQueryRunSummary",
+          "documentation":"<p>Runtime summary for the last scheduled query run. </p>"
+        },
+        "RecentlyFailedRuns":{
+          "shape":"ScheduledQueryRunSummaryList",
+          "documentation":"<p>Runtime summary for the last five failed scheduled query runs.</p>"
+        }
+      },
+      "documentation":"<p>Structure that describes scheduled query.</p>"
+    },
+    "ScheduledQueryInsights":{
+      "type":"structure",
+      "required":["Mode"],
+      "members":{
+        "Mode":{
+          "shape":"ScheduledQueryInsightsMode",
+          "documentation":"<p>Provides the following modes to enable <code>ScheduledQueryInsights</code>:</p> <ul> <li> <p> <code>ENABLED_WITH_RATE_CONTROL</code> – Enables <code>ScheduledQueryInsights</code> for the queries being processed. This mode also includes a rate control mechanism, which limits the <code>QueryInsights</code> feature to 1 query per second (QPS).</p> </li> <li> <p> <code>DISABLED</code> – Disables <code>ScheduledQueryInsights</code>.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Encapsulates settings for enabling <code>QueryInsights</code> on an <code>ExecuteScheduledQueryRequest</code>.</p>"
+    },
+    "ScheduledQueryInsightsMode":{
+      "type":"string",
+      "enum":[
+        "ENABLED_WITH_RATE_CONTROL",
+        "DISABLED"
+      ]
+    },
+    "ScheduledQueryInsightsResponse":{
+      "type":"structure",
+      "members":{
+        "QuerySpatialCoverage":{
+          "shape":"QuerySpatialCoverage",
+          "documentation":"<p>Provides insights into the spatial coverage of the query, including the table with sub-optimal (max) spatial pruning. This information can help you identify areas for improvement in your partitioning strategy to enhance spatial pruning.</p>"
+        },
+        "QueryTemporalRange":{
+          "shape":"QueryTemporalRange",
+          "documentation":"<p>Provides insights into the temporal range of the query, including the table with the largest (max) time range. Following are some of the potential options for optimizing time-based pruning:</p> <ul> <li> <p>Add missing time-predicates.</p> </li> <li> <p>Remove functions around the time predicates.</p> </li> <li> <p>Add time predicates to all the sub-queries.</p> </li> </ul>"
+        },
+        "QueryTableCount":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the number of tables in the query.</p>",
+          "box":true
+        },
+        "OutputRows":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the total number of rows returned as part of the query result set. You can use this data to validate if the number of rows in the result set have changed as part of the query tuning exercise.</p>",
+          "box":true
+        },
+        "OutputBytes":{
+          "shape":"Long",
+          "documentation":"<p>Indicates the size of query result set in bytes. You can use this data to validate if the result set has changed as part of the query tuning exercise.</p>",
+          "box":true
+        }
+      },
+      "documentation":"<p>Provides various insights and metrics related to the <code>ExecuteScheduledQueryRequest</code> that was executed.</p>"
+    },
+    "ScheduledQueryList":{
+      "type":"list",
+      "member":{"shape":"ScheduledQuery"}
+    },
+    "ScheduledQueryName":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9|!\\-_*'\\(\\)]([a-zA-Z0-9]|[!\\-_*'\\(\\)\\/.])+"
+    },
+    "ScheduledQueryRunStatus":{
+      "type":"string",
+      "enum":[
+        "AUTO_TRIGGER_SUCCESS",
+        "AUTO_TRIGGER_FAILURE",
+        "MANUAL_TRIGGER_SUCCESS",
+        "MANUAL_TRIGGER_FAILURE"
+      ]
+    },
+    "ScheduledQueryRunSummary":{
+      "type":"structure",
+      "members":{
+        "InvocationTime":{
+          "shape":"Time",
+          "documentation":"<p>InvocationTime for this run. This is the time at which the query is scheduled to run. Parameter <code>@scheduled_runtime</code> can be used in the query to get the value. </p>"
+        },
+        "TriggerTime":{
+          "shape":"Time",
+          "documentation":"<p>The actual time when the query was run.</p>"
+        },
+        "RunStatus":{
+          "shape":"ScheduledQueryRunStatus",
+          "documentation":"<p>The status of a scheduled query run.</p>"
+        },
+        "ExecutionStats":{
+          "shape":"ExecutionStats",
+          "documentation":"<p>Runtime statistics for a scheduled run.</p>"
+        },
+        "QueryInsightsResponse":{
+          "shape":"ScheduledQueryInsightsResponse",
+          "documentation":"<p>Provides various insights and metrics related to the run summary of the scheduled query.</p>"
+        },
+        "ErrorReportLocation":{
+          "shape":"ErrorReportLocation",
+          "documentation":"<p>S3 location for error report.</p>"
+        },
+        "FailureReason":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>Error message for the scheduled query in case of failure. You might have to look at the error report to get more detailed error reasons. </p>"
+        }
+      },
+      "documentation":"<p>Run summary for the scheduled query</p>"
+    },
+    "ScheduledQueryRunSummaryList":{
+      "type":"list",
+      "member":{"shape":"ScheduledQueryRunSummary"}
+    },
+    "ScheduledQueryState":{
+      "type":"string",
+      "enum":[
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+    "SchemaName":{"type":"string"},
+    "SelectColumn":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"String",
+          "documentation":"<p>Name of the column.</p>"
+        },
+        "Type":{"shape":"Type"},
+        "DatabaseName":{
+          "shape":"ResourceName",
+          "documentation":"<p> Database that has this column.</p>"
+        },
+        "TableName":{
+          "shape":"ResourceName",
+          "documentation":"<p>Table within the database that has this column. </p>"
+        },
+        "Aliased":{
+          "shape":"NullableBoolean",
+          "documentation":"<p>True, if the column name was aliased by the query. False otherwise.</p>"
+        }
+      },
+      "documentation":"<p>Details of the column that is returned by the query. </p>"
+    },
+    "SelectColumnList":{
+      "type":"list",
+      "member":{"shape":"SelectColumn"}
+    },
+    "ServiceErrorMessage":{"type":"string"},
+    "ServiceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You have exceeded the service quota.</p>",
+      "exception":true
+    },
+    "SnsConfiguration":{
+      "type":"structure",
+      "required":["TopicArn"],
+      "members":{
+        "TopicArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>SNS topic ARN that the scheduled query status notifications will be sent to.</p>"
+        }
+      },
+      "documentation":"<p>Details on SNS that are required to send the notification.</p>"
+    },
+    "String":{"type":"string"},
+    "StringValue2048":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "Tag":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Value"
+      ],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag. Tag keys are case sensitive. </p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag. Tag values are case sensitive and can be null. </p>"
+        }
+      },
+      "documentation":"<p>A tag is a label that you assign to a Timestream database and/or table. Each tag consists of a key and an optional value, both of which you define. Tags enable you to categorize databases and/or tables, for example, by purpose, owner, or environment. </p>"
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "Tags"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>Identifies the Timestream resource to which tags should be added. This value is an Amazon Resource Name (ARN).</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags to be assigned to the Timestream resource.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TargetConfiguration":{
+      "type":"structure",
+      "required":["TimestreamConfiguration"],
+      "members":{
+        "TimestreamConfiguration":{
+          "shape":"TimestreamConfiguration",
+          "documentation":"<p>Configuration needed to write data into the Timestream database and table.</p>"
+        }
+      },
+      "documentation":"<p>Configuration used for writing the output of a query.</p>"
+    },
+    "TargetDestination":{
+      "type":"structure",
+      "members":{
+        "TimestreamDestination":{
+          "shape":"TimestreamDestination",
+          "documentation":"<p>Query result destination details for Timestream data source.</p>"
+        }
+      },
+      "documentation":"<p>Destination details to write data for a target data source. Current supported data source is Timestream.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was throttled due to excessive requests.</p>",
+      "exception":true
+    },
+    "Time":{"type":"timestamp"},
+    "TimeSeriesDataPoint":{
+      "type":"structure",
+      "required":[
+        "Time",
+        "Value"
+      ],
+      "members":{
+        "Time":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp when the measure value was collected.</p>"
+        },
+        "Value":{
+          "shape":"Datum",
+          "documentation":"<p>The measure value for the data point.</p>"
+        }
+      },
+      "documentation":"<p>The timeseries data type represents the values of a measure over time. A time series is an array of rows of timestamps and measure values, with rows sorted in ascending order of time. A TimeSeriesDataPoint is a single data point in the time series. It represents a tuple of (time, measure value) in a time series. </p>"
+    },
+    "TimeSeriesDataPointList":{
+      "type":"list",
+      "member":{"shape":"TimeSeriesDataPoint"}
+    },
+    "Timestamp":{"type":"string"},
+    "TimestreamConfiguration":{
+      "type":"structure",
+      "required":[
+        "DatabaseName",
+        "TableName",
+        "TimeColumn",
+        "DimensionMappings"
+      ],
+      "members":{
+        "DatabaseName":{
+          "shape":"ResourceName",
+          "documentation":"<p>Name of Timestream database to which the query result will be written.</p>"
+        },
+        "TableName":{
+          "shape":"ResourceName",
+          "documentation":"<p>Name of Timestream table that the query result will be written to. The table should be within the same database that is provided in Timestream configuration.</p>"
+        },
+        "TimeColumn":{
+          "shape":"SchemaName",
+          "documentation":"<p>Column from query result that should be used as the time column in destination table. Column type for this should be TIMESTAMP.</p>"
+        },
+        "DimensionMappings":{
+          "shape":"DimensionMappingList",
+          "documentation":"<p> This is to allow mapping column(s) from the query result to the dimension in the destination table. </p>"
+        },
+        "MultiMeasureMappings":{
+          "shape":"MultiMeasureMappings",
+          "documentation":"<p>Multi-measure mappings.</p>"
+        },
+        "MixedMeasureMappings":{
+          "shape":"MixedMeasureMappingList",
+          "documentation":"<p>Specifies how to map measures to multi-measure records.</p>"
+        },
+        "MeasureNameColumn":{
+          "shape":"SchemaName",
+          "documentation":"<p>Name of the measure column.</p>"
+        }
+      },
+      "documentation":"<p> Configuration to write data into Timestream database and table. This configuration allows the user to map the query result select columns into the destination table columns. </p>"
+    },
+    "TimestreamDestination":{
+      "type":"structure",
+      "members":{
+        "DatabaseName":{
+          "shape":"ResourceName",
+          "documentation":"<p>Timestream database name. </p>"
+        },
+        "TableName":{
+          "shape":"ResourceName",
+          "documentation":"<p>Timestream table name. </p>"
+        }
+      },
+      "documentation":"<p>Destination for scheduled query.</p>"
+    },
+    "Type":{
+      "type":"structure",
+      "members":{
+        "ScalarType":{
+          "shape":"ScalarType",
+          "documentation":"<p>Indicates if the column is of type string, integer, Boolean, double, timestamp, date, time. For more information, see <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/supported-data-types.html\">Supported data types</a>.</p>"
+        },
+        "ArrayColumnInfo":{
+          "shape":"ColumnInfo",
+          "documentation":"<p>Indicates if the column is an array.</p>"
+        },
+        "TimeSeriesMeasureValueColumnInfo":{
+          "shape":"ColumnInfo",
+          "documentation":"<p>Indicates if the column is a timeseries data type.</p>"
+        },
+        "RowColumnInfo":{
+          "shape":"ColumnInfoList",
+          "documentation":"<p>Indicates if the column is a row.</p>"
+        }
+      },
+      "documentation":"<p>Contains the data type of a column in a query result set. The data type can be scalar or complex. The supported scalar data types are integers, Boolean, string, double, timestamp, date, time, and intervals. The supported complex data types are arrays, rows, and timeseries.</p>"
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceARN",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceARN":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>The Timestream resource that the tags will be removed from. This value is an Amazon Resource Name (ARN). </p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of tags keys. Existing tags of the resource whose keys are members of this list will be removed from the Timestream resource. </p>"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateAccountSettingsRequest":{
+      "type":"structure",
+      "members":{
+        "MaxQueryTCU":{
+          "shape":"MaxQueryCapacity",
+          "documentation":"<p>The maximum number of compute units the service will use at any point in time to serve your queries. To run queries, you must set a minimum capacity of 4 TCU. You can set the maximum number of TCU in multiples of 4, for example, 4, 8, 16, 32, and so on. The maximum value supported for <code>MaxQueryTCU</code> is 1000. To request an increase to this soft limit, contact Amazon Web Services Support. For information about the default quota for maxQueryTCU, see Default quotas. This configuration is applicable only for on-demand usage of Timestream Compute Units (TCUs).</p> <p>The maximum value supported for <code>MaxQueryTCU</code> is 1000. To request an increase to this soft limit, contact Amazon Web Services Support. For information about the default quota for <code>maxQueryTCU</code>, see <a href=\"https://docs.aws.amazon.com/timestream/latest/developerguide/ts-limits.html#limits.default\">Default quotas</a>.</p>"
+        },
+        "QueryPricingModel":{
+          "shape":"QueryPricingModel",
+          "documentation":"<p>The pricing model for queries in an account.</p> <note> <p>The <code>QueryPricingModel</code> parameter is used by several Timestream operations; however, the <code>UpdateAccountSettings</code> API operation doesn't recognize any values other than <code>COMPUTE_UNITS</code>.</p> </note>"
+        },
+        "QueryCompute":{
+          "shape":"QueryComputeRequest",
+          "documentation":"<p>Modifies the query compute settings configured in your account, including the query pricing model and provisioned Timestream Compute Units (TCUs) in your account.</p> <note> <p>This API is idempotent, meaning that making the same request multiple times will have the same effect as making the request once.</p> </note>"
+        }
+      }
+    },
+    "UpdateAccountSettingsResponse":{
+      "type":"structure",
+      "members":{
+        "MaxQueryTCU":{
+          "shape":"MaxQueryCapacity",
+          "documentation":"<p>The configured maximum number of compute units the service will use at any point in time to serve your queries.</p>"
+        },
+        "QueryPricingModel":{
+          "shape":"QueryPricingModel",
+          "documentation":"<p>The pricing model for an account.</p>"
+        },
+        "QueryCompute":{
+          "shape":"QueryComputeResponse",
+          "documentation":"<p>Confirms the updated account settings for querying data in your account.</p>"
+        }
+      }
+    },
+    "UpdateScheduledQueryRequest":{
+      "type":"structure",
+      "required":[
+        "ScheduledQueryArn",
+        "State"
+      ],
+      "members":{
+        "ScheduledQueryArn":{
+          "shape":"AmazonResourceName",
+          "documentation":"<p>ARN of the scheuled query.</p>"
+        },
+        "State":{
+          "shape":"ScheduledQueryState",
+          "documentation":"<p>State of the scheduled query. </p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p> Invalid or malformed request. </p>",
+      "exception":true
+    }
+  },
+  "documentation":"<fullname>Amazon Timestream Query </fullname> <p/>"
+}

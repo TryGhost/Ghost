@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "resources": {
+    "Attack": {
+      "operation": "ListAttacks",
+      "resourceIdentifier": {
+        "AttackId": "AttackSummaries[].AttackId",
+        "StartTime": "AttackSummaries[].StartTime",
+        "EndTime": "AttackSummaries[].EndTime"
+      }
+    },
+    "Protection": {
+      "operation": "ListProtections",
+      "resourceIdentifier": {
+        "ResourceArn": "Protections[].ResourceArn"
+      }
+    }
+  },
+  "operations": {
+    "DescribeAttack": {
+      "AttackId": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Attack",
+            "resourceIdentifier": "AttackId"
+          }
+        ]
+      }
+    },
+    "ListAttacks": {
+      "ResourceArns": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Protection",
+            "resourceIdentifier": "ResourceArn"
+          }
+        ]
+      },
+      "StartTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Attack",
+            "resourceIdentifier": "StartTime"
+          }
+        ]
+      },
+      "EndTime": {
+        "completions": [
+          {
+            "parameters": {},
+            "resourceName": "Attack",
+            "resourceIdentifier": "EndTime"
+          }
+        ]
+      }
+    }
+  }
+}

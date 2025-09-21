@@ -1,0 +1,4146 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2018-05-10",
+    "auth":["aws.auth#sigv4"],
+    "endpointPrefix":"entityresolution",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"AWSEntityResolution",
+    "serviceFullName":"AWS EntityResolution",
+    "serviceId":"EntityResolution",
+    "signatureVersion":"v4",
+    "signingName":"entityresolution",
+    "uid":"entityresolution-2018-05-10"
+  },
+  "operations":{
+    "AddPolicyStatement":{
+      "name":"AddPolicyStatement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/policies/{arn}/{statementId}",
+        "responseCode":200
+      },
+      "input":{"shape":"AddPolicyStatementInput"},
+      "output":{"shape":"AddPolicyStatementOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Adds a policy statement object. To retrieve a list of existing policy statements, use the <code>GetPolicy</code> API.</p>",
+      "idempotent":true
+    },
+    "BatchDeleteUniqueId":{
+      "name":"BatchDeleteUniqueId",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/matchingworkflows/{workflowName}/uniqueids",
+        "responseCode":200
+      },
+      "input":{"shape":"BatchDeleteUniqueIdInput"},
+      "output":{"shape":"BatchDeleteUniqueIdOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes multiple unique IDs in a matching workflow.</p>"
+    },
+    "CreateIdMappingWorkflow":{
+      "name":"CreateIdMappingWorkflow",
+      "http":{
+        "method":"POST",
+        "requestUri":"/idmappingworkflows",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateIdMappingWorkflowInput"},
+      "output":{"shape":"CreateIdMappingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an <code>IdMappingWorkflow</code> object which stores the configuration of the data processing job to be run. Each <code>IdMappingWorkflow</code> must have a unique workflow name. To modify an existing workflow, use the UpdateIdMappingWorkflow API.</p>"
+    },
+    "CreateIdNamespace":{
+      "name":"CreateIdNamespace",
+      "http":{
+        "method":"POST",
+        "requestUri":"/idnamespaces",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateIdNamespaceInput"},
+      "output":{"shape":"CreateIdNamespaceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates an ID namespace object which will help customers provide metadata explaining their dataset and how to use it. Each ID namespace must have a unique name. To modify an existing ID namespace, use the UpdateIdNamespace API.</p>"
+    },
+    "CreateMatchingWorkflow":{
+      "name":"CreateMatchingWorkflow",
+      "http":{
+        "method":"POST",
+        "requestUri":"/matchingworkflows",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateMatchingWorkflowInput"},
+      "output":{"shape":"CreateMatchingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a matching workflow that defines the configuration for a data processing job. The workflow name must be unique. To modify an existing workflow, use <code>UpdateMatchingWorkflow</code>. </p> <important> <p>For workflows where <code>resolutionType</code> is ML_MATCHING, incremental processing is not supported. </p> </important>"
+    },
+    "CreateSchemaMapping":{
+      "name":"CreateSchemaMapping",
+      "http":{
+        "method":"POST",
+        "requestUri":"/schemas",
+        "responseCode":200
+      },
+      "input":{"shape":"CreateSchemaMappingInput"},
+      "output":{"shape":"CreateSchemaMappingOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Creates a schema mapping, which defines the schema of the input customer records table. The <code>SchemaMapping</code> also provides Entity Resolution with some metadata about the table, such as the attribute types of the columns and which columns to match on.</p>"
+    },
+    "DeleteIdMappingWorkflow":{
+      "name":"DeleteIdMappingWorkflow",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/idmappingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteIdMappingWorkflowInput"},
+      "output":{"shape":"DeleteIdMappingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the <code>IdMappingWorkflow</code> with a given name. This operation will succeed even if a workflow with the given name does not exist.</p>",
+      "idempotent":true
+    },
+    "DeleteIdNamespace":{
+      "name":"DeleteIdNamespace",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/idnamespaces/{idNamespaceName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteIdNamespaceInput"},
+      "output":{"shape":"DeleteIdNamespaceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the <code>IdNamespace</code> with a given name.</p>",
+      "idempotent":true
+    },
+    "DeleteMatchingWorkflow":{
+      "name":"DeleteMatchingWorkflow",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/matchingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteMatchingWorkflowInput"},
+      "output":{"shape":"DeleteMatchingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the <code>MatchingWorkflow</code> with a given name. This operation will succeed even if a workflow with the given name does not exist.</p>",
+      "idempotent":true
+    },
+    "DeletePolicyStatement":{
+      "name":"DeletePolicyStatement",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/policies/{arn}/{statementId}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeletePolicyStatementInput"},
+      "output":{"shape":"DeletePolicyStatementOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the policy statement.</p>",
+      "idempotent":true
+    },
+    "DeleteSchemaMapping":{
+      "name":"DeleteSchemaMapping",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/schemas/{schemaName}",
+        "responseCode":200
+      },
+      "input":{"shape":"DeleteSchemaMappingInput"},
+      "output":{"shape":"DeleteSchemaMappingOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Deletes the <code>SchemaMapping</code> with a given name. This operation will succeed even if a schema with the given name does not exist. This operation will fail if there is a <code>MatchingWorkflow</code> object that references the <code>SchemaMapping</code> in the workflow's <code>InputSourceConfig</code>.</p>",
+      "idempotent":true
+    },
+    "GenerateMatchId":{
+      "name":"GenerateMatchId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/matchingworkflows/{workflowName}/generateMatches",
+        "responseCode":200
+      },
+      "input":{"shape":"GenerateMatchIdInput"},
+      "output":{"shape":"GenerateMatchIdOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Generates or retrieves Match IDs for records using a rule-based matching workflow. When you call this operation, it processes your records against the workflow's matching rules to identify potential matches. For existing records, it retrieves their Match IDs and associated rules. For records without matches, it generates new Match IDs. The operation saves results to Amazon S3. </p> <p>The processing type (<code>processingType</code>) you choose affects both the accuracy and response time of the operation. Additional charges apply for each API call, whether made through the Entity Resolution console or directly via the API. The rule-based matching workflow must exist and be active before calling this operation.</p>"
+    },
+    "GetIdMappingJob":{
+      "name":"GetIdMappingJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idmappingworkflows/{workflowName}/jobs/{jobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIdMappingJobInput"},
+      "output":{"shape":"GetIdMappingJobOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the status, metrics, and errors (if there are any) that are associated with a job.</p>"
+    },
+    "GetIdMappingWorkflow":{
+      "name":"GetIdMappingWorkflow",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idmappingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIdMappingWorkflowInput"},
+      "output":{"shape":"GetIdMappingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the <code>IdMappingWorkflow</code> with a given name, if it exists.</p>"
+    },
+    "GetIdNamespace":{
+      "name":"GetIdNamespace",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idnamespaces/{idNamespaceName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetIdNamespaceInput"},
+      "output":{"shape":"GetIdNamespaceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the <code>IdNamespace</code> with a given name, if it exists.</p>"
+    },
+    "GetMatchId":{
+      "name":"GetMatchId",
+      "http":{
+        "method":"POST",
+        "requestUri":"/matchingworkflows/{workflowName}/matches",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMatchIdInput"},
+      "output":{"shape":"GetMatchIdOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the corresponding Match ID of a customer record if the record has been processed in a rule-based matching workflow or ML matching workflow.</p> <p>You can call this API as a dry run of an incremental load on the rule-based matching workflow.</p>"
+    },
+    "GetMatchingJob":{
+      "name":"GetMatchingJob",
+      "http":{
+        "method":"GET",
+        "requestUri":"/matchingworkflows/{workflowName}/jobs/{jobId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMatchingJobInput"},
+      "output":{"shape":"GetMatchingJobOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the status, metrics, and errors (if there are any) that are associated with a job.</p>"
+    },
+    "GetMatchingWorkflow":{
+      "name":"GetMatchingWorkflow",
+      "http":{
+        "method":"GET",
+        "requestUri":"/matchingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetMatchingWorkflowInput"},
+      "output":{"shape":"GetMatchingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the <code>MatchingWorkflow</code> with a given name, if it exists.</p>"
+    },
+    "GetPolicy":{
+      "name":"GetPolicy",
+      "http":{
+        "method":"GET",
+        "requestUri":"/policies/{arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetPolicyInput"},
+      "output":{"shape":"GetPolicyOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the resource-based policy.</p>"
+    },
+    "GetProviderService":{
+      "name":"GetProviderService",
+      "http":{
+        "method":"GET",
+        "requestUri":"/providerservices/{providerName}/{providerServiceName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetProviderServiceInput"},
+      "output":{"shape":"GetProviderServiceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the <code>ProviderService</code> of a given name.</p>"
+    },
+    "GetSchemaMapping":{
+      "name":"GetSchemaMapping",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schemas/{schemaName}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetSchemaMappingInput"},
+      "output":{"shape":"GetSchemaMappingOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns the SchemaMapping of a given name.</p>"
+    },
+    "ListIdMappingJobs":{
+      "name":"ListIdMappingJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idmappingworkflows/{workflowName}/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIdMappingJobsInput"},
+      "output":{"shape":"ListIdMappingJobsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all ID mapping jobs for a given workflow.</p>"
+    },
+    "ListIdMappingWorkflows":{
+      "name":"ListIdMappingWorkflows",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idmappingworkflows",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIdMappingWorkflowsInput"},
+      "output":{"shape":"ListIdMappingWorkflowsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all the <code>IdMappingWorkflows</code> that have been created for an Amazon Web Services account.</p>"
+    },
+    "ListIdNamespaces":{
+      "name":"ListIdNamespaces",
+      "http":{
+        "method":"GET",
+        "requestUri":"/idnamespaces",
+        "responseCode":200
+      },
+      "input":{"shape":"ListIdNamespacesInput"},
+      "output":{"shape":"ListIdNamespacesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all ID namespaces.</p>"
+    },
+    "ListMatchingJobs":{
+      "name":"ListMatchingJobs",
+      "http":{
+        "method":"GET",
+        "requestUri":"/matchingworkflows/{workflowName}/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMatchingJobsInput"},
+      "output":{"shape":"ListMatchingJobsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Lists all jobs for a given workflow.</p>"
+    },
+    "ListMatchingWorkflows":{
+      "name":"ListMatchingWorkflows",
+      "http":{
+        "method":"GET",
+        "requestUri":"/matchingworkflows",
+        "responseCode":200
+      },
+      "input":{"shape":"ListMatchingWorkflowsInput"},
+      "output":{"shape":"ListMatchingWorkflowsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all the <code>MatchingWorkflows</code> that have been created for an Amazon Web Services account.</p>"
+    },
+    "ListProviderServices":{
+      "name":"ListProviderServices",
+      "http":{
+        "method":"GET",
+        "requestUri":"/providerservices",
+        "responseCode":200
+      },
+      "input":{"shape":"ListProviderServicesInput"},
+      "output":{"shape":"ListProviderServicesOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all the <code>ProviderServices</code> that are available in this Amazon Web Services Region.</p>"
+    },
+    "ListSchemaMappings":{
+      "name":"ListSchemaMappings",
+      "http":{
+        "method":"GET",
+        "requestUri":"/schemas",
+        "responseCode":200
+      },
+      "input":{"shape":"ListSchemaMappingsInput"},
+      "output":{"shape":"ListSchemaMappingsOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Returns a list of all the <code>SchemaMappings</code> that have been created for an Amazon Web Services account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"ListTagsForResourceInput"},
+      "output":{"shape":"ListTagsForResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Displays the tags associated with an Entity Resolution resource. In Entity Resolution, <code>SchemaMapping</code>, and <code>MatchingWorkflow</code> can be tagged.</p>"
+    },
+    "PutPolicy":{
+      "name":"PutPolicy",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/policies/{arn}",
+        "responseCode":200
+      },
+      "input":{"shape":"PutPolicyInput"},
+      "output":{"shape":"PutPolicyOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates the resource-based policy.</p>",
+      "idempotent":true
+    },
+    "StartIdMappingJob":{
+      "name":"StartIdMappingJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/idmappingworkflows/{workflowName}/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartIdMappingJobInput"},
+      "output":{"shape":"StartIdMappingJobOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Starts the <code>IdMappingJob</code> of a workflow. The workflow must have previously been created using the <code>CreateIdMappingWorkflow</code> endpoint.</p>"
+    },
+    "StartMatchingJob":{
+      "name":"StartMatchingJob",
+      "http":{
+        "method":"POST",
+        "requestUri":"/matchingworkflows/{workflowName}/jobs",
+        "responseCode":200
+      },
+      "input":{"shape":"StartMatchingJobInput"},
+      "output":{"shape":"StartMatchingJobOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ExceedsLimitException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Starts the <code>MatchingJob</code> of a workflow. The workflow must have previously been created using the <code>CreateMatchingWorkflow</code> endpoint.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"TagResourceInput"},
+      "output":{"shape":"TagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Assigns one or more tags (key-value pairs) to the specified Entity Resolution resource. Tags can help you organize and categorize your resources. You can also use them to scope user permissions by granting a user permission to access or change only resources with certain tag values. In Entity Resolution, <code>SchemaMapping</code> and <code>MatchingWorkflow</code> can be tagged. Tags don't have any semantic meaning to Amazon Web Services and are interpreted strictly as strings of characters. You can use the <code>TagResource</code> action with a resource that already has tags. If you specify a new tag key, this tag is appended to the list of tags associated with the resource. If you specify a tag key that is already associated with the resource, the new tag value that you specify replaces the previous value for that tag.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}",
+        "responseCode":200
+      },
+      "input":{"shape":"UntagResourceInput"},
+      "output":{"shape":"UntagResourceOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes one or more tags from the specified Entity Resolution resource. In Entity Resolution, <code>SchemaMapping</code>, and <code>MatchingWorkflow</code> can be tagged.</p>",
+      "idempotent":true
+    },
+    "UpdateIdMappingWorkflow":{
+      "name":"UpdateIdMappingWorkflow",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/idmappingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateIdMappingWorkflowInput"},
+      "output":{"shape":"UpdateIdMappingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an existing <code>IdMappingWorkflow</code>. This method is identical to CreateIdMappingWorkflow, except it uses an HTTP <code>PUT</code> request instead of a <code>POST</code> request, and the <code>IdMappingWorkflow</code> must already exist for the method to succeed.</p>",
+      "idempotent":true
+    },
+    "UpdateIdNamespace":{
+      "name":"UpdateIdNamespace",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/idnamespaces/{idNamespaceName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateIdNamespaceInput"},
+      "output":{"shape":"UpdateIdNamespaceOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an existing ID namespace.</p>",
+      "idempotent":true
+    },
+    "UpdateMatchingWorkflow":{
+      "name":"UpdateMatchingWorkflow",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/matchingworkflows/{workflowName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateMatchingWorkflowInput"},
+      "output":{"shape":"UpdateMatchingWorkflowOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates an existing matching workflow. The workflow must already exist for this operation to succeed.</p> <important> <p>For workflows where <code>resolutionType</code> is ML_MATCHING, incremental processing is not supported. </p> </important>",
+      "idempotent":true
+    },
+    "UpdateSchemaMapping":{
+      "name":"UpdateSchemaMapping",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/schemas/{schemaName}",
+        "responseCode":200
+      },
+      "input":{"shape":"UpdateSchemaMappingInput"},
+      "output":{"shape":"UpdateSchemaMappingOutput"},
+      "errors":[
+        {"shape":"ThrottlingException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ValidationException"}
+      ],
+      "documentation":"<p>Updates a schema mapping.</p> <note> <p>A schema is immutable if it is being used by a workflow. Therefore, you can't update a schema mapping if it's associated with a workflow. </p> </note>",
+      "idempotent":true
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action. </p>",
+      "error":{
+        "httpStatusCode":403,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "AddPolicyStatementInput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "statementId",
+        "effect",
+        "action",
+        "principal"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that will be accessed by the principal.</p>",
+          "location":"uri",
+          "locationName":"arn"
+        },
+        "statementId":{
+          "shape":"StatementId",
+          "documentation":"<p>A statement identifier that differentiates the statement from others in the same policy.</p>",
+          "location":"uri",
+          "locationName":"statementId"
+        },
+        "effect":{
+          "shape":"StatementEffect",
+          "documentation":"<p>Determines whether the permissions specified in the policy are to be allowed (<code>Allow</code>) or denied (<code>Deny</code>).</p> <important> <p> If you set the value of the <code>effect</code> parameter to <code>Deny</code> for the <code>AddPolicyStatement</code> operation, you must also set the value of the <code>effect</code> parameter in the <code>policy</code> to <code>Deny</code> for the <code>PutPolicy</code> operation.</p> </important>"
+        },
+        "action":{
+          "shape":"StatementActionList",
+          "documentation":"<p>The action that the principal can use on the resource. </p> <p>For example, <code>entityresolution:GetIdMappingJob</code>, <code>entityresolution:GetMatchingJob</code>.</p>"
+        },
+        "principal":{
+          "shape":"StatementPrincipalList",
+          "documentation":"<p>The Amazon Web Services service or Amazon Web Services account that can access the resource defined as ARN.</p>"
+        },
+        "condition":{
+          "shape":"StatementCondition",
+          "documentation":"<p>A set of condition keys that you can use in key policies.</p>"
+        }
+      }
+    },
+    "AddPolicyStatementOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "token"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource that will be accessed by the principal.</p>"
+        },
+        "token":{
+          "shape":"PolicyToken",
+          "documentation":"<p>A unique identifier for the current revision of the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy.</p>"
+        }
+      }
+    },
+    "AttributeMatchingModel":{
+      "type":"string",
+      "enum":[
+        "ONE_TO_ONE",
+        "MANY_TO_MANY"
+      ]
+    },
+    "AttributeName":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"[a-zA-Z_0-9- ]*"
+    },
+    "AwsAccountId":{
+      "type":"string",
+      "pattern":"\\d{12}"
+    },
+    "AwsAccountIdList":{
+      "type":"list",
+      "member":{"shape":"AwsAccountId"}
+    },
+    "BatchDeleteUniqueIdInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "uniqueIds"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "inputSource":{
+          "shape":"BatchDeleteUniqueIdInputInputSourceString",
+          "documentation":"<p>The input source for the batch delete unique ID operation.</p>",
+          "location":"header",
+          "locationName":"inputSource"
+        },
+        "uniqueIds":{
+          "shape":"UniqueIdList",
+          "documentation":"<p>The unique IDs to delete.</p>",
+          "location":"header",
+          "locationName":"uniqueIds"
+        }
+      }
+    },
+    "BatchDeleteUniqueIdInputInputSourceString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "BatchDeleteUniqueIdOutput":{
+      "type":"structure",
+      "required":[
+        "status",
+        "errors",
+        "deleted",
+        "disconnectedUniqueIds"
+      ],
+      "members":{
+        "status":{
+          "shape":"DeleteUniqueIdStatus",
+          "documentation":"<p>The status of the batch delete unique ID operation.</p>"
+        },
+        "errors":{
+          "shape":"DeleteUniqueIdErrorsList",
+          "documentation":"<p> The errors from deleting multiple unique IDs.</p>"
+        },
+        "deleted":{
+          "shape":"DeletedUniqueIdList",
+          "documentation":"<p>The unique IDs that were deleted.</p>"
+        },
+        "disconnectedUniqueIds":{
+          "shape":"DisconnectedUniqueIdsList",
+          "documentation":"<p>The unique IDs that were disconnected.</p>"
+        }
+      }
+    },
+    "Boolean":{
+      "type":"boolean",
+      "box":true
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request could not be processed because of conflict in the current state of the resource. Example: Workflow already exists, Schema already exists, Workflow is currently running, etc. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "CreateIdMappingWorkflowInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "inputSourceConfig",
+        "idMappingTechniques"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow. There can't be multiple <code>IdMappingWorkflows</code> with the same name.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdMappingWorkflowInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingWorkflowOutputSourceConfig",
+          "documentation":"<p>A list of <code>IdMappingWorkflowOutputSource</code> objects, each of which contains fields <code>outputS3Path</code> and <code>KMSArn</code>.</p>"
+        },
+        "idMappingTechniques":{
+          "shape":"IdMappingTechniques",
+          "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+        },
+        "roleArn":{
+          "shape":"IdMappingRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateIdMappingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "inputSourceConfig",
+        "idMappingTechniques"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"IdMappingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>IDMappingWorkflow</code>.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdMappingWorkflowInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingWorkflowOutputSourceConfig",
+          "documentation":"<p>A list of <code>IdMappingWorkflowOutputSource</code> objects, each of which contains fields <code>outputS3Path</code> and <code>KMSArn</code>.</p>"
+        },
+        "idMappingTechniques":{
+          "shape":"IdMappingTechniques",
+          "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+        },
+        "roleArn":{
+          "shape":"IdMappingRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        }
+      }
+    },
+    "CreateIdNamespaceInput":{
+      "type":"structure",
+      "required":[
+        "idNamespaceName",
+        "type"
+      ],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdNamespaceInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowPropertiesList",
+          "documentation":"<p>Determines the properties of <code>IdMappingWorflow</code> where this <code>IdNamespace</code> can be used as a <code>Source</code> or a <code>Target</code>.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>. </p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> to which all <code>sourceIds</code> will resolve to.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access the resources defined in this <code>IdNamespace</code> on your behalf as part of the workflow run.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateIdNamespaceOutput":{
+      "type":"structure",
+      "required":[
+        "idNamespaceName",
+        "idNamespaceArn",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>"
+        },
+        "idNamespaceArn":{
+          "shape":"IdNamespaceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ID namespace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdNamespaceInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowPropertiesList",
+          "documentation":"<p>Determines the properties of <code>IdMappingWorkflow</code> where this <code>IdNamespace</code> can be used as a <code>Source</code> or a <code>Target</code>.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>.</p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> to which all <code>sourceIds</code> will resolve to.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access the resources defined in <code>inputSourceConfig</code> on your behalf as part of the workflow run.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was last updated.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateMatchingWorkflowInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "inputSourceConfig",
+        "outputSourceConfig",
+        "resolutionTechniques",
+        "roleArn"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow. There can't be multiple <code>MatchingWorkflows</code> with the same name.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"InputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"OutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code>, <code>applyNormalization</code>, <code>KMSArn</code>, and <code>output</code>.</p>"
+        },
+        "resolutionTechniques":{
+          "shape":"ResolutionTechniques",
+          "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+        },
+        "incrementalRunConfig":{
+          "shape":"IncrementalRunConfig",
+          "documentation":"<p>Optional. An object that defines the incremental run type. This object contains only the <code>incrementalRunType</code> field, which appears as \"Automatic\" in the console. </p> <important> <p>For workflows where <code>resolutionType</code> is <code>ML_MATCHING</code>, incremental processing is not supported. </p> </important>"
+        },
+        "roleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateMatchingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "inputSourceConfig",
+        "outputSourceConfig",
+        "resolutionTechniques",
+        "roleArn"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"MatchingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>MatchingWorkflow</code>.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"InputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"OutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code>, <code>applyNormalization</code>, <code>KMSArn</code>, and <code>output</code>.</p>"
+        },
+        "resolutionTechniques":{
+          "shape":"ResolutionTechniques",
+          "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+        },
+        "incrementalRunConfig":{
+          "shape":"IncrementalRunConfig",
+          "documentation":"<p>An object which defines an incremental run type and has only <code>incrementalRunType</code> as a field.</p>"
+        },
+        "roleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        }
+      }
+    },
+    "CreateSchemaMappingInput":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "mappedInputFields"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema. There can't be multiple <code>SchemaMappings</code> with the same name.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the schema.</p>"
+        },
+        "mappedInputFields":{
+          "shape":"SchemaInputAttributes",
+          "documentation":"<p>A list of <code>MappedInputFields</code>. Each <code>MappedInputField</code> corresponds to a column the source data table, and contains column name plus additional information that Entity Resolution uses for matching.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "CreateSchemaMappingOutput":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "schemaArn",
+        "description",
+        "mappedInputFields"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema.</p>"
+        },
+        "schemaArn":{
+          "shape":"SchemaMappingArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>SchemaMapping</code>.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the schema.</p>"
+        },
+        "mappedInputFields":{
+          "shape":"SchemaInputAttributes",
+          "documentation":"<p>A list of <code>MappedInputFields</code>. Each <code>MappedInputField</code> corresponds to a column the source data table, and contains column name plus additional information that Entity Resolution uses for matching.</p>"
+        }
+      }
+    },
+    "DeleteIdMappingWorkflowInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow to be deleted.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        }
+      }
+    },
+    "DeleteIdMappingWorkflowOutput":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A successful operation message.</p>"
+        }
+      }
+    },
+    "DeleteIdNamespaceInput":{
+      "type":"structure",
+      "required":["idNamespaceName"],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>",
+          "location":"uri",
+          "locationName":"idNamespaceName"
+        }
+      }
+    },
+    "DeleteIdNamespaceOutput":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A successful operation message.</p>"
+        }
+      }
+    },
+    "DeleteMatchingWorkflowInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        }
+      }
+    },
+    "DeleteMatchingWorkflowOutput":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A successful operation message.</p>"
+        }
+      }
+    },
+    "DeletePolicyStatementInput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "statementId"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The ARN of the resource for which the policy need to be deleted.</p>",
+          "location":"uri",
+          "locationName":"arn"
+        },
+        "statementId":{
+          "shape":"StatementId",
+          "documentation":"<p>A statement identifier that differentiates the statement from others in the same policy.</p>",
+          "location":"uri",
+          "locationName":"statementId"
+        }
+      }
+    },
+    "DeletePolicyStatementOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "token"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The ARN of the resource for which the policy need to be deleted.</p>"
+        },
+        "token":{
+          "shape":"PolicyToken",
+          "documentation":"<p>A unique identifier for the deleted policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy.</p>"
+        }
+      }
+    },
+    "DeleteSchemaMappingInput":{
+      "type":"structure",
+      "required":["schemaName"],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema to delete.</p>",
+          "location":"uri",
+          "locationName":"schemaName"
+        }
+      }
+    },
+    "DeleteSchemaMappingOutput":{
+      "type":"structure",
+      "required":["message"],
+      "members":{
+        "message":{
+          "shape":"String",
+          "documentation":"<p>A successful operation message.</p>"
+        }
+      }
+    },
+    "DeleteUniqueIdError":{
+      "type":"structure",
+      "required":[
+        "uniqueId",
+        "errorType"
+      ],
+      "members":{
+        "uniqueId":{
+          "shape":"HeaderSafeUniqueId",
+          "documentation":"<p>The unique ID that could not be deleted.</p>"
+        },
+        "errorType":{
+          "shape":"DeleteUniqueIdErrorType",
+          "documentation":"<p> The error type for the batch delete unique ID operation.</p>"
+        }
+      },
+      "documentation":"<p>The Delete Unique Id error.</p>"
+    },
+    "DeleteUniqueIdErrorType":{
+      "type":"string",
+      "enum":[
+        "SERVICE_ERROR",
+        "VALIDATION_ERROR"
+      ]
+    },
+    "DeleteUniqueIdErrorsList":{
+      "type":"list",
+      "member":{"shape":"DeleteUniqueIdError"}
+    },
+    "DeleteUniqueIdStatus":{
+      "type":"string",
+      "enum":[
+        "COMPLETED",
+        "ACCEPTED"
+      ]
+    },
+    "DeletedUniqueId":{
+      "type":"structure",
+      "required":["uniqueId"],
+      "members":{
+        "uniqueId":{
+          "shape":"HeaderSafeUniqueId",
+          "documentation":"<p> The unique ID of the deleted item.</p>"
+        }
+      },
+      "documentation":"<p>The deleted unique ID.</p>"
+    },
+    "DeletedUniqueIdList":{
+      "type":"list",
+      "member":{"shape":"DeletedUniqueId"}
+    },
+    "Description":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "DisconnectedUniqueIdsList":{
+      "type":"list",
+      "member":{"shape":"HeaderSafeUniqueId"}
+    },
+    "Document":{
+      "type":"structure",
+      "members":{},
+      "document":true
+    },
+    "EntityName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"[a-zA-Z_0-9-]*"
+    },
+    "EntityNameOrIdMappingWorkflowArn":{
+      "type":"string",
+      "pattern":"[a-zA-Z_0-9-=+/]*$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idmappingworkflow/[a-zA-Z_0-9-]{1,255})"
+    },
+    "EntityNameOrIdNamespaceArn":{
+      "type":"string",
+      "pattern":"[a-zA-Z_0-9-=+/]*$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})"
+    },
+    "ErrorDetails":{
+      "type":"structure",
+      "members":{
+        "errorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p>The error message from the job, if there is one.</p>"
+        }
+      },
+      "documentation":"<p>An object containing an error message, if there was an error.</p>"
+    },
+    "ErrorMessage":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "ExceedsLimitException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"},
+        "quotaName":{
+          "shape":"String",
+          "documentation":"<p>The name of the quota that has been breached.</p>"
+        },
+        "quotaValue":{
+          "shape":"Integer",
+          "documentation":"<p>The current quota value for the customers.</p>"
+        }
+      },
+      "documentation":"<p>The request was rejected because it attempted to create resources beyond the current Entity Resolution account limits. The error message describes the limit exceeded. </p>",
+      "error":{
+        "httpStatusCode":402,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "FailedRecord":{
+      "type":"structure",
+      "required":[
+        "inputSourceARN",
+        "uniqueId",
+        "errorMessage"
+      ],
+      "members":{
+        "inputSourceARN":{
+          "shape":"FailedRecordInputSourceARNString",
+          "documentation":"<p> The input source ARN of the record that didn't generate a Match ID.</p>"
+        },
+        "uniqueId":{
+          "shape":"String",
+          "documentation":"<p> The unique ID of the record that didn't generate a Match ID.</p>"
+        },
+        "errorMessage":{
+          "shape":"ErrorMessage",
+          "documentation":"<p> The error message for the record that didn't generate a Match ID.</p>"
+        }
+      },
+      "documentation":"<p>The record that didn't generate a Match ID.</p>"
+    },
+    "FailedRecordInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "FailedRecordsList":{
+      "type":"list",
+      "member":{"shape":"FailedRecord"}
+    },
+    "GenerateMatchIdInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "records"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p> The name of the rule-based matching workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "records":{
+          "shape":"GenerateMatchIdInputRecordsList",
+          "documentation":"<p> The records to match.</p>"
+        },
+        "processingType":{
+          "shape":"ProcessingType",
+          "documentation":"<p>The processing mode that determines how Match IDs are generated and results are saved. Each mode provides different levels of accuracy, response time, and completeness of results.</p> <p>If not specified, defaults to <code>CONSISTENT</code>.</p> <p> <code>CONSISTENT</code>: Performs immediate lookup and matching against all existing records, with results saved synchronously. Provides highest accuracy but slower response time.</p> <p> <code>EVENTUAL</code> (shown as <i>Background</i> in the console): Performs initial match ID lookup or generation immediately, with record updates processed asynchronously in the background. Offers faster initial response time, with complete matching results available later in S3. </p> <p> <code>EVENTUAL_NO_LOOKUP</code> (shown as <i>Quick ID generation</i> in the console): Generates new match IDs without checking existing matches, with updates processed asynchronously. Provides fastest response time but should only be used for records known to be unique. </p>"
+        }
+      }
+    },
+    "GenerateMatchIdInputRecordsList":{
+      "type":"list",
+      "member":{"shape":"Record"},
+      "max":1,
+      "min":1
+    },
+    "GenerateMatchIdOutput":{
+      "type":"structure",
+      "required":[
+        "matchGroups",
+        "failedRecords"
+      ],
+      "members":{
+        "matchGroups":{
+          "shape":"MatchGroupsList",
+          "documentation":"<p> The match groups from the generated match ID.</p>"
+        },
+        "failedRecords":{
+          "shape":"FailedRecordsList",
+          "documentation":"<p> The records that didn't receive a generated Match ID.</p>"
+        }
+      }
+    },
+    "GetIdMappingJobInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "jobId"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityNameOrIdMappingWorkflowArn",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        }
+      }
+    },
+    "GetIdMappingJobOutput":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "status",
+        "startTime"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>"
+        },
+        "status":{
+          "shape":"JobStatus",
+          "documentation":"<p>The current status of the job.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job was started.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job has finished.</p>"
+        },
+        "metrics":{
+          "shape":"IdMappingJobMetrics",
+          "documentation":"<p>Metrics associated with the execution, specifically total records processed, unique IDs generated, and records the execution skipped.</p>"
+        },
+        "errorDetails":{"shape":"ErrorDetails"},
+        "outputSourceConfig":{
+          "shape":"IdMappingJobOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects.</p>"
+        }
+      }
+    },
+    "GetIdMappingWorkflowInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        }
+      }
+    },
+    "GetIdMappingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "inputSourceConfig",
+        "idMappingTechniques",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"IdMappingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>IdMappingWorkflow</code> .</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdMappingWorkflowInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingWorkflowOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code> and <code>KMSArn</code>.</p>"
+        },
+        "idMappingTechniques":{
+          "shape":"IdMappingTechniques",
+          "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was last updated.</p>"
+        },
+        "roleArn":{
+          "shape":"IdMappingRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "GetIdNamespaceInput":{
+      "type":"structure",
+      "required":["idNamespaceName"],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityNameOrIdNamespaceArn",
+          "documentation":"<p>The name of the ID namespace.</p>",
+          "location":"uri",
+          "locationName":"idNamespaceName"
+        }
+      }
+    },
+    "GetIdNamespaceOutput":{
+      "type":"structure",
+      "required":[
+        "idNamespaceName",
+        "idNamespaceArn",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>"
+        },
+        "idNamespaceArn":{
+          "shape":"IdNamespaceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ID namespace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdNamespaceInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowPropertiesList",
+          "documentation":"<p>Determines the properties of <code>IdMappingWorkflow</code> where this <code>IdNamespace</code> can be used as a <code>Source</code> or a <code>Target</code>.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>.</p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> to which all <code>sourceIds</code> will resolve to.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access the resources defined in this <code>IdNamespace</code> on your behalf as part of a workflow run.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was last updated.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "GetMatchIdInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "record"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "record":{
+          "shape":"RecordAttributeMap",
+          "documentation":"<p>The record to fetch the Match ID for.</p>"
+        },
+        "applyNormalization":{
+          "shape":"Boolean",
+          "documentation":"<p>Normalizes the attributes defined in the schema in the input data. For example, if an attribute has an <code>AttributeType</code> of <code>PHONE_NUMBER</code>, and the data in the input table is in a format of 1234567890, Entity Resolution will normalize this field in the output to (123)-456-7890.</p>"
+        }
+      }
+    },
+    "GetMatchIdOutput":{
+      "type":"structure",
+      "members":{
+        "matchId":{
+          "shape":"String",
+          "documentation":"<p>The unique identifiers for this group of match records.</p>"
+        },
+        "matchRule":{
+          "shape":"String",
+          "documentation":"<p>The rule the record matched on.</p>"
+        }
+      }
+    },
+    "GetMatchingJobInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "jobId"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>",
+          "location":"uri",
+          "locationName":"jobId"
+        }
+      }
+    },
+    "GetMatchingJobOutput":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "status",
+        "startTime"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The unique identifier of the matching job.</p>"
+        },
+        "status":{
+          "shape":"JobStatus",
+          "documentation":"<p>The current status of the job.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job was started.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job has finished.</p>"
+        },
+        "metrics":{
+          "shape":"JobMetrics",
+          "documentation":"<p>Metrics associated with the execution, specifically total records processed, unique IDs generated, and records the execution skipped.</p>"
+        },
+        "errorDetails":{
+          "shape":"ErrorDetails",
+          "documentation":"<p>An object containing an error message, if there was an error.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"JobOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects.</p>"
+        }
+      }
+    },
+    "GetMatchingWorkflowInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        }
+      }
+    },
+    "GetMatchingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "inputSourceConfig",
+        "outputSourceConfig",
+        "resolutionTechniques",
+        "createdAt",
+        "updatedAt",
+        "roleArn"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"MatchingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>MatchingWorkflow</code>.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"InputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"OutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code>, <code>applyNormalization</code>, <code>KMSArn</code>, and <code>output</code>.</p>"
+        },
+        "resolutionTechniques":{
+          "shape":"ResolutionTechniques",
+          "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was last updated.</p>"
+        },
+        "incrementalRunConfig":{
+          "shape":"IncrementalRunConfig",
+          "documentation":"<p>An object which defines an incremental run type and has only <code>incrementalRunType</code> as a field.</p>"
+        },
+        "roleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "GetPolicyInput":{
+      "type":"structure",
+      "required":["arn"],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which the policy need to be returned.</p>",
+          "location":"uri",
+          "locationName":"arn"
+        }
+      }
+    },
+    "GetPolicyOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "token"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Entity Resolution resource ARN.</p>"
+        },
+        "token":{
+          "shape":"PolicyToken",
+          "documentation":"<p>A unique identifier for the current revision of the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy.</p>"
+        }
+      }
+    },
+    "GetProviderServiceInput":{
+      "type":"structure",
+      "required":[
+        "providerName",
+        "providerServiceName"
+      ],
+      "members":{
+        "providerName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the provider. This name is typically the company name.</p>",
+          "location":"uri",
+          "locationName":"providerName"
+        },
+        "providerServiceName":{
+          "shape":"ProviderServiceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) of the product that the provider service provides.</p>",
+          "location":"uri",
+          "locationName":"providerServiceName"
+        }
+      }
+    },
+    "GetProviderServiceOutput":{
+      "type":"structure",
+      "required":[
+        "providerName",
+        "providerServiceName",
+        "providerServiceDisplayName",
+        "providerServiceType",
+        "providerServiceArn",
+        "providerEndpointConfiguration",
+        "anonymizedOutput",
+        "providerEntityOutputDefinition"
+      ],
+      "members":{
+        "providerName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the provider. This name is typically the company name.</p>"
+        },
+        "providerServiceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the product that the provider service provides. </p>"
+        },
+        "providerServiceDisplayName":{
+          "shape":"ProviderServiceDisplayName",
+          "documentation":"<p>The display name of the provider service.</p>"
+        },
+        "providerServiceType":{
+          "shape":"ServiceType",
+          "documentation":"<p>The type of provider service.</p>"
+        },
+        "providerServiceArn":{
+          "shape":"ProviderServiceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the provider service.</p>"
+        },
+        "providerConfigurationDefinition":{
+          "shape":"Document",
+          "documentation":"<p>The definition of the provider configuration.</p>"
+        },
+        "providerIdNameSpaceConfiguration":{
+          "shape":"ProviderIdNameSpaceConfiguration",
+          "documentation":"<p>The provider configuration required for different ID namespace types.</p>"
+        },
+        "providerJobConfiguration":{
+          "shape":"Document",
+          "documentation":"<p>Provider service job configurations.</p>"
+        },
+        "providerEndpointConfiguration":{
+          "shape":"ProviderEndpointConfiguration",
+          "documentation":"<p>The required configuration fields to use with the provider service.</p>"
+        },
+        "anonymizedOutput":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether output data from the provider is anonymized. A value of <code>TRUE</code> means the output will be anonymized and you can't relate the data that comes back from the provider to the identifying input. A value of <code>FALSE</code> means the output won't be anonymized and you can relate the data that comes back from the provider to your source data. </p>"
+        },
+        "providerEntityOutputDefinition":{
+          "shape":"Document",
+          "documentation":"<p>The definition of the provider entity output.</p>"
+        },
+        "providerIntermediateDataAccessConfiguration":{
+          "shape":"ProviderIntermediateDataAccessConfiguration",
+          "documentation":"<p>The Amazon Web Services accounts and the S3 permissions that are required by some providers to create an S3 bucket for intermediate data storage.</p>"
+        },
+        "providerComponentSchema":{
+          "shape":"ProviderComponentSchema",
+          "documentation":"<p>Input schema for the provider service.</p>"
+        }
+      }
+    },
+    "GetSchemaMappingInput":{
+      "type":"structure",
+      "required":["schemaName"],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"schemaName"
+        }
+      }
+    },
+    "GetSchemaMappingOutput":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "schemaArn",
+        "mappedInputFields",
+        "createdAt",
+        "updatedAt",
+        "hasWorkflows"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema.</p>"
+        },
+        "schemaArn":{
+          "shape":"SchemaMappingArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the SchemaMapping.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the schema.</p>"
+        },
+        "mappedInputFields":{
+          "shape":"SchemaInputAttributes",
+          "documentation":"<p>A list of <code>MappedInputFields</code>. Each <code>MappedInputField</code> corresponds to a column the source data table, and contains column name plus additional information Entity Resolution uses for matching.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the <code>SchemaMapping</code> was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the <code>SchemaMapping</code> was last updated.</p>"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        },
+        "hasWorkflows":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the schema mapping has been applied to a workflow.</p>"
+        }
+      }
+    },
+    "HeaderSafeUniqueId":{
+      "type":"string",
+      "max":780,
+      "min":1,
+      "pattern":"[a-zA-Z_0-9-+=/,]*"
+    },
+    "IdMappingJobMetrics":{
+      "type":"structure",
+      "members":{
+        "inputRecords":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of records that were input for processing.</p>"
+        },
+        "totalRecordsProcessed":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of records that were processed.</p>"
+        },
+        "recordsNotProcessed":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of records that did not get processed.</p>"
+        },
+        "totalMappedRecords":{
+          "shape":"Integer",
+          "documentation":"<p> The total number of records that were mapped.</p>"
+        },
+        "totalMappedSourceRecords":{
+          "shape":"Integer",
+          "documentation":"<p> The total number of mapped source records.</p>"
+        },
+        "totalMappedTargetRecords":{
+          "shape":"Integer",
+          "documentation":"<p> The total number of distinct mapped target records.</p>"
+        },
+        "uniqueRecordsLoaded":{
+          "shape":"Integer",
+          "documentation":"<p>The number of records remaining after loading and aggregating duplicate records. Duplicates are determined by the field marked as UNIQUE_ID in your schema mapping - records sharing the same value in this field are considered duplicates. For example, if you specified \"customer_id\" as a UNIQUE_ID field and had three records with the same customer_id value, they would count as one unique record in this metric. </p>"
+        }
+      },
+      "documentation":"<p>An object that contains metrics about an ID mapping job, including counts of input records, processed records, and mapped records between source and target identifiers. </p>"
+    },
+    "IdMappingJobOutputSource":{
+      "type":"structure",
+      "required":[
+        "roleArn",
+        "outputS3Path"
+      ],
+      "members":{
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf as part of workflow execution.</p>"
+        },
+        "outputS3Path":{
+          "shape":"S3Path",
+          "documentation":"<p>The S3 path to which Entity Resolution will write the output table.</p>"
+        },
+        "KMSArn":{
+          "shape":"KMSArn",
+          "documentation":"<p>Customer KMS ARN for encryption at rest. If not provided, system will use an Entity Resolution managed KMS key.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>KMSArn</code>, <code>outputS3Path</code>, and <code>roleARN</code>.</p>"
+    },
+    "IdMappingJobOutputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"IdMappingJobOutputSource"},
+      "max":1,
+      "min":1
+    },
+    "IdMappingRoleArn":{
+      "type":"string",
+      "max":512,
+      "min":0,
+      "pattern":"$|^arn:aws:iam::\\d{12}:role/?[a-zA-Z_0-9+=,.@\\-_/]+"
+    },
+    "IdMappingRuleBasedProperties":{
+      "type":"structure",
+      "required":[
+        "ruleDefinitionType",
+        "attributeMatchingModel",
+        "recordMatchingModel"
+      ],
+      "members":{
+        "rules":{
+          "shape":"IdMappingRuleBasedPropertiesRulesList",
+          "documentation":"<p> The rules that can be used for ID mapping.</p>"
+        },
+        "ruleDefinitionType":{
+          "shape":"IdMappingWorkflowRuleDefinitionType",
+          "documentation":"<p> The set of rules you can use in an ID mapping workflow. The limitations specified for the source or target to define the match rules must be compatible.</p>"
+        },
+        "attributeMatchingModel":{
+          "shape":"AttributeMatchingModel",
+          "documentation":"<p>The comparison type. You can either choose <code>ONE_TO_ONE</code> or <code>MANY_TO_MANY</code> as the <code>attributeMatchingModel</code>. </p> <p>If you choose <code>ONE_TO_ONE</code>, the system can only match attributes if the sub-types are an exact match. For example, for the <code>Email</code> attribute type, the system will only consider it a match if the value of the <code>Email</code> field of Profile A matches the value of the <code>Email</code> field of Profile B.</p> <p>If you choose <code>MANY_TO_MANY</code>, the system can match attributes across the sub-types of an attribute type. For example, if the value of the <code>Email</code> field of Profile A matches the value of the <code>BusinessEmail</code> field of Profile B, the two profiles are matched on the <code>Email</code> attribute type. </p>"
+        },
+        "recordMatchingModel":{
+          "shape":"RecordMatchingModel",
+          "documentation":"<p> The type of matching record that is allowed to be used in an ID mapping workflow. </p> <p>If the value is set to <code>ONE_SOURCE_TO_ONE_TARGET</code>, only one record in the source can be matched to the same record in the target.</p> <p>If the value is set to <code>MANY_SOURCE_TO_ONE_TARGET</code>, multiple records in the source can be matched to one record in the target.</p>"
+        }
+      },
+      "documentation":"<p> An object that defines the list of matching rules to run in an ID mapping workflow.</p>"
+    },
+    "IdMappingRuleBasedPropertiesRulesList":{
+      "type":"list",
+      "member":{"shape":"Rule"},
+      "max":25,
+      "min":1
+    },
+    "IdMappingTechniques":{
+      "type":"structure",
+      "required":["idMappingType"],
+      "members":{
+        "idMappingType":{
+          "shape":"IdMappingType",
+          "documentation":"<p>The type of ID mapping.</p>"
+        },
+        "ruleBasedProperties":{
+          "shape":"IdMappingRuleBasedProperties",
+          "documentation":"<p> An object which defines any additional configurations required by rule-based matching.</p>"
+        },
+        "providerProperties":{
+          "shape":"ProviderProperties",
+          "documentation":"<p>An object which defines any additional configurations required by the provider service.</p>"
+        }
+      },
+      "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+    },
+    "IdMappingType":{
+      "type":"string",
+      "enum":[
+        "PROVIDER",
+        "RULE_BASED"
+      ]
+    },
+    "IdMappingWorkflowArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idmappingworkflow/[a-zA-Z_0-9-]{1,255})"
+    },
+    "IdMappingWorkflowInputSource":{
+      "type":"structure",
+      "required":["inputSourceARN"],
+      "members":{
+        "inputSourceARN":{
+          "shape":"IdMappingWorkflowInputSourceInputSourceARNString",
+          "documentation":"<p>An Glue table Amazon Resource Name (ARN) or a matching workflow ARN for the input source table.</p>"
+        },
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema to be retrieved.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>. </p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> which all <code>sourceIds</code> will resolve to.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>inputSourceARN</code>, <code>schemaName</code>, and <code>type</code>.</p>"
+    },
+    "IdMappingWorkflowInputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"IdMappingWorkflowInputSource"},
+      "max":20,
+      "min":1
+    },
+    "IdMappingWorkflowInputSourceInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "IdMappingWorkflowList":{
+      "type":"list",
+      "member":{"shape":"IdMappingWorkflowSummary"}
+    },
+    "IdMappingWorkflowOutputSource":{
+      "type":"structure",
+      "required":["outputS3Path"],
+      "members":{
+        "outputS3Path":{
+          "shape":"S3Path",
+          "documentation":"<p>The S3 path to which Entity Resolution will write the output table.</p>"
+        },
+        "KMSArn":{
+          "shape":"KMSArn",
+          "documentation":"<p>Customer KMS ARN for encryption at rest. If not provided, system will use an Entity Resolution managed KMS key.</p>"
+        }
+      },
+      "documentation":"<p>The output source for the ID mapping workflow.</p>"
+    },
+    "IdMappingWorkflowOutputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"IdMappingWorkflowOutputSource"},
+      "max":1,
+      "min":1
+    },
+    "IdMappingWorkflowRuleDefinitionType":{
+      "type":"string",
+      "enum":[
+        "SOURCE",
+        "TARGET"
+      ]
+    },
+    "IdMappingWorkflowRuleDefinitionTypeList":{
+      "type":"list",
+      "member":{"shape":"IdMappingWorkflowRuleDefinitionType"}
+    },
+    "IdMappingWorkflowSummary":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"IdMappingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>IdMappingWorkflow</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was last updated.</p>"
+        }
+      },
+      "documentation":"<p>A list of <code>IdMappingWorkflowSummary</code> objects, each of which contain the fields <code>WorkflowName</code>, <code>WorkflowArn</code>, <code>CreatedAt</code>, and <code>UpdatedAt</code>.</p>"
+    },
+    "IdNamespaceArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})"
+    },
+    "IdNamespaceIdMappingWorkflowMetadata":{
+      "type":"structure",
+      "required":["idMappingType"],
+      "members":{
+        "idMappingType":{
+          "shape":"IdMappingType",
+          "documentation":"<p>The type of ID mapping.</p>"
+        }
+      },
+      "documentation":"<p>The settings for the ID namespace for the ID mapping workflow job.</p>"
+    },
+    "IdNamespaceIdMappingWorkflowMetadataList":{
+      "type":"list",
+      "member":{"shape":"IdNamespaceIdMappingWorkflowMetadata"},
+      "max":1,
+      "min":1
+    },
+    "IdNamespaceIdMappingWorkflowProperties":{
+      "type":"structure",
+      "required":["idMappingType"],
+      "members":{
+        "idMappingType":{
+          "shape":"IdMappingType",
+          "documentation":"<p>The type of ID mapping.</p>"
+        },
+        "ruleBasedProperties":{
+          "shape":"NamespaceRuleBasedProperties",
+          "documentation":"<p> An object which defines any additional configurations required by rule-based matching.</p>"
+        },
+        "providerProperties":{
+          "shape":"NamespaceProviderProperties",
+          "documentation":"<p>An object which defines any additional configurations required by the provider service.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>idMappingType</code>, <code>providerProperties</code>, and <code>ruleBasedProperties</code>.</p>"
+    },
+    "IdNamespaceIdMappingWorkflowPropertiesList":{
+      "type":"list",
+      "member":{"shape":"IdNamespaceIdMappingWorkflowProperties"},
+      "max":1,
+      "min":1
+    },
+    "IdNamespaceInputSource":{
+      "type":"structure",
+      "required":["inputSourceARN"],
+      "members":{
+        "inputSourceARN":{
+          "shape":"IdNamespaceInputSourceInputSourceARNString",
+          "documentation":"<p>An Glue table Amazon Resource Name (ARN) or a matching workflow ARN for the input source table.</p>"
+        },
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>inputSourceARN</code> and <code>schemaName</code>.</p>"
+    },
+    "IdNamespaceInputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"IdNamespaceInputSource"},
+      "max":20,
+      "min":0
+    },
+    "IdNamespaceInputSourceInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "IdNamespaceList":{
+      "type":"list",
+      "member":{"shape":"IdNamespaceSummary"}
+    },
+    "IdNamespaceSummary":{
+      "type":"structure",
+      "required":[
+        "idNamespaceName",
+        "idNamespaceArn",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>"
+        },
+        "idNamespaceArn":{
+          "shape":"IdNamespaceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ID namespace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowMetadataList",
+          "documentation":"<p>An object which defines any additional configurations required by the ID mapping workflow.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>.</p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> which all <code>sourceIds</code> will resolve to.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was last updated.</p>"
+        }
+      },
+      "documentation":"<p>A summary of ID namespaces.</p>"
+    },
+    "IdNamespaceType":{
+      "type":"string",
+      "enum":[
+        "SOURCE",
+        "TARGET"
+      ]
+    },
+    "IncrementalRunConfig":{
+      "type":"structure",
+      "members":{
+        "incrementalRunType":{
+          "shape":"IncrementalRunType",
+          "documentation":"<p>The type of incremental run. The only valid value is <code>IMMEDIATE</code>. This appears as \"Automatic\" in the console.</p> <important> <p>For workflows where <code>resolutionType</code> is <code>ML_MATCHING</code>, incremental processing is not supported. </p> </important>"
+        }
+      },
+      "documentation":"<p>Optional. An object that defines the incremental run type. This object contains only the <code>incrementalRunType</code> field, which appears as \"Automatic\" in the console. </p> <important> <p>For workflows where <code>resolutionType</code> is <code>ML_MATCHING</code>, incremental processing is not supported. </p> </important>"
+    },
+    "IncrementalRunType":{
+      "type":"string",
+      "enum":["IMMEDIATE"]
+    },
+    "InputSource":{
+      "type":"structure",
+      "required":[
+        "inputSourceARN",
+        "schemaName"
+      ],
+      "members":{
+        "inputSourceARN":{
+          "shape":"InputSourceInputSourceARNString",
+          "documentation":"<p>An Glue table Amazon Resource Name (ARN) for the input source table.</p>"
+        },
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema to be retrieved.</p>"
+        },
+        "applyNormalization":{
+          "shape":"Boolean",
+          "documentation":"<p>Normalizes the attributes defined in the schema in the input data. For example, if an attribute has an <code>AttributeType</code> of <code>PHONE_NUMBER</code>, and the data in the input table is in a format of 1234567890, Entity Resolution will normalize this field in the output to (123)-456-7890.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>inputSourceARN</code>, <code>schemaName</code>, and <code>applyNormalization</code>.</p>"
+    },
+    "InputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"InputSource"},
+      "max":20,
+      "min":1
+    },
+    "InputSourceInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "Integer":{
+      "type":"integer",
+      "box":true
+    },
+    "IntermediateSourceConfiguration":{
+      "type":"structure",
+      "required":["intermediateS3Path"],
+      "members":{
+        "intermediateS3Path":{
+          "shape":"S3Path",
+          "documentation":"<p>The Amazon S3 location (bucket and prefix). For example: <code>s3://provider_bucket/DOC-EXAMPLE-BUCKET</code> </p>"
+        }
+      },
+      "documentation":"<p>The Amazon S3 location that temporarily stores your data while it processes. Your information won't be saved permanently.</p>"
+    },
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>This exception occurs when there is an internal failure in the Entity Resolution service. </p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true,
+      "retryable":{"throttling":false}
+    },
+    "JobId":{
+      "type":"string",
+      "pattern":"[a-f0-9]{32}"
+    },
+    "JobList":{
+      "type":"list",
+      "member":{"shape":"JobSummary"}
+    },
+    "JobMetrics":{
+      "type":"structure",
+      "members":{
+        "inputRecords":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of input records.</p>"
+        },
+        "totalRecordsProcessed":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of records processed.</p>"
+        },
+        "recordsNotProcessed":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of records that did not get processed.</p>"
+        },
+        "matchIDs":{
+          "shape":"Integer",
+          "documentation":"<p>The total number of <code>matchID</code>s generated.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>inputRecords</code>, <code>totalRecordsProcessed</code>, <code>matchIDs</code>, and <code>recordsNotProcessed</code>.</p>"
+    },
+    "JobOutputSource":{
+      "type":"structure",
+      "required":[
+        "roleArn",
+        "outputS3Path"
+      ],
+      "members":{
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf as part of workflow execution.</p>"
+        },
+        "outputS3Path":{
+          "shape":"S3Path",
+          "documentation":"<p>The S3 path to which Entity Resolution will write the output table.</p>"
+        },
+        "KMSArn":{
+          "shape":"KMSArn",
+          "documentation":"<p>Customer KMS ARN for encryption at rest. If not provided, system will use an Entity Resolution managed KMS key.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>KMSArn</code>, <code>outputS3Path</code>, and <code>roleArn</code>.</p>"
+    },
+    "JobOutputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"JobOutputSource"},
+      "max":1,
+      "min":1
+    },
+    "JobStatus":{
+      "type":"string",
+      "enum":[
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "QUEUED"
+      ]
+    },
+    "JobSummary":{
+      "type":"structure",
+      "required":[
+        "jobId",
+        "status",
+        "startTime"
+      ],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>"
+        },
+        "status":{
+          "shape":"JobStatus",
+          "documentation":"<p>The current status of the job.</p>"
+        },
+        "startTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job was started.</p>"
+        },
+        "endTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time at which the job has finished.</p>"
+        }
+      },
+      "documentation":"<p>An object containing the <code>jobId</code>, <code>status</code>, <code>startTime</code>, and <code>endTime</code> of a job.</p>"
+    },
+    "KMSArn":{
+      "type":"string",
+      "pattern":"arn:aws:kms:.*:[0-9]+:.*"
+    },
+    "ListIdMappingJobsInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityNameOrIdMappingWorkflowArn",
+          "documentation":"<p>The name of the workflow to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListIdMappingJobsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListIdMappingJobsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "ListIdMappingJobsOutput":{
+      "type":"structure",
+      "members":{
+        "jobs":{
+          "shape":"JobList",
+          "documentation":"<p>A list of <code>JobSummary</code> objects.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListIdMappingWorkflowsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListIdMappingWorkflowsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListIdMappingWorkflowsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25
+    },
+    "ListIdMappingWorkflowsOutput":{
+      "type":"structure",
+      "members":{
+        "workflowSummaries":{
+          "shape":"IdMappingWorkflowList",
+          "documentation":"<p>A list of <code>IdMappingWorkflowSummary</code> objects.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListIdNamespacesInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListIdNamespacesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of <code>IdNamespace</code> objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListIdNamespacesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25
+    },
+    "ListIdNamespacesOutput":{
+      "type":"structure",
+      "members":{
+        "idNamespaceSummaries":{
+          "shape":"IdNamespaceList",
+          "documentation":"<p>A list of <code>IdNamespaceSummaries</code> objects.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListMatchingJobsInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListMatchingJobsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListMatchingJobsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":1
+    },
+    "ListMatchingJobsOutput":{
+      "type":"structure",
+      "members":{
+        "jobs":{
+          "shape":"JobList",
+          "documentation":"<p>A list of <code>JobSummary</code> objects, each of which contain the ID, status, start time, and end time of a job.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListMatchingWorkflowsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListMatchingWorkflowsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListMatchingWorkflowsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25
+    },
+    "ListMatchingWorkflowsOutput":{
+      "type":"structure",
+      "members":{
+        "workflowSummaries":{
+          "shape":"MatchingWorkflowList",
+          "documentation":"<p>A list of <code>MatchingWorkflowSummary</code> objects, each of which contain the fields <code>workflowName</code>, <code>workflowArn</code>, <code>resolutionType</code>, <code>createdAt</code>, and <code>updatedAt</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListProviderServicesInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListProviderServicesInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        },
+        "providerName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the provider. This name is typically the company name.</p>",
+          "location":"querystring",
+          "locationName":"providerName"
+        }
+      }
+    },
+    "ListProviderServicesInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25,
+      "min":15
+    },
+    "ListProviderServicesOutput":{
+      "type":"structure",
+      "members":{
+        "providerServiceSummaries":{
+          "shape":"ProviderServiceList",
+          "documentation":"<p>A list of <code>ProviderServices</code> objects.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListSchemaMappingsInput":{
+      "type":"structure",
+      "members":{
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "maxResults":{
+          "shape":"ListSchemaMappingsInputMaxResultsInteger",
+          "documentation":"<p>The maximum number of objects returned per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListSchemaMappingsInputMaxResultsInteger":{
+      "type":"integer",
+      "box":true,
+      "max":25
+    },
+    "ListSchemaMappingsOutput":{
+      "type":"structure",
+      "members":{
+        "schemaList":{
+          "shape":"SchemaMappingList",
+          "documentation":"<p>A list of <code>SchemaMappingSummary</code> objects, each of which contain the fields <code>SchemaName</code>, <code>SchemaArn</code>, <code>CreatedAt</code>, <code>UpdatedAt</code>.</p>"
+        },
+        "nextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The pagination token from the previous API call.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceInput":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The ARN of the resource for which you want to view tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceOutput":{
+      "type":"structure",
+      "required":["tags"],
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "MatchGroup":{
+      "type":"structure",
+      "required":[
+        "records",
+        "matchId",
+        "matchRule"
+      ],
+      "members":{
+        "records":{
+          "shape":"MatchedRecordsList",
+          "documentation":"<p> The matched records.</p>"
+        },
+        "matchId":{
+          "shape":"String",
+          "documentation":"<p> The match ID.</p>"
+        },
+        "matchRule":{
+          "shape":"String",
+          "documentation":"<p> The match rule of the match group.</p>"
+        }
+      },
+      "documentation":"<p>The match group.</p>"
+    },
+    "MatchGroupsList":{
+      "type":"list",
+      "member":{"shape":"MatchGroup"}
+    },
+    "MatchPurpose":{
+      "type":"string",
+      "enum":[
+        "IDENTIFIER_GENERATION",
+        "INDEXING"
+      ]
+    },
+    "MatchedRecord":{
+      "type":"structure",
+      "required":[
+        "inputSourceARN",
+        "recordId"
+      ],
+      "members":{
+        "inputSourceARN":{
+          "shape":"MatchedRecordInputSourceARNString",
+          "documentation":"<p> The input source ARN of the matched record.</p>"
+        },
+        "recordId":{
+          "shape":"String",
+          "documentation":"<p> The record ID of the matched record.</p>"
+        }
+      },
+      "documentation":"<p> The matched record.</p>"
+    },
+    "MatchedRecordInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "MatchedRecordsList":{
+      "type":"list",
+      "member":{"shape":"MatchedRecord"}
+    },
+    "MatchingWorkflowArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})"
+    },
+    "MatchingWorkflowList":{
+      "type":"list",
+      "member":{"shape":"MatchingWorkflowSummary"}
+    },
+    "MatchingWorkflowSummary":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "createdAt",
+        "updatedAt",
+        "resolutionType"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"MatchingWorkflowArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>MatchingWorkflow</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the workflow was last updated.</p>"
+        },
+        "resolutionType":{
+          "shape":"ResolutionType",
+          "documentation":"<p>The method that has been specified for data matching, either using matching provided by Entity Resolution or through a provider service.</p>"
+        }
+      },
+      "documentation":"<p>A list of <code>MatchingWorkflowSummary</code> objects, each of which contain the fields <code>workflowName</code>, <code>workflowArn</code>, <code>resolutionType</code>, <code>createdAt</code>, <code>updatedAt</code>.</p>"
+    },
+    "NamespaceProviderProperties":{
+      "type":"structure",
+      "required":["providerServiceArn"],
+      "members":{
+        "providerServiceArn":{
+          "shape":"ProviderServiceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the provider service.</p>"
+        },
+        "providerConfiguration":{
+          "shape":"Document",
+          "documentation":"<p>An object which defines any additional configurations required by the provider service.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>providerConfiguration</code> and <code>providerServiceArn</code>.</p>"
+    },
+    "NamespaceRuleBasedProperties":{
+      "type":"structure",
+      "members":{
+        "rules":{
+          "shape":"NamespaceRuleBasedPropertiesRulesList",
+          "documentation":"<p> The rules for the ID namespace.</p>"
+        },
+        "ruleDefinitionTypes":{
+          "shape":"IdMappingWorkflowRuleDefinitionTypeList",
+          "documentation":"<p> The sets of rules you can use in an ID mapping workflow. The limitations specified for the source and target must be compatible.</p>"
+        },
+        "attributeMatchingModel":{
+          "shape":"AttributeMatchingModel",
+          "documentation":"<p>The comparison type. You can either choose <code>ONE_TO_ONE</code> or <code>MANY_TO_MANY</code> as the <code>attributeMatchingModel</code>. </p> <p>If you choose <code>ONE_TO_ONE</code>, the system can only match attributes if the sub-types are an exact match. For example, for the <code>Email</code> attribute type, the system will only consider it a match if the value of the <code>Email</code> field of Profile A matches the value of the <code>Email</code> field of Profile B.</p> <p>If you choose <code>MANY_TO_MANY</code>, the system can match attributes across the sub-types of an attribute type. For example, if the value of the <code>Email</code> field of Profile A matches the value of <code>BusinessEmail</code> field of Profile B, the two profiles are matched on the <code>Email</code> attribute type. </p>"
+        },
+        "recordMatchingModels":{
+          "shape":"RecordMatchingModelList",
+          "documentation":"<p> The type of matching record that is allowed to be used in an ID mapping workflow. </p> <p>If the value is set to <code>ONE_SOURCE_TO_ONE_TARGET</code>, only one record in the source is matched to one record in the target. </p> <p>If the value is set to <code>MANY_SOURCE_TO_ONE_TARGET</code>, all matching records in the source are matched to one record in the target.</p>"
+        }
+      },
+      "documentation":"<p> The rule-based properties of an ID namespace. These properties define how the ID namespace can be used in an ID mapping workflow.</p>"
+    },
+    "NamespaceRuleBasedPropertiesRulesList":{
+      "type":"list",
+      "member":{"shape":"Rule"},
+      "max":25,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"[a-zA-Z_0-9-=+/]*"
+    },
+    "OutputAttribute":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{
+          "shape":"AttributeName",
+          "documentation":"<p>A name of a column to be written to the output. This must be an <code>InputField</code> name in the schema mapping.</p>"
+        },
+        "hashed":{
+          "shape":"Boolean",
+          "documentation":"<p>Enables the ability to hash the column values in the output.</p>"
+        }
+      },
+      "documentation":"<p>A list of <code>OutputAttribute</code> objects, each of which have the fields <code>Name</code> and <code>Hashed</code>. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed.</p>"
+    },
+    "OutputSource":{
+      "type":"structure",
+      "required":[
+        "outputS3Path",
+        "output"
+      ],
+      "members":{
+        "outputS3Path":{
+          "shape":"S3Path",
+          "documentation":"<p>The S3 path to which Entity Resolution will write the output table.</p>"
+        },
+        "KMSArn":{
+          "shape":"KMSArn",
+          "documentation":"<p>Customer KMS ARN for encryption at rest. If not provided, system will use an Entity Resolution managed KMS key.</p>"
+        },
+        "output":{
+          "shape":"OutputSourceOutputList",
+          "documentation":"<p>A list of <code>OutputAttribute</code> objects, each of which have the fields <code>Name</code> and <code>Hashed</code>. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed.</p>"
+        },
+        "applyNormalization":{
+          "shape":"Boolean",
+          "documentation":"<p>Normalizes the attributes defined in the schema in the input data. For example, if an attribute has an <code>AttributeType</code> of <code>PHONE_NUMBER</code>, and the data in the input table is in a format of 1234567890, Entity Resolution will normalize this field in the output to (123)-456-7890.</p>"
+        }
+      },
+      "documentation":"<p>A list of <code>OutputAttribute</code> objects, each of which have the fields <code>Name</code> and <code>Hashed</code>. Each of these objects selects a column to be included in the output table, and whether the values of the column should be hashed.</p>"
+    },
+    "OutputSourceConfig":{
+      "type":"list",
+      "member":{"shape":"OutputSource"},
+      "max":1,
+      "min":1
+    },
+    "OutputSourceOutputList":{
+      "type":"list",
+      "member":{"shape":"OutputAttribute"},
+      "max":750,
+      "min":0
+    },
+    "PolicyDocument":{
+      "type":"string",
+      "max":40960,
+      "min":1
+    },
+    "PolicyToken":{
+      "type":"string",
+      "max":36,
+      "min":36,
+      "pattern":"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+    },
+    "ProcessingType":{
+      "type":"string",
+      "enum":[
+        "CONSISTENT",
+        "EVENTUAL",
+        "EVENTUAL_NO_LOOKUP"
+      ]
+    },
+    "ProviderComponentSchema":{
+      "type":"structure",
+      "members":{
+        "schemas":{
+          "shape":"Schemas",
+          "documentation":"<p>Input schema for the provider service.</p>"
+        },
+        "providerSchemaAttributes":{
+          "shape":"ProviderSchemaAttributes",
+          "documentation":"<p>The provider schema attributes.</p>"
+        }
+      },
+      "documentation":"<p>The input schema supported by provider service.</p>"
+    },
+    "ProviderEndpointConfiguration":{
+      "type":"structure",
+      "members":{
+        "marketplaceConfiguration":{
+          "shape":"ProviderMarketplaceConfiguration",
+          "documentation":"<p>The identifiers of the provider service, from Data Exchange.</p>"
+        }
+      },
+      "documentation":"<p>The required configuration fields to use with the provider service.</p>",
+      "union":true
+    },
+    "ProviderIdNameSpaceConfiguration":{
+      "type":"structure",
+      "members":{
+        "description":{
+          "shape":"String",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "providerTargetConfigurationDefinition":{
+          "shape":"Document",
+          "documentation":"<p>Configurations required for the target ID namespace.</p>"
+        },
+        "providerSourceConfigurationDefinition":{
+          "shape":"Document",
+          "documentation":"<p>Configurations required for the source ID namespace.</p>"
+        }
+      },
+      "documentation":"<p>The provider configuration required for different ID namespace types.</p>"
+    },
+    "ProviderIntermediateDataAccessConfiguration":{
+      "type":"structure",
+      "members":{
+        "awsAccountIds":{
+          "shape":"AwsAccountIdList",
+          "documentation":"<p>The Amazon Web Services account that provider can use to read or write data into the customer's intermediate S3 bucket.</p>"
+        },
+        "requiredBucketActions":{
+          "shape":"RequiredBucketActionsList",
+          "documentation":"<p>The S3 bucket actions that the provider requires permission for.</p>"
+        }
+      },
+      "documentation":"<p>The required configuration fields to give intermediate access to a provider service.</p>"
+    },
+    "ProviderMarketplaceConfiguration":{
+      "type":"structure",
+      "required":[
+        "dataSetId",
+        "revisionId",
+        "assetId",
+        "listingId"
+      ],
+      "members":{
+        "dataSetId":{
+          "shape":"String",
+          "documentation":"<p>The dataset ID on Data Exchange.</p>"
+        },
+        "revisionId":{
+          "shape":"String",
+          "documentation":"<p>The revision ID on Data Exchange.</p>"
+        },
+        "assetId":{
+          "shape":"String",
+          "documentation":"<p>The asset ID on Data Exchange.</p>"
+        },
+        "listingId":{
+          "shape":"String",
+          "documentation":"<p>The listing ID on Data Exchange.</p>"
+        }
+      },
+      "documentation":"<p>The identifiers of the provider service, from Data Exchange.</p>"
+    },
+    "ProviderProperties":{
+      "type":"structure",
+      "required":["providerServiceArn"],
+      "members":{
+        "providerServiceArn":{
+          "shape":"ProviderServiceArn",
+          "documentation":"<p>The ARN of the provider service.</p>"
+        },
+        "providerConfiguration":{
+          "shape":"Document",
+          "documentation":"<p>The required configuration fields to use with the provider service.</p>"
+        },
+        "intermediateSourceConfiguration":{
+          "shape":"IntermediateSourceConfiguration",
+          "documentation":"<p>The Amazon S3 location that temporarily stores your data while it processes. Your information won't be saved permanently.</p>"
+        }
+      },
+      "documentation":"<p>An object containing the <code>providerServiceARN</code>, <code>intermediateSourceConfiguration</code>, and <code>providerConfiguration</code>.</p>"
+    },
+    "ProviderSchemaAttribute":{
+      "type":"structure",
+      "required":[
+        "fieldName",
+        "type"
+      ],
+      "members":{
+        "fieldName":{
+          "shape":"AttributeName",
+          "documentation":"<p>The field name.</p>"
+        },
+        "type":{
+          "shape":"SchemaAttributeType",
+          "documentation":"<p>The type of the provider schema attribute.</p> <p>LiveRamp supports: <code>NAME</code> | <code>NAME_FIRST</code> | <code>NAME_MIDDLE</code> | <code>NAME_LAST</code> | <code>ADDRESS</code> | <code>ADDRESS_STREET1</code> | <code>ADDRESS_STREET2</code> | <code>ADDRESS_STREET3</code> | <code>ADDRESS_CITY</code> | <code>ADDRESS_STATE</code> | <code>ADDRESS_COUNTRY</code> | <code>ADDRESS_POSTALCODE</code> | <code>PHONE</code> | <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> | <code>PROVIDER_ID</code> </p> <p>TransUnion supports: <code>NAME</code> | <code>NAME_FIRST</code> | <code>NAME_LAST</code> | <code>ADDRESS</code> | <code>ADDRESS_CITY</code> | <code>ADDRESS_STATE</code> | <code>ADDRESS_COUNTRY</code> | <code>ADDRESS_POSTALCODE</code> | <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> | <code>DATE</code> | <code>IPV4</code> | <code>IPV6</code> | <code>MAID</code> </p> <p>Unified ID 2.0 supports: <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> </p>"
+        },
+        "subType":{
+          "shape":"AttributeName",
+          "documentation":"<p>The sub type of the provider schema attribute.</p>"
+        },
+        "hashing":{
+          "shape":"Boolean",
+          "documentation":"<p>The hashing attribute of the provider schema.</p>"
+        }
+      },
+      "documentation":"<p>The provider schema attribute.</p>"
+    },
+    "ProviderSchemaAttributes":{
+      "type":"list",
+      "member":{"shape":"ProviderSchemaAttribute"}
+    },
+    "ProviderServiceArn":{
+      "type":"string",
+      "max":255,
+      "min":20,
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):(entityresolution):([a-z]{2}-[a-z]{1,10}-[0-9])::providerservice/([a-zA-Z0-9_-]{1,255})/([a-zA-Z0-9_-]{1,255})"
+    },
+    "ProviderServiceDisplayName":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "ProviderServiceList":{
+      "type":"list",
+      "member":{"shape":"ProviderServiceSummary"}
+    },
+    "ProviderServiceSummary":{
+      "type":"structure",
+      "required":[
+        "providerServiceArn",
+        "providerName",
+        "providerServiceDisplayName",
+        "providerServiceName",
+        "providerServiceType"
+      ],
+      "members":{
+        "providerServiceArn":{
+          "shape":"ProviderServiceArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>providerService</code>.</p>"
+        },
+        "providerName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the provider. This name is typically the company name.</p>"
+        },
+        "providerServiceDisplayName":{
+          "shape":"ProviderServiceDisplayName",
+          "documentation":"<p>The display name of the provider service.</p>"
+        },
+        "providerServiceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the product that the provider service provides.</p>"
+        },
+        "providerServiceType":{
+          "shape":"ServiceType",
+          "documentation":"<p>The type of provider service.</p>"
+        }
+      },
+      "documentation":"<p>A list of <code>ProviderService</code> objects, each of which contain the fields <code>providerName</code>, <code>providerServiceArn</code>, <code>providerServiceName</code>, and <code>providerServiceType</code>.</p>"
+    },
+    "PutPolicyInput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "policy"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource for which the policy needs to be updated.</p>",
+          "location":"uri",
+          "locationName":"arn"
+        },
+        "token":{
+          "shape":"PolicyToken",
+          "documentation":"<p>A unique identifier for the current revision of the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy.</p> <important> <p>If you set the value of the <code>effect</code> parameter in the <code>policy</code> to <code>Deny</code> for the <code>PutPolicy</code> operation, you must also set the value of the <code>effect</code> parameter to <code>Deny</code> for the <code>AddPolicyStatement</code> operation.</p> </important>"
+        }
+      }
+    },
+    "PutPolicyOutput":{
+      "type":"structure",
+      "required":[
+        "arn",
+        "token"
+      ],
+      "members":{
+        "arn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The Entity Resolution resource ARN.</p>"
+        },
+        "token":{
+          "shape":"PolicyToken",
+          "documentation":"<p>A unique identifier for the current revision of the policy.</p>"
+        },
+        "policy":{
+          "shape":"PolicyDocument",
+          "documentation":"<p>The resource-based policy.</p>"
+        }
+      }
+    },
+    "Record":{
+      "type":"structure",
+      "required":[
+        "inputSourceARN",
+        "uniqueId",
+        "recordAttributeMap"
+      ],
+      "members":{
+        "inputSourceARN":{
+          "shape":"RecordInputSourceARNString",
+          "documentation":"<p> The input source ARN of the record.</p>"
+        },
+        "uniqueId":{
+          "shape":"UniqueId",
+          "documentation":"<p> The unique ID of the record.</p>"
+        },
+        "recordAttributeMap":{
+          "shape":"RecordAttributeMapString255",
+          "documentation":"<p> The record's attribute map.</p>"
+        }
+      },
+      "documentation":"<p> The record.</p>"
+    },
+    "RecordAttributeMap":{
+      "type":"map",
+      "key":{"shape":"RecordAttributeMapKeyString"},
+      "value":{"shape":"RecordAttributeMapValueString"},
+      "sensitive":true
+    },
+    "RecordAttributeMapKeyString":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"[a-zA-Z_0-9- \\t]*"
+    },
+    "RecordAttributeMapString255":{
+      "type":"map",
+      "key":{"shape":"RecordAttributeMapString255KeyString"},
+      "value":{"shape":"RecordAttributeMapString255ValueString"},
+      "sensitive":true
+    },
+    "RecordAttributeMapString255KeyString":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "RecordAttributeMapString255ValueString":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
+    "RecordAttributeMapValueString":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"[a-zA-Z_0-9-./@ ()+\\t]*"
+    },
+    "RecordInputSourceARNString":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(idnamespace/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(matchingworkflow/[a-zA-Z_0-9-]{1,255})$|^arn:(aws|aws-us-gov|aws-cn):glue:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(table/[a-zA-Z_0-9-]{1,255}/[a-zA-Z_0-9-]{1,255})"
+    },
+    "RecordMatchingModel":{
+      "type":"string",
+      "enum":[
+        "ONE_SOURCE_TO_ONE_TARGET",
+        "MANY_SOURCE_TO_ONE_TARGET"
+      ]
+    },
+    "RecordMatchingModelList":{
+      "type":"list",
+      "member":{"shape":"RecordMatchingModel"}
+    },
+    "RequiredBucketActionsList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ResolutionTechniques":{
+      "type":"structure",
+      "required":["resolutionType"],
+      "members":{
+        "resolutionType":{
+          "shape":"ResolutionType",
+          "documentation":"<p>The type of matching. There are three types of matching: <code>RULE_MATCHING</code>, <code>ML_MATCHING</code>, and <code>PROVIDER</code>.</p>"
+        },
+        "ruleBasedProperties":{
+          "shape":"RuleBasedProperties",
+          "documentation":"<p>An object which defines the list of matching rules to run and has a field <code>rules</code>, which is a list of rule objects.</p>"
+        },
+        "ruleConditionProperties":{
+          "shape":"RuleConditionProperties",
+          "documentation":"<p>An object containing the <code>rules</code> for a matching workflow.</p>"
+        },
+        "providerProperties":{
+          "shape":"ProviderProperties",
+          "documentation":"<p>The properties of the provider service.</p>"
+        }
+      },
+      "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+    },
+    "ResolutionType":{
+      "type":"string",
+      "enum":[
+        "RULE_MATCHING",
+        "ML_MATCHING",
+        "PROVIDER"
+      ]
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource could not be found. </p>",
+      "error":{
+        "httpStatusCode":404,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "RoleArn":{
+      "type":"string",
+      "max":512,
+      "min":32,
+      "pattern":"arn:aws:iam::\\d{12}:role/?[a-zA-Z_0-9+=,.@\\-_/]+"
+    },
+    "Rule":{
+      "type":"structure",
+      "required":[
+        "ruleName",
+        "matchingKeys"
+      ],
+      "members":{
+        "ruleName":{
+          "shape":"RuleRuleNameString",
+          "documentation":"<p>A name for the matching rule.</p>"
+        },
+        "matchingKeys":{
+          "shape":"RuleMatchingKeysList",
+          "documentation":"<p>A list of <code>MatchingKeys</code>. The <code>MatchingKeys</code> must have been defined in the <code>SchemaMapping</code>. Two records are considered to match according to this rule if all of the <code>MatchingKeys</code> match.</p>"
+        }
+      },
+      "documentation":"<p>An object containing the <code>ruleName</code> and <code>matchingKeys</code>.</p>"
+    },
+    "RuleBasedProperties":{
+      "type":"structure",
+      "required":[
+        "rules",
+        "attributeMatchingModel"
+      ],
+      "members":{
+        "rules":{
+          "shape":"RuleBasedPropertiesRulesList",
+          "documentation":"<p>A list of <code>Rule</code> objects, each of which have fields <code>RuleName</code> and <code>MatchingKeys</code>.</p>"
+        },
+        "attributeMatchingModel":{
+          "shape":"AttributeMatchingModel",
+          "documentation":"<p>The comparison type. You can choose <code>ONE_TO_ONE</code> or <code>MANY_TO_MANY</code> as the <code>attributeMatchingModel</code>. </p> <p>If you choose <code>ONE_TO_ONE</code>, the system can only match attributes if the sub-types are an exact match. For example, for the <code>Email</code> attribute type, the system will only consider it a match if the value of the <code>Email</code> field of Profile A matches the value of the <code>Email</code> field of Profile B.</p> <p>If you choose <code>MANY_TO_MANY</code>, the system can match attributes across the sub-types of an attribute type. For example, if the value of the <code>Email</code> field of Profile A and the value of <code>BusinessEmail</code> field of Profile B matches, the two profiles are matched on the <code>Email</code> attribute type. </p>"
+        },
+        "matchPurpose":{
+          "shape":"MatchPurpose",
+          "documentation":"<p> An indicator of whether to generate IDs and index the data or not.</p> <p>If you choose <code>IDENTIFIER_GENERATION</code>, the process generates IDs and indexes the data.</p> <p>If you choose <code>INDEXING</code>, the process indexes the data without generating IDs.</p>"
+        }
+      },
+      "documentation":"<p>An object which defines the list of matching rules to run in a matching workflow. </p>"
+    },
+    "RuleBasedPropertiesRulesList":{
+      "type":"list",
+      "member":{"shape":"Rule"},
+      "max":25,
+      "min":1
+    },
+    "RuleCondition":{
+      "type":"structure",
+      "required":[
+        "ruleName",
+        "condition"
+      ],
+      "members":{
+        "ruleName":{
+          "shape":"RuleConditionRuleNameString",
+          "documentation":"<p>A name for the matching rule.</p> <p>For example: <code>Rule1</code> </p>"
+        },
+        "condition":{
+          "shape":"RuleConditionConditionString",
+          "documentation":"<p>A statement that specifies the conditions for a matching rule.</p> <p>If your data is accurate, use an Exact matching function: <code>Exact</code> or <code>ExactManyToMany</code>. </p> <p>If your data has variations in spelling or pronunciation, use a Fuzzy matching function: <code>Cosine</code>, <code>Levenshtein</code>, or <code>Soundex</code>. </p> <p>Use operators if you want to combine (<code>AND</code>), separate (<code>OR</code>), or group matching functions <code>(...)</code>.</p> <p>For example: <code>(Cosine(a, 10) AND Exact(b, true)) OR ExactManyToMany(c, d)</code> </p>"
+        }
+      },
+      "documentation":"<p>An object that defines the <code>ruleCondition</code> and the <code>ruleName</code> to use in a matching workflow.</p>"
+    },
+    "RuleConditionConditionString":{
+      "type":"string",
+      "max":2048,
+      "min":0
+    },
+    "RuleConditionProperties":{
+      "type":"structure",
+      "required":["rules"],
+      "members":{
+        "rules":{
+          "shape":"RuleConditionPropertiesRulesList",
+          "documentation":"<p> A list of rule objects, each of which have fields <code>ruleName</code> and <code>condition</code>. </p>"
+        }
+      },
+      "documentation":"<p>The properties of a rule condition that provides the ability to use more complex syntax.</p>"
+    },
+    "RuleConditionPropertiesRulesList":{
+      "type":"list",
+      "member":{"shape":"RuleCondition"},
+      "max":25,
+      "min":1
+    },
+    "RuleConditionRuleNameString":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"[a-zA-Z_0-9- ]*"
+    },
+    "RuleMatchingKeysList":{
+      "type":"list",
+      "member":{"shape":"AttributeName"},
+      "max":15,
+      "min":0
+    },
+    "RuleRuleNameString":{
+      "type":"string",
+      "max":255,
+      "min":0,
+      "pattern":"[a-zA-Z_0-9- ]*"
+    },
+    "S3Path":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"s3://[a-z0-9][\\.\\-a-z0-9]{1,61}[a-z0-9](/.*)?"
+    },
+    "SchemaAttributeType":{
+      "type":"string",
+      "enum":[
+        "NAME",
+        "NAME_FIRST",
+        "NAME_MIDDLE",
+        "NAME_LAST",
+        "ADDRESS",
+        "ADDRESS_STREET1",
+        "ADDRESS_STREET2",
+        "ADDRESS_STREET3",
+        "ADDRESS_CITY",
+        "ADDRESS_STATE",
+        "ADDRESS_COUNTRY",
+        "ADDRESS_POSTALCODE",
+        "PHONE",
+        "PHONE_NUMBER",
+        "PHONE_COUNTRYCODE",
+        "EMAIL_ADDRESS",
+        "UNIQUE_ID",
+        "DATE",
+        "STRING",
+        "PROVIDER_ID",
+        "IPV4",
+        "IPV6",
+        "MAID"
+      ]
+    },
+    "SchemaInputAttribute":{
+      "type":"structure",
+      "required":[
+        "fieldName",
+        "type"
+      ],
+      "members":{
+        "fieldName":{
+          "shape":"AttributeName",
+          "documentation":"<p>A string containing the field name.</p>"
+        },
+        "type":{
+          "shape":"SchemaAttributeType",
+          "documentation":"<p>The type of the attribute, selected from a list of values.</p> <p>LiveRamp supports: <code>NAME</code> | <code>NAME_FIRST</code> | <code>NAME_MIDDLE</code> | <code>NAME_LAST</code> | <code>ADDRESS</code> | <code>ADDRESS_STREET1</code> | <code>ADDRESS_STREET2</code> | <code>ADDRESS_STREET3</code> | <code>ADDRESS_CITY</code> | <code>ADDRESS_STATE</code> | <code>ADDRESS_COUNTRY</code> | <code>ADDRESS_POSTALCODE</code> | <code>PHONE</code> | <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> | <code>PROVIDER_ID</code> </p> <p>TransUnion supports: <code>NAME</code> | <code>NAME_FIRST</code> | <code>NAME_LAST</code> | <code>ADDRESS</code> | <code>ADDRESS_CITY</code> | <code>ADDRESS_STATE</code> | <code>ADDRESS_COUNTRY</code> | <code>ADDRESS_POSTALCODE</code> | <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> | <code>IPV4</code> | <code>IPV6</code> | <code>MAID</code> </p> <p>Unified ID 2.0 supports: <code>PHONE_NUMBER</code> | <code>EMAIL_ADDRESS</code> | <code>UNIQUE_ID</code> </p> <note> <p>Normalization is only supported for <code>NAME</code>, <code>ADDRESS</code>, <code>PHONE</code>, and <code>EMAIL_ADDRESS</code>. </p> <p>If you want to normalize <code>NAME_FIRST</code>, <code>NAME_MIDDLE</code>, and <code>NAME_LAST</code>, you must group them by assigning them to the <code>NAME</code> <code>groupName</code>. </p> <p>If you want to normalize <code>ADDRESS_STREET1</code>, <code>ADDRESS_STREET2</code>, <code>ADDRESS_STREET3</code>, <code>ADDRESS_CITY</code>, <code>ADDRESS_STATE</code>, <code>ADDRESS_COUNTRY</code>, and <code>ADDRESS_POSTALCODE</code>, you must group them by assigning them to the <code>ADDRESS</code> <code>groupName</code>. </p> <p>If you want to normalize <code>PHONE_NUMBER</code> and <code>PHONE_COUNTRYCODE</code>, you must group them by assigning them to the <code>PHONE</code> <code>groupName</code>. </p> </note>"
+        },
+        "groupName":{
+          "shape":"AttributeName",
+          "documentation":"<p>A string that instructs Entity Resolution to combine several columns into a unified column with the identical attribute type. </p> <p>For example, when working with columns such as <code>NAME_FIRST</code>, <code>NAME_MIDDLE</code>, and <code>NAME_LAST</code>, assigning them a common <code>groupName</code> will prompt Entity Resolution to concatenate them into a single value.</p>"
+        },
+        "matchKey":{
+          "shape":"AttributeName",
+          "documentation":"<p>A key that allows grouping of multiple input attributes into a unified matching group. </p> <p>For example, consider a scenario where the source table contains various addresses, such as <code>business_address</code> and <code>shipping_address</code>. By assigning a <code>matchKey</code> called <code>address</code> to both attributes, Entity Resolution will match records across these fields to create a consolidated matching group.</p> <p>If no <code>matchKey</code> is specified for a column, it won't be utilized for matching purposes but will still be included in the output table.</p>"
+        },
+        "subType":{
+          "shape":"AttributeName",
+          "documentation":"<p>The subtype of the attribute, selected from a list of values.</p>"
+        },
+        "hashed":{
+          "shape":"Boolean",
+          "documentation":"<p> Indicates if the column values are hashed in the schema input. </p> <p>If the value is set to <code>TRUE</code>, the column values are hashed. </p> <p>If the value is set to <code>FALSE</code>, the column values are cleartext.</p>"
+        }
+      },
+      "documentation":"<p>A configuration object for defining input data fields in Entity Resolution. The <code>SchemaInputAttribute</code> specifies how individual fields in your input data should be processed and matched.</p>"
+    },
+    "SchemaInputAttributes":{
+      "type":"list",
+      "member":{"shape":"SchemaInputAttribute"},
+      "max":35,
+      "min":2
+    },
+    "SchemaList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "SchemaMappingArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:(schemamapping/[a-zA-Z_0-9-]{1,255})"
+    },
+    "SchemaMappingList":{
+      "type":"list",
+      "member":{"shape":"SchemaMappingSummary"}
+    },
+    "SchemaMappingSummary":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "schemaArn",
+        "createdAt",
+        "updatedAt",
+        "hasWorkflows"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema.</p>"
+        },
+        "schemaArn":{
+          "shape":"SchemaMappingArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>SchemaMapping</code>.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the <code>SchemaMapping</code> was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the <code>SchemaMapping</code> was last updated.</p>"
+        },
+        "hasWorkflows":{
+          "shape":"Boolean",
+          "documentation":"<p>Specifies whether the schema mapping has been applied to a workflow.</p>"
+        }
+      },
+      "documentation":"<p>An object containing <code>schemaName</code>, <code>schemaArn</code>, <code>createdAt</code>, <code>updatedAt</code>, and <code>hasWorkflows</code>.</p>"
+    },
+    "Schemas":{
+      "type":"list",
+      "member":{"shape":"SchemaList"}
+    },
+    "ServiceType":{
+      "type":"string",
+      "enum":[
+        "ASSIGNMENT",
+        "ID_MAPPING"
+      ]
+    },
+    "StartIdMappingJobInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityNameOrIdMappingWorkflowArn",
+          "documentation":"<p>The name of the ID mapping job to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingJobOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects.</p>"
+        }
+      }
+    },
+    "StartIdMappingJobOutput":{
+      "type":"structure",
+      "required":["jobId"],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingJobOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects.</p>"
+        }
+      }
+    },
+    "StartMatchingJobInput":{
+      "type":"structure",
+      "required":["workflowName"],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the matching job to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        }
+      }
+    },
+    "StartMatchingJobOutput":{
+      "type":"structure",
+      "required":["jobId"],
+      "members":{
+        "jobId":{
+          "shape":"JobId",
+          "documentation":"<p>The ID of the job.</p>"
+        }
+      }
+    },
+    "StatementAction":{
+      "type":"string",
+      "max":64,
+      "min":3,
+      "pattern":"(entityresolution:[a-zA-Z0-9]+)"
+    },
+    "StatementActionList":{
+      "type":"list",
+      "member":{"shape":"StatementAction"},
+      "min":1
+    },
+    "StatementCondition":{
+      "type":"string",
+      "max":40960,
+      "min":1
+    },
+    "StatementEffect":{
+      "type":"string",
+      "enum":[
+        "Allow",
+        "Deny"
+      ]
+    },
+    "StatementId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[0-9A-Za-z]+"
+    },
+    "StatementPrincipal":{
+      "type":"string",
+      "max":64,
+      "min":12,
+      "pattern":"(\\d{12})|([a-z0-9\\.]+)"
+    },
+    "StatementPrincipalList":{
+      "type":"list",
+      "member":{"shape":"StatementPrincipal"},
+      "min":1
+    },
+    "String":{"type":"string"},
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":0
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":0
+    },
+    "TagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The ARN of the resource for which you want to view tags.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource.</p>"
+        }
+      }
+    },
+    "TagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling. </p>",
+      "error":{
+        "httpStatusCode":429,
+        "senderFault":true
+      },
+      "exception":true,
+      "retryable":{"throttling":true}
+    },
+    "Timestamp":{"type":"timestamp"},
+    "UniqueId":{
+      "type":"string",
+      "max":38,
+      "min":1,
+      "pattern":"[a-zA-Z0-9_-]*"
+    },
+    "UniqueIdList":{
+      "type":"list",
+      "member":{"shape":"HeaderSafeUniqueId"}
+    },
+    "UntagResourceInput":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"VeniceGlobalArn",
+          "documentation":"<p>The ARN of the resource for which you want to untag.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The list of tag keys to remove from the resource.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceOutput":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateIdMappingWorkflowInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "inputSourceConfig",
+        "idMappingTechniques"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdMappingWorkflowInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingWorkflowOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code> and <code>KMSArn</code>.</p>"
+        },
+        "idMappingTechniques":{
+          "shape":"IdMappingTechniques",
+          "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+        },
+        "roleArn":{
+          "shape":"IdMappingRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf.</p>"
+        }
+      }
+    },
+    "UpdateIdMappingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "workflowArn",
+        "inputSourceConfig",
+        "idMappingTechniques"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "workflowArn":{
+          "shape":"IdMappingWorkflowArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the workflow role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdMappingWorkflowInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"IdMappingWorkflowOutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code> and <code>KMSArn</code>.</p>"
+        },
+        "idMappingTechniques":{
+          "shape":"IdMappingTechniques",
+          "documentation":"<p>An object which defines the ID mapping technique and any additional configurations.</p>"
+        },
+        "roleArn":{
+          "shape":"IdMappingRoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access Amazon Web Services resources on your behalf.</p>"
+        }
+      }
+    },
+    "UpdateIdNamespaceInput":{
+      "type":"structure",
+      "required":["idNamespaceName"],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>",
+          "location":"uri",
+          "locationName":"idNamespaceName"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdNamespaceInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowPropertiesList",
+          "documentation":"<p>Determines the properties of <code>IdMappingWorkflow</code> where this <code>IdNamespace</code> can be used as a <code>Source</code> or a <code>Target</code>.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access the resources defined in this <code>IdNamespace</code> on your behalf as part of a workflow run.</p>"
+        }
+      }
+    },
+    "UpdateIdNamespaceOutput":{
+      "type":"structure",
+      "required":[
+        "idNamespaceName",
+        "idNamespaceArn",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ],
+      "members":{
+        "idNamespaceName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the ID namespace.</p>"
+        },
+        "idNamespaceArn":{
+          "shape":"IdNamespaceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the ID namespace.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the ID namespace.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"IdNamespaceInputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "idMappingWorkflowProperties":{
+          "shape":"IdNamespaceIdMappingWorkflowPropertiesList",
+          "documentation":"<p>Determines the properties of <code>IdMappingWorkflow</code> where this <code>IdNamespace</code> can be used as a <code>Source</code> or a <code>Target</code>.</p>"
+        },
+        "type":{
+          "shape":"IdNamespaceType",
+          "documentation":"<p>The type of ID namespace. There are two types: <code>SOURCE</code> and <code>TARGET</code>.</p> <p>The <code>SOURCE</code> contains configurations for <code>sourceId</code> data that will be processed in an ID mapping workflow. </p> <p>The <code>TARGET</code> contains a configuration of <code>targetId</code> to which all <code>sourceIds</code> will resolve to.</p>"
+        },
+        "roleArn":{
+          "shape":"RoleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to access the resources defined in this <code>IdNamespace</code> on your behalf as part of a workflow run.</p>"
+        },
+        "createdAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was created.</p>"
+        },
+        "updatedAt":{
+          "shape":"Timestamp",
+          "documentation":"<p>The timestamp of when the ID namespace was last updated.</p>"
+        }
+      }
+    },
+    "UpdateMatchingWorkflowInput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "inputSourceConfig",
+        "outputSourceConfig",
+        "resolutionTechniques",
+        "roleArn"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow to be retrieved.</p>",
+          "location":"uri",
+          "locationName":"workflowName"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"InputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"OutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code>, <code>applyNormalization</code>, <code>KMSArn</code>, and <code>output</code>.</p>"
+        },
+        "resolutionTechniques":{
+          "shape":"ResolutionTechniques",
+          "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+        },
+        "incrementalRunConfig":{
+          "shape":"IncrementalRunConfig",
+          "documentation":"<p>Optional. An object that defines the incremental run type. This object contains only the <code>incrementalRunType</code> field, which appears as \"Automatic\" in the console. </p> <important> <p>For workflows where <code>resolutionType</code> is <code>ML_MATCHING</code>, incremental processing is not supported. </p> </important>"
+        },
+        "roleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        }
+      }
+    },
+    "UpdateMatchingWorkflowOutput":{
+      "type":"structure",
+      "required":[
+        "workflowName",
+        "inputSourceConfig",
+        "outputSourceConfig",
+        "resolutionTechniques",
+        "roleArn"
+      ],
+      "members":{
+        "workflowName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the workflow.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the workflow.</p>"
+        },
+        "inputSourceConfig":{
+          "shape":"InputSourceConfig",
+          "documentation":"<p>A list of <code>InputSource</code> objects, which have the fields <code>InputSourceARN</code> and <code>SchemaName</code>.</p>"
+        },
+        "outputSourceConfig":{
+          "shape":"OutputSourceConfig",
+          "documentation":"<p>A list of <code>OutputSource</code> objects, each of which contains fields <code>outputS3Path</code>, <code>applyNormalization</code>, <code>KMSArn</code>, and <code>output</code>.</p>"
+        },
+        "resolutionTechniques":{
+          "shape":"ResolutionTechniques",
+          "documentation":"<p>An object which defines the <code>resolutionType</code> and the <code>ruleBasedProperties</code>.</p>"
+        },
+        "incrementalRunConfig":{
+          "shape":"IncrementalRunConfig",
+          "documentation":"<p>An object which defines an incremental run type and has only <code>incrementalRunType</code> as a field.</p>"
+        },
+        "roleArn":{
+          "shape":"String",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the IAM role. Entity Resolution assumes this role to create resources on your behalf as part of workflow execution.</p>"
+        }
+      }
+    },
+    "UpdateSchemaMappingInput":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "mappedInputFields"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema. There can't be multiple <code>SchemaMappings</code> with the same name.</p>",
+          "location":"uri",
+          "locationName":"schemaName"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the schema.</p>"
+        },
+        "mappedInputFields":{
+          "shape":"SchemaInputAttributes",
+          "documentation":"<p>A list of <code>MappedInputFields</code>. Each <code>MappedInputField</code> corresponds to a column the source data table, and contains column name plus additional information that Entity Resolution uses for matching.</p>"
+        }
+      }
+    },
+    "UpdateSchemaMappingOutput":{
+      "type":"structure",
+      "required":[
+        "schemaName",
+        "schemaArn",
+        "mappedInputFields"
+      ],
+      "members":{
+        "schemaName":{
+          "shape":"EntityName",
+          "documentation":"<p>The name of the schema.</p>"
+        },
+        "schemaArn":{
+          "shape":"SchemaMappingArn",
+          "documentation":"<p>The ARN (Amazon Resource Name) that Entity Resolution generated for the <code>SchemaMapping</code>.</p>"
+        },
+        "description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the schema.</p>"
+        },
+        "mappedInputFields":{
+          "shape":"SchemaInputAttributes",
+          "documentation":"<p>A list of <code>MappedInputFields</code>. Each <code>MappedInputField</code> corresponds to a column the source data table, and contains column name plus additional information that Entity Resolution uses for matching.</p>"
+        }
+      }
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the constraints specified by Entity Resolution. </p>",
+      "error":{
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "VeniceGlobalArn":{
+      "type":"string",
+      "pattern":"arn:(aws|aws-us-gov|aws-cn):entityresolution:[a-z]{2}-[a-z]{1,10}-[0-9]:[0-9]{12}:((schemamapping|matchingworkflow|idmappingworkflow|idnamespace)/[a-zA-Z_0-9-]{1,255})"
+    }
+  },
+  "documentation":"<p>Welcome to the <i>Entity Resolution API Reference</i>.</p> <p>Entity Resolution is an Amazon Web Services service that provides pre-configured entity resolution capabilities that enable developers and analysts at advertising and marketing companies to build an accurate and complete view of their consumers.</p> <p> With Entity Resolution, you can match source records containing consumer identifiers, such as name, email address, and phone number. This is true even when these records have incomplete or conflicting identifiers. For example, Entity Resolution can effectively match a source record from a customer relationship management (CRM) system with a source record from a marketing system containing campaign information.</p> <p>To learn more about Entity Resolution concepts, procedures, and best practices, see the <a href=\"https://docs.aws.amazon.com/entityresolution/latest/userguide/what-is-service.html\">Entity Resolution User Guide</a>.</p>"
+}

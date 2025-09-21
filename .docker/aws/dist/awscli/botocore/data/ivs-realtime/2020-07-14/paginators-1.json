@@ -1,0 +1,22 @@
+{
+  "pagination": {
+    "ListPublicKeys": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "publicKeys"
+    },
+    "ListIngestConfigurations": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "ingestConfigurations"
+    },
+    "ListParticipantReplicas": {
+      "input_token": "nextToken",
+      "output_token": "nextToken",
+      "limit_key": "maxResults",
+      "result_key": "replicas"
+    }
+  }
+}

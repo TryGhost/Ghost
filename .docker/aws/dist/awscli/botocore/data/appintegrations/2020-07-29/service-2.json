@@ -1,0 +1,2036 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2020-07-29",
+    "endpointPrefix":"app-integrations",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceFullName":"Amazon AppIntegrations Service",
+    "serviceId":"AppIntegrations",
+    "signatureVersion":"v4",
+    "signingName":"app-integrations",
+    "uid":"appintegrations-2020-07-29",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "CreateApplication":{
+      "name":"CreateApplication",
+      "http":{
+        "method":"POST",
+        "requestUri":"/applications"
+      },
+      "input":{"shape":"CreateApplicationRequest"},
+      "output":{"shape":"CreateApplicationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceQuotaExceededException"},
+        {"shape":"DuplicateResourceException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UnsupportedOperationException"}
+      ],
+      "documentation":"<p>Creates and persists an Application resource.</p>"
+    },
+    "CreateDataIntegration":{
+      "name":"CreateDataIntegration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/dataIntegrations"
+      },
+      "input":{"shape":"CreateDataIntegrationRequest"},
+      "output":{"shape":"CreateDataIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceQuotaExceededException"},
+        {"shape":"DuplicateResourceException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates and persists a DataIntegration resource.</p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <code>CreateDataIntegration</code> API.</p> </note>"
+    },
+    "CreateDataIntegrationAssociation":{
+      "name":"CreateDataIntegrationAssociation",
+      "http":{
+        "method":"POST",
+        "requestUri":"/dataIntegrations/{Identifier}/associations"
+      },
+      "input":{"shape":"CreateDataIntegrationAssociationRequest"},
+      "output":{"shape":"CreateDataIntegrationAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceQuotaExceededException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates and persists a DataIntegrationAssociation resource.</p>"
+    },
+    "CreateEventIntegration":{
+      "name":"CreateEventIntegration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/eventIntegrations"
+      },
+      "input":{"shape":"CreateEventIntegrationRequest"},
+      "output":{"shape":"CreateEventIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceQuotaExceededException"},
+        {"shape":"DuplicateResourceException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Creates an EventIntegration, given a specified name, description, and a reference to an Amazon EventBridge bus in your account and a partner event source that pushes events to that bus. No objects are created in the your account, only metadata that is persisted on the EventIntegration control plane.</p>"
+    },
+    "DeleteApplication":{
+      "name":"DeleteApplication",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/applications/{ApplicationIdentifier}"
+      },
+      "input":{"shape":"DeleteApplicationRequest"},
+      "output":{"shape":"DeleteApplicationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the Application. Only Applications that don't have any Application Associations can be deleted.</p>"
+    },
+    "DeleteDataIntegration":{
+      "name":"DeleteDataIntegration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/dataIntegrations/{Identifier}"
+      },
+      "input":{"shape":"DeleteDataIntegrationRequest"},
+      "output":{"shape":"DeleteDataIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the DataIntegration. Only DataIntegrations that don't have any DataIntegrationAssociations can be deleted. Deleting a DataIntegration also deletes the underlying Amazon AppFlow flow and service linked role. </p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> API.</p> </note>"
+    },
+    "DeleteEventIntegration":{
+      "name":"DeleteEventIntegration",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/eventIntegrations/{Name}"
+      },
+      "input":{"shape":"DeleteEventIntegrationRequest"},
+      "output":{"shape":"DeleteEventIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Deletes the specified existing event integration. If the event integration is associated with clients, the request is rejected.</p>"
+    },
+    "GetApplication":{
+      "name":"GetApplication",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{ApplicationIdentifier}"
+      },
+      "input":{"shape":"GetApplicationRequest"},
+      "output":{"shape":"GetApplicationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Get an Application resource.</p>"
+    },
+    "GetDataIntegration":{
+      "name":"GetDataIntegration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/dataIntegrations/{Identifier}"
+      },
+      "input":{"shape":"GetDataIntegrationRequest"},
+      "output":{"shape":"GetDataIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about the DataIntegration.</p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> API.</p> </note>"
+    },
+    "GetEventIntegration":{
+      "name":"GetEventIntegration",
+      "http":{
+        "method":"GET",
+        "requestUri":"/eventIntegrations/{Name}"
+      },
+      "input":{"shape":"GetEventIntegrationRequest"},
+      "output":{"shape":"GetEventIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns information about the event integration.</p>"
+    },
+    "ListApplicationAssociations":{
+      "name":"ListApplicationAssociations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications/{ApplicationIdentifier}/associations"
+      },
+      "input":{"shape":"ListApplicationAssociationsRequest"},
+      "output":{"shape":"ListApplicationAssociationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a paginated list of application associations for an application.</p>"
+    },
+    "ListApplications":{
+      "name":"ListApplications",
+      "http":{
+        "method":"GET",
+        "requestUri":"/applications"
+      },
+      "input":{"shape":"ListApplicationsRequest"},
+      "output":{"shape":"ListApplicationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists applications in the account.</p>"
+    },
+    "ListDataIntegrationAssociations":{
+      "name":"ListDataIntegrationAssociations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/dataIntegrations/{Identifier}/associations"
+      },
+      "input":{"shape":"ListDataIntegrationAssociationsRequest"},
+      "output":{"shape":"ListDataIntegrationAssociationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a paginated list of DataIntegration associations in the account.</p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> API.</p> </note>"
+    },
+    "ListDataIntegrations":{
+      "name":"ListDataIntegrations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/dataIntegrations"
+      },
+      "input":{"shape":"ListDataIntegrationsRequest"},
+      "output":{"shape":"ListDataIntegrationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a paginated list of DataIntegrations in the account.</p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> API.</p> </note>"
+    },
+    "ListEventIntegrationAssociations":{
+      "name":"ListEventIntegrationAssociations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/eventIntegrations/{Name}/associations"
+      },
+      "input":{"shape":"ListEventIntegrationAssociationsRequest"},
+      "output":{"shape":"ListEventIntegrationAssociationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a paginated list of event integration associations in the account. </p>"
+    },
+    "ListEventIntegrations":{
+      "name":"ListEventIntegrations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/eventIntegrations"
+      },
+      "input":{"shape":"ListEventIntegrationsRequest"},
+      "output":{"shape":"ListEventIntegrationsResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Returns a paginated list of event integrations in the account.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Lists the tags for the specified resource.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Adds the specified tags to the specified resource.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceError"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p>"
+    },
+    "UpdateApplication":{
+      "name":"UpdateApplication",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/applications/{ApplicationIdentifier}"
+      },
+      "input":{"shape":"UpdateApplicationRequest"},
+      "output":{"shape":"UpdateApplicationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"UnsupportedOperationException"}
+      ],
+      "documentation":"<p>Updates and persists an Application resource.</p>"
+    },
+    "UpdateDataIntegration":{
+      "name":"UpdateDataIntegration",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/dataIntegrations/{Identifier}"
+      },
+      "input":{"shape":"UpdateDataIntegrationRequest"},
+      "output":{"shape":"UpdateDataIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the description of a DataIntegration.</p> <note> <p>You cannot create a DataIntegration association for a DataIntegration that has been previously associated. Use a different DataIntegration, or recreate the DataIntegration using the <a href=\"https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html\">CreateDataIntegration</a> API.</p> </note>"
+    },
+    "UpdateDataIntegrationAssociation":{
+      "name":"UpdateDataIntegrationAssociation",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/dataIntegrations/{Identifier}/associations/{DataIntegrationAssociationIdentifier}"
+      },
+      "input":{"shape":"UpdateDataIntegrationAssociationRequest"},
+      "output":{"shape":"UpdateDataIntegrationAssociationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates and persists a DataIntegrationAssociation resource.</p> <note> <p> Updating a DataIntegrationAssociation with ExecutionConfiguration will rerun the on-demand job. </p> </note>"
+    },
+    "UpdateEventIntegration":{
+      "name":"UpdateEventIntegration",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/eventIntegrations/{Name}"
+      },
+      "input":{"shape":"UpdateEventIntegrationRequest"},
+      "output":{"shape":"UpdateEventIntegrationResponse"},
+      "errors":[
+        {"shape":"InternalServiceError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Updates the description of an event integration.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "ApplicationApprovedOrigins":{
+      "type":"list",
+      "member":{"shape":"ApplicationTrustedSource"},
+      "max":50,
+      "min":1
+    },
+    "ApplicationAssociationSummary":{
+      "type":"structure",
+      "members":{
+        "ApplicationAssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application Association.</p>"
+        },
+        "ApplicationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>"
+        },
+        "ClientId":{
+          "shape":"ClientId",
+          "documentation":"<p>The identifier for the client that is associated with the Application Association.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the Application Association.</p>"
+    },
+    "ApplicationAssociationsList":{
+      "type":"list",
+      "member":{"shape":"ApplicationAssociationSummary"},
+      "max":50,
+      "min":1
+    },
+    "ApplicationConfig":{
+      "type":"structure",
+      "members":{
+        "ContactHandling":{
+          "shape":"ContactHandling",
+          "documentation":"<p>The contact handling configuration for the application.</p>"
+        }
+      },
+      "documentation":"<p>The configuration settings for the application.</p>"
+    },
+    "ApplicationName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._ \\-]+$"
+    },
+    "ApplicationNamespace":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "ApplicationSourceConfig":{
+      "type":"structure",
+      "members":{
+        "ExternalUrlConfig":{
+          "shape":"ExternalUrlConfig",
+          "documentation":"<p>The external URL source for the application.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for where the application should be loaded from.</p>"
+    },
+    "ApplicationSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>"
+        },
+        "Id":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier for the Application.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "Namespace":{
+          "shape":"ApplicationNamespace",
+          "documentation":"<p>The namespace of the application.</p>"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the application was created.</p>"
+        },
+        "LastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The time when the application was last modified.</p>"
+        },
+        "IsService":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the application is a service.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the Application.</p>"
+    },
+    "ApplicationTrustedSource":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^\\w+\\:\\/\\/.*$"
+    },
+    "ApplicationsList":{
+      "type":"list",
+      "member":{"shape":"ApplicationSummary"},
+      "max":50,
+      "min":1
+    },
+    "Arn":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^arn:aws:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}$"
+    },
+    "ArnOrUUID":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^(arn:aws:[A-Za-z0-9][A-Za-z0-9_/.-]{0,62}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-Za-z0-9:_/+=,@.-]{0,1023}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(:[\\w\\$]+)?$"
+    },
+    "Boolean":{"type":"boolean"},
+    "ClientAssociationMetadata":{
+      "type":"map",
+      "key":{"shape":"NonBlankString"},
+      "value":{"shape":"NonBlankString"}
+    },
+    "ClientId":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":".*"
+    },
+    "ContactHandling":{
+      "type":"structure",
+      "members":{
+        "Scope":{
+          "shape":"ContactHandlingScope",
+          "documentation":"<p>Indicates whether the application refreshes for each contact or refreshes only with each new browser session.</p>"
+        }
+      },
+      "documentation":"<p>The contact handling configuration for the application.</p>"
+    },
+    "ContactHandlingScope":{
+      "type":"string",
+      "enum":[
+        "CROSS_CONTACTS",
+        "PER_CONTACT"
+      ]
+    },
+    "CreateApplicationRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Namespace",
+        "ApplicationSourceConfig"
+      ],
+      "members":{
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "Namespace":{
+          "shape":"ApplicationNamespace",
+          "documentation":"<p>The namespace of the application.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "ApplicationSourceConfig":{
+          "shape":"ApplicationSourceConfig",
+          "documentation":"<p>The configuration for where the application should be loaded from.</p>"
+        },
+        "Subscriptions":{
+          "shape":"SubscriptionList",
+          "documentation":"<p>The events that the application subscribes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Subscriptions has been replaced with Permissions"
+        },
+        "Publications":{
+          "shape":"PublicationList",
+          "documentation":"<p>The events that the application publishes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Publications has been replaced with Permissions"
+        },
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        },
+        "Permissions":{
+          "shape":"PermissionList",
+          "documentation":"<p>The configuration of events or requests that the application has access to.</p>"
+        },
+        "IsService":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the application is a service.</p>"
+        },
+        "InitializationTimeout":{
+          "shape":"InitializationTimeout",
+          "documentation":"<p>The maximum time in milliseconds allowed to establish a connection with the workspace.</p>"
+        },
+        "ApplicationConfig":{
+          "shape":"ApplicationConfig",
+          "documentation":"<p>The configuration settings for the application.</p>"
+        },
+        "IframeConfig":{
+          "shape":"IframeConfig",
+          "documentation":"<p>The iframe configuration for the application.</p>"
+        }
+      }
+    },
+    "CreateApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>"
+        },
+        "Id":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier for the Application.</p>"
+        }
+      }
+    },
+    "CreateDataIntegrationAssociationRequest":{
+      "type":"structure",
+      "required":["DataIntegrationIdentifier"],
+      "members":{
+        "DataIntegrationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier for the DataIntegration.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        },
+        "ClientId":{
+          "shape":"ClientId",
+          "documentation":"<p>The identifier for the client that is associated with the DataIntegration association.</p>"
+        },
+        "ObjectConfiguration":{"shape":"ObjectConfiguration"},
+        "DestinationURI":{
+          "shape":"DestinationURI",
+          "documentation":"<p>The URI of the data destination.</p>"
+        },
+        "ClientAssociationMetadata":{
+          "shape":"ClientAssociationMetadata",
+          "documentation":"<p>The mapping of metadata to be extracted from the data.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "ExecutionConfiguration":{
+          "shape":"ExecutionConfiguration",
+          "documentation":"<p>The configuration for how the files should be pulled from the source.</p>"
+        }
+      }
+    },
+    "CreateDataIntegrationAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "DataIntegrationAssociationId":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier. for the DataIntegrationAssociation.</p>"
+        },
+        "DataIntegrationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the DataIntegration.</p>"
+        }
+      }
+    },
+    "CreateDataIntegrationRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "KmsKey"
+      ],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the DataIntegration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the DataIntegration.</p>"
+        },
+        "KmsKey":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The KMS key ARN for the DataIntegration.</p>"
+        },
+        "SourceURI":{
+          "shape":"SourceURI",
+          "documentation":"<p>The URI of the data source.</p>"
+        },
+        "ScheduleConfig":{
+          "shape":"ScheduleConfiguration",
+          "documentation":"<p>The name of the data and how often it should be pulled from the source.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "FileConfiguration":{
+          "shape":"FileConfiguration",
+          "documentation":"<p>The configuration for what files should be pulled from the source.</p>"
+        },
+        "ObjectConfiguration":{
+          "shape":"ObjectConfiguration",
+          "documentation":"<p>The configuration for what data should be pulled from the source.</p>"
+        }
+      }
+    },
+    "CreateDataIntegrationResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN)</p>"
+        },
+        "Id":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the DataIntegration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the DataIntegration.</p>"
+        },
+        "KmsKey":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The KMS key ARN for the DataIntegration.</p>"
+        },
+        "SourceURI":{
+          "shape":"SourceURI",
+          "documentation":"<p>The URI of the data source.</p>"
+        },
+        "ScheduleConfiguration":{
+          "shape":"ScheduleConfiguration",
+          "documentation":"<p>The name of the data and how often it should be pulled from the source.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>"
+        },
+        "FileConfiguration":{
+          "shape":"FileConfiguration",
+          "documentation":"<p>The configuration for what files should be pulled from the source.</p>"
+        },
+        "ObjectConfiguration":{
+          "shape":"ObjectConfiguration",
+          "documentation":"<p>The configuration for what data should be pulled from the source.</p>"
+        }
+      }
+    },
+    "CreateEventIntegrationRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "EventFilter",
+        "EventBridgeBus"
+      ],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the event integration.</p>"
+        },
+        "EventFilter":{
+          "shape":"EventFilter",
+          "documentation":"<p>The event filter.</p>"
+        },
+        "EventBridgeBus":{
+          "shape":"EventBridgeBus",
+          "documentation":"<p>The EventBridge bus.</p>"
+        },
+        "ClientToken":{
+          "shape":"IdempotencyToken",
+          "documentation":"<p>A unique, case-sensitive identifier that you provide to ensure the idempotency of the request. If not provided, the Amazon Web Services SDK populates this field. For more information about idempotency, see <a href=\"https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/\">Making retries safe with idempotent APIs</a>.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "CreateEventIntegrationResponse":{
+      "type":"structure",
+      "members":{
+        "EventIntegrationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the event integration. </p>"
+        }
+      }
+    },
+    "DataIntegrationAssociationSummary":{
+      "type":"structure",
+      "members":{
+        "DataIntegrationAssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the DataIntegration association.</p>"
+        },
+        "DataIntegrationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the DataIntegration.</p>"
+        },
+        "ClientId":{
+          "shape":"ClientId",
+          "documentation":"<p>The identifier for the client that is associated with the DataIntegration association.</p>"
+        },
+        "DestinationURI":{
+          "shape":"DestinationURI",
+          "documentation":"<p>The URI of the data destination.</p>"
+        },
+        "LastExecutionStatus":{
+          "shape":"LastExecutionStatus",
+          "documentation":"<p>The execution status of the last job.</p>"
+        },
+        "ExecutionConfiguration":{"shape":"ExecutionConfiguration"}
+      },
+      "documentation":"<p>Summary information about the DataIntegration association.</p>"
+    },
+    "DataIntegrationAssociationsList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationAssociationSummary"},
+      "max":50,
+      "min":1
+    },
+    "DataIntegrationSummary":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the DataIntegration.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the DataIntegration.</p>"
+        },
+        "SourceURI":{
+          "shape":"SourceURI",
+          "documentation":"<p>The URI of the data source.</p>"
+        }
+      },
+      "documentation":"<p>Summary information about the DataIntegration.</p>"
+    },
+    "DataIntegrationsList":{
+      "type":"list",
+      "member":{"shape":"DataIntegrationSummary"},
+      "max":50,
+      "min":1
+    },
+    "DeleteApplicationRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"ArnOrUUID",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        }
+      }
+    },
+    "DeleteApplicationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteDataIntegrationRequest":{
+      "type":"structure",
+      "required":["DataIntegrationIdentifier"],
+      "members":{
+        "DataIntegrationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier for the DataIntegration.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        }
+      }
+    },
+    "DeleteDataIntegrationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "DeleteEventIntegrationRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "DeleteEventIntegrationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Description":{
+      "type":"string",
+      "max":1000,
+      "min":0,
+      "pattern":".*"
+    },
+    "DestinationURI":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"^(\\w+\\:\\/\\/[\\w.-]+[\\w/!@#+=.-]+$)|(\\w+\\:\\/\\/[\\w.-]+[\\w/!@#+=.-]+[\\w/!@#+=.-]+[\\w/!@#+=.,-]+$)"
+    },
+    "DuplicateResourceException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>A resource with the specified name already exists.</p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "EventBridgeBus":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "EventBridgeRuleName":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "EventDefinitionSchema":{
+      "type":"string",
+      "max":10240,
+      "min":1,
+      "pattern":"^.*$"
+    },
+    "EventFilter":{
+      "type":"structure",
+      "required":["Source"],
+      "members":{
+        "Source":{
+          "shape":"Source",
+          "documentation":"<p>The source of the events.</p>"
+        }
+      },
+      "documentation":"<p>The event filter.</p>"
+    },
+    "EventIntegration":{
+      "type":"structure",
+      "members":{
+        "EventIntegrationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the event integration.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The event integration description.</p>"
+        },
+        "EventFilter":{
+          "shape":"EventFilter",
+          "documentation":"<p>The event integration filter.</p>"
+        },
+        "EventBridgeBus":{
+          "shape":"EventBridgeBus",
+          "documentation":"<p>The Amazon EventBridge bus for the event integration.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      },
+      "documentation":"<p>The event integration.</p>"
+    },
+    "EventIntegrationAssociation":{
+      "type":"structure",
+      "members":{
+        "EventIntegrationAssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the event integration association.</p>"
+        },
+        "EventIntegrationAssociationId":{
+          "shape":"UUID",
+          "documentation":"<p>The identifier for the event integration association.</p>"
+        },
+        "EventIntegrationName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration.</p>"
+        },
+        "ClientId":{
+          "shape":"ClientId",
+          "documentation":"<p>The identifier for the client that is associated with the event integration.</p>"
+        },
+        "EventBridgeRuleName":{
+          "shape":"EventBridgeRuleName",
+          "documentation":"<p>The name of the EventBridge rule.</p>"
+        },
+        "ClientAssociationMetadata":{
+          "shape":"ClientAssociationMetadata",
+          "documentation":"<p>The metadata associated with the client.</p>"
+        }
+      },
+      "documentation":"<p>The event integration association.</p>"
+    },
+    "EventIntegrationAssociationsList":{
+      "type":"list",
+      "member":{"shape":"EventIntegrationAssociation"},
+      "max":50,
+      "min":1
+    },
+    "EventIntegrationsList":{
+      "type":"list",
+      "member":{"shape":"EventIntegration"},
+      "max":50,
+      "min":1
+    },
+    "EventName":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+::[a-zA-Z0-9\\/\\._\\-]+(?:\\*)?$"
+    },
+    "ExecutionConfiguration":{
+      "type":"structure",
+      "required":["ExecutionMode"],
+      "members":{
+        "ExecutionMode":{
+          "shape":"ExecutionMode",
+          "documentation":"<p>The mode for data import/export execution.</p>"
+        },
+        "OnDemandConfiguration":{"shape":"OnDemandConfiguration"},
+        "ScheduleConfiguration":{"shape":"ScheduleConfiguration"}
+      },
+      "documentation":"<p>The configuration for how the files should be pulled from the source.</p>"
+    },
+    "ExecutionMode":{
+      "type":"string",
+      "enum":[
+        "ON_DEMAND",
+        "SCHEDULED"
+      ]
+    },
+    "ExecutionStatus":{
+      "type":"string",
+      "enum":[
+        "COMPLETED",
+        "IN_PROGRESS",
+        "FAILED"
+      ]
+    },
+    "ExternalUrlConfig":{
+      "type":"structure",
+      "required":["AccessUrl"],
+      "members":{
+        "AccessUrl":{
+          "shape":"URL",
+          "documentation":"<p>The URL to access the application.</p>"
+        },
+        "ApprovedOrigins":{
+          "shape":"ApplicationApprovedOrigins",
+          "documentation":"<p>Additional URLs to allow list if different than the access URL.</p>"
+        }
+      },
+      "documentation":"<p>The external URL source for the application.</p>"
+    },
+    "Fields":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "FieldsList":{
+      "type":"list",
+      "member":{"shape":"Fields"},
+      "max":2048,
+      "min":1
+    },
+    "FieldsMap":{
+      "type":"map",
+      "key":{"shape":"NonBlankString"},
+      "value":{"shape":"FieldsList"}
+    },
+    "FileConfiguration":{
+      "type":"structure",
+      "required":["Folders"],
+      "members":{
+        "Folders":{
+          "shape":"FolderList",
+          "documentation":"<p>Identifiers for the source folders to pull all files from recursively.</p>"
+        },
+        "Filters":{
+          "shape":"FieldsMap",
+          "documentation":"<p>Restrictions for what files should be pulled from the source.</p>"
+        }
+      },
+      "documentation":"<p>The configuration for what files should be pulled from the source.</p>"
+    },
+    "FolderList":{
+      "type":"list",
+      "member":{"shape":"NonBlankLongString"},
+      "max":10,
+      "min":1
+    },
+    "GetApplicationRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"ArnOrUUID",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        }
+      }
+    },
+    "GetApplicationResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>"
+        },
+        "Id":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier for the Application.</p>"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "Namespace":{
+          "shape":"ApplicationNamespace",
+          "documentation":"<p>The namespace of the application.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "ApplicationSourceConfig":{
+          "shape":"ApplicationSourceConfig",
+          "documentation":"<p>The configuration for where the application should be loaded from.</p>"
+        },
+        "Subscriptions":{
+          "shape":"SubscriptionList",
+          "documentation":"<p>The events that the application subscribes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Subscriptions has been replaced with Permissions"
+        },
+        "Publications":{
+          "shape":"PublicationList",
+          "documentation":"<p>The events that the application publishes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Publications has been replaced with Permissions"
+        },
+        "CreatedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The created time of the Application.</p>"
+        },
+        "LastModifiedTime":{
+          "shape":"Timestamp",
+          "documentation":"<p>The last modified time of the Application.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        },
+        "Permissions":{
+          "shape":"PermissionList",
+          "documentation":"<p>The configuration of events or requests that the application has access to.</p>"
+        },
+        "IsService":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the application is a service.</p>"
+        },
+        "InitializationTimeout":{
+          "shape":"InitializationTimeout",
+          "documentation":"<p>The maximum time in milliseconds allowed to establish a connection with the workspace.</p>"
+        },
+        "ApplicationConfig":{
+          "shape":"ApplicationConfig",
+          "documentation":"<p>The configuration settings for the application.</p>"
+        },
+        "IframeConfig":{
+          "shape":"IframeConfig",
+          "documentation":"<p>The iframe configuration for the application.</p>"
+        }
+      }
+    },
+    "GetDataIntegrationRequest":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        }
+      }
+    },
+    "GetDataIntegrationResponse":{
+      "type":"structure",
+      "members":{
+        "Arn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the DataIntegration.</p>"
+        },
+        "Id":{
+          "shape":"UUID",
+          "documentation":"<p>A unique identifier.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the DataIntegration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The KMS key ARN for the DataIntegration.</p>"
+        },
+        "KmsKey":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The KMS key ARN for the DataIntegration.</p>"
+        },
+        "SourceURI":{
+          "shape":"SourceURI",
+          "documentation":"<p>The URI of the data source.</p>"
+        },
+        "ScheduleConfiguration":{
+          "shape":"ScheduleConfiguration",
+          "documentation":"<p>The name of the data and how often it should be pulled from the source.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        },
+        "FileConfiguration":{
+          "shape":"FileConfiguration",
+          "documentation":"<p>The configuration for what files should be pulled from the source.</p>"
+        },
+        "ObjectConfiguration":{
+          "shape":"ObjectConfiguration",
+          "documentation":"<p>The configuration for what data should be pulled from the source.</p>"
+        }
+      }
+    },
+    "GetEventIntegrationRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration. </p>",
+          "location":"uri",
+          "locationName":"Name"
+        }
+      }
+    },
+    "GetEventIntegrationResponse":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration. </p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the event integration.</p>"
+        },
+        "EventIntegrationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) for the event integration.</p>"
+        },
+        "EventBridgeBus":{
+          "shape":"EventBridgeBus",
+          "documentation":"<p>The EventBridge bus.</p>"
+        },
+        "EventFilter":{
+          "shape":"EventFilter",
+          "documentation":"<p>The event filter.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "IdempotencyToken":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":".*"
+    },
+    "Identifier":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "IframeConfig":{
+      "type":"structure",
+      "members":{
+        "Allow":{
+          "shape":"IframePermissionList",
+          "documentation":"<p>The list of features that are allowed in the iframe.</p>"
+        },
+        "Sandbox":{
+          "shape":"IframePermissionList",
+          "documentation":"<p>The list of sandbox attributes for the iframe.</p>"
+        }
+      },
+      "documentation":"<p>The iframe configuration for the application.</p>"
+    },
+    "IframePermission":{
+      "type":"string",
+      "documentation":"<p>A permission for the iframe.</p>",
+      "max":100,
+      "min":1,
+      "pattern":"^[a-z-]+$"
+    },
+    "IframePermissionList":{
+      "type":"list",
+      "member":{"shape":"IframePermission"},
+      "documentation":"<p>A list of permissions for the iframe.</p>",
+      "max":25,
+      "min":0
+    },
+    "InitializationTimeout":{
+      "type":"integer",
+      "max":600000,
+      "min":1
+    },
+    "InternalServiceError":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>Request processing failed due to an error or failure with the service.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The request is not valid. </p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "LastExecutionStatus":{
+      "type":"structure",
+      "members":{
+        "ExecutionStatus":{
+          "shape":"ExecutionStatus",
+          "documentation":"<p>The job status enum string.</p>"
+        },
+        "StatusMessage":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The status message of a job.</p>"
+        }
+      },
+      "documentation":"<p>The execution status of the last job.</p>"
+    },
+    "ListApplicationAssociationsRequest":{
+      "type":"structure",
+      "required":["ApplicationId"],
+      "members":{
+        "ApplicationId":{
+          "shape":"ArnOrUUID",
+          "documentation":"<p>A unique identifier for the Application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListApplicationAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "ApplicationAssociations":{
+          "shape":"ApplicationAssociationsList",
+          "documentation":"<p>List of Application Associations for the Application.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListApplicationsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListApplicationsResponse":{
+      "type":"structure",
+      "members":{
+        "Applications":{
+          "shape":"ApplicationsList",
+          "documentation":"<p>The Applications associated with this account.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListDataIntegrationAssociationsRequest":{
+      "type":"structure",
+      "required":["DataIntegrationIdentifier"],
+      "members":{
+        "DataIntegrationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier for the DataIntegration.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListDataIntegrationAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "DataIntegrationAssociations":{
+          "shape":"DataIntegrationAssociationsList",
+          "documentation":"<p>The Amazon Resource Name (ARN) and unique ID of the DataIntegration association.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListDataIntegrationsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListDataIntegrationsResponse":{
+      "type":"structure",
+      "members":{
+        "DataIntegrations":{
+          "shape":"DataIntegrationsList",
+          "documentation":"<p>The DataIntegrations associated with this account.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListEventIntegrationAssociationsRequest":{
+      "type":"structure",
+      "required":["EventIntegrationName"],
+      "members":{
+        "EventIntegrationName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration. </p>",
+          "location":"uri",
+          "locationName":"Name"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListEventIntegrationAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "EventIntegrationAssociations":{
+          "shape":"EventIntegrationAssociationsList",
+          "documentation":"<p>The event integration associations.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListEventIntegrationsRequest":{
+      "type":"structure",
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The token for the next set of results. Use the value returned in the previous response in the next request to retrieve the next set of results.</p>",
+          "location":"querystring",
+          "locationName":"nextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results to return per page.</p>",
+          "location":"querystring",
+          "locationName":"maxResults"
+        }
+      }
+    },
+    "ListEventIntegrationsResponse":{
+      "type":"structure",
+      "members":{
+        "EventIntegrations":{
+          "shape":"EventIntegrationsList",
+          "documentation":"<p>The event integrations.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If there are additional results, this is the token for the next set of results.</p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource. </p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      }
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":50,
+      "min":1
+    },
+    "Message":{"type":"string"},
+    "Name":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "NextToken":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":".*"
+    },
+    "NonBlankLongString":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "NonBlankString":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":".*\\S.*"
+    },
+    "Object":{
+      "type":"string",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-]+$"
+    },
+    "ObjectConfiguration":{
+      "type":"map",
+      "key":{"shape":"NonBlankString"},
+      "value":{"shape":"FieldsMap"},
+      "documentation":"<p>The configuration for what data should be pulled from the source.</p>"
+    },
+    "OnDemandConfiguration":{
+      "type":"structure",
+      "required":["StartTime"],
+      "members":{
+        "StartTime":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The start time for data pull from the source as an Unix/epoch string in milliseconds</p>"
+        },
+        "EndTime":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The end time for data pull from the source as an Unix/epoch string in milliseconds</p>"
+        }
+      },
+      "documentation":"<p>The start and end time for data pull from the source.</p>"
+    },
+    "Permission":{
+      "type":"string",
+      "documentation":"<p>The permission of an event or request that the application has access to.</p>",
+      "max":255,
+      "min":1,
+      "pattern":"^[a-zA-Z0-9\\/\\._\\-\\*]+$"
+    },
+    "PermissionList":{
+      "type":"list",
+      "member":{"shape":"Permission"},
+      "max":150,
+      "min":0
+    },
+    "Publication":{
+      "type":"structure",
+      "required":[
+        "Event",
+        "Schema"
+      ],
+      "members":{
+        "Event":{
+          "shape":"EventName",
+          "documentation":"<p>The name of the publication.</p>"
+        },
+        "Schema":{
+          "shape":"EventDefinitionSchema",
+          "documentation":"<p>The JSON schema of the publication event.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the publication.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of an event that the application publishes.</p>"
+    },
+    "PublicationList":{
+      "type":"list",
+      "member":{"shape":"Publication"},
+      "max":50,
+      "min":0
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The specified resource was not found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "ResourceQuotaExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The allowed quota for the resource has been exceeded.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "ScheduleConfiguration":{
+      "type":"structure",
+      "required":["ScheduleExpression"],
+      "members":{
+        "FirstExecutionFrom":{
+          "shape":"NonBlankString",
+          "documentation":"<p>The start date for objects to import in the first flow run as an Unix/epoch timestamp in milliseconds or in ISO-8601 format.</p>"
+        },
+        "Object":{
+          "shape":"Object",
+          "documentation":"<p>The name of the object to pull from the data source.</p>"
+        },
+        "ScheduleExpression":{
+          "shape":"NonBlankString",
+          "documentation":"<p>How often the data should be pulled from data source.</p>"
+        }
+      },
+      "documentation":"<p>The name of the data and how often it should be pulled from the source.</p>"
+    },
+    "Source":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"^aws\\.partner\\/.*$"
+    },
+    "SourceURI":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"^(\\w+\\:\\/\\/[\\w.-]+[\\w/!@#+=.-]+$)|(\\w+\\:\\/\\/[\\w.-]+[\\w/!@#+=.-]+[\\w/!@#+=.-]+[\\w/!@#+=.,-]+$)"
+    },
+    "Subscription":{
+      "type":"structure",
+      "required":["Event"],
+      "members":{
+        "Event":{
+          "shape":"EventName",
+          "documentation":"<p>The name of the subscription.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the subscription.</p>"
+        }
+      },
+      "documentation":"<p>The configuration of an event that the application subscribes.</p>"
+    },
+    "SubscriptionList":{
+      "type":"list",
+      "member":{"shape":"Subscription"},
+      "max":50,
+      "min":0
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(?!aws:)[a-zA-Z+-=._:/]+$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":200,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":200,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tags":{
+          "shape":"TagMap",
+          "documentation":"<p>The tags used to organize, track, or control access for this resource. For example, { \"tags\": {\"key1\":\"value1\", \"key2\":\"value2\"} }.</p>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The throttling limit has been exceeded.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "Timestamp":{"type":"timestamp"},
+    "URL":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"^\\w+\\:\\/\\/.*$"
+    },
+    "UUID":{
+      "type":"string",
+      "pattern":"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+    },
+    "UnsupportedOperationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"Message"}
+      },
+      "documentation":"<p>The operation is not supported.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "tagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>The tag keys.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateApplicationRequest":{
+      "type":"structure",
+      "required":["Arn"],
+      "members":{
+        "Arn":{
+          "shape":"ArnOrUUID",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the Application.</p>",
+          "location":"uri",
+          "locationName":"ApplicationIdentifier"
+        },
+        "Name":{
+          "shape":"ApplicationName",
+          "documentation":"<p>The name of the application.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the application.</p>"
+        },
+        "ApplicationSourceConfig":{
+          "shape":"ApplicationSourceConfig",
+          "documentation":"<p>The configuration for where the application should be loaded from.</p>"
+        },
+        "Subscriptions":{
+          "shape":"SubscriptionList",
+          "documentation":"<p>The events that the application subscribes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Subscriptions has been replaced with Permissions"
+        },
+        "Publications":{
+          "shape":"PublicationList",
+          "documentation":"<p>The events that the application publishes.</p>",
+          "deprecated":true,
+          "deprecatedMessage":"Publications has been replaced with Permissions"
+        },
+        "Permissions":{
+          "shape":"PermissionList",
+          "documentation":"<p>The configuration of events or requests that the application has access to.</p>"
+        },
+        "IsService":{
+          "shape":"Boolean",
+          "documentation":"<p>Indicates whether the application is a service.</p>",
+          "box":true
+        },
+        "InitializationTimeout":{
+          "shape":"InitializationTimeout",
+          "documentation":"<p>The maximum time in milliseconds allowed to establish a connection with the workspace.</p>"
+        },
+        "ApplicationConfig":{
+          "shape":"ApplicationConfig",
+          "documentation":"<p>The configuration settings for the application.</p>"
+        },
+        "IframeConfig":{
+          "shape":"IframeConfig",
+          "documentation":"<p>The iframe configuration for the application.</p>"
+        }
+      }
+    },
+    "UpdateApplicationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDataIntegrationAssociationRequest":{
+      "type":"structure",
+      "required":[
+        "DataIntegrationIdentifier",
+        "DataIntegrationAssociationIdentifier",
+        "ExecutionConfiguration"
+      ],
+      "members":{
+        "DataIntegrationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier for the DataIntegration.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        },
+        "DataIntegrationAssociationIdentifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier. of the DataIntegrationAssociation resource</p>",
+          "location":"uri",
+          "locationName":"DataIntegrationAssociationIdentifier"
+        },
+        "ExecutionConfiguration":{
+          "shape":"ExecutionConfiguration",
+          "documentation":"<p>The configuration for how the files should be pulled from the source.</p>"
+        }
+      }
+    },
+    "UpdateDataIntegrationAssociationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateDataIntegrationRequest":{
+      "type":"structure",
+      "required":["Identifier"],
+      "members":{
+        "Identifier":{
+          "shape":"Identifier",
+          "documentation":"<p>A unique identifier for the DataIntegration.</p>",
+          "location":"uri",
+          "locationName":"Identifier"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the DataIntegration.</p>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the DataIntegration.</p>"
+        }
+      }
+    },
+    "UpdateDataIntegrationResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UpdateEventIntegrationRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the event integration.</p>",
+          "location":"uri",
+          "locationName":"Name"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>The description of the event integration.</p>"
+        }
+      }
+    },
+    "UpdateEventIntegrationResponse":{
+      "type":"structure",
+      "members":{}
+    }
+  },
+  "documentation":"<ul> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_Operations_Amazon_AppIntegrations_Service.html\">Amazon AppIntegrations actions</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/APIReference/API_Types_Amazon_AppIntegrations_Service.html\">Amazon AppIntegrations data types</a> </p> </li> </ul> <p>The Amazon AppIntegrations service enables you to configure and reuse connections to external applications.</p> <p>For information about how you can use external applications with Amazon Connect, see the following topics in the <i>Amazon Connect Administrator Guide</i>:</p> <ul> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/3p-apps.html\">Third-party applications (3p apps) in the agent workspace</a> </p> </li> <li> <p> <a href=\"https://docs.aws.amazon.com/connect/latest/adminguide/amazon-q-connect.html\">Use Amazon Q in Connect for generative AI–powered agent assistance in real-time</a> </p> </li> </ul>"
+}

@@ -1,0 +1,1792 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2019-09-19",
+    "endpointPrefix":"codeguru-reviewer",
+    "jsonVersion":"1.1",
+    "protocol":"rest-json",
+    "protocols":["rest-json"],
+    "serviceAbbreviation":"CodeGuruReviewer",
+    "serviceFullName":"Amazon CodeGuru Reviewer",
+    "serviceId":"CodeGuru Reviewer",
+    "signatureVersion":"v4",
+    "signingName":"codeguru-reviewer",
+    "uid":"codeguru-reviewer-2019-09-19",
+    "auth":["aws.auth#sigv4"]
+  },
+  "operations":{
+    "AssociateRepository":{
+      "name":"AssociateRepository",
+      "http":{
+        "method":"POST",
+        "requestUri":"/associations"
+      },
+      "input":{"shape":"AssociateRepositoryRequest"},
+      "output":{"shape":"AssociateRepositoryResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Use to associate an Amazon Web Services CodeCommit repository or a repository managed by Amazon Web Services CodeStar Connections with Amazon CodeGuru Reviewer. When you associate a repository, CodeGuru Reviewer reviews source code changes in the repository's pull requests and provides automatic recommendations. You can view recommendations using the CodeGuru Reviewer console. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/recommendations.html\">Recommendations in Amazon CodeGuru Reviewer</a> in the <i>Amazon CodeGuru Reviewer User Guide.</i> </p> <p>If you associate a CodeCommit or S3 repository, it must be in the same Amazon Web Services Region and Amazon Web Services account where its CodeGuru Reviewer code reviews are configured.</p> <p>Bitbucket and GitHub Enterprise Server repositories are managed by Amazon Web Services CodeStar Connections to connect to CodeGuru Reviewer. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/getting-started-associate-repository.html\">Associate a repository</a> in the <i>Amazon CodeGuru Reviewer User Guide.</i> </p> <note> <p>You cannot use the CodeGuru Reviewer SDK or the Amazon Web Services CLI to associate a GitHub repository with Amazon CodeGuru Reviewer. To associate a GitHub repository, use the console. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/getting-started-with-guru.html\">Getting started with CodeGuru Reviewer</a> in the <i>CodeGuru Reviewer User Guide.</i> </p> </note>"
+    },
+    "CreateCodeReview":{
+      "name":"CreateCodeReview",
+      "http":{
+        "method":"POST",
+        "requestUri":"/codereviews"
+      },
+      "input":{"shape":"CreateCodeReviewRequest"},
+      "output":{"shape":"CreateCodeReviewResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ConflictException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Use to create a code review with a <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReviewType.html\">CodeReviewType</a> of <code>RepositoryAnalysis</code>. This type of code review analyzes all code under a specified branch in an associated repository. <code>PullRequest</code> code reviews are automatically triggered by a pull request.</p>"
+    },
+    "DescribeCodeReview":{
+      "name":"DescribeCodeReview",
+      "http":{
+        "method":"GET",
+        "requestUri":"/codereviews/{CodeReviewArn}"
+      },
+      "input":{"shape":"DescribeCodeReviewRequest"},
+      "output":{"shape":"DescribeCodeReviewResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the metadata associated with the code review along with its status.</p>"
+    },
+    "DescribeRecommendationFeedback":{
+      "name":"DescribeRecommendationFeedback",
+      "http":{
+        "method":"GET",
+        "requestUri":"/feedback/{CodeReviewArn}"
+      },
+      "input":{"shape":"DescribeRecommendationFeedbackRequest"},
+      "output":{"shape":"DescribeRecommendationFeedbackResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Describes the customer feedback for a CodeGuru Reviewer recommendation.</p>"
+    },
+    "DescribeRepositoryAssociation":{
+      "name":"DescribeRepositoryAssociation",
+      "http":{
+        "method":"GET",
+        "requestUri":"/associations/{AssociationArn}"
+      },
+      "input":{"shape":"DescribeRepositoryAssociationRequest"},
+      "output":{"shape":"DescribeRepositoryAssociationResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object that contains information about the requested repository association.</p>"
+    },
+    "DisassociateRepository":{
+      "name":"DisassociateRepository",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/associations/{AssociationArn}"
+      },
+      "input":{"shape":"DisassociateRepositoryRequest"},
+      "output":{"shape":"DisassociateRepositoryResponse"},
+      "errors":[
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ConflictException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Removes the association between Amazon CodeGuru Reviewer and a repository.</p>"
+    },
+    "ListCodeReviews":{
+      "name":"ListCodeReviews",
+      "http":{
+        "method":"GET",
+        "requestUri":"/codereviews"
+      },
+      "input":{"shape":"ListCodeReviewsRequest"},
+      "output":{"shape":"ListCodeReviewsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"},
+        {"shape":"AccessDeniedException"}
+      ],
+      "documentation":"<p>Lists all the code reviews that the customer has created in the past 90 days.</p>"
+    },
+    "ListRecommendationFeedback":{
+      "name":"ListRecommendationFeedback",
+      "http":{
+        "method":"GET",
+        "requestUri":"/feedback/{CodeReviewArn}/RecommendationFeedback"
+      },
+      "input":{"shape":"ListRecommendationFeedbackRequest"},
+      "output":{"shape":"ListRecommendationFeedbackResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RecommendationFeedbackSummary.html\">RecommendationFeedbackSummary</a> objects that contain customer recommendation feedback for all CodeGuru Reviewer users.</p>"
+    },
+    "ListRecommendations":{
+      "name":"ListRecommendations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/codereviews/{CodeReviewArn}/Recommendations"
+      },
+      "input":{"shape":"ListRecommendationsRequest"},
+      "output":{"shape":"ListRecommendationsResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns the list of all recommendations for a completed code review.</p>"
+    },
+    "ListRepositoryAssociations":{
+      "name":"ListRepositoryAssociations",
+      "http":{
+        "method":"GET",
+        "requestUri":"/associations"
+      },
+      "input":{"shape":"ListRepositoryAssociationsRequest"},
+      "output":{"shape":"ListRepositoryAssociationsResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Returns a list of <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociationSummary.html\">RepositoryAssociationSummary</a> objects that contain summary information about a repository association. You can filter the returned list by <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociationSummary.html#reviewer-Type-RepositoryAssociationSummary-ProviderType\">ProviderType</a>, <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociationSummary.html#reviewer-Type-RepositoryAssociationSummary-Name\">Name</a>, <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociationSummary.html#reviewer-Type-RepositoryAssociationSummary-State\">State</a>, and <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociationSummary.html#reviewer-Type-RepositoryAssociationSummary-Owner\">Owner</a>.</p>"
+    },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"GET",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Returns the list of tags associated with an associated repository resource.</p>"
+    },
+    "PutRecommendationFeedback":{
+      "name":"PutRecommendationFeedback",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/feedback"
+      },
+      "input":{"shape":"PutRecommendationFeedbackRequest"},
+      "output":{"shape":"PutRecommendationFeedbackResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ThrottlingException"}
+      ],
+      "documentation":"<p>Stores customer feedback for a CodeGuru Reviewer recommendation. When this API is called again with different reactions the previous feedback is overwritten.</p>"
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Adds one or more tags to an associated repository.</p>"
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/tags/{resourceArn}"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ],
+      "documentation":"<p>Removes a tag from an associated repository.</p>"
+    }
+  },
+  "shapes":{
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>You do not have sufficient access to perform this action.</p>",
+      "error":{"httpStatusCode":403},
+      "exception":true
+    },
+    "AnalysisType":{
+      "type":"string",
+      "enum":[
+        "Security",
+        "CodeQuality"
+      ]
+    },
+    "AnalysisTypes":{
+      "type":"list",
+      "member":{"shape":"AnalysisType"}
+    },
+    "Arn":{
+      "type":"string",
+      "max":1600,
+      "min":1,
+      "pattern":"^arn:aws[^:\\s]*:codeguru-reviewer:[^:\\s]+:[\\d]{12}:[a-z-]+:[\\w-]+$"
+    },
+    "AssociateRepositoryRequest":{
+      "type":"structure",
+      "required":["Repository"],
+      "members":{
+        "Repository":{
+          "shape":"Repository",
+          "documentation":"<p>The repository to associate.</p>"
+        },
+        "ClientRequestToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>Amazon CodeGuru Reviewer uses this value to prevent the accidental creation of duplicate repository associations if there are failures and retries.</p>",
+          "idempotencyToken":true
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        },
+        "KMSKeyDetails":{
+          "shape":"KMSKeyDetails",
+          "documentation":"<p>A <code>KMSKeyDetails</code> object that contains:</p> <ul> <li> <p>The encryption option for this repository association. It is either owned by Amazon Web Services Key Management Service (KMS) (<code>AWS_OWNED_CMK</code>) or customer managed (<code>CUSTOMER_MANAGED_CMK</code>).</p> </li> <li> <p>The ID of the Amazon Web Services KMS key that is associated with this repository association.</p> </li> </ul>"
+        }
+      }
+    },
+    "AssociateRepositoryResponse":{
+      "type":"structure",
+      "members":{
+        "RepositoryAssociation":{
+          "shape":"RepositoryAssociation",
+          "documentation":"<p>Information about the repository association.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        }
+      }
+    },
+    "AssociationArn":{
+      "type":"string",
+      "max":1600,
+      "min":1,
+      "pattern":"^arn:aws[^:\\s]*:codeguru-reviewer:[^:\\s]+:[\\d]{12}:association:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+    },
+    "AssociationId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "BranchDiffSourceCodeType":{
+      "type":"structure",
+      "required":[
+        "SourceBranchName",
+        "DestinationBranchName"
+      ],
+      "members":{
+        "SourceBranchName":{
+          "shape":"BranchName",
+          "documentation":"<p>The source branch for a diff in an associated repository.</p>"
+        },
+        "DestinationBranchName":{
+          "shape":"BranchName",
+          "documentation":"<p>The destination branch for a diff in an associated repository.</p>"
+        }
+      },
+      "documentation":"<p>A type of <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies a code diff between a source and destination branch in an associated repository.</p>"
+    },
+    "BranchName":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "BuildArtifactsObjectKey":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "ClientRequestToken":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^[\\w-]+$"
+    },
+    "CodeArtifacts":{
+      "type":"structure",
+      "required":["SourceCodeArtifactsObjectKey"],
+      "members":{
+        "SourceCodeArtifactsObjectKey":{
+          "shape":"SourceCodeArtifactsObjectKey",
+          "documentation":"<p>The S3 object key for a source code .zip file. This is required for all code reviews.</p>"
+        },
+        "BuildArtifactsObjectKey":{
+          "shape":"BuildArtifactsObjectKey",
+          "documentation":"<p>The S3 object key for a build artifacts .zip file that contains .jar or .class files. This is required for a code review with security analysis. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/working-with-cicd.html\">Create code reviews with GitHub Actions</a> in the <i>Amazon CodeGuru Reviewer User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Code artifacts are source code artifacts and build artifacts used in a repository analysis or a pull request review.</p> <ul> <li> <p>Source code artifacts are source code files in a Git repository that are compressed into a .zip file.</p> </li> <li> <p>Build artifacts are .jar or .class files that are compressed in a .zip file.</p> </li> </ul>"
+    },
+    "CodeCommitRepository":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the Amazon Web Services CodeCommit repository. For more information, see <a href=\"https://docs.aws.amazon.com/codecommit/latest/APIReference/API_GetRepository.html#CodeCommit-GetRepository-request-repositoryName\">repositoryName</a> in the <i>Amazon Web Services CodeCommit API Reference</i>.</p>"
+        }
+      },
+      "documentation":"<p>Information about an Amazon Web Services CodeCommit repository. The CodeCommit repository must be in the same Amazon Web Services Region and Amazon Web Services account where its CodeGuru Reviewer code reviews are configured.</p>"
+    },
+    "CodeReview":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the code review.</p>"
+        },
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>"
+        },
+        "RepositoryName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository.</p>"
+        },
+        "Owner":{
+          "shape":"Owner",
+          "documentation":"<p>The owner of the repository. For an Amazon Web Services CodeCommit repository, this is the Amazon Web Services account ID of the account that owns the repository. For a GitHub, GitHub Enterprise Server, or Bitbucket repository, this is the username for the account that owns the repository. For an S3 repository, it can be the username or Amazon Web Services account ID.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The type of repository that contains the reviewed code (for example, GitHub or Bitbucket).</p>"
+        },
+        "State":{
+          "shape":"JobState",
+          "documentation":"<p>The valid code review states are:</p> <ul> <li> <p> <code>Completed</code>: The code review is complete.</p> </li> <li> <p> <code>Pending</code>: The code review started and has not completed or failed.</p> </li> <li> <p> <code>Failed</code>: The code review failed.</p> </li> <li> <p> <code>Deleting</code>: The code review is being deleted.</p> </li> </ul>"
+        },
+        "StateReason":{
+          "shape":"StateReason",
+          "documentation":"<p>The reason for the state of the code review.</p>"
+        },
+        "CreatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the code review was created.</p>"
+        },
+        "LastUpdatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the code review was last updated.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of code review.</p>"
+        },
+        "PullRequestId":{
+          "shape":"PullRequestId",
+          "documentation":"<p>The pull request ID for the code review.</p>"
+        },
+        "SourceCodeType":{
+          "shape":"SourceCodeType",
+          "documentation":"<p>The type of the source code for the code review.</p>"
+        },
+        "AssociationArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> that contains the reviewed source code. You can retrieve associated repository ARNs by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>"
+        },
+        "Metrics":{
+          "shape":"Metrics",
+          "documentation":"<p>The statistics from the code review.</p>"
+        },
+        "AnalysisTypes":{
+          "shape":"AnalysisTypes",
+          "documentation":"<p>The types of analysis performed during a repository analysis or a pull request review. You can specify either <code>Security</code>, <code>CodeQuality</code>, or both.</p>"
+        },
+        "ConfigFileState":{
+          "shape":"ConfigFileState",
+          "documentation":"<p>The state of the <code>aws-codeguru-reviewer.yml</code> configuration file that allows the configuration of the CodeGuru Reviewer analysis. The file either exists, doesn't exist, or exists with errors at the root directory of your repository.</p>"
+        }
+      },
+      "documentation":"<p>Information about a code review. A code review belongs to the associated repository that contains the reviewed code.</p>"
+    },
+    "CodeReviewName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_]*"
+    },
+    "CodeReviewSummaries":{
+      "type":"list",
+      "member":{"shape":"CodeReviewSummary"}
+    },
+    "CodeReviewSummary":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the code review.</p>"
+        },
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>"
+        },
+        "RepositoryName":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository.</p>"
+        },
+        "Owner":{
+          "shape":"Owner",
+          "documentation":"<p>The owner of the repository. For an Amazon Web Services CodeCommit repository, this is the Amazon Web Services account ID of the account that owns the repository. For a GitHub, GitHub Enterprise Server, or Bitbucket repository, this is the username for the account that owns the repository. For an S3 repository, it can be the username or Amazon Web Services account ID.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type of the repository association.</p>"
+        },
+        "State":{
+          "shape":"JobState",
+          "documentation":"<p>The state of the code review.</p> <p>The valid code review states are:</p> <ul> <li> <p> <code>Completed</code>: The code review is complete.</p> </li> <li> <p> <code>Pending</code>: The code review started and has not completed or failed.</p> </li> <li> <p> <code>Failed</code>: The code review failed.</p> </li> <li> <p> <code>Deleting</code>: The code review is being deleted.</p> </li> </ul>"
+        },
+        "CreatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the code review was created.</p>"
+        },
+        "LastUpdatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the code review was last updated.</p>"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of the code review.</p>"
+        },
+        "PullRequestId":{
+          "shape":"PullRequestId",
+          "documentation":"<p>The pull request ID for the code review.</p>"
+        },
+        "MetricsSummary":{
+          "shape":"MetricsSummary",
+          "documentation":"<p>The statistics from the code review.</p>"
+        },
+        "SourceCodeType":{"shape":"SourceCodeType"}
+      },
+      "documentation":"<p>Information about the summary of the code review.</p>"
+    },
+    "CodeReviewType":{
+      "type":"structure",
+      "required":["RepositoryAnalysis"],
+      "members":{
+        "RepositoryAnalysis":{
+          "shape":"RepositoryAnalysis",
+          "documentation":"<p>A code review that analyzes all code under a specified branch in an associated repository. The associated repository is specified using its ARN in <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CreateCodeReview\">CreateCodeReview</a>.</p>"
+        },
+        "AnalysisTypes":{
+          "shape":"AnalysisTypes",
+          "documentation":"<p>They types of analysis performed during a repository analysis or a pull request review. You can specify either <code>Security</code>, <code>CodeQuality</code>, or both.</p>"
+        }
+      },
+      "documentation":"<p>The type of a code review. There are two code review types:</p> <ul> <li> <p> <code>PullRequest</code> - A code review that is automatically triggered by a pull request on an associated repository.</p> </li> <li> <p> <code>RepositoryAnalysis</code> - A code review that analyzes all code under a specified branch in an associated repository. The associated repository is specified using its ARN in <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CreateCodeReview\">CreateCodeReview</a>.</p> </li> </ul>"
+    },
+    "CommitDiffSourceCodeType":{
+      "type":"structure",
+      "members":{
+        "SourceCommit":{
+          "shape":"CommitId",
+          "documentation":"<p>The SHA of the source commit used to generate a commit diff. This field is required for a pull request code review.</p>"
+        },
+        "DestinationCommit":{
+          "shape":"CommitId",
+          "documentation":"<p>The SHA of the destination commit used to generate a commit diff. This field is required for a pull request code review.</p>"
+        },
+        "MergeBaseCommit":{
+          "shape":"CommitId",
+          "documentation":"<p>The SHA of the merge base of a commit.</p>"
+        }
+      },
+      "documentation":"<p>A type of <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies the commit diff for a pull request on an associated repository. The <code>SourceCommit</code> and <code>DestinationCommit</code> fields are required to do a pull request code review.</p>"
+    },
+    "CommitId":{
+      "type":"string",
+      "max":64,
+      "min":6
+    },
+    "ConfigFileState":{
+      "type":"string",
+      "enum":[
+        "Present",
+        "Absent",
+        "PresentWithErrors"
+      ]
+    },
+    "ConflictException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The requested operation would cause a conflict with the current state of a service resource associated with the request. Resolve the conflict before retrying this request. </p>",
+      "error":{"httpStatusCode":409},
+      "exception":true
+    },
+    "ConnectionArn":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"arn:aws(-[\\w]+)*:.+:.+:[0-9]{12}:.+"
+    },
+    "CreateCodeReviewRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RepositoryAssociationArn",
+        "Type"
+      ],
+      "members":{
+        "Name":{
+          "shape":"CodeReviewName",
+          "documentation":"<p>The name of the code review. The name of each code review in your Amazon Web Services account must be unique.</p>"
+        },
+        "RepositoryAssociationArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p> <p>A code review can only be created on an associated repository. This is the ARN of the associated repository.</p>"
+        },
+        "Type":{
+          "shape":"CodeReviewType",
+          "documentation":"<p>The type of code review to create. This is specified using a <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReviewType.html\">CodeReviewType</a> object. You can create a code review only of type <code>RepositoryAnalysis</code>.</p>"
+        },
+        "ClientRequestToken":{
+          "shape":"ClientRequestToken",
+          "documentation":"<p>Amazon CodeGuru Reviewer uses this value to prevent the accidental creation of duplicate code reviews if there are failures and retries.</p>",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "CreateCodeReviewResponse":{
+      "type":"structure",
+      "members":{
+        "CodeReview":{"shape":"CodeReview"}
+      }
+    },
+    "DescribeCodeReviewRequest":{
+      "type":"structure",
+      "required":["CodeReviewArn"],
+      "members":{
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>",
+          "location":"uri",
+          "locationName":"CodeReviewArn"
+        }
+      }
+    },
+    "DescribeCodeReviewResponse":{
+      "type":"structure",
+      "members":{
+        "CodeReview":{
+          "shape":"CodeReview",
+          "documentation":"<p>Information about the code review.</p>"
+        }
+      }
+    },
+    "DescribeRecommendationFeedbackRequest":{
+      "type":"structure",
+      "required":[
+        "CodeReviewArn",
+        "RecommendationId"
+      ],
+      "members":{
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>",
+          "location":"uri",
+          "locationName":"CodeReviewArn"
+        },
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The recommendation ID that can be used to track the provided recommendations and then to collect the feedback.</p>",
+          "location":"querystring",
+          "locationName":"RecommendationId"
+        },
+        "UserId":{
+          "shape":"UserId",
+          "documentation":"<p>Optional parameter to describe the feedback for a given user. If this is not supplied, it defaults to the user making the request.</p> <p> The <code>UserId</code> is an IAM principal that can be specified as an Amazon Web Services account ID or an Amazon Resource Name (ARN). For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#Principal_specifying\"> Specifying a Principal</a> in the <i>Amazon Web Services Identity and Access Management User Guide</i>.</p>",
+          "location":"querystring",
+          "locationName":"UserId"
+        }
+      }
+    },
+    "DescribeRecommendationFeedbackResponse":{
+      "type":"structure",
+      "members":{
+        "RecommendationFeedback":{
+          "shape":"RecommendationFeedback",
+          "documentation":"<p>The recommendation feedback given by the user.</p>"
+        }
+      }
+    },
+    "DescribeRepositoryAssociationRequest":{
+      "type":"structure",
+      "required":["AssociationArn"],
+      "members":{
+        "AssociationArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>",
+          "location":"uri",
+          "locationName":"AssociationArn"
+        }
+      }
+    },
+    "DescribeRepositoryAssociationResponse":{
+      "type":"structure",
+      "members":{
+        "RepositoryAssociation":{
+          "shape":"RepositoryAssociation",
+          "documentation":"<p>Information about the repository association.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        }
+      }
+    },
+    "DisassociateRepositoryRequest":{
+      "type":"structure",
+      "required":["AssociationArn"],
+      "members":{
+        "AssociationArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>",
+          "location":"uri",
+          "locationName":"AssociationArn"
+        }
+      }
+    },
+    "DisassociateRepositoryResponse":{
+      "type":"structure",
+      "members":{
+        "RepositoryAssociation":{
+          "shape":"RepositoryAssociation",
+          "documentation":"<p>Information about the disassociated repository.</p>"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        }
+      }
+    },
+    "EncryptionOption":{
+      "type":"string",
+      "enum":[
+        "AWS_OWNED_CMK",
+        "CUSTOMER_MANAGED_CMK"
+      ]
+    },
+    "ErrorMessage":{"type":"string"},
+    "EventInfo":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"EventName",
+          "documentation":"<p>The name of the event. The possible names are <code>pull_request</code>, <code>workflow_dispatch</code>, <code>schedule</code>, and <code>push</code> </p>"
+        },
+        "State":{
+          "shape":"EventState",
+          "documentation":"<p>The state of an event. The state might be open, closed, or another state.</p>"
+        }
+      },
+      "documentation":"<p>Information about an event. The event might be a push, pull request, scheduled request, or another type of event.</p>"
+    },
+    "EventName":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^[ \\-A-Z_a-z]+$"
+    },
+    "EventState":{
+      "type":"string",
+      "max":32,
+      "min":1,
+      "pattern":"^[ \\-A-Z_a-z]+$"
+    },
+    "FilePath":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
+    "FindingsCount":{"type":"long"},
+    "InternalServerException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The server encountered an internal error and is unable to complete the request.</p>",
+      "error":{"httpStatusCode":500},
+      "exception":true,
+      "fault":true
+    },
+    "JobState":{
+      "type":"string",
+      "enum":[
+        "Completed",
+        "Pending",
+        "Failed",
+        "Deleting"
+      ]
+    },
+    "JobStates":{
+      "type":"list",
+      "member":{"shape":"JobState"},
+      "max":3,
+      "min":1
+    },
+    "KMSKeyDetails":{
+      "type":"structure",
+      "members":{
+        "KMSKeyId":{
+          "shape":"KMSKeyId",
+          "documentation":"<p>The ID of the Amazon Web Services KMS key that is associated with a repository association.</p>"
+        },
+        "EncryptionOption":{
+          "shape":"EncryptionOption",
+          "documentation":"<p>The encryption option for a repository association. It is either owned by Amazon Web Services Key Management Service (KMS) (<code>AWS_OWNED_CMK</code>) or customer managed (<code>CUSTOMER_MANAGED_CMK</code>).</p>"
+        }
+      },
+      "documentation":"<p>An object that contains:</p> <ul> <li> <p>The encryption option for a repository association. It is either owned by Amazon Web Services Key Management Service (KMS) (<code>AWS_OWNED_CMK</code>) or customer managed (<code>CUSTOMER_MANAGED_CMK</code>).</p> </li> <li> <p>The ID of the Amazon Web Services KMS key that is associated with a repository association.</p> </li> </ul>"
+    },
+    "KMSKeyId":{
+      "type":"string",
+      "max":2048,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "LineNumber":{"type":"integer"},
+    "LinesOfCodeCount":{"type":"long"},
+    "ListCodeReviewsMaxResults":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "ListCodeReviewsRequest":{
+      "type":"structure",
+      "required":["Type"],
+      "members":{
+        "ProviderTypes":{
+          "shape":"ProviderTypes",
+          "documentation":"<p>List of provider types for filtering that needs to be applied before displaying the result. For example, <code>providerTypes=[GitHub]</code> lists code reviews from GitHub.</p>",
+          "location":"querystring",
+          "locationName":"ProviderTypes"
+        },
+        "States":{
+          "shape":"JobStates",
+          "documentation":"<p>List of states for filtering that needs to be applied before displaying the result. For example, <code>states=[Pending]</code> lists code reviews in the Pending state.</p> <p>The valid code review states are:</p> <ul> <li> <p> <code>Completed</code>: The code review is complete.</p> </li> <li> <p> <code>Pending</code>: The code review started and has not completed or failed.</p> </li> <li> <p> <code>Failed</code>: The code review failed.</p> </li> <li> <p> <code>Deleting</code>: The code review is being deleted.</p> </li> </ul>",
+          "location":"querystring",
+          "locationName":"States"
+        },
+        "RepositoryNames":{
+          "shape":"RepositoryNames",
+          "documentation":"<p>List of repository names for filtering that needs to be applied before displaying the result.</p>",
+          "location":"querystring",
+          "locationName":"RepositoryNames"
+        },
+        "Type":{
+          "shape":"Type",
+          "documentation":"<p>The type of code reviews to list in the response.</p>",
+          "location":"querystring",
+          "locationName":"Type"
+        },
+        "MaxResults":{
+          "shape":"ListCodeReviewsMaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. The default is 100.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListCodeReviewsResponse":{
+      "type":"structure",
+      "members":{
+        "CodeReviewSummaries":{
+          "shape":"CodeReviewSummaries",
+          "documentation":"<p>A list of code reviews that meet the criteria of the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token.</p>"
+        }
+      }
+    },
+    "ListRecommendationFeedbackRequest":{
+      "type":"structure",
+      "required":["CodeReviewArn"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. The default is 100.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>",
+          "location":"uri",
+          "locationName":"CodeReviewArn"
+        },
+        "UserIds":{
+          "shape":"UserIds",
+          "documentation":"<p>An Amazon Web Services user's account ID or Amazon Resource Name (ARN). Use this ID to query the recommendation feedback for a code review from that user.</p> <p> The <code>UserId</code> is an IAM principal that can be specified as an Amazon Web Services account ID or an Amazon Resource Name (ARN). For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#Principal_specifying\"> Specifying a Principal</a> in the <i>Amazon Web Services Identity and Access Management User Guide</i>.</p>",
+          "location":"querystring",
+          "locationName":"UserIds"
+        },
+        "RecommendationIds":{
+          "shape":"RecommendationIds",
+          "documentation":"<p>Used to query the recommendation feedback for a given recommendation.</p>",
+          "location":"querystring",
+          "locationName":"RecommendationIds"
+        }
+      }
+    },
+    "ListRecommendationFeedbackResponse":{
+      "type":"structure",
+      "members":{
+        "RecommendationFeedbackSummaries":{
+          "shape":"RecommendationFeedbackSummaries",
+          "documentation":"<p>Recommendation feedback summaries corresponding to the code review ARN.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>If <code>nextToken</code> is returned, there are more results available. The value of <code>nextToken</code> is a unique pagination token for each page. Make the call again using the returned token to retrieve the next page. Keep all other arguments unchanged.</p>"
+        }
+      }
+    },
+    "ListRecommendationsMaxResults":{
+      "type":"integer",
+      "max":300,
+      "min":1
+    },
+    "ListRecommendationsRequest":{
+      "type":"structure",
+      "required":["CodeReviewArn"],
+      "members":{
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token.</p>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        },
+        "MaxResults":{
+          "shape":"ListRecommendationsMaxResults",
+          "documentation":"<p>The maximum number of results that are returned per call. The default is 100.</p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>",
+          "location":"uri",
+          "locationName":"CodeReviewArn"
+        }
+      }
+    },
+    "ListRecommendationsResponse":{
+      "type":"structure",
+      "members":{
+        "RecommendationSummaries":{
+          "shape":"RecommendationSummaries",
+          "documentation":"<p>List of recommendations for the requested code review.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Pagination token.</p>"
+        }
+      }
+    },
+    "ListRepositoryAssociationsRequest":{
+      "type":"structure",
+      "members":{
+        "ProviderTypes":{
+          "shape":"ProviderTypes",
+          "documentation":"<p>List of provider types to use as a filter.</p>",
+          "location":"querystring",
+          "locationName":"ProviderType"
+        },
+        "States":{
+          "shape":"RepositoryAssociationStates",
+          "documentation":"<p>List of repository association states to use as a filter.</p> <p>The valid repository association states are:</p> <ul> <li> <p> <b>Associated</b>: The repository association is complete.</p> </li> <li> <p> <b>Associating</b>: CodeGuru Reviewer is:</p> <ul> <li> <p>Setting up pull request notifications. This is required for pull requests to trigger a CodeGuru Reviewer review.</p> <note> <p>If your repository <code>ProviderType</code> is <code>GitHub</code>, <code>GitHub Enterprise Server</code>, or <code>Bitbucket</code>, CodeGuru Reviewer creates webhooks in your repository to trigger CodeGuru Reviewer reviews. If you delete these webhooks, reviews of code in your repository cannot be triggered.</p> </note> </li> <li> <p>Setting up source code access. This is required for CodeGuru Reviewer to securely clone code in your repository.</p> </li> </ul> </li> <li> <p> <b>Failed</b>: The repository failed to associate or disassociate.</p> </li> <li> <p> <b>Disassociating</b>: CodeGuru Reviewer is removing the repository's pull request notifications and source code access.</p> </li> <li> <p> <b>Disassociated</b>: CodeGuru Reviewer successfully disassociated the repository. You can create a new association with this repository if you want to review source code in it later. You can control access to code reviews created in anassociated repository with tags after it has been disassociated. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html\">Using tags to control access to associated repositories</a> in the <i>Amazon CodeGuru Reviewer User Guide</i>.</p> </li> </ul>",
+          "location":"querystring",
+          "locationName":"State"
+        },
+        "Names":{
+          "shape":"Names",
+          "documentation":"<p>List of repository names to use as a filter.</p>",
+          "location":"querystring",
+          "locationName":"Name"
+        },
+        "Owners":{
+          "shape":"Owners",
+          "documentation":"<p>List of owners to use as a filter. For Amazon Web Services CodeCommit, it is the name of the CodeCommit account that was used to associate the repository. For other repository source providers, such as Bitbucket and GitHub Enterprise Server, this is name of the account that was used to associate the repository. </p>",
+          "location":"querystring",
+          "locationName":"Owner"
+        },
+        "MaxResults":{
+          "shape":"MaxResults",
+          "documentation":"<p>The maximum number of repository association results returned by <code>ListRepositoryAssociations</code> in paginated output. When this parameter is used, <code>ListRepositoryAssociations</code> only returns <code>maxResults</code> results in a single page with a <code>nextToken</code> response element. The remaining results of the initial request can be seen by sending another <code>ListRepositoryAssociations</code> request with the returned <code>nextToken</code> value. This value can be between 1 and 100. If this parameter is not used, <code>ListRepositoryAssociations</code> returns up to 100 results and a <code>nextToken</code> value if applicable. </p>",
+          "location":"querystring",
+          "locationName":"MaxResults"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The <code>nextToken</code> value returned from a previous paginated <code>ListRepositoryAssociations</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. </p> <note> <p>Treat this token as an opaque identifier that is only used to retrieve the next items in a list and not for other programmatic purposes.</p> </note>",
+          "location":"querystring",
+          "locationName":"NextToken"
+        }
+      }
+    },
+    "ListRepositoryAssociationsResponse":{
+      "type":"structure",
+      "members":{
+        "RepositoryAssociationSummaries":{
+          "shape":"RepositoryAssociationSummaries",
+          "documentation":"<p>A list of repository associations that meet the criteria of the request.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The <code>nextToken</code> value to include in a future <code>ListRecommendations</code> request. When the results of a <code>ListRecommendations</code> request exceed <code>maxResults</code>, this value can be used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return. </p>"
+        }
+      }
+    },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["resourceArn"],
+      "members":{
+        "resourceArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        }
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        }
+      }
+    },
+    "LongDescription":{
+      "type":"string",
+      "max":1000,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "MaxResults":{
+      "type":"integer",
+      "max":100,
+      "min":1
+    },
+    "Metrics":{
+      "type":"structure",
+      "members":{
+        "MeteredLinesOfCodeCount":{
+          "shape":"LinesOfCodeCount",
+          "documentation":"<p> <code>MeteredLinesOfCodeCount</code> is the number of lines of code in the repository where the code review happened. This does not include non-code lines such as comments and blank lines.</p>"
+        },
+        "SuppressedLinesOfCodeCount":{
+          "shape":"LinesOfCodeCount",
+          "documentation":"<p> <code>SuppressedLinesOfCodeCount</code> is the number of lines of code in the repository where the code review happened that CodeGuru Reviewer did not analyze. The lines suppressed in the analysis is based on the <code>excludeFiles</code> variable in the <code>aws-codeguru-reviewer.yml</code> file. This number does not include non-code lines such as comments and blank lines. </p>"
+        },
+        "FindingsCount":{
+          "shape":"FindingsCount",
+          "documentation":"<p>Total number of recommendations found in the code review.</p>"
+        }
+      },
+      "documentation":"<p>Information about the statistics from the code review.</p>"
+    },
+    "MetricsSummary":{
+      "type":"structure",
+      "members":{
+        "MeteredLinesOfCodeCount":{
+          "shape":"LinesOfCodeCount",
+          "documentation":"<p>Lines of code metered in the code review. For the initial code review pull request and all subsequent revisions, this includes all lines of code in the files added to the pull request. In subsequent revisions, for files that already existed in the pull request, this includes only the changed lines of code. In both cases, this does not include non-code lines such as comments and import statements. For example, if you submit a pull request containing 5 files, each with 500 lines of code, and in a subsequent revision you added a new file with 200 lines of code, and also modified a total of 25 lines across the initial 5 files, <code>MeteredLinesOfCodeCount</code> includes the first 5 files (5 * 500 = 2,500 lines), the new file (200 lines) and the 25 changed lines of code for a total of 2,725 lines of code.</p>"
+        },
+        "SuppressedLinesOfCodeCount":{
+          "shape":"LinesOfCodeCount",
+          "documentation":"<p>Lines of code suppressed in the code review based on the <code>excludeFiles</code> element in the <code>aws-codeguru-reviewer.yml</code> file. For full repository analyses, this number includes all lines of code in the files that are suppressed. For pull requests, this number only includes the <i>changed</i> lines of code that are suppressed. In both cases, this number does not include non-code lines such as comments and import statements. For example, if you initiate a full repository analysis on a repository containing 5 files, each file with 100 lines of code, and 2 files are listed as excluded in the <code>aws-codeguru-reviewer.yml</code> file, then <code>SuppressedLinesOfCodeCount</code> returns 200 (2 * 100) as the total number of lines of code suppressed. However, if you submit a pull request for the same repository, then <code>SuppressedLinesOfCodeCount</code> only includes the lines in the 2 files that changed. If only 1 of the 2 files changed in the pull request, then <code>SuppressedLinesOfCodeCount</code> returns 100 (1 * 100) as the total number of lines of code suppressed.</p>"
+        },
+        "FindingsCount":{
+          "shape":"FindingsCount",
+          "documentation":"<p>Total number of recommendations found in the code review.</p>"
+        }
+      },
+      "documentation":"<p>Information about metrics summaries.</p>"
+    },
+    "Name":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^\\S[\\w.-]*$"
+    },
+    "Names":{
+      "type":"list",
+      "member":{"shape":"Name"},
+      "max":3,
+      "min":1
+    },
+    "NextToken":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "NotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The resource specified in the request was not found.</p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "Owner":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "Owners":{
+      "type":"list",
+      "member":{"shape":"Owner"},
+      "max":3,
+      "min":1
+    },
+    "ProviderType":{
+      "type":"string",
+      "enum":[
+        "CodeCommit",
+        "GitHub",
+        "Bitbucket",
+        "GitHubEnterpriseServer",
+        "S3Bucket"
+      ]
+    },
+    "ProviderTypes":{
+      "type":"list",
+      "member":{"shape":"ProviderType"},
+      "max":3,
+      "min":1
+    },
+    "PullRequestId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "PutRecommendationFeedbackRequest":{
+      "type":"structure",
+      "required":[
+        "CodeReviewArn",
+        "RecommendationId",
+        "Reactions"
+      ],
+      "members":{
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>"
+        },
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The recommendation ID that can be used to track the provided recommendations and then to collect the feedback.</p>"
+        },
+        "Reactions":{
+          "shape":"Reactions",
+          "documentation":"<p>List for storing reactions. Reactions are utf-8 text code for emojis. If you send an empty list it clears all your feedback.</p>"
+        }
+      }
+    },
+    "PutRecommendationFeedbackResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "Reaction":{
+      "type":"string",
+      "enum":[
+        "ThumbsUp",
+        "ThumbsDown"
+      ]
+    },
+    "Reactions":{
+      "type":"list",
+      "member":{"shape":"Reaction"},
+      "max":1,
+      "min":0
+    },
+    "RecommendationCategory":{
+      "type":"string",
+      "enum":[
+        "AWSBestPractices",
+        "AWSCloudFormationIssues",
+        "DuplicateCode",
+        "CodeMaintenanceIssues",
+        "ConcurrencyIssues",
+        "InputValidations",
+        "PythonBestPractices",
+        "JavaBestPractices",
+        "ResourceLeaks",
+        "SecurityIssues",
+        "CodeInconsistencies"
+      ]
+    },
+    "RecommendationFeedback":{
+      "type":"structure",
+      "members":{
+        "CodeReviewArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CodeReview.html\">CodeReview</a> object. </p>"
+        },
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The recommendation ID that can be used to track the provided recommendations. Later on it can be used to collect the feedback.</p>"
+        },
+        "Reactions":{
+          "shape":"Reactions",
+          "documentation":"<p>List for storing reactions. Reactions are utf-8 text code for emojis. You can send an empty list to clear off all your feedback.</p>"
+        },
+        "UserId":{
+          "shape":"UserId",
+          "documentation":"<p>The ID of the user that made the API call.</p> <p> The <code>UserId</code> is an IAM principal that can be specified as an Amazon Web Services account ID or an Amazon Resource Name (ARN). For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#Principal_specifying\"> Specifying a Principal</a> in the <i>Amazon Web Services Identity and Access Management User Guide</i>.</p>"
+        },
+        "CreatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time at which the feedback was created.</p>"
+        },
+        "LastUpdatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time at which the feedback was last updated.</p>"
+        }
+      },
+      "documentation":"<p>Information about the recommendation feedback.</p>"
+    },
+    "RecommendationFeedbackSummaries":{
+      "type":"list",
+      "member":{"shape":"RecommendationFeedbackSummary"}
+    },
+    "RecommendationFeedbackSummary":{
+      "type":"structure",
+      "members":{
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The recommendation ID that can be used to track the provided recommendations. Later on it can be used to collect the feedback.</p>"
+        },
+        "Reactions":{
+          "shape":"Reactions",
+          "documentation":"<p>List for storing reactions. Reactions are utf-8 text code for emojis.</p>"
+        },
+        "UserId":{
+          "shape":"UserId",
+          "documentation":"<p>The ID of the user that gave the feedback.</p> <p> The <code>UserId</code> is an IAM principal that can be specified as an Amazon Web Services account ID or an Amazon Resource Name (ARN). For more information, see <a href=\"https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#Principal_specifying\"> Specifying a Principal</a> in the <i>Amazon Web Services Identity and Access Management User Guide</i>.</p>"
+        }
+      },
+      "documentation":"<p>Information about recommendation feedback summaries.</p>"
+    },
+    "RecommendationId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "RecommendationIds":{
+      "type":"list",
+      "member":{"shape":"RecommendationId"},
+      "max":100,
+      "min":1
+    },
+    "RecommendationSummaries":{
+      "type":"list",
+      "member":{"shape":"RecommendationSummary"}
+    },
+    "RecommendationSummary":{
+      "type":"structure",
+      "members":{
+        "FilePath":{
+          "shape":"FilePath",
+          "documentation":"<p>Name of the file on which a recommendation is provided.</p>"
+        },
+        "RecommendationId":{
+          "shape":"RecommendationId",
+          "documentation":"<p>The recommendation ID that can be used to track the provided recommendations. Later on it can be used to collect the feedback.</p>"
+        },
+        "StartLine":{
+          "shape":"LineNumber",
+          "documentation":"<p>Start line from where the recommendation is applicable in the source commit or source branch.</p>"
+        },
+        "EndLine":{
+          "shape":"LineNumber",
+          "documentation":"<p>Last line where the recommendation is applicable in the source commit or source branch. For a single line comment the start line and end line values are the same.</p>"
+        },
+        "Description":{
+          "shape":"Text",
+          "documentation":"<p>A description of the recommendation generated by CodeGuru Reviewer for the lines of code between the start line and the end line.</p>"
+        },
+        "RecommendationCategory":{
+          "shape":"RecommendationCategory",
+          "documentation":"<p>The type of a recommendation.</p>"
+        },
+        "RuleMetadata":{
+          "shape":"RuleMetadata",
+          "documentation":"<p>Metadata about a rule. Rule metadata includes an ID, a name, a list of tags, and a short and long description. CodeGuru Reviewer uses rules to analyze code. A rule's recommendation is included in analysis results if code is detected that violates the rule.</p>"
+        },
+        "Severity":{
+          "shape":"Severity",
+          "documentation":"<p>The severity of the issue in the code that generated this recommendation.</p>"
+        }
+      },
+      "documentation":"<p>Information about recommendations.</p>"
+    },
+    "Repository":{
+      "type":"structure",
+      "members":{
+        "CodeCommit":{
+          "shape":"CodeCommitRepository",
+          "documentation":"<p>Information about an Amazon Web Services CodeCommit repository.</p>"
+        },
+        "Bitbucket":{
+          "shape":"ThirdPartySourceRepository",
+          "documentation":"<p> Information about a Bitbucket repository. </p>"
+        },
+        "GitHubEnterpriseServer":{
+          "shape":"ThirdPartySourceRepository",
+          "documentation":"<p>Information about a GitHub Enterprise Server repository.</p>"
+        },
+        "S3Bucket":{"shape":"S3Repository"}
+      },
+      "documentation":"<p>Information about an associated Amazon Web Services CodeCommit repository or an associated repository that is managed by Amazon Web Services CodeStar Connections (for example, Bitbucket). This <code>Repository</code> object is not used if your source code is in an associated GitHub repository.</p>"
+    },
+    "RepositoryAnalysis":{
+      "type":"structure",
+      "members":{
+        "RepositoryHead":{
+          "shape":"RepositoryHeadSourceCodeType",
+          "documentation":"<p>A <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies the tip of a branch in an associated repository.</p>"
+        },
+        "SourceCodeType":{"shape":"SourceCodeType"}
+      },
+      "documentation":"<p>A code review type that analyzes all code under a specified branch in an associated repository. The associated repository is specified using its ARN when you call <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CreateCodeReview\">CreateCodeReview</a>.</p>"
+    },
+    "RepositoryAssociation":{
+      "type":"structure",
+      "members":{
+        "AssociationId":{
+          "shape":"AssociationId",
+          "documentation":"<p>The ID of the repository association.</p>"
+        },
+        "AssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) identifying the repository association.</p>"
+        },
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Amazon Web Services CodeStar Connections connection. Its format is <code>arn:aws:codestar-connections:region-id:aws-account_id:connection/connection-id</code>. For more information, see <a href=\"https://docs.aws.amazon.com/codestar-connections/latest/APIReference/API_Connection.html\">Connection</a> in the <i>Amazon Web Services CodeStar Connections API Reference</i>.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository.</p>"
+        },
+        "Owner":{
+          "shape":"Owner",
+          "documentation":"<p>The owner of the repository. For an Amazon Web Services CodeCommit repository, this is the Amazon Web Services account ID of the account that owns the repository. For a GitHub, GitHub Enterprise Server, or Bitbucket repository, this is the username for the account that owns the repository. For an S3 repository, it can be the username or Amazon Web Services account ID.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type of the repository association.</p>"
+        },
+        "State":{
+          "shape":"RepositoryAssociationState",
+          "documentation":"<p>The state of the repository association.</p> <p>The valid repository association states are:</p> <ul> <li> <p> <b>Associated</b>: The repository association is complete.</p> </li> <li> <p> <b>Associating</b>: CodeGuru Reviewer is:</p> <ul> <li> <p>Setting up pull request notifications. This is required for pull requests to trigger a CodeGuru Reviewer review.</p> <note> <p>If your repository <code>ProviderType</code> is <code>GitHub</code>, <code>GitHub Enterprise Server</code>, or <code>Bitbucket</code>, CodeGuru Reviewer creates webhooks in your repository to trigger CodeGuru Reviewer reviews. If you delete these webhooks, reviews of code in your repository cannot be triggered.</p> </note> </li> <li> <p>Setting up source code access. This is required for CodeGuru Reviewer to securely clone code in your repository.</p> </li> </ul> </li> <li> <p> <b>Failed</b>: The repository failed to associate or disassociate.</p> </li> <li> <p> <b>Disassociating</b>: CodeGuru Reviewer is removing the repository's pull request notifications and source code access.</p> </li> <li> <p> <b>Disassociated</b>: CodeGuru Reviewer successfully disassociated the repository. You can create a new association with this repository if you want to review source code in it later. You can control access to code reviews created in anassociated repository with tags after it has been disassociated. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html\">Using tags to control access to associated repositories</a> in the <i>Amazon CodeGuru Reviewer User Guide</i>.</p> </li> </ul>"
+        },
+        "StateReason":{
+          "shape":"StateReason",
+          "documentation":"<p>A description of why the repository association is in the current state.</p>"
+        },
+        "LastUpdatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the repository association was last updated.</p>"
+        },
+        "CreatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, when the repository association was created.</p>"
+        },
+        "KMSKeyDetails":{
+          "shape":"KMSKeyDetails",
+          "documentation":"<p>A <code>KMSKeyDetails</code> object that contains:</p> <ul> <li> <p>The encryption option for this repository association. It is either owned by Amazon Web Services Key Management Service (KMS) (<code>AWS_OWNED_CMK</code>) or customer managed (<code>CUSTOMER_MANAGED_CMK</code>).</p> </li> <li> <p>The ID of the Amazon Web Services KMS key that is associated with this repository association.</p> </li> </ul>"
+        },
+        "S3RepositoryDetails":{"shape":"S3RepositoryDetails"}
+      },
+      "documentation":"<p>Information about a repository association. The <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_DescribeRepositoryAssociation.html\">DescribeRepositoryAssociation</a> operation returns a <code>RepositoryAssociation</code> object.</p>"
+    },
+    "RepositoryAssociationState":{
+      "type":"string",
+      "enum":[
+        "Associated",
+        "Associating",
+        "Failed",
+        "Disassociating",
+        "Disassociated"
+      ]
+    },
+    "RepositoryAssociationStates":{
+      "type":"list",
+      "member":{"shape":"RepositoryAssociationState"},
+      "max":5,
+      "min":1
+    },
+    "RepositoryAssociationSummaries":{
+      "type":"list",
+      "member":{"shape":"RepositoryAssociationSummary"}
+    },
+    "RepositoryAssociationSummary":{
+      "type":"structure",
+      "members":{
+        "AssociationArn":{
+          "shape":"Arn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>"
+        },
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Amazon Web Services CodeStar Connections connection. Its format is <code>arn:aws:codestar-connections:region-id:aws-account_id:connection/connection-id</code>. For more information, see <a href=\"https://docs.aws.amazon.com/codestar-connections/latest/APIReference/API_Connection.html\">Connection</a> in the <i>Amazon Web Services CodeStar Connections API Reference</i>.</p>"
+        },
+        "LastUpdatedTimeStamp":{
+          "shape":"TimeStamp",
+          "documentation":"<p>The time, in milliseconds since the epoch, since the repository association was last updated.</p>"
+        },
+        "AssociationId":{
+          "shape":"AssociationId",
+          "documentation":"<p>The repository association ID.</p>"
+        },
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository association.</p>"
+        },
+        "Owner":{
+          "shape":"Owner",
+          "documentation":"<p>The owner of the repository. For an Amazon Web Services CodeCommit repository, this is the Amazon Web Services account ID of the account that owns the repository. For a GitHub, GitHub Enterprise Server, or Bitbucket repository, this is the username for the account that owns the repository. For an S3 repository, it can be the username or Amazon Web Services account ID.</p>"
+        },
+        "ProviderType":{
+          "shape":"ProviderType",
+          "documentation":"<p>The provider type of the repository association.</p>"
+        },
+        "State":{
+          "shape":"RepositoryAssociationState",
+          "documentation":"<p>The state of the repository association.</p> <p>The valid repository association states are:</p> <ul> <li> <p> <b>Associated</b>: The repository association is complete.</p> </li> <li> <p> <b>Associating</b>: CodeGuru Reviewer is:</p> <ul> <li> <p>Setting up pull request notifications. This is required for pull requests to trigger a CodeGuru Reviewer review.</p> <note> <p>If your repository <code>ProviderType</code> is <code>GitHub</code>, <code>GitHub Enterprise Server</code>, or <code>Bitbucket</code>, CodeGuru Reviewer creates webhooks in your repository to trigger CodeGuru Reviewer reviews. If you delete these webhooks, reviews of code in your repository cannot be triggered.</p> </note> </li> <li> <p>Setting up source code access. This is required for CodeGuru Reviewer to securely clone code in your repository.</p> </li> </ul> </li> <li> <p> <b>Failed</b>: The repository failed to associate or disassociate.</p> </li> <li> <p> <b>Disassociating</b>: CodeGuru Reviewer is removing the repository's pull request notifications and source code access.</p> </li> <li> <p> <b>Disassociated</b>: CodeGuru Reviewer successfully disassociated the repository. You can create a new association with this repository if you want to review source code in it later. You can control access to code reviews created in anassociated repository with tags after it has been disassociated. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html\">Using tags to control access to associated repositories</a> in the <i>Amazon CodeGuru Reviewer User Guide</i>.</p> </li> </ul>"
+        }
+      },
+      "documentation":"<p>Summary information about a repository association. The <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a> operation returns a list of <code>RepositoryAssociationSummary</code> objects.</p>"
+    },
+    "RepositoryHeadSourceCodeType":{
+      "type":"structure",
+      "required":["BranchName"],
+      "members":{
+        "BranchName":{
+          "shape":"BranchName",
+          "documentation":"<p>The name of the branch in an associated repository. The <code>RepositoryHeadSourceCodeType</code> specifies the tip of this branch.</p>"
+        }
+      },
+      "documentation":"<p>A <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies the tip of a branch in an associated repository.</p>"
+    },
+    "RepositoryNames":{
+      "type":"list",
+      "member":{"shape":"Name"},
+      "max":100,
+      "min":1
+    },
+    "RequestId":{
+      "type":"string",
+      "max":64,
+      "min":1
+    },
+    "RequestMetadata":{
+      "type":"structure",
+      "members":{
+        "RequestId":{
+          "shape":"RequestId",
+          "documentation":"<p>The ID of the request. This is required for a pull request code review.</p>"
+        },
+        "Requester":{
+          "shape":"Requester",
+          "documentation":"<p>An identifier, such as a name or account ID, that is associated with the requester. The <code>Requester</code> is used to capture the <code>author/actor</code> name of the event request.</p>"
+        },
+        "EventInfo":{
+          "shape":"EventInfo",
+          "documentation":"<p>Information about the event associated with a code review.</p>"
+        },
+        "VendorName":{
+          "shape":"VendorName",
+          "documentation":"<p>The name of the repository vendor used to upload code to an S3 bucket for a CI/CD code review. For example, if code and artifacts are uploaded to an S3 bucket for a CI/CD code review by GitHub scripts from a GitHub repository, then the repository association's <code>ProviderType</code> is <code>S3Bucket</code> and the CI/CD repository vendor name is GitHub. For more information, see the definition for <code>ProviderType</code> in <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a>.</p>"
+        }
+      },
+      "documentation":"<p>Metadata that is associated with a code review. This applies to both pull request and repository analysis code reviews.</p>"
+    },
+    "Requester":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p> The resource specified in the request was not found. </p>",
+      "error":{"httpStatusCode":404},
+      "exception":true
+    },
+    "RuleId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"^\\S+\\/[a-zA-Z0-9-]+@v\\d+\\.\\d+$"
+    },
+    "RuleMetadata":{
+      "type":"structure",
+      "members":{
+        "RuleId":{
+          "shape":"RuleId",
+          "documentation":"<p>The ID of the rule.</p>"
+        },
+        "RuleName":{
+          "shape":"RuleName",
+          "documentation":"<p>The name of the rule.</p>"
+        },
+        "ShortDescription":{
+          "shape":"ShortDescription",
+          "documentation":"<p>A short description of the rule.</p>"
+        },
+        "LongDescription":{
+          "shape":"LongDescription",
+          "documentation":"<p>A long description of the rule.</p>"
+        },
+        "RuleTags":{
+          "shape":"RuleTags",
+          "documentation":"<p>Tags that are associated with the rule.</p>"
+        }
+      },
+      "documentation":"<p>Metadata about a rule. Rule metadata includes an ID, a name, a list of tags, and a short and long description. CodeGuru Reviewer uses rules to analyze code. A rule's recommendation is included in analysis results if code is detected that violates the rule.</p>"
+    },
+    "RuleName":{
+      "type":"string",
+      "max":100,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "RuleTag":{
+      "type":"string",
+      "max":50,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "RuleTags":{
+      "type":"list",
+      "member":{"shape":"RuleTag"},
+      "max":20,
+      "min":1
+    },
+    "S3BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "S3BucketRepository":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository when the <code>ProviderType</code> is <code>S3Bucket</code>.</p>"
+        },
+        "Details":{
+          "shape":"S3RepositoryDetails",
+          "documentation":"<p>An <code>S3RepositoryDetails</code> object that specifies the name of an S3 bucket and a <code>CodeArtifacts</code> object. The <code>CodeArtifacts</code> object includes the S3 object keys for a source code .zip file and for a build artifacts .zip file.</p>"
+        }
+      },
+      "documentation":"<p>Information about an associated repository in an S3 bucket. The associated repository contains a source code .zip file and a build artifacts .zip file that contains .jar or .class files.</p>"
+    },
+    "S3Repository":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "BucketName"
+      ],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the repository in the S3 bucket.</p>"
+        },
+        "BucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The name of the S3 bucket used for associating a new S3 repository. It must begin with <code>codeguru-reviewer-</code>. </p>"
+        }
+      },
+      "documentation":"<p>Information about a repository in an S3 bucket.</p>"
+    },
+    "S3RepositoryDetails":{
+      "type":"structure",
+      "members":{
+        "BucketName":{
+          "shape":"S3BucketName",
+          "documentation":"<p>The name of the S3 bucket used for associating a new S3 repository. It must begin with <code>codeguru-reviewer-</code>. </p>"
+        },
+        "CodeArtifacts":{
+          "shape":"CodeArtifacts",
+          "documentation":"<p>A <code>CodeArtifacts</code> object. The <code>CodeArtifacts</code> object includes the S3 object key for a source code .zip file and for a build artifacts .zip file that contains .jar or .class files.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the name of an S3 bucket and a <code>CodeArtifacts</code> object that contains the S3 object keys for a source code .zip file and for a build artifacts .zip file that contains .jar or .class files.</p>"
+    },
+    "Severity":{
+      "type":"string",
+      "enum":[
+        "Info",
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    },
+    "ShortDescription":{
+      "type":"string",
+      "max":200,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "SourceCodeArtifactsObjectKey":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "pattern":"^\\S(.*\\S)?$"
+    },
+    "SourceCodeType":{
+      "type":"structure",
+      "members":{
+        "CommitDiff":{
+          "shape":"CommitDiffSourceCodeType",
+          "documentation":"<p>A <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies a commit diff created by a pull request on an associated repository.</p>"
+        },
+        "RepositoryHead":{"shape":"RepositoryHeadSourceCodeType"},
+        "BranchDiff":{
+          "shape":"BranchDiffSourceCodeType",
+          "documentation":"<p>A type of <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> that specifies a source branch name and a destination branch name in an associated repository.</p>"
+        },
+        "S3BucketRepository":{
+          "shape":"S3BucketRepository",
+          "documentation":"<p>Information about an associated repository in an S3 bucket that includes its name and an <code>S3RepositoryDetails</code> object. The <code>S3RepositoryDetails</code> object includes the name of an S3 bucket, an S3 key for a source code .zip file, and an S3 key for a build artifacts .zip file. <code>S3BucketRepository</code> is required in <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_SourceCodeType\">SourceCodeType</a> for <code>S3BucketRepository</code> based code reviews.</p>"
+        },
+        "RequestMetadata":{
+          "shape":"RequestMetadata",
+          "documentation":"<p>Metadata that is associated with a code review. This applies to any type of code review supported by CodeGuru Reviewer. The <code>RequestMetadaa</code> field captures any event metadata. For example, it might capture metadata associated with an event trigger, such as a push or a pull request.</p>"
+        }
+      },
+      "documentation":"<p>Specifies the source code that is analyzed in a code review.</p>"
+    },
+    "StateReason":{
+      "type":"string",
+      "max":256,
+      "min":0
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagMap":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "Tags"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "Tags":{
+          "shape":"TagMap",
+          "documentation":"<p>An array of key-value pairs used to tag an associated repository. A tag is a custom attribute label with two parts:</p> <ul> <li> <p>A <i>tag key</i> (for example, <code>CostCenter</code>, <code>Environment</code>, <code>Project</code>, or <code>Secret</code>). Tag keys are case sensitive.</p> </li> <li> <p>An optional field known as a <i>tag value</i> (for example, <code>111122223333</code>, <code>Production</code>, or a team name). Omitting the tag value is the same as using an empty string. Like tag keys, tag values are case sensitive.</p> </li> </ul>"
+        }
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256
+    },
+    "Text":{
+      "type":"string",
+      "max":5000,
+      "min":1
+    },
+    "ThirdPartySourceRepository":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ConnectionArn",
+        "Owner"
+      ],
+      "members":{
+        "Name":{
+          "shape":"Name",
+          "documentation":"<p>The name of the third party source repository.</p>"
+        },
+        "ConnectionArn":{
+          "shape":"ConnectionArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of an Amazon Web Services CodeStar Connections connection. Its format is <code>arn:aws:codestar-connections:region-id:aws-account_id:connection/connection-id</code>. For more information, see <a href=\"https://docs.aws.amazon.com/codestar-connections/latest/APIReference/API_Connection.html\">Connection</a> in the <i>Amazon Web Services CodeStar Connections API Reference</i>.</p>"
+        },
+        "Owner":{
+          "shape":"Owner",
+          "documentation":"<p>The owner of the repository. For a GitHub, GitHub Enterprise, or Bitbucket repository, this is the username for the account that owns the repository. For an S3 repository, this can be the username or Amazon Web Services account ID </p>"
+        }
+      },
+      "documentation":"<p>Information about a third-party source repository connected to CodeGuru Reviewer.</p>"
+    },
+    "ThrottlingException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The request was denied due to request throttling.</p>",
+      "error":{"httpStatusCode":429},
+      "exception":true
+    },
+    "TimeStamp":{"type":"timestamp"},
+    "Type":{
+      "type":"string",
+      "enum":[
+        "PullRequest",
+        "RepositoryAnalysis"
+      ]
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "resourceArn":{
+          "shape":"AssociationArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_RepositoryAssociation.html\">RepositoryAssociation</a> object. You can retrieve this ARN by calling <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_ListRepositoryAssociations.html\">ListRepositoryAssociations</a>.</p>",
+          "location":"uri",
+          "locationName":"resourceArn"
+        },
+        "TagKeys":{
+          "shape":"TagKeyList",
+          "documentation":"<p>A list of the keys for each tag you want to remove from an associated repository.</p>",
+          "location":"querystring",
+          "locationName":"tagKeys"
+        }
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{}
+    },
+    "UserId":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "UserIds":{
+      "type":"list",
+      "member":{"shape":"UserId"},
+      "max":100,
+      "min":1
+    },
+    "ValidationException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ErrorMessage"}
+      },
+      "documentation":"<p>The input fails to satisfy the specified constraints.</p>",
+      "error":{"httpStatusCode":400},
+      "exception":true
+    },
+    "VendorName":{
+      "type":"string",
+      "enum":[
+        "GitHub",
+        "GitLab",
+        "NativeS3"
+      ]
+    }
+  },
+  "documentation":"<p>This section provides documentation for the Amazon CodeGuru Reviewer API operations. CodeGuru Reviewer is a service that uses program analysis and machine learning to detect potential defects that are difficult for developers to find and recommends fixes in your Java and Python code.</p> <p>By proactively detecting and providing recommendations for addressing code defects and implementing best practices, CodeGuru Reviewer improves the overall quality and maintainability of your code base during the code review stage. For more information about CodeGuru Reviewer, see the <i> <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/welcome.html\">Amazon CodeGuru Reviewer User Guide</a>.</i> </p> <p>To improve the security of your CodeGuru Reviewer API calls, you can establish a private connection between your VPC and CodeGuru Reviewer by creating an <i>interface VPC endpoint</i>. For more information, see <a href=\"https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/vpc-interface-endpoints.html\">CodeGuru Reviewer and interface VPC endpoints (Amazon Web Services PrivateLink)</a> in the <i>Amazon CodeGuru Reviewer User Guide</i>.</p>"
+}
