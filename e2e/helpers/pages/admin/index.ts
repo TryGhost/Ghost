@@ -10,3 +10,4 @@ export * from './LoginPage';
 export * from './AdminPage';
 export * from './MembersPage';
 export * from './PostEditorPage';
+export * from './settings/SettingsPage';
