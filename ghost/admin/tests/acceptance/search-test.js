@@ -117,7 +117,11 @@ suites.forEach((suite) => {
             // correct results are found
             const options = findAll('.ember-power-select-option');
             expect(options, 'number of search results').to.have.length(4);
-            expect(options.map(el => el.textContent.trim())).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
+            // Get the title text from the first div child within each option (ignoring status labels)
+            expect(options.map((el) => {
+                const titleDiv = el.querySelector('.gh-nav-search-option > div:first-child');
+                return titleDiv ? titleDiv.textContent.trim() : el.textContent.trim();
+            })).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
 
             // first item is selected
             expect(options[0]).to.have.attribute('aria-current', 'true');
@@ -211,7 +215,11 @@ suites.forEach((suite) => {
             // correct results are found
             const options = findAll('.ember-power-select-option');
             expect(options, 'number of search results').to.have.length(4);
-            expect(options.map(el => el.textContent.trim())).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
+            // Get the title text from the first div child within each option (ignoring status labels)
+            expect(options.map((el) => {
+                const titleDiv = el.querySelector('.gh-nav-search-option > div:first-child');
+                return titleDiv ? titleDiv.textContent.trim() : el.textContent.trim();
+            })).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
 
             // first item is selected
             expect(options[0]).to.have.attribute('aria-current', 'true');
