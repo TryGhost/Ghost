@@ -12,8 +12,6 @@ type LabsTab = 'labs-private-features' | 'labs-beta-features';
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
     const {config} = useGlobalData();
-
-    // Simple one-liner that handles all the auto-expand logic
     const {isOpen, openManually, closeManually} = useAutoExpandable(keywords);
 
     const tabs = [
