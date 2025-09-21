@@ -1,4 +1,4 @@
-import React, {useEffect, useId, useMemo, useState} from 'react';
+import React, {useEffect, useId, useState} from 'react';
 import {SettingGroup as Base, SettingGroupProps} from '@tryghost/admin-x-design-system';
 import {createComponentId} from '../utils/search';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
