@@ -2,7 +2,7 @@ const MrrStatsService = require('../../../../../core/server/services/stats/MrrSt
 const moment = require('moment');
 const sinon = require('sinon');
 const knex = require('knex').default;
-require('should');
+const should = require('should');
 
 describe('MrrStatsService', function () {
     describe('getHistory', function () {
@@ -385,6 +385,63 @@ describe('MrrStatsService', function () {
                     currency: 'usd'
                 }
             ]);
+        });
+
+        it('Can see MRR data from 6 months ago', async function () {
+            // Setup: Create MRR events from 6 months ago
+            const sixMonthsAgo = moment(today).subtract(6, 'months').format('YYYY-MM-DD');
+            const fiveMonthsAgo = moment(today).subtract(5, 'months').format('YYYY-MM-DD');
+            const fourMonthsAgo = moment(today).subtract(4, 'months').format('YYYY-MM-DD');
+
+            // Add current MRR total
+            await db('members_stripe_customers_subscriptions').insert([
+                {plan_currency: 'usd', mrr: 12000} // $120.00 current MRR
+            ]);
+
+            // Add historical subscription events (6 months of history)
+            await db('members_paid_subscription_events').insert([
+                // 6 months ago: first subscription for $30
+                {currency: 'usd', mrr_delta: 3000, created_at: sixMonthsAgo},
+                // 5 months ago: another subscription for $50
+                {currency: 'usd', mrr_delta: 5000, created_at: fiveMonthsAgo},
+                // 4 months ago: another subscription for $40
+                {currency: 'usd', mrr_delta: 4000, created_at: fourMonthsAgo},
+                // Yesterday: small churn
+                {currency: 'usd', mrr_delta: -100, created_at: yesterday},
+                // Today: new subscription
+                {currency: 'usd', mrr_delta: 100, created_at: today}
+            ]);
+
+            const {data: results} = await mrrStatsService.getHistory();
+
+            // The test expects to see MRR data going back 6 months
+            // But currently it only returns 90 days of data
+            // So we expect this to fail - results won't include the 6-month old data
+
+            // Find the earliest date in results
+            const earliestDate = results[0].date;
+            const earliestMoment = moment(earliestDate);
+            const sixMonthsAgoMoment = moment(sixMonthsAgo);
+
+            // This assertion will fail because the service only looks back 90 days
+            // We want it to pass by showing data from 6 months ago
+            earliestMoment.isSameOrBefore(sixMonthsAgoMoment, 'day').should.be.true(
+                `Expected to see MRR data from ${sixMonthsAgo} but earliest date was ${earliestDate}`
+            );
+
+            // We should see the progressive MRR growth over 6 months
+            // Starting from 0, then 30, then 80, then 120
+            const sixMonthsAgoData = results.find(r => r.date === sixMonthsAgo);
+            should.exist(sixMonthsAgoData, 'Should have data from 6 months ago');
+            sixMonthsAgoData.mrr.should.eql(3000); // First subscription
+
+            const fiveMonthsAgoData = results.find(r => r.date === fiveMonthsAgo);
+            should.exist(fiveMonthsAgoData, 'Should have data from 5 months ago');
+            fiveMonthsAgoData.mrr.should.eql(8000); // First + second subscription
+
+            const fourMonthsAgoData = results.find(r => r.date === fourMonthsAgo);
+            should.exist(fourMonthsAgoData, 'Should have data from 4 months ago');
+            fourMonthsAgoData.mrr.should.eql(12000); // All three subscriptions
         });
     });
 });
