@@ -1,6 +1,6 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
-import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus, processSearchableResponse} from '../utils/search';
+import {SEARCHABLES, createSearchResult, processSearchableResponse, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';

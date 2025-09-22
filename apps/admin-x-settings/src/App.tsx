@@ -19,7 +19,7 @@ interface AppProps {
 function App({framework, designSystem, officialThemes, zapierTemplates, upgradeStatus, initialSearchQuery}: AppProps) {
     return (
         <FrameworkProvider {...framework}>
-            <SettingsAppProvider officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} initialSearchQuery={initialSearchQuery}>
+            <SettingsAppProvider initialSearchQuery={initialSearchQuery} officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates}>
                 {/* NOTE: we need to have an extra NiceModal.Provider here because the one inside DesignSystemApp
                     is loaded too late for possible modals in RoutingProvider, and it's quite hard to change it at
                     this point */}
