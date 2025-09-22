@@ -58,10 +58,13 @@ const SettingsAppContext = createContext<SettingsAppContextType>({
     sortingState: []
 });
 
-type SettingsAppProviderProps = Omit<SettingsAppContextType, 'search'> & {children: ReactNode};
+type SettingsAppProviderProps = Omit<SettingsAppContextType, 'search'> & {
+    children: ReactNode;
+    initialSearchQuery?: string;
+};
 
-const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, ...props}) => {
-    const search = useSearchService();
+const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({children, initialSearchQuery, ...props}) => {
+    const search = useSearchService(initialSearchQuery);
 
     // a few sane defaults for keeping a sorting state
     const [sortingState, setSortingState] = useState<Sorting[]>([{

@@ -38,7 +38,7 @@ export default class GhSearchInputComponent extends Component {
         if (selected.groupName === 'Settings') {
             // Navigate to the main settings page with search query
             // The search title will be passed as a query parameter
-            this.router.transitionTo('settings-x.settings-x', {
+            this.router.transitionTo('settings-x', {
                 queryParams: {search: selected.title}
             });
         }
