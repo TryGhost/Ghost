@@ -177,7 +177,7 @@ describe('Signin', () => {
         test('with OTC enabled', async () => {
             const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.basic,
-                labs: {membersSigninOTC: true}
+                labs: {membersSigninOTC: true, showEmailInPortalDescription: true}
             });
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
@@ -454,7 +454,7 @@ describe('OTC Integration Flow', () => {
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{membersSigninOTC: true}} />
+            <App api={ghostApi} labs={{membersSigninOTC: true, showEmailInPortalDescription: true}} />
         );
 
         await utils.findByTitle(/portal-trigger/i);

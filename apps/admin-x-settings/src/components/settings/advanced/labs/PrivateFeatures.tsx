@@ -43,6 +43,10 @@ const features: Feature[] = [{
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
+}, {
+    title: 'Show email in portal message',
+    description: 'Shows the email to which a magic link was sent (i.e. "A sign in link has been sent to jamie@example.com")',
+    flag: 'showEmailInPortalDescription'
 }];
 
 const AlphaFeatures: React.FC = () => {
