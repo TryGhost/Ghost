@@ -190,6 +190,7 @@ export default class AdminXSettings extends AdminXComponent {
     additionalProps = () => ({
         officialThemes,
         zapierTemplates,
-        upgradeStatus: this.upgradeStatus
+        upgradeStatus: this.upgradeStatus,
+        initialSearchQuery: this.args.searchQuery || ''
     });
 }

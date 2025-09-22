@@ -34,6 +34,14 @@ export default class GhSearchInputComponent extends Component {
             let id = selected.id.replace('tag.', '');
             this.router.transitionTo('tag', id);
         }
+
+        if (selected.groupName === 'Settings') {
+            // Navigate to the main settings page with search query
+            // The search title will be passed as a query parameter
+            this.router.transitionTo('settings-x.settings-x', {
+                queryParams: {search: selected.title}
+            });
+        }
     }
 
     @action
