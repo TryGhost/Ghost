@@ -38,6 +38,11 @@ export default class MagicLinkPage extends React.Component {
         };
     }
 
+    /**
+     * Generates configuration object containing translated description messages for magic link scenarios
+     * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
+     * @returns {Object} Configuration object with message templates for signin/signup with/without email display
+     */
     getDescriptionConfig(submittedEmailOrInbox) {
         const {t} = this.context;
         return {
