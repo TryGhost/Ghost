@@ -84,10 +84,6 @@ export default class MagicLinkPage extends React.Component {
             submittedEmailOrInbox
         });
 
-        if (lastPage === 'signup') {
-            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
-        }
-
         return (
             <section className='gh-portal-inbox-notification'>
                 <header className='gh-portal-header'>

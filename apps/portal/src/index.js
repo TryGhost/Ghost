@@ -26,6 +26,7 @@ function getSiteData() {
         const labs = {};
         // NOTE: dataset converts always lowercase dash-attrs to camelCase
         labs.membersSigninOTC = scriptTag.dataset.membersSigninOtc === 'true';
+        labs.showEmailInPortalDescription = scriptTag.dataset.showEmailInPortalDescription === 'true';
 
         return {siteUrl, apiKey, apiUrl, siteI18nEnabled, locale, labs};
     }
