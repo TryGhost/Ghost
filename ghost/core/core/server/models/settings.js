@@ -26,7 +26,7 @@ const getMembersKey = doBlock(() => {
     let UNO_KEYPAIRINO;
     return function getKey(type) {
         if (!UNO_KEYPAIRINO) {
-            UNO_KEYPAIRINO = keypair({bits: 1024});
+            UNO_KEYPAIRINO = keypair({bits: 2048});
         }
         return UNO_KEYPAIRINO[type];
     };
@@ -36,7 +36,7 @@ const getGhostKey = doBlock(() => {
     let UNO_KEYPAIRINO;
     return function getKey(type) {
         if (!UNO_KEYPAIRINO) {
-            UNO_KEYPAIRINO = keypair({bits: 1024});
+            UNO_KEYPAIRINO = keypair({bits: 2048});
         }
         return UNO_KEYPAIRINO[type];
     };

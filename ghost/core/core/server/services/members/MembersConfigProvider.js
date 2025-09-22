@@ -70,7 +70,7 @@ class MembersConfigProvider {
 
         if (!privateKey || !publicKey) {
             logging.warn('Could not find members_private_key, using dynamically generated keypair');
-            const keypair = createKeypair({bits: 1024});
+            const keypair = createKeypair({bits: 2048});
             privateKey = keypair.private;
             publicKey = keypair.public;
         }
