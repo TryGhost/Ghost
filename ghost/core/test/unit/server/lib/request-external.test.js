@@ -10,6 +10,9 @@ const dnsPromises = require('dns').promises;
 describe('External Request', function () {
     describe('with private ip', function () {
         beforeEach(function () {
+            // this can be stubbed already by our general disableNetwork() call in test overrides
+            dnsPromises.lookup.restore?.();
+
             sinon.stub(dnsPromises, 'lookup').callsFake(function () {
                 return Promise.resolve({address: '192.168.0.1'});
             });
