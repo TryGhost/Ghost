@@ -46,7 +46,13 @@ module.exports = function (...attrs) {
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
     if (locale && locale.match('^[^/\\\\]*$') !== null) {
-        dateMoment.locale(locale);
+        let momentLocale = locale;
+        if (locale === 'zh-Hant') {
+            momentLocale = 'zh-tw';
+        } else if (locale === 'zh') {
+            momentLocale = 'zh-cn';
+        }
+        dateMoment.locale(momentLocale);
     }
 
     if (timeago) {
