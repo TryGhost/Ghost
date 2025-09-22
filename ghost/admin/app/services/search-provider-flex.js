@@ -1,43 +1,13 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
 import {default as Flexsearch} from 'flexsearch';
+import {SEARCHABLES, createSearchResult, sortSearchResultsByStatus} from '../utils/search';
 import {isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 const {Document} = Flexsearch;
-
-export const SEARCHABLES = [
-    {
-        name: 'Staff',
-        model: 'user',
-        pathField: 'slug',
-        titleField: 'name',
-        index: ['name']
-    },
-    {
-        name: 'Tags',
-        model: 'tag',
-        pathField: 'slug',
-        titleField: 'name',
-        index: ['name']
-    },
-    {
-        name: 'Posts',
-        model: 'post',
-        pathField: 'id',
-        titleField: 'title',
-        index: ['title']
-    },
-    {
-        name: 'Pages',
-        model: 'page',
-        pathField: 'id',
-        titleField: 'title',
-        index: ['title']
-    }
-];
 
 export default class SearchProviderFlexService extends Service {
     @service ajax;
@@ -65,7 +35,7 @@ export default class SearchProviderFlexService extends Service {
         SEARCHABLES.forEach((searchable) => {
             const searchResults = this.indexes[searchable.model].search(term, {enrich: true});
             const usedIds = new Set();
-            const groupResults = [];
+            let groupResults = [];
 
             searchResults.forEach((field) => {
                 field.result.forEach((searchResult) => {
@@ -77,34 +47,11 @@ export default class SearchProviderFlexService extends Service {
 
                     usedIds.add(id);
 
-                    groupResults.push({
-                        groupName: searchable.name,
-                        id: `${searchable.model}.${doc[searchable.pathField]}`,
-                        title: doc[searchable.titleField],
-                        url: doc.url,
-                        status: doc.status,
-                        visibility: doc.visibility,
-                        publishedAt: doc.published_at
-                    });
+                    groupResults.push(createSearchResult(searchable, doc));
                 });
             });
 
-            // Sort posts/pages by status priority (scheduled > draft > published > sent)
-            if (searchable.model === 'post' || searchable.model === 'page') {
-                const statusPriority = {
-                    scheduled: 1,
-                    draft: 2,
-                    published: 3,
-                    sent: 4
-                };
-
-                groupResults.sort((a, b) => {
-                    const aPriority = statusPriority[a.status] || 5;
-                    const bPriority = statusPriority[b.status] || 5;
-
-                    return aPriority - bPriority;
-                });
-            }
+            groupResults = sortSearchResultsByStatus(groupResults, searchable.model);
 
             if (!isEmpty(groupResults)) {
                 results.push({
