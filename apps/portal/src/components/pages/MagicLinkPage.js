@@ -41,62 +41,44 @@ export default class MagicLinkPage extends React.Component {
     /**
      * Generates configuration object containing translated description messages for magic link scenarios
      * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
-     * @returns {Object} Configuration object with message templates for signin/signup with/without email display
+     * @returns {Object} Configuration object with message templates for signin/signup scenarios
      */
     getDescriptionConfig(submittedEmailOrInbox) {
         const {t} = this.context;
         return {
-            DEFAULT: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.'),
-            withEmail: {
-                signin: {
-                    withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
-                    withoutOTC: t('A sign in link has been sent to {submittedEmailOrInbox}. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.', {submittedEmailOrInbox})
-                },
-                signup: t('To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn\'t arrive within 3 minutes, check your spam folder!', {submittedEmailOrInbox})
+            signin: {
+                withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
+                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
             },
-            withoutEmail: {
-                signin: {
-                    withOTC: t('An email has been sent to your inbox. Use the link inside or enter the code below.'),
-                    withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
-                },
-                signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
-            }
+            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
         };
     }
 
     /**
-     * Gets the appropriate translated description based on feature flags and page context
+     * Gets the appropriate translated description based on page context
      * @param {Object} params - Configuration object
-     * @param {boolean} params.showEmailInPortalDescription - Whether to show email address in descriptions
      * @param {string} params.lastPage - The previous page ('signin' or 'signup')
      * @param {boolean} params.otcRef - Whether one-time code is being used
      * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
      * @returns {string} The translated description
      */
-    getTranslatedDescription({showEmailInPortalDescription, lastPage, otcRef, submittedEmailOrInbox}) {
+    getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
         const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
-        const emailMode = showEmailInPortalDescription ? 'withEmail' : 'withoutEmail';
         const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
         
-        try {
-            const pageConfig = descriptionConfig[emailMode][normalizedPage];
-            
-            if (normalizedPage === 'signin') {
-                return otcRef ? pageConfig.withOTC : pageConfig.withoutOTC;
-            }
-            return pageConfig;
-        } catch (error) {
-            return descriptionConfig.DEFAULT;
+        if (normalizedPage === 'signup') {
+            return descriptionConfig.signup;
         }
+        
+        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
     }
 
     renderFormHeader() {
-        const {t, otcRef, pageData, lastPage, labs} = this.context;
+        const {t, otcRef, pageData, lastPage} = this.context;
         const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
         
         const popupTitle = t(`Now check your email!`);
         const popupDescription = this.getTranslatedDescription({
-            showEmailInPortalDescription: labs?.showEmailInPortalDescription,
             lastPage,
             otcRef,
             submittedEmailOrInbox

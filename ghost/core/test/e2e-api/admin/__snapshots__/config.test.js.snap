@@ -24,7 +24,6 @@ Object {
       "lexicalIndicators": true,
       "members": true,
       "membersSigninOTC": true,
-      "showEmailInPortalDescription": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
       "tagsX": true,
