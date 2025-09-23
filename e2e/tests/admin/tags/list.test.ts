@@ -37,17 +37,8 @@ test.describe('Ghost Admin - Tags', () => {
 
         await tagsPage.goto();
 
-        await expect(
-            tagsPage.pageContent.getByRole('heading', {
-                name: 'Start organizing your content'
-            })
-        ).toBeVisible();
-        await expect(
-            tagsPage.pageContent.getByRole('link', {
-                name: 'Create a new tag'
-            })
-        ).toBeVisible();
-
+        await expect(tagsPage.emptyStateTitle).toBeVisible();
+        await expect(tagsPage.emptyStateAction).toBeVisible();
         await expect(tagsPage.tagList).not.toBeVisible();
     });
 
@@ -88,24 +79,21 @@ test.describe('Ghost Admin - Tags', () => {
         // Default to public tags
         await expect(tagsPage.activeTab).toHaveText('Public tags');
 
-        await expect(tagsPage.tagList).toBeVisible();
-        await expect(tagsPage.tagListRow.first()).toContainText('Public Tag Name');
-        await expect(tagsPage.tagListRow.first()).toContainText('Public Tag description');
+        await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Public Tag Name')).toContainText('Public Tag description');
         await expect(tagsPage.tagListRow).toHaveCount(2);
 
         // Can switch to internal tags
         await tagsPage.selectTab('Internal tags');
         await expect(tagsPage.activeTab).toHaveText('Internal tags');
-
-        await expect(tagsPage.tagList).toBeVisible();
-        await expect(tagsPage.tagListRow).toContainText('Internal Tag Name');
-        await expect(tagsPage.tagListRow).toContainText('Internal Tag description');
+        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Internal Tag Name')).toContainText('Internal Tag description');
         await expect(tagsPage.tagListRow).toHaveCount(1);
 
         // Can switch back to public tags
         await tagsPage.selectTab('Public tags');
         await expect(tagsPage.activeTab).toHaveText('Public tags');
-        await expect(tagsPage.tagListRow.first()).toContainText('Public Tag Name');
+        await expect(tagsPage.getRowByTitle('Public Tag Name')).toBeVisible();
         await expect(tagsPage.tagListRow).toHaveCount(2);
     });
 
@@ -140,9 +128,9 @@ test.describe('Ghost Admin - Tags', () => {
 
         await tagsPage.goto();
 
-        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 1'})).toBeVisible();
-        await expect(tagsPage.tagListRow.first().getByText('Tag 1 description')).toBeVisible();
-        await expect(tagsPage.tagListRow.first().getByText('1 post')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('Tag 1 description');
+        await expect(tagsPage.getRowByTitle('Tag 1')).toContainText('1 post');
 
         await expect(tagsPage.tagListRow).toHaveCount(3);
     });
@@ -198,31 +186,32 @@ test.describe('Ghost Admin - Tags', () => {
         await tagsPage.goto();
 
         // Verify first page loads
-        await expect(tagsPage.tagList).toBeVisible();
-        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 1', exact: true})).toBeVisible();
-        await expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
-        await expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
+        await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
+        
+        // Verify that only a limited number of tags are rendered
+        expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
+        expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
+        
         // Scroll to bottom to trigger pagination
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
 
         // Wait for loading placeholders to appear
-        const loadingPlaceholder = page.locator('[data-testid="loading-placeholder"]').first();
-        await expect(loadingPlaceholder).toBeVisible();
+        await expect(tagsPage.loadingPlaceholder.first()).toBeVisible();
 
         // Wait for second page to load
-        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 21', exact: true})).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Tag 21')).toBeVisible();
 
         // Scroll again to trigger loading of third page
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
 
         // Wait for third page to load
-        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 41', exact: true})).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Tag 41')).toBeVisible();
         
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
         
         // Verify last tag is visible
-        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 50', exact: true})).toBeVisible();
+        await expect(tagsPage.getRowByTitle('Tag 50')).toBeVisible();
     });
 });
