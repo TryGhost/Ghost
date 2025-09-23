@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 const MembersConfigProvider = require('../../../../../core/server/services/members/MembersConfigProvider');
 
 describe('MembersConfigProvider - Key Generation Integration', function () {
+    // Increase timeout for all tests - 2048-bit key generation takes longer than default 2000ms
+    this.timeout(10000);
+
     let membersConfigProvider;
     let settingsCache;
 
