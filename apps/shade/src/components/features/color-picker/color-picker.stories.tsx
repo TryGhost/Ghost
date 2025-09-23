@@ -4,6 +4,7 @@ import ColorPicker from './color-picker';
 
 import {Popover, PopoverTrigger, PopoverContent} from '@/components/ui/popover';
 import {useState} from 'react';
+import React from 'react';
 import {Input} from '@/components/ui/input';
 
 const meta: Meta<typeof ColorPicker> = {
