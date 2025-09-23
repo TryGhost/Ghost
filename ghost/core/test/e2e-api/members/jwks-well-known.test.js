@@ -3,6 +3,9 @@ const should = require('should');
 const {agentProvider, mockManager} = require('../../utils/e2e-framework');
 
 describe('Members .well-known JWKS Key Validation', function () {
+    // Increase timeout - validating 2048-bit keys takes longer
+    this.timeout(10000);
+
     let membersAgent;
 
     before(async function () {
