@@ -68,7 +68,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
 
     return (
-        <Card className='group'>
+        <Card className='group' data-testid={title}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
@@ -139,13 +139,13 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </EmptyCard>
         );
     }
-    
+
     // Calculate number of cards being displayed
     const showWebAnalytics = appSettings?.analytics.webAnalytics;
     const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
     const showMembers = true; // Always shown
     const showMRR = appSettings?.paidMembersEnabled;
-    
+
     // Determine number of columns to display, 1, 2, or 3
     const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;
     let cols = 'lg:grid-cols-3';

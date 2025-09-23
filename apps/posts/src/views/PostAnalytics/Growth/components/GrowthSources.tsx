@@ -1,6 +1,7 @@
 import React from 'react';
+import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 
 // Default source icon URL - apps can override this
@@ -17,6 +18,8 @@ interface SourcesTableProps {
 }
 
 const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', children = 'Source', data, mode, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+    const {appSettings} = useAppContext();
+
     if (mode === 'growth') {
         return (
             <Table>
@@ -24,8 +27,12 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                     <TableRow>
                         <TableHead className='min-w-[320px]' variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
                         <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                        <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                        <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
+                        {appSettings?.paidMembersEnabled &&
+                        <>
+                            <TableHead className='w-[110px] text-right'>Paid members</TableHead>
+                            <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
+                        </>
+                        }
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -37,29 +44,31 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                 <TableCell>
                                     {row.linkUrl ?
                                         <a className='group flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span className='group-hover:underline'>{row.displayName}</span>
                                         </a>
                                         :
                                         <span className='flex items-center gap-2'>
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span>{row.displayName}</span>
                                         </span>
                                     }
                                 </TableCell>
                                 <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members || 0)}</TableCell>
-                                <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
-                                <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                {appSettings?.paidMembersEnabled &&
+                                <>
+                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
+                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                </>
+                                }
                             </TableRow>
                         );
                     })}
@@ -80,6 +89,7 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     getPeriodText?: (range: number) => string;
+    className?: string;
 }
 
 export const GrowthSources: React.FC<SourcesCardProps> = ({
@@ -92,7 +102,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     siteUrl,
     siteIcon,
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
-    getPeriodText
+    getPeriodText,
+    className
 }) => {
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
@@ -131,7 +142,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
     return (
-        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
+        <Card className={cn('group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]', className)} data-testid='top-sources-card'>
             {topSources.length <= 0 &&
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>

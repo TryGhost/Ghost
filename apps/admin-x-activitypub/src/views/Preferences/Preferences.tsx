@@ -10,7 +10,7 @@ const Preferences: React.FC = () => {
     const {data: account, isLoading: isLoadingAccount, error: accountError} = useAccountForUser('index', 'me');
 
     if (accountError && isApiError(accountError)) {
-        return <Error statusCode={accountError.statusCode} />;
+        return <Error errorCode={accountError.code} statusCode={accountError.statusCode} />;
     }
 
     return (

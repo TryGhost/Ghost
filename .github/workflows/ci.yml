@@ -3,11 +3,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
+    # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+    # Run on pushes to main, release branches, and previous/future major version branches
     branches:
       - main
-      - 'v5.*'
-      - '5.x'
-      - '6.x'
+      - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
+      - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
 
 env:
   FORCE_COLOR: 1
@@ -16,6 +17,7 @@ env:
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.13.1
@@ -28,6 +30,14 @@ jobs:
   job_setup:
     name: Setup
     runs-on: ubuntu-latest
+    # Having certain parts of our huge CI workflow run on a specific label is an anti-pattern.
+    # Long term, we want to get away from this by having all of our tests run on every PR, and have the staging deploy either be automatic or a different workflow
+    # This logic skips the entire workflow if triggered by a label that doesn't contain "test" or "deploy" - there's nothing new to do in that case
+    if: |
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
+      (github.event.action == 'unlabeled' && (contains(github.event.label.name, 'test') || contains(github.event.label.name, 'deploy'))) ||
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -426,7 +436,7 @@ jobs:
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.4
+        uses: benchmark-action/github-action-benchmark@v1.20.7
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -796,89 +806,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_e2e-tests:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true'
-    name: E2E tests
-    env:
-      CI: true
-      database__client: mysql
-      database__connection__host: localhost
-      database__connection__port: 3306
-      database__connection__user: ghost
-      database__connection__password: ghost
-      database__connection__database: ghost_testing
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Configure Docker daemon for mirror.gcr.io
-        run: |
-          echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-          docker logout || echo "No Docker Hub login found"
-
-      - name: Start E2E services
-        run: docker compose -f e2e/compose.e2e.yml up -d --wait
-      - uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
-
-      - name: Deploy Tinybird Schema
-        working-directory: ghost/core/core/server/data/tinybird
-        run: tb build
-
-      - name: Get Tinybird configuration
-        working-directory: ghost/core/core/server/data/tinybird
-        run: ./scripts/configure-ghost.sh
-
-      - name: Run migrations
-        working-directory: ghost/core
-        run: yarn knex-migrator init
-
-      - name: Build Admin
-        run: yarn nx run ghost-admin:build:dev
-
-      - name: Start Ghost
-        working-directory: ghost/core
-        run: node --import=tsx index.js &
-
-      - name: Wait for Ghost to be ready
-        run: |
-          timeout 120 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
-
-      - name: Run E2E tests
-        run: yarn test:e2e
-        env:
-          GHOST_BASE_URL: http://localhost:2368
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-playwright-report
-          path: e2e/test-results
-          retention-days: 30
-
-      - name: Stop E2E services
-        if: always()
-        run: docker compose -f e2e/compose.e2e.yml down
-
   job_tinybird-tests:
     name: Tinybird Tests
     runs-on: ubuntu-latest
@@ -1059,7 +986,6 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
-        job_e2e-tests,
         job_tinybird-tests
       ]
     if: always()
@@ -1142,7 +1068,7 @@ jobs:
         include:
           - package_name: '@tryghost/admin-x-activitypub'
             package_path: 'apps/admin-x-activitypub'
-            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@CURRENT_MAJOR/dist/admin-x-activitypub.js'
           - package_name: '@tryghost/portal'
             package_path: 'apps/portal'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
@@ -1154,6 +1080,12 @@ jobs:
           - package_name: '@tryghost/comments-ui'
             package_path: 'apps/comments-ui'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
+          - package_name: '@tryghost/signup-form'
+            package_path: 'apps/signup-form'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/signup-form@~CURRENT_MINOR/umd/signup-form.min.js'
+          - package_name: '@tryghost/announcement-bar'
+            package_path: 'apps/announcement-bar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -1180,6 +1112,9 @@ jobs:
           CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
           echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
 
+          CURRENT_MAJOR=$(cat package.json | jq -r .version | awk -F. '{print $1}')
+          echo "current_major=$CURRENT_MAJOR" >> $GITHUB_OUTPUT
+
           if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
             echo "Version is unchanged."
             echo "version_changed=false" >> $GITHUB_OUTPUT
@@ -1205,13 +1140,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
-      - name: Replace CURRENT_MINOR in cdn-paths
+      - name: Replace version placeholders in cdn-paths
         id: cdn_paths
         if: steps.version_check.outputs.version_changed == 'true'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
-          echo "$cdn_paths" | sed 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' >> $GITHUB_OUTPUT
+          echo "$cdn_paths" | sed -e 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' -e 's/CURRENT_MAJOR/${{ steps.version_check.outputs.current_major }}/g' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths

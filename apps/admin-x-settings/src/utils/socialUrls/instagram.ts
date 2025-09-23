@@ -30,7 +30,7 @@ export function validateInstagramUrl(newUrl: string) {
 
     // Validate username: alphanumeric, underscore, period, 1–30 chars, no leading/trailing/consecutive periods
     if (
-        !username.match(/^[a-zA-Z0-9][a-zA-Z0-9._]{0,28}[a-zA-Z0-9]$/) ||
+        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,28}[a-zA-Z0-9_]$/) ||
         username.includes('..') ||
         username.length > 30
     ) {
@@ -60,7 +60,7 @@ export const instagramHandleToUrl = (handle: string) => {
 
     // Validate username: alphanumeric, underscore, period, 1–30 chars, no leading/trailing/consecutive periods
     if (
-        !username.match(/^[a-zA-Z0-9][a-zA-Z0-9._]{0,28}[a-zA-Z0-9]$/) ||
+        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,28}[a-zA-Z0-9_]$/) ||
         username.includes('..') ||
         username.length > 30
     ) {

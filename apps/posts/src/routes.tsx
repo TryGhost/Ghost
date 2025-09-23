@@ -3,12 +3,13 @@ import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
 import Overview from './views/PostAnalytics/Overview/Overview';
 import PostAnalytics from './views/PostAnalytics/PostAnalytics';
 import PostAnalyticsProvider from './providers/PostAnalyticsContext';
+import Tags from './views/Tags/Tags';
 import Web from './views/PostAnalytics/Web/Web';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
 
-export const APP_ROUTE_PREFIX = '/posts';
+export const APP_ROUTE_PREFIX = '/';
 
 // Wrap components with feature flag protection where needed
 //  e.g.
@@ -23,7 +24,7 @@ export const routes: RouteObject[] = [
             {
 
                 // Post Analytics
-                path: 'analytics/:postId',
+                path: 'posts/analytics/:postId',
                 element: (
                     <PostAnalyticsProvider>
                         <PostAnalytics />
@@ -47,6 +48,10 @@ export const routes: RouteObject[] = [
                         element: <Newsletter />
                     }
                 ]
+            },
+            {
+                path: 'tags',
+                element: <Tags />
             },
 
             // Error handling

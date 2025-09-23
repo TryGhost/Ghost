@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import fetch from 'fetch';
 import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
@@ -63,6 +64,20 @@ export const importComponent = async (packageName) => {
     const customUrl = config[`${configKey}CustomUrl`];
     if (customUrl) {
         url = new URL(customUrl);
+    }
+
+    const remoteConfigUrl = config[`${configKey}RemoteConfigUrl`];
+    if (remoteConfigUrl) {
+        try {
+            const remoteConfig = await fetch(remoteConfigUrl, window.location);
+            const remoteConfigJson = await remoteConfig.json();
+            const client = remoteConfigJson.client;
+            if (client && client.cdnUrl) {
+                url = new URL(client.cdnUrl);
+            }
+        } catch (error) {
+            // Fallback to previous behaviour
+        }
     }
 
     if (url.protocol === 'http:') {
@@ -275,7 +290,7 @@ export default class AdminXComponent extends Component {
                     width: '100px',
                     height: '100px'
                 }}>
-                    <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+                    <source src={this.feature.nightShift ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4'} type="video/mp4" />
                     <div className="gh-loading-spinner"></div>
                 </video>
             </div>

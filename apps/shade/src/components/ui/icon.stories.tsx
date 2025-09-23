@@ -3,9 +3,17 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {useState} from 'react';
 
 const meta = {
-    title: 'Components / Icons',
-    component: Icon.Close,
+    title: 'Components / Custom icons',
+    component: Icon.Typography,
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Custom SVG icons auto-generated from `src/assets/icons`. Import via `Icon.<Name>` and adjust with `size` and `className`.'
+            }
+        }
+    },
     argTypes: {
         size: {
             control: 'select',
@@ -13,10 +21,10 @@ const meta = {
             defaultValue: 'md'
         }
     }
-} satisfies Meta<typeof Icon.Close>;
+} satisfies Meta<typeof Icon.Typography>;
 
 export default meta;
-type Story = StoryObj<typeof Icon.Close>;
+type Story = StoryObj<typeof Icon.Typography>;
 
 export const IconGallery = {
     render: (args: Story['args']) => {
@@ -48,5 +56,53 @@ export const IconGallery = {
                 })}
             </div>
         );
+    }
+};
+
+export const Sizes: Story = {
+    render: () => (
+        <div className="flex items-center gap-6">
+            <div className="flex flex-col items-center gap-1">
+                <Icon.Typography size="sm" />
+                <span className="text-xs text-muted-foreground">sm</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <Icon.Typography size="md" />
+                <span className="text-xs text-muted-foreground">md</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <Icon.Typography size="lg" />
+                <span className="text-xs text-muted-foreground">lg</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <Icon.Typography size="xl" />
+                <span className="text-xs text-muted-foreground">xl</span>
+            </div>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Choose from `sm`, `md`, `lg`, `xl` sizes or override via Tailwind classes.'
+            }
+        }
+    }
+};
+
+export const ColorsAndClasses: Story = {
+    render: () => (
+        <div className="flex items-center gap-6">
+            <Icon.Typography className="text-foreground" />
+            <Icon.Typography className="text-muted-foreground" />
+            <Icon.Typography className="text-emerald-500" />
+            <Icon.Typography className="text-rose-500" />
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Style with `className` to change color via Tailwind (e.g., `text-muted-foreground`, `text-emerald-500`).'
+            }
+        }
     }
 };

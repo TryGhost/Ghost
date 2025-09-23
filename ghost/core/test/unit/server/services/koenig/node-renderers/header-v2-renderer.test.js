@@ -112,7 +112,17 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                     ">
                         <tbody>
                             <tr>
+                                <!--[if mso]>
+                        <td class="kg-header-card-content" style="padding: 0;">
+                    <![endif]-->
+                                <!--[if !mso]><!-->
                                 <td class="kg-header-card-content" style="">
+                                <!--<![endif]-->
+                                    <!--[if mso]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
+                            <v:fill src="https://example.com/image.jpg" color="#000000" type="frame" aspect="atleast" focusposition="0.5,0.5" />
+                            <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
+                    <![endif]-->
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tbody>
                                             <tr>
@@ -151,6 +161,10 @@ describe('services/koenig/node-renderers/header-v2-renderer', function () {
                                             </tr>
                                         </tbody>
                                     </table>
+                                <!--[if mso]>
+            </v:textbox>
+        </v:rect>
+        <![endif]-->
                                 </td>
                             </tr>
                         </tbody>

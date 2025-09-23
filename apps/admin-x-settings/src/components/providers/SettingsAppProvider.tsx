@@ -1,5 +1,5 @@
 import GlobalDataProvider from './GlobalDataProvider';
-import useSearchService, {SearchService} from '../../utils/search';
+import useSearchService, {ComponentId, SearchService} from '../../utils/search';
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
@@ -49,7 +49,11 @@ const SettingsAppContext = createContext<SettingsAppContextType>({
         checkVisible: () => true,
         highlightKeywords: () => '',
         noResult: false,
-        setNoResult: () => {}
+        setNoResult: () => {},
+        registerComponent: () => {},
+        unregisterComponent: () => {},
+        getVisibleComponents: () => new Set<ComponentId>(),
+        isOnlyVisibleComponent: () => false
     },
     sortingState: []
 });

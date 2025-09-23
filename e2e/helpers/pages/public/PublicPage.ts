@@ -1,18 +1,62 @@
-import {Locator, Page} from '@playwright/test';
+import {Page, Locator} from '@playwright/test';
+import {BasePage} from '../BasePage';
 
-export default class PublicPage {
-    protected pageUrl:string;
-    private readonly page: Page;
-    public readonly body: Locator;
+export default class PublicPage extends BasePage{
+    private readonly portalFrame: Locator;
+    private readonly portalIframe: Locator;
+    private readonly portalScript: Locator;
+    private readonly subscribeLink: Locator;
+    private readonly signInLink: Locator;
 
     constructor(page: Page) {
-        this.page = page;
-        this.pageUrl = '/';
-        this.body = page.locator('body');
+        super(page, '/');
+
+        this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
+        this.portalIframe = page.locator('iframe[title="portal-popup"]');
+        this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
+        this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
+        this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
 
-    async goto(url = null) {
-        const urlToVisit = url || this.pageUrl;
-        await this.page.goto(urlToVisit);
+    async waitForPortalScript(): Promise<void> {
+        await this.portalScript.waitFor({
+            state: 'attached',
+            timeout: 10000
+        });
+
+        await this.page.waitForTimeout(500);
+    }
+
+    async openPortalViaSubscribeButton(): Promise<void> {
+        await this.waitForPortalScript();
+        await this.subscribeLink.click();
+        await this.portalIframe.waitFor({
+            state: 'visible',
+            timeout: 5000
+        });
+    }
+
+    async openPortalViaSignInLink(): Promise<void> {
+        await this.waitForPortalScript();
+        await this.signInLink.click();
+        await this.portalIframe.waitFor({
+            state: 'visible',
+            timeout: 5000
+        });
+    }
+
+    async waitForPortalToOpen(): Promise<void> {
+        await this.portalFrame.waitFor({
+            state: 'visible',
+            timeout: 2000
+        });
+    }
+
+    async isPortalOpen(): Promise<boolean> {
+        const count = await this.portalFrame.count();
+        if (count === 0) {
+            return false;
+        }
+        return await this.portalFrame.isVisible();
     }
 }

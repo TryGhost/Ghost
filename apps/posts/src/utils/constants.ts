@@ -13,6 +13,7 @@ export const STATS_LABEL_MAPPINGS = {
     US: 'United States',
     TWN: 'Taiwan',
     TW: 'Taiwan',
+    CN: 'China',
 
     // Technical
     'mobile-ios': 'iOS',
