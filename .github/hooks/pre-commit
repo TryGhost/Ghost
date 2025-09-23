@@ -50,7 +50,7 @@ else
 fi
 
 ##
-## 2) Suggest shipping a new version of @tryghost/admin-x-activitypub when changes are detected
+## 2) Suggest shipping a new version of @tryghost/activitypub when changes are detected
 ##    The intent is to ship smaller changes more frequently to production
 ##
 
@@ -88,14 +88,14 @@ AP_BUMP_NEEDED=false
 MODIFIED_FILES=$(git diff --cached --name-only)
 
 for FILE in $MODIFIED_FILES; do
-    if [[ "$FILE" == apps/admin-x-activitypub/* ]]; then
+    if [[ "$FILE" == apps/activitypub/* ]]; then
         AP_BUMP_NEEDED=true
         break
     fi
 done
 
 if [[ "$AP_BUMP_NEEDED" == true ]]; then
-    echo -e "\nYou have made changes to @tryghost/admin-x-activitypub."
+    echo -e "\nYou have made changes to @tryghost/activitypub."
     echo -e "Would you like to ship a new version? (yes)"
     read -r new_version </dev/tty
 
@@ -112,8 +112,8 @@ if [[ "$AP_BUMP_NEEDED" == true ]]; then
             echo -e "${red}Invalid input. Skipping version bump.${no_color}"
         else
             echo "Bumping version ($version_type)..."
-            increment_version "apps/admin-x-activitypub/package.json" "$version_type"
-            git add apps/admin-x-activitypub/package.json
+            increment_version "apps/activitypub/package.json" "$version_type"
+            git add apps/activitypub/package.json
         fi
     fi
 fi
