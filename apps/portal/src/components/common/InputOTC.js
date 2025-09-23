@@ -1,6 +1,5 @@
 import {useContext} from 'react';
 import {OTPInput as OTCInput, OTPInputContext as OTCInputContext} from 'input-otp';
-import {MinusIcon} from 'lucide-react';
 import {REGEXP_ONLY_DIGITS} from 'input-otp';
 import {cn} from '../../utils/cn';
 
@@ -102,16 +101,5 @@ function InputOTCSlot({
     );
 }
 
-/**
- * @param {Record<string, any>} props
- */
-function InputOTCSeparator({...props}) {
-    return (
-        <div data-slot="input-otc-separator" role="separator" {...props}>
-            <MinusIcon />
-        </div>
-    );
-}
-
-export {InputOTC, InputOTCGroup, InputOTCSlot, InputOTCSeparator};
+export {InputOTC, InputOTCGroup, InputOTCSlot};
 

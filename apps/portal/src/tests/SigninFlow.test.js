@@ -174,11 +174,6 @@ describe('Signin', () => {
                 return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
             });
 
-            // Mock sendMagicLink to return otc_ref for OTC flow
-            ghostApi.member.sendMagicLink = jest.fn(() => {
-                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
-            });
-
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.click(submitButton);
 
@@ -561,8 +556,8 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        const descWithEmail = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
-        expect(descWithEmail).toBeInTheDocument();
+        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(description).toBeInTheDocument();
     });
 
     test('OTC verification with invalid code shows error', async () => {
