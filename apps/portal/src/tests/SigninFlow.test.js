@@ -168,12 +168,19 @@ describe('Signin', () => {
                 labs: {membersSigninOTC: true}
             });
 
+            // Mock sendMagicLink to return otc_ref for OTC flow
+            ghostApi.member.sendMagicLink = jest.fn(() => {
+                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
+            });
+
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.click(submitButton);
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
-
+            const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+            expect(description).toBeInTheDocument();
+            
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
@@ -541,6 +548,17 @@ describe('OTC Integration Flow', () => {
         expect(otcInput).toBeInTheDocument();
     });
 
+    test('MagicLink description shows submitted email on OTC flow', async () => {
+        const {popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+
+        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(description).toBeInTheDocument();
+    });
+    
     test('OTC verification with invalid code shows error', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
