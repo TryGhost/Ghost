@@ -30,3 +30,8 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     // eslint-disable-next-line no-undef
     globalThis.ResizeObserver = ResizeObserverPolyfill;
 }
+
+// Polyfill document.elementFromPoint for input-otp library
+if (typeof document !== 'undefined' && !document.elementFromPoint) {
+    document.elementFromPoint = () => null;
+}
