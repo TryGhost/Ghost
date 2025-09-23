@@ -177,7 +177,12 @@ describe('Signin', () => {
         test('with OTC enabled', async () => {
             const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.basic,
-                labs: {membersSigninOTC: true, showEmailInPortalDescription: true}
+                labs: {membersSigninOTC: true}
+            });
+
+            // Mock sendMagicLink to return otc_ref for OTC flow
+            ghostApi.member.sendMagicLink = jest.fn(() => {
+                return Promise.resolve({success: true, otc_ref: 'test-otc-ref-123'});
             });
 
             // Mock sendMagicLink to return otc_ref for OTC flow
@@ -459,7 +464,7 @@ describe('OTC Integration Flow', () => {
         });
 
         const utils = appRender(
-            <App api={ghostApi} labs={{membersSigninOTC: true, showEmailInPortalDescription: true}} />
+            <App api={ghostApi} labs={{membersSigninOTC: true}} />
         );
 
         await utils.findByTitle(/portal-trigger/i);
