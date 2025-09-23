@@ -28,6 +28,7 @@ function ColorPickerDemo(args: Story['args']) {
     const handleColorChange = (newValue: string | React.FormEvent<HTMLDivElement>) => {
         if (typeof newValue === 'string') {
             setValue(newValue);
+            args?.onChange?.(newValue);
         }
     };
 
