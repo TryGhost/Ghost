@@ -1,37 +1,18 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
+import {overrideFeatureFlags} from './helpers/override-feature-flags';
+import {mockTagsResponse} from './helpers/mock-tags-response';
 
 test.describe('Ghost Admin - Tags', () => {
     // XXX: Amend the settings response to enable tagsX feature flag for all tests
     // until we have a proper way to enable and disable feature flags in tests
     test.beforeEach(async ({page}) => {
-        await page.route('/ghost/api/admin/settings/*', async (route) => {
-            const response = await route.fetch();
-            const json = await response.json();
-            
-            // Override the labs field to enable tagsX feature flag
-            if (json.settings) {
-                const labsSetting = json.settings.find(setting => setting.key === 'labs');
-                if (labsSetting) {
-                    const labs = JSON.parse(labsSetting.value || '{}');
-                    labs.tagsX = true;
-                    labsSetting.value = JSON.stringify(labs);
-                }
-            }
-            
-            await route.fulfill({
-                response,
-                json
-            });
-        });
-
-        // Reload the page so that settings are updated and the feature flag is enabled
-        await page.reload();
+        await overrideFeatureFlags(page, {tagsX: true});
     });
 
     test('shows empty state when no tags exist', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await tagsPage.mockTagsResponse(async () => ({
+        await mockTagsResponse(page, async () => ({
             tags: []
         }));
 
@@ -45,7 +26,7 @@ test.describe('Ghost Admin - Tags', () => {
     test('lists public and internal tags separately', async ({page}) => {
         const tagsPage = new TagsPage(page);
 
-        await tagsPage.mockTagsResponse(async request => ({
+        await mockTagsResponse(page, async request => ({
             tags: request.url().includes('internal')
                 ? [
                     {
@@ -99,7 +80,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('lists tags', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await tagsPage.mockTagsResponse(async () => ({
+        await mockTagsResponse(page, async () => ({
             tags: [
                 {
                     id: '1',
@@ -148,7 +129,7 @@ test.describe('Ghost Admin - Tags', () => {
         const tagsPage = new TagsPage(page);
         
         // Mock first page of tags
-        await tagsPage.mockTagsResponse(async (request) => {
+        await mockTagsResponse(page, async (request) => {
             const url = new URL(request.url());
             const pageParam = parseInt(url.searchParams.get('page') || '1');
             const pageSize = 20;
