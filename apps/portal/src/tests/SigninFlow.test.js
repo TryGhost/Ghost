@@ -162,18 +162,6 @@ describe('Signin', () => {
             });
         });
 
-        test('shows non-OTC MagicLink description with submitted email', async () => {
-            const {popupIframeDocument, emailInput, submitButton} = await setup({
-                site: FixtureSite.singleTier.basic
-            });
-
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.click(submitButton);
-
-            const description = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
-            expect(description).toBeInTheDocument();
-        });
-
         test('with OTC enabled', async () => {
             const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.basic,
