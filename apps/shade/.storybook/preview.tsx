@@ -3,11 +3,9 @@ import React from 'react';
 import '../styles.css';
 import './storybook.css';
 
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/react-vite";
 import ShadeProvider from '../src/providers/ShadeProvider';
 import shadeTheme from './shade-theme';
-
-// import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
 
 const customViewports = {
 	sm: {

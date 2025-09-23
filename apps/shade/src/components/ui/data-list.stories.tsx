@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow} from './data-list';
 
 const meta = {

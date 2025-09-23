@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {PageMenu, PageMenuItem} from './pagemenu';
 
 const meta: Meta<typeof PageMenu> = {

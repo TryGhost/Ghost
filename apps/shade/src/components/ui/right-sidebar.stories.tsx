@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {RightSidebarMenu, RightSidebarMenuLink} from './right-sidebar';
 import {Settings, User, Bell, HelpCircle, LogOut, Calendar, FileText, Users} from 'lucide-react';
 
