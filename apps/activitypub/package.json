@@ -1,10 +1,10 @@
 {
-  "name": "@tryghost/admin-x-activitypub",
+  "name": "@tryghost/activitypub",
   "version": "1.0.10",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-activitypub"
+    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/activitypub"
   },
   "author": "Ghost Foundation",
   "files": [
@@ -12,8 +12,8 @@
     "README.md",
     "dist/"
   ],
-  "main": "./dist/admin-x-activitypub.umd.cjs",
-  "module": "./dist/admin-x-activitypub.js",
+  "main": "./dist/activitypub.umd.cjs",
+  "module": "./dist/activitypub.js",
   "private": false,
   "scripts": {
     "dev": "vite build --watch",
