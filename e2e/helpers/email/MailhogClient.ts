@@ -2,30 +2,47 @@ import baseDebug from '@tryghost/debug';
 
 const debug = baseDebug('e2e:MailhogClient');
 
+// Email address structure used in From and To fields
+export interface EmailAddress {
+    Relays: string[] | null;
+    Mailbox: string;
+    Domain: string;
+    Params: string;
+}
+
+// MIME part structure for multipart messages
+export interface MimePart {
+    Headers: {
+        'Content-Type'?: string[];
+        'Content-Transfer-Encoding'?: string[];
+        [key: string]: string[] | undefined;
+    };
+    Body: string;
+    MIME?: MimeStructure;
+}
+
+// MIME structure for email content
+export interface MimeStructure {
+    Parts?: MimePart[];
+    Headers?: {
+        [key: string]: string[];
+    };
+}
+
 export interface MailhogMessage {
     ID: string;
-    From: {
-        Relays: string[] | null;
-        Mailbox: string;
-        Domain: string;
-        Params: string;
-    };
-    To: Array<{
-        Relays: string[] | null;
-        Mailbox: string;
-        Domain: string;
-        Params: string;
-    }>;
+    From: EmailAddress;
+    To: EmailAddress[];
     Content: {
         Headers: {
             [key: string]: string[];
         };
         Body: string;
         Size: number;
-        MIME: any;
+        MIME: MimeStructure | null;
     };
     Created: string;
-    MIME: any;
+    MIME: MimeStructure | null;
     Raw: {
         From: string;
         To: string[];
@@ -98,7 +115,9 @@ export class MailhogClient {
             }
             
             // Wait a bit before checking again
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 500);
+            });
         }
         
         throw new Error(`Timeout waiting for email to ${email}`);
