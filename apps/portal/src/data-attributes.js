@@ -180,7 +180,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site, member}) {
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, onAction} = {}) {
     const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
@@ -191,7 +191,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, onAction}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
