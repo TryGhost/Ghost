@@ -143,7 +143,7 @@ module.exports = class GhostMailer {
         // Add site-based tagging for Mailgun transactional emails
         if (this.state.usingMailgun) {
             const siteId = config.get('hostSettings:siteId');
-            if (siteId) {
+            if (siteId && settingsCache.get('emailTrackOpens')) {
                 // Add the site-based tag in the format blog-{siteId}
                 if (!message['o:tag']) {
                     message['o:tag'] = [];
