@@ -24,6 +24,7 @@ import {TipsAndDonationsSuccessStyle} from './pages/SupportSuccess';
 import {TipsAndDonationsErrorStyle} from './pages/SupportError';
 import {RecommendationsPageStyles} from './pages/RecommendationsPage';
 import NotificationStyle from './Notification.styles';
+import {InputOTCStyles} from './common/InputOTC.styles';
 
 // Global styles
 const FrameStyles = `
@@ -1277,6 +1278,7 @@ export function getFrameStyles({site}) {
         SignupPageStyles +
         OfferPageStyles({site}) +
         NotificationStyle +
+        InputOTCStyles +
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles +
