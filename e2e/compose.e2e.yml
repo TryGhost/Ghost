@@ -59,8 +59,8 @@ services:
     image: mailhog/mailhog:latest
     platform: linux/amd64
     ports:
-      - "1025:1025" # SMTP server
-      - "8025:8025" # Web interface
+      - "1026:1025" # SMTP server
+      - "8026:8025" # Web interface
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
       interval: 1s

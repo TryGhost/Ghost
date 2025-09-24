@@ -61,7 +61,7 @@ export interface MailhogSearchResult {
 export class MailhogClient {
     private readonly baseUrl: string;
 
-    constructor(baseUrl: string = 'http://localhost:8025') {
+    constructor(baseUrl: string = 'http://localhost:8026') {
         this.baseUrl = baseUrl;
     }
 
