@@ -1,4 +1,4 @@
-import {BasePage} from '../BasePage';
+import {BasePage} from '../base-page';
 import {Page, FrameLocator} from '@playwright/test';
 
 export class PortalPage extends BasePage {

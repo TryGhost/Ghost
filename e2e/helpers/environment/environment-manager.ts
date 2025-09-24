@@ -4,10 +4,10 @@ import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import path from 'path';
 import {randomUUID} from 'crypto';
-import {DockerCompose} from './DockerCompose';
-import {MySQLManager} from './MySQLManager';
-import {TinybirdManager} from './TinybirdManager';
-import {GhostManager} from './GhostManager';
+import {DockerCompose} from './docker-compose';
+import {MySQLManager} from './mysql-manager';
+import {TinybirdManager} from './tinybird-manager';
+import {GhostManager} from './ghost-manager';
 import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, STATE_DIR} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');

@@ -1,5 +1,5 @@
 import {Locator, Page} from '@playwright/test';
-import {AdminPage} from '../../AdminPage';
+import {AdminPage} from '../../admin-page';
 
 class GrowthSection extends AdminPage {
     readonly card: Locator;
