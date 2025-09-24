@@ -103,7 +103,8 @@ class PopupContent extends React.Component {
     }
 
     handlePopupClose(e) {
-        if (hasMode(['preview'])) {
+        const {page, otcRef} = this.context;
+        if (hasMode(['preview']) || (otcRef && page === 'magiclink')) {
             return;
         }
         if (e.target === e.currentTarget) {
