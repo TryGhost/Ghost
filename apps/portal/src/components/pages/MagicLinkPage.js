@@ -1,10 +1,13 @@
 import React from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
+import {
+    InputOTC,
+    InputOTCGroup,
+    InputOTCSlot
+} from '../common/InputOTC';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
-
-import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -38,20 +41,51 @@ export default class MagicLinkPage extends React.Component {
         };
     }
 
+    /**
+     * Generates configuration object containing translated description messages for magic link scenarios
+     * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
+     * @returns {Object} Configuration object with message templates for signin/signup scenarios
+     */
+    getDescriptionConfig(submittedEmailOrInbox) {
+        const {t} = this.context;
+        return {
+            signin: {
+                withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
+                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+            },
+            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
+        };
+    }
+
+    /**
+     * Gets the appropriate translated description based on page context
+     * @param {Object} params - Configuration object
+     * @param {string} params.lastPage - The previous page ('signin' or 'signup')
+     * @param {boolean} params.otcRef - Whether one-time code is being used
+     * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
+     * @returns {string} The translated description
+     */
+    getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
+        const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
+        const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+        
+        if (normalizedPage === 'signup') {
+            return descriptionConfig.signup;
+        }
+        
+        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+    }
+
     renderFormHeader() {
-        const {t, otcRef} = this.context;
-
-        let popupTitle = t(`Now check your email!`);
-        let popupDescription = t(`A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`);
-
-        if (this.context.lastPage === 'signup') {
-            popupTitle = t(`Now check your email!`);
-            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
-        }
-
-        if (this.context.lastPage === 'signin' && otcRef) {
-            popupDescription = t(`An email has been sent to your inbox. Use the link inside or enter the code below.`);
-        }
+        const {t, otcRef, pageData, lastPage} = this.context;
+        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
+        
+        const popupTitle = t(`Now check your email!`);
+        const popupDescription = this.getTranslatedDescription({
+            lastPage,
+            otcRef,
+            submittedEmailOrInbox
+        });
 
         return (
             <section className='gh-portal-inbox-notification'>
@@ -113,7 +147,7 @@ export default class MagicLinkPage extends React.Component {
             const code = (state.otc || '').trim();
             return {
                 errors: {
-                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
+                    [OTC_FIELD_NAME]: code ? '' : t('Enter code above')
                 }
             };
         }, () => {
@@ -128,10 +162,10 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
-    handleInputChange(e, field) {
+    handleInputChange(value, field) {
         const fieldName = field.name;
         this.setState({
-            [fieldName]: e.target.value
+            [fieldName]: value
         });
     }
 
@@ -143,26 +177,37 @@ export default class MagicLinkPage extends React.Component {
             return null;
         }
 
-        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
-        const isError = (action === 'verifyOTC:failed');
+        const hasFailedVerification = (action === 'verifyOTC:failed');
+        const hasError = !!(errors.otc || hasFailedVerification);
+        const errorMessage = (errors.otc || (hasFailedVerification ? t('Invalid code. Try again.') : ''));
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 <section className='gh-portal-section'>
-                    {/* @TODO: create different input component with updated design */}
-                    <InputField
-                        id={`input-${OTC_FIELD_NAME}`}
-                        name={OTC_FIELD_NAME}
-                        type="text"
-                        value={this.state.otc}
-                        placeholder="• • • • • •"
-                        label={t('Code')}
-                        errorMessage={errors.otc || ''}
-                        autoFocus={false}
-                        maxlength={6}
-                        onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                    />
+                    <div className='gh-portal-input-otc-outer'>
+                        <div className='gh-portal-input-otc-wrapper'>
+                            <InputOTC
+                                id={`input-${OTC_FIELD_NAME}`}
+                                name={OTC_FIELD_NAME}
+                                maxLength={6}
+                                autoFocus
+                                value={this.state.otc}
+                                label={t('Code')}
+                                hasError={hasError}
+                                onChange={value => this.handleInputChange(value, {name: OTC_FIELD_NAME})}
+                            >
+                                <InputOTCGroup>
+                                    {Array.from({length: 6}, (_, i) => (
+                                        <InputOTCSlot key={i} index={i} />
+                                    ))}
+                                </InputOTCGroup>
+                            </InputOTC>
+                            <p className='gh-portal-input-otc-error gh-portal-error' data-visible={hasError}>
+                                {errorMessage}
+                            </p>
+                        </div>
+                    </div>
                 </section>
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
@@ -171,7 +216,7 @@ export default class MagicLinkPage extends React.Component {
                         brandColor={this.context.brandColor}
                         label={isRunning ? t('Verifying...') : t('Continue')}
                         isRunning={isRunning}
-                        retry={isError}
+                        retry={hasFailedVerification}
                         disabled={isRunning}
                     />
                 </footer>
