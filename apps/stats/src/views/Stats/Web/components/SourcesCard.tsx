@@ -122,21 +122,6 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const title = selectedTab === 'campaigns' && selectedCampaign ? `${selectedCampaign}` : 'Top sources';
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
-    // Only show skeleton on initial load, not when switching between tabs
-    if (isLoading && !data) {
-        return (
-            <Card className='group/datalist'>
-                <CardHeader>
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <SkeletonTable lines={5} />
-                </CardContent>
-            </Card>
-        );
-    }
-
     return (
         <Card className='group/datalist' data-testid='top-sources-card'>
             <div className='flex items-center justify-between gap-6 p-6'>
@@ -158,20 +143,22 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                     </div>
                 )}
                 <Separator />
-                {topSources.length > 0 ? (
-                    <SourcesTable
-                        data={topSources}
-                        defaultSourceIconUrl={defaultSourceIconUrl}
-                        range={range}
-                        tableHeader={false} />
-                ) : (
-                    <EmptyIndicator
-                        className='mt-8 w-full py-20'
-                        title={`No visitors ${getPeriodText(range)}`}
-                    >
-                        <LucideIcon.Globe strokeWidth={1.5} />
-                    </EmptyIndicator>
-                )}
+                {isLoading && !data ?
+                    <SkeletonTable className='mt-3' />
+                    : (topSources.length > 0 ? (
+                        <SourcesTable
+                            data={topSources}
+                            defaultSourceIconUrl={defaultSourceIconUrl}
+                            range={range}
+                            tableHeader={false} />
+                    ) : (
+                        <EmptyIndicator
+                            className='mt-8 w-full py-20'
+                            title={`No visitors ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.Globe strokeWidth={1.5} />
+                        </EmptyIndicator>
+                    ))}
             </CardContent>
             {extendedData.length > 11 &&
                 <CardFooter>
