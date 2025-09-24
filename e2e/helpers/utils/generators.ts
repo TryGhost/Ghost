@@ -62,3 +62,31 @@ export function randomText(wordCount = 10): string {
 export function randomTitle(): string {
     return faker.lorem.sentence();
 }
+
+/**
+ * Generate random paragraphs
+ */
+export function randomParagraphs(count = 3): string {
+    return faker.lorem.paragraphs(count);
+}
+
+/**
+ * Generate a random paragraph
+ */
+export function randomParagraph(): string {
+    return faker.lorem.paragraph();
+}
+
+/**
+ * Generate a random boolean
+ */
+export function randomBoolean(): boolean {
+    return faker.datatype.boolean();
+}
+
+/**
+ * Generate a random UUID
+ */
+export function randomUuid(): string {
+    return faker.string.uuid();
+}
