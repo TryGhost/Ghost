@@ -15,4 +15,11 @@ export class SignUpSuccessPage extends PortalPage {
         this.successMessage = this.portalFrame.getByText('To complete signup, click the confirmation link in your inbox');
         this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
     }
+
+    /**
+     * Wait for the signup success message to appear
+     */
+    async waitForSignUpSuccess(): Promise<void> {
+        await this.successMessage.waitFor({state: 'visible'});
+    }
 }

@@ -1,4 +1,5 @@
 import baseDebug from '@tryghost/debug';
+import type {Page} from '@playwright/test';
 
 const debug = baseDebug('e2e:MailhogClient');
 
@@ -193,19 +194,47 @@ export class MailhogClient {
         // Try to get HTML from MIME parts if available
         if (message.MIME && message.MIME.Parts) {
             for (const part of message.MIME.Parts) {
-                if (part.Headers && part.Headers['Content-Type'] && 
+                if (part.Headers && part.Headers['Content-Type'] &&
                     part.Headers['Content-Type'][0].includes('text/html')) {
                     return part.Body;
                 }
             }
         }
-        
+
         // Fall back to main body if it looks like HTML
         const body = message.Content.Body;
         if (body.includes('<html') || body.includes('<body')) {
             return body;
         }
-        
+
         return '';
+    }
+
+    /**
+     * Wait for email and extract magic link
+     */
+    async waitForMagicLink(email: string, timeoutMs: number = 10000): Promise<string> {
+        debug(`Waiting for magic link for ${email}`);
+        const message = await this.waitForEmail(email, timeoutMs);
+        const magicLink = this.extractMagicLink(message);
+
+        if (!magicLink) {
+            throw new Error(`No magic link found in email for ${email}`);
+        }
+
+        return magicLink;
+    }
+
+    /**
+     * Complete signup verification by navigating to magic link
+     */
+    async completeSignupVerification(page: Page, email: string, timeoutMs: number = 10000): Promise<void> {
+        const magicLink = await this.waitForMagicLink(email, timeoutMs);
+
+        // Navigate to the magic link to complete signup
+        await page.goto(magicLink);
+        await page.waitForLoadState('networkidle');
+
+        debug(`Completed signup verification for ${email}`);
     }
 }
