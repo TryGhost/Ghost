@@ -4,9 +4,9 @@ import {overrideFeatureFlags} from './helpers/override-feature-flags';
 import {mockTagsResponse} from './helpers/mock-tags-response';
 
 test.describe('Ghost Admin - Tags', () => {
-    // XXX: Amend the settings response to enable tagsX feature flag for all tests
-    // until we have a proper way to enable and disable feature flags in tests
     test.beforeEach(async ({page}) => {
+        // TODO: Remove this once we have enabled all feature flags when running
+        // tests or we have a proper way to toggle them as needed
         await overrideFeatureFlags(page, {tagsX: true});
     });
 

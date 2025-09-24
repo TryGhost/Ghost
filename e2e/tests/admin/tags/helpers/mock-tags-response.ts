@@ -1,6 +1,6 @@
 import {Page, Request} from '@playwright/test';
 
-// XXX: Remove these types and the mockTagsResponse helper once we have proper
+// TODO: Remove these types and the mockTagsResponse helper once we have proper
 // test isolation, factories, and no longer need to mock responses.
 interface Tag {
     id: string;

@@ -4,6 +4,9 @@ import {Page} from '@playwright/test';
  * Override feature flags in the labs setting. Call this from a `beforeEach`
  * hook or an individual test.
  *
+ * @todo Remove this helper once we have a better way to enable and disable
+ * feature flags in tests.
+ *
  * @param page - The page to override the feature flags for
  * @param overrides - The feature flags to override
  */
