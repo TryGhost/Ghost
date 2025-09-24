@@ -68,7 +68,6 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
-            // Should return the first collection's RSS URL
             registry.getRssUrl().should.eql('/blog/rss/');
         });
 
@@ -85,7 +84,6 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns('/podcast/rss/')
             });
 
-            // Should return the podcast RSS URL since blog has RSS disabled
             registry.getRssUrl().should.eql('/podcast/rss/');
         });
 
@@ -102,7 +100,6 @@ describe('UNIT: services/routing/registry', function () {
                 getRssUrl: sinon.stub().returns(null)
             });
 
-            // Should return null if all collections have RSS disabled
             should.not.exist(registry.getRssUrl());
         });
     });
