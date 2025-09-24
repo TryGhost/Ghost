@@ -34,11 +34,11 @@ describe('Badge Component', () => {
         assert.ok(badge.className.includes('bg-green'), 'Should have success variant class');
     });
 
-    it('applies outline variant correctly', () => {
+    it('applies outline-solid variant correctly', () => {
         render(<Badge variant="outline">Outline Badge</Badge>);
         const badge = screen.getByText('Outline Badge');
         
-        assert.ok(badge.className.includes('text-foreground'), 'Should have outline variant class');
+        assert.ok(badge.className.includes('text-foreground'), 'Should have outline-solid variant class');
     });
 
     it('applies custom className correctly', () => {

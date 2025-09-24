@@ -1,30 +1,29 @@
-@import "./preflight.css";
+@import './preflight.css' layer(base);
+@import 'tailwindcss';
+@config './tailwind.config.cjs';
 
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/*
+    Note: all custom fonts were removed, since they are not yet used in Shade.
+    When migrating the settings app to Shade, they need to be added back.
+*/
 
-@import url(https://fonts.bunny.net/css?family=cardo:400,700);
-@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
-@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
-@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
-@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
-@import url(https://fonts.bunny.net/css?family=prata:400);
-@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
-@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
-@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
-@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
-@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
-@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
-@import url(https://fonts.bunny.net/css?family=poppins:400,700);
-@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
-@import url(https://fonts.bunny.net/css?family=inter:400,700);
-@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
-@import url(https://fonts.bunny.net/css?family=lora:400,700);
-@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
-@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
-@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
-@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+/*
+    The default border color has changed to `currentcolor` in Tailwind CSS v4,
+    so we've added these compatibility styles to make sure everything still
+    looks the same as it did with Tailwind CSS v3.
+
+    If we ever want to remove these styles, we need to add an explicit border
+    color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+}
 
 /* Defaults */
 @layer base {
@@ -134,53 +133,55 @@
     }
 }
 
-.shade {
-    line-height: 1.5;
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
-    letter-spacing: unset;
-
-    height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-@media (max-width: 800px) {
+@layer utilities {
     .shade {
-        height: calc(100vh - 55px);
+        line-height: 1.5;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-size-adjust: 100%;
+        letter-spacing: unset;
+
+        height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
-}
 
-.dark .shade {
-    color: #fafafb;
-}
+    @media (max-width: 800px) {
+        .shade {
+        height: calc(100vh - 55px);
+        }
+    }
 
-.dark .shade .gh-loading-orb-container {
-    background-color: #000000;
-}
+    .dark .shade {
+        color: #fafafb;
+    }
 
-.dark .shade .gh-loading-orb {
-    filter: invert(100%);
-}
+    .dark .shade .gh-loading-orb-container {
+        background-color: #000000;
+    }
 
-.shade .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome */
-}
+    .dark .shade .gh-loading-orb {
+        filter: invert(100%);
+    }
 
-.shade .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-}
+    .shade .no-scrollbar::-webkit-scrollbar {
+        display: none; /* Chrome */
+    }
 
-/* Prose classes are for formatting arbitrary HTML that comes from the API */
-.gh-prose-links a {
-    color: #30cf43;
+    .shade .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    /* Prose classes are for formatting arbitrary HTML that comes from the API */
+    .gh-prose-links a {
+        color: #30cf43;
+    }
 }
 @layer base {
     * {

@@ -166,8 +166,8 @@ const DataListItemValue = React.forwardRef<HTMLDivElement, DataListItemValueProp
             className={cn(
                 'z-10 flex items-center',
                 // Apply animation styles when there are multiple children
-                hasMultipleChildren && '[&>[data-type="value-abs"]]:transition-transform [&>[data-type="value-abs"]]:duration-300 [&>[data-type="value-abs"]]:group-hover/datalist:-translate-x-14',
-                hasMultipleChildren && '[&>[data-type="value-perc"]]:invisible [&>[data-type="value-perc"]]:absolute [&>[data-type="value-perc"]]:right-0 [&>[data-type="value-perc"]]:translate-x-14 [&>[data-type="value-perc"]]:opacity-0 [&>[data-type="value-perc"]]:transition-all [&>[data-type="value-perc"]]:duration-300 [&>[data-type="value-perc"]]:group-hover/datalist:visible [&>[data-type="value-perc"]]:group-hover/datalist:translate-x-0 [&>[data-type="value-perc"]]:group-hover/datalist:opacity-100',
+                hasMultipleChildren && '*:data-[type="value-abs"]:transition-transform *:data-[type="value-abs"]:duration-300 group-hover/datalist:*:data-[type="value-abs"]:-translate-x-14',
+                hasMultipleChildren && '*:data-[type="value-perc"]:invisible *:data-[type="value-perc"]:absolute *:data-[type="value-perc"]:right-0 *:data-[type="value-perc"]:translate-x-14 *:data-[type="value-perc"]:opacity-0 *:data-[type="value-perc"]:transition-all *:data-[type="value-perc"]:duration-300 group-hover/datalist:*:data-[type="value-perc"]:visible group-hover/datalist:*:data-[type="value-perc"]:translate-x-0 group-hover/datalist:*:data-[type="value-perc"]:opacity-100',
                 className
             )}
             {...props}

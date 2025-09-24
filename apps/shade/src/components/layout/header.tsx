@@ -57,11 +57,11 @@ function HeaderNav({className, children}: HeaderNavProps) {
     );
 }
 
-const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-gradient-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
+const headerVariants = cva(`sticky top-0 z-50 -mb-4 grid gap-x-4 bg-linear-to-b from-background via-background/70 to-background/70 p-4 backdrop-blur-md [grid-template-areas:'above''title''meta''actions''nav'] sm:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav'] lg:-mb-8 lg:p-8 dark:bg-black`, {
     variants: {
         variant: {
             default: `lg:[grid-template-areas:'above_above''title_actions''meta_actions''nav_nav']`,
-            'inline-nav': `lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions'] lg:[grid-template-columns:1fr_auto_auto]`
+            'inline-nav': `lg:[grid-template-areas:'above_above_above''title_nav_actions''meta_nav_actions'] lg:grid-cols-[1fr_auto_auto]`
         }
     },
     defaultVariants: {
