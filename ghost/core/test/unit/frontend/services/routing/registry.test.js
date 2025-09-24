@@ -3,7 +3,14 @@ const sinon = require('sinon');
 const registry = require('../../../../../core/frontend/services/routing/registry');
 
 describe('UNIT: services/routing/registry', function () {
+    beforeEach(function () {
+        registry.clearAllRouters();
+        registry.resetAllRoutes();
+    });
+
     afterEach(function () {
+        registry.clearAllRouters();
+        registry.resetAllRoutes();
         sinon.restore();
     });
 
@@ -46,6 +53,57 @@ describe('UNIT: services/routing/registry', function () {
             });
 
             registry.getRssUrl().should.eql('/rss/');
+        });
+
+        it('multiple collections without index collection', function () {
+            registry.setRouter('CollectionRouter-blog', {
+                name: 'CollectionRouter',
+                routerName: 'blog',
+                getRssUrl: sinon.stub().returns('/blog/rss/')
+            });
+
+            registry.setRouter('CollectionRouter-podcast', {
+                name: 'CollectionRouter',
+                routerName: 'podcast',
+                getRssUrl: sinon.stub().returns('/podcast/rss/')
+            });
+
+            // Should return the first collection's RSS URL
+            registry.getRssUrl().should.eql('/blog/rss/');
+        });
+
+        it('multiple collections without index, first has RSS disabled', function () {
+            registry.setRouter('CollectionRouter-blog', {
+                name: 'CollectionRouter',
+                routerName: 'blog',
+                getRssUrl: sinon.stub().returns(null)
+            });
+
+            registry.setRouter('CollectionRouter-podcast', {
+                name: 'CollectionRouter',
+                routerName: 'podcast',
+                getRssUrl: sinon.stub().returns('/podcast/rss/')
+            });
+
+            // Should return the podcast RSS URL since blog has RSS disabled
+            registry.getRssUrl().should.eql('/podcast/rss/');
+        });
+
+        it('multiple collections without index, all have RSS disabled', function () {
+            registry.setRouter('CollectionRouter-blog', {
+                name: 'CollectionRouter',
+                routerName: 'blog',
+                getRssUrl: sinon.stub().returns(null)
+            });
+
+            registry.setRouter('CollectionRouter-podcast', {
+                name: 'CollectionRouter',
+                routerName: 'podcast',
+                getRssUrl: sinon.stub().returns(null)
+            });
+
+            // Should return null if all collections have RSS disabled
+            should.not.exist(registry.getRssUrl());
         });
     });
 });
