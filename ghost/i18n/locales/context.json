@@ -306,7 +306,7 @@
     "Welcome back to {siteTitle}!": "Popup when a member logs in",
     "Welcome back to {siteTitle}! Your verification code is {otc}.": "",
     "Welcome back!": "A message when a user has logged in successfully",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Magic link email",
     "Welcome back, {name}!": "Popup when a member logs in",
     "Welcome to {siteTitle}": "Shown in recommendations section of Portal",
