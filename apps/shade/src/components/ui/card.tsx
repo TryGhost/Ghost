@@ -199,10 +199,10 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                 <div className={diffContainerClassName} data-testid='kpi-card-header-diff'>
                     <span className='font-medium leading-none'>{diffValue}</span>
                     {diffDirection === 'up' &&
-                        <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
+                        <TrendingUp className='size-[12px]!' size={14} strokeWidth={2} />
                     }
                     {diffDirection === 'down' &&
-                        <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                        <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
                     }
                     {diffTooltip &&
                         <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>

@@ -21,7 +21,7 @@ const ViewHeader:React.FC<ViewHeaderProps> = ({className, children}) => {
 
     return (
         <header className='sticky top-0 z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
-            <div className={cn('relative flex min-h-[102px] items-center justify-between gap-5 p-8 before:absolute before:inset-x-8 before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] before:dark:border-gray-950', className)}>
+            <div className={cn('relative flex min-h-[102px] items-center justify-between gap-5 p-8 before:absolute before:inset-x-8 before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950', className)}>
                 {headerComponent}
                 {actionsComponent}
             </div>

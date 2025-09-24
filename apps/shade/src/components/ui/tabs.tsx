@@ -84,7 +84,7 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+    'focus-visible:outline-hidden inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
@@ -92,10 +92,10 @@ const tabsTriggerVariants = cva(
                 'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium',
                 'button-sm': 'font-regular h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium data-[state=active]:text-foreground',
-                underline: 'relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:!opacity-100',
+                underline: 'data-[state=active]:after:opacity-100! relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground',
+                navbar: 'data-[state=active]:after:opacity-100! relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground',
                 pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-gray-800 hover:text-foreground data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
-                kpis: 'relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
+                kpis: 'not-last:border-r relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&[data-state=active]_[data-type="value"]]:text-foreground'
             }
         },
         defaultVariants: {
@@ -132,7 +132,7 @@ const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', chil
 TabsTriggerCount.displayName = 'TabsTriggerCount';
 
 const tabsContentVariants = cva(
-    'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'focus-visible:outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     {
         variants: {
             variant: {
@@ -222,10 +222,10 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                         <div className={diffContainerClassName}>
                             <span className='font-medium leading-none'>{diffValue}</span>
                             {diffDirection === 'up' &&
-                                <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
+                                <TrendingUp className='size-[12px]!' size={14} strokeWidth={2} />
                             }
                             {diffDirection === 'down' &&
-                                <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                                <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
                             }
                         </div>
                     </>
