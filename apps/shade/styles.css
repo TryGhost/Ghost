@@ -211,18 +211,18 @@
     --text-9xl: 12.8rem;
     --text-inherit: inherit;
 
-    /* Matching line-heights for larger sizes */
-    --line-height-5xl: 1.15;
-    --line-height-6xl: 1;
-    --line-height-7xl: 1;
-    --line-height-8xl: 1;
-    --line-height-9xl: 1;
+    /* Matching line-heights for larger sizes (Tailwind v4 uses --leading-*) */
+    --leading-5xl: 1.15;
+    --leading-6xl: 1;
+    --leading-7xl: 1;
+    --leading-8xl: 1;
+    --leading-9xl: 1;
 
-    /* Line heights */
-    --line-height-base: 1.5em;
-    --line-height-tight: 1.35em;
-    --line-height-tighter: 1.25em;
-    --line-height-supertight: 1.1em;
+    /* Line heights (Tailwind v4 uses --leading-*) */
+    --leading-normal: 1.5em;
+    --leading-tight: 1.35em;
+    --leading-tighter: 1.25em;
+    --leading-supertight: 1.1em;
 
     /* Spacing scale */
     --spacing-0: 0px;
