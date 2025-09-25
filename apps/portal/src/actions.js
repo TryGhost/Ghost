@@ -124,7 +124,9 @@ async function signin({data, api, state}) {
     }
 }
 
-async function verifyOTC({data, api}) {
+async function verifyOTC({data, api, state}) {
+    const {t} = state;
+
     try {
         const integrityToken = await api.member.getIntegrityToken();
         const response = await api.member.verifyOTC({...data, integrityToken});
@@ -133,12 +135,20 @@ async function verifyOTC({data, api}) {
             return window.location.assign(response.redirectUrl);
         } else {
             return {
-                action: 'verifyOTC:failed'
+                action: 'verifyOTC:failed',
+                popupNotification: createPopupNotification({
+                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                    message: response.message || t('Invalid verification code')
+                })
             };
         }
     } catch (e) {
         return {
-            action: 'verifyOTC:failed'
+            action: 'verifyOTC:failed',
+            popupNotification: createPopupNotification({
+                type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
+            })
         };
     }
 }
