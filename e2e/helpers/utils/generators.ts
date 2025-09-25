@@ -39,7 +39,7 @@ export function randomPassword(length = 12): string {
  * Generate a random username
  */
 export function randomUsername(): string {
-    return faker.internet.username();
+    return faker.internet.userName();
 }
 
 /**
