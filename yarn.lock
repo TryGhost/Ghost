@@ -28162,7 +28162,7 @@ postcss-values-parser@^4.0.0:
     is-url-superb "^4.0.0"
     postcss "^7.0.5"
 
-postcss@8.5.6, postcss@^8.1.4, postcss@^8.2.14, postcss@^8.2.15, postcss@^8.3.11, postcss@^8.4.19, postcss@^8.4.28, postcss@^8.4.4, postcss@^8.4.43, postcss@^8.4.47, postcss@^8.5.6:
+postcss@8.5.6, postcss@^8.1.4, postcss@^8.2.14, postcss@^8.2.15, postcss@^8.3.11, postcss@^8.4.19, postcss@^8.4.28, postcss@^8.4.4, postcss@^8.4.41, postcss@^8.4.43, postcss@^8.4.47, postcss@^8.5.6:
   version "8.5.6"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.6.tgz#2825006615a619b4f62a9e7426cc120b349a8f3c"
   integrity sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==
