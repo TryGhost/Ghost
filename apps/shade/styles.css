@@ -10,7 +10,7 @@
 */
 
 /* Tailwind v4 tokens */
-@theme {
+@theme inline {
     /* Breakpoints */
     --breakpoint-sm: 480px;
     --breakpoint-md: 640px;
@@ -113,49 +113,49 @@
 
     --color-lime-DEFAULT: #B5FF18;
 
-    /* Semantic color tokens mapped to HSL variables */
-    --color-background: hsl(var(--background));
-    --color-foreground: hsl(var(--foreground));
-    --color-card: hsl(var(--card));
-    --color-card-foreground: hsl(var(--card-foreground));
-    --color-popover: hsl(var(--popover));
-    --color-popover-foreground: hsl(var(--popover-foreground));
-    --color-primary: hsl(var(--primary));
-    --color-primary-foreground: hsl(var(--primary-foreground));
-    --color-secondary: hsl(var(--secondary));
-    --color-secondary-foreground: hsl(var(--secondary-foreground));
-    --color-muted: hsl(var(--muted));
-    --color-muted-foreground: hsl(var(--muted-foreground));
-    --color-accent: hsl(var(--accent));
-    --color-accent-foreground: hsl(var(--accent-foreground));
-    --color-destructive: hsl(var(--destructive));
-    --color-destructive-foreground: hsl(var(--destructive-foreground));
-    --color-border: hsl(var(--border));
-    --color-input: hsl(var(--input));
-    --color-ring: hsl(var(--ring));
-    --color-chart-1: hsl(var(--chart-1));
-    --color-chart-2: hsl(var(--chart-2));
-    --color-chart-3: hsl(var(--chart-3));
-    --color-chart-4: hsl(var(--chart-4));
-    --color-chart-5: hsl(var(--chart-5));
-    --color-chart-gray: hsl(var(--chart-gray));
-    --color-chart-darkgray: hsl(var(--chart-darkgray));
-    --color-chart-rose: hsl(var(--chart-rose));
-    --color-chart-orange: hsl(var(--chart-orange));
-    --color-chart-amber: hsl(var(--chart-amber));
-    --color-chart-yellow: hsl(var(--chart-yellow));
-    --color-chart-green: hsl(var(--chart-green));
-    --color-chart-teal: hsl(var(--chart-teal));
-    --color-chart-blue: hsl(var(--chart-blue));
-    --color-chart-purple: hsl(var(--chart-purple));
-    --color-sidebar: hsl(var(--sidebar-background));
-    --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-    --color-sidebar-primary: hsl(var(--sidebar-primary));
-    --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-    --color-sidebar-accent: hsl(var(--sidebar-accent));
-    --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-    --color-sidebar-border: hsl(var(--sidebar-border));
-    --color-sidebar-ring: hsl(var(--sidebar-ring));
+    /* Semantic color tokens mapped to CSS variables (wrapped in hsl() at :root/.dark) */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-gray: var(--chart-gray);
+    --color-chart-darkgray: var(--chart-darkgray);
+    --color-chart-rose: var(--chart-rose);
+    --color-chart-orange: var(--chart-orange);
+    --color-chart-amber: var(--chart-amber);
+    --color-chart-yellow: var(--chart-yellow);
+    --color-chart-green: var(--chart-green);
+    --color-chart-teal: var(--chart-teal);
+    --color-chart-blue: var(--chart-blue);
+    --color-chart-purple: var(--chart-purple);
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
 
     /* Typography families */
     --font-cardo: Cardo;
@@ -407,101 +407,102 @@
 
 /* Defaults */
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 216 11% 9%;
-        --muted: 200 12% 96%;
-        --muted-foreground: 210 13% 55%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 216 11% 9%;
-        --border: 204 15% 91%;
-        --input: 204 14% 93%;
-        --card: 0 0% 100%;
-        --card-foreground: 216 11% 9%;
-        --primary: 216 11% 9%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 204 14% 93%;
-        --secondary-foreground: 216 11% 9%;
-        --accent: 240 11% 98%;
-        --accent-foreground: 216 11% 9%;
-        --destructive: 354 92% 50%;
-        --destructive-foreground: 0 0% 100%;
-        --ring: 215 13% 63%;
-        --radius: 9px;
-        --chart-1: 201 100% 50%;
-        --chart-2: 201 88% 70%;
-        --chart-3: 201 85% 80%;
-        --chart-4: 201 82% 90%;
-        --chart-5: 201 87% 94%;
-        --chart-gray: 210 13% 88%;
-        --chart-darkgray: 210 13% 79%;
-        --chart-rose: 345 100% 56%;
-        --chart-orange: 25 100% 50%;
-        --chart-amber: 36 100% 50%;
-        --chart-yellow: 47 100% 50%;
-        --chart-green: 144 100% 39%;
-        --chart-teal: 174 100% 37%;
-        --chart-blue: 198 100% 51%;
-        --chart-darkblue: 226 91% 61%;
-        --chart-purple: 273 100% 64%;
-        --sidebar-background: 0 0% 100%;
-        --sidebar-foreground: 216 11% 9%;
-        --sidebar-primary: 216 11% 9%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 200 12% 96%;
-        --sidebar-accent-foreground: 216 11% 9%;
-        --sidebar-border: 210 13% 88%;
-        --sidebar-ring: 215 13% 63%;
-    }
-
-    .dark {
-        --background: 216 11% 9%;
-        --foreground: 210 13% 88%;
-        --muted: 210 11% 25%;
-        --muted-foreground: 210 13% 63%;
-        --accent: 210 11% 25%;
-        --accent-foreground: 200 12% 96%;
-        --popover: 216 11% 9%;
-        --popover-foreground: 212 13% 72%;
-        --border: 216 7% 14%;
-        --input: 210 11% 25%;
-        --card: 216 11% 9%;
-        --card-foreground: 213 31% 91%;
-        --primary: 200 12% 96%;
-        --primary-foreground: 216 11% 9%;
-        --secondary: 210 11% 25%;
-        --secondary-foreground: 200 12% 96%;
-        --destructive: 354 81% 31%;
-        --destructive-foreground: 240 11% 98%;
-        --ring: 210 11% 25%;
-        --chart-1: 201 100% 50%;
-        --chart-2: 201 88% 70%;
-        --chart-3: 201 85% 80%;
-        --chart-4: 201 82% 90%;
-        --chart-5: 201 87% 94%;
-        --chart-gray: 210 13% 55%;
-        --sidebar-background: 216 11% 9%;
-        --sidebar-foreground: 200 12% 96%;
-        --sidebar-primary: 210 11% 25%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 210 11% 25%;
-        --sidebar-accent-foreground: 200 12% 96%;
-        --sidebar-border: 210 11% 25%;
-        --sidebar-ring: 210 13% 55%;
-    }
-
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
-    @font-face {
-        font-family: "Inter";
-        src: local("Inter") format("truetype-variations");
-        font-weight: 100 900;
-    }
+        @font-face {
+            font-family: "Inter";
+            src: local("Inter") format("truetype-variations");
+            font-weight: 100 900;
+        }
 
     .shade {
         & {
             @apply font-sans text-black text-base leading-normal;
         }
     }
+}
+
+/* Move color variables out of @layer base and wrap in hsl() */
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(216 11% 9%);
+    --muted: hsl(200 12% 96%);
+    --muted-foreground: hsl(210 13% 55%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(216 11% 9%);
+    --border: hsl(204 15% 91%);
+    --input: hsl(204 14% 93%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(216 11% 9%);
+    --primary: hsl(216 11% 9%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(204 14% 93%);
+    --secondary-foreground: hsl(216 11% 9%);
+    --accent: hsl(240 11% 98%);
+    --accent-foreground: hsl(216 11% 9%);
+    --destructive: hsl(354 92% 50%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --ring: hsl(215 13% 63%);
+    --radius: 9px;
+    --chart-1: hsl(201 100% 50%);
+    --chart-2: hsl(201 88% 70%);
+    --chart-3: hsl(201 85% 80%);
+    --chart-4: hsl(201 82% 90%);
+    --chart-5: hsl(201 87% 94%);
+    --chart-gray: hsl(210 13% 88%);
+    --chart-darkgray: hsl(210 13% 79%);
+    --chart-rose: hsl(345 100% 56%);
+    --chart-orange: hsl(25 100% 50%);
+    --chart-amber: hsl(36 100% 50%);
+    --chart-yellow: hsl(47 100% 50%);
+    --chart-green: hsl(144 100% 39%);
+    --chart-teal: hsl(174 100% 37%);
+    --chart-blue: hsl(198 100% 51%);
+    --chart-darkblue: hsl(226 91% 61%);
+    --chart-purple: hsl(273 100% 64%);
+    --sidebar-background: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(216 11% 9%);
+    --sidebar-primary: hsl(216 11% 9%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(200 12% 96%);
+    --sidebar-accent-foreground: hsl(216 11% 9%);
+    --sidebar-border: hsl(210 13% 88%);
+    --sidebar-ring: hsl(215 13% 63%);
+}
+
+.dark {
+    --background: hsl(216 11% 9%);
+    --foreground: hsl(210 13% 88%);
+    --muted: hsl(210 11% 25%);
+    --muted-foreground: hsl(210 13% 63%);
+    --accent: hsl(210 11% 25%);
+    --accent-foreground: hsl(200 12% 96%);
+    --popover: hsl(216 11% 9%);
+    --popover-foreground: hsl(212 13% 72%);
+    --border: hsl(216 7% 14%);
+    --input: hsl(210 11% 25%);
+    --card: hsl(216 11% 9%);
+    --card-foreground: hsl(213 31% 91%);
+    --primary: hsl(200 12% 96%);
+    --primary-foreground: hsl(216 11% 9%);
+    --secondary: hsl(210 11% 25%);
+    --secondary-foreground: hsl(200 12% 96%);
+    --destructive: hsl(354 81% 31%);
+    --destructive-foreground: hsl(240 11% 98%);
+    --ring: hsl(210 11% 25%);
+    --chart-1: hsl(201 100% 50%);
+    --chart-2: hsl(201 88% 70%);
+    --chart-3: hsl(201 85% 80%);
+    --chart-4: hsl(201 82% 90%);
+    --chart-5: hsl(201 87% 94%);
+    --chart-gray: hsl(210 13% 55%);
+    --sidebar-background: hsl(216 11% 9%);
+    --sidebar-foreground: hsl(200 12% 96%);
+    --sidebar-primary: hsl(210 11% 25%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(210 11% 25%);
+    --sidebar-accent-foreground: hsl(200 12% 96%);
+    --sidebar-border: hsl(210 11% 25%);
+    --sidebar-ring: hsl(210 13% 55%);
 }
 
 @layer base {
