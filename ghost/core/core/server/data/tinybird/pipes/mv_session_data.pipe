@@ -4,10 +4,15 @@ SQL >
     SELECT
         site_uuid,
         session_id,
-        finalizeAggregation(countState()) as pageviews,
-        finalizeAggregation(minState(timestamp)) as first_pageview,
-        finalizeAggregation(maxState(timestamp)) as last_pageview,
-        argMin(source, timestamp) as source
+        count() as pageviews,
+        min(timestamp) as first_pageview,
+        max(timestamp) as last_pageview,
+        argMin(source, timestamp) as source,
+        argMin(utm_source, timestamp) as utm_source,
+        argMin(utm_medium, timestamp) as utm_medium,
+        argMin(utm_campaign, timestamp) as utm_campaign,
+        argMin(utm_term, timestamp) as utm_term,
+        argMin(utm_content, timestamp) as utm_content
     FROM _mv_hits
     GROUP BY site_uuid, session_id
 
@@ -24,5 +29,10 @@ SQL >
         last_pageview,
         last_pageview - first_pageview AS duration,
         pageviews = 1 AS is_bounce,
-        source
+        source,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content
     FROM mv_hits_0
