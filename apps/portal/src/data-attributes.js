@@ -16,7 +16,7 @@ function handleError(error, form, errorEl, t) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler},
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, onAction},
     t = str => str
 ) {
     form.removeEventListener('submit', submitHandler);
@@ -48,6 +48,8 @@ export async function formSubmitHandler(
         emailType = form.dataset.membersForm;
     }
 
+    const wantsOTC = emailType === 'signin' && form?.dataset?.membersOtc === 'true' && labs?.membersSigninOTC;
+
     form.classList.add('loading');
     const urlHistory = getUrlHistory();
     const reqBody = {
@@ -57,6 +59,9 @@ export async function formSubmitHandler(
         name: name,
         autoRedirect: (autoRedirect === 'true')
     };
+    if (wantsOTC) {
+        reqBody.includeOTC = true;
+    }
     if (urlHistory) {
         reqBody.urlHistory = urlHistory;
     }
@@ -85,7 +90,28 @@ export async function formSubmitHandler(
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
         if (magicLinkRes.ok) {
+            let responseBody;
+            if (wantsOTC) {
+                try {
+                    responseBody = await magicLinkRes.clone().json();
+                } catch (e) {
+                    responseBody = undefined;
+                }
+            }
+
             form.classList.add('success');
+            const otcRef = responseBody?.otc_ref;
+            if (otcRef && typeof onAction === 'function') {
+                try {
+                    await onAction('startSigninOTCFromCustomForm', {
+                        email: (email || '').trim(),
+                        otcRef
+                    });
+                } catch (actionError) {
+                    // eslint-disable-next-line no-console
+                    console.error(actionError);
+                }
+            }
         } else {
             const e = await HumanReadableError.fromApiResponse(magicLinkRes);
             const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
@@ -180,7 +206,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site, member}) {
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, onAction} = {}) {
     const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
@@ -191,7 +217,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, onAction}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
