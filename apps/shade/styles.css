@@ -1,7 +1,8 @@
 @import './preflight.css' layer(base);
 @import 'tailwindcss';
 
-@plugin "tailwindcss-animate";
+/* @plugin "tailwindcss-animate"; */
+@import 'tw-animate-css';
 @config './tailwind.config.cjs';
 
 /*
