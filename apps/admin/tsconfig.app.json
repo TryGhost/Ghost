@@ -23,5 +23,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../posts/tsconfig.declaration.json" },
+    { "path": "../stats/tsconfig.declaration.json" },
+    { "path": "../activitypub/tsconfig.declaration.json" }
+  ]
 }
