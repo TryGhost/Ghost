@@ -34,12 +34,12 @@ const GhCustomTooltipContent = ({active, payload, range, showHours, color}: Tool
     const displayValue = formattedValue || payload[0].value;
 
     return (
-        <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-            {date && <div className="text-sm text-foreground">{formatDisplayDateWithRange(date, range || 0, showHours)}</div>}
+        <div className="bg-background min-w-[120px] rounded-lg border px-3 py-2 shadow-lg">
+            {date && <div className="text-foreground text-sm">{formatDisplayDateWithRange(date, range || 0, showHours)}</div>}
             <div className='flex items-start gap-2'>
                 <span className='mt-1.5 inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
                 <div className='flex grow items-start justify-between gap-5'>
-                    {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                    {label && <div className="text-muted-foreground text-sm">{label}</div>}
                     <div className="flex flex-col items-end font-mono font-medium">
                         {displayValue}
 
@@ -91,7 +91,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     data,
     range,
     yAxisRange,
-    color = 'hsl(var(--chart-blue))',
+    color = 'var(--chart-blue)',
     id,
     className,
     syncId,
