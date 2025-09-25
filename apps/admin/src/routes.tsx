@@ -3,13 +3,14 @@ import { routes as postRoutes } from "@tryghost/posts/src/routes";
 import GlobalDataProvider from "@tryghost/stats/src/providers/GlobalDataProvider";
 import { routes as statsRoutes, APP_ROUTE_PREFIX } from "@tryghost/stats/src/routes";
 //import { routes as activityPubRoutes } from "@tryghost/admin-x-activitypub/src/routes";
+import EmberFallback from "./ember-bridge/EmberFallback";
 
 export const routes: RouteObject[] = [
     {
         path: "/",
         element: <div>Hello World</div>
     },
-    ...(postRoutes as RouteObject[])[0].children!,
+    ...(postRoutes as RouteObject[])[0].children!.filter(route => route.path !== "*"),
     {
         path: `${APP_ROUTE_PREFIX}`,
         element: <GlobalDataProvider><Outlet /></GlobalDataProvider>,
@@ -23,6 +24,6 @@ export const routes: RouteObject[] = [
     //...activityPubRoutes,
     {
         path: "*",
-        element: <div>404</div>
+        Component: EmberFallback
     }
 ];
