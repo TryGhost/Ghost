@@ -179,8 +179,8 @@ services:
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
     container_name: ghost-analytics
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000" ]
       interval: 1s
