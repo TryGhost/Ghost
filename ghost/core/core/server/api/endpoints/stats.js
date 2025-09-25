@@ -35,14 +35,20 @@ const controller = {
             docName: 'members',
             method: 'browse'
         },
+        options: [
+            'date_from'
+        ],
         cache: statsService.cache,
-        generateCacheKeyData() {
+        generateCacheKeyData(frame) {
             return {
-                method: 'mrr'
+                method: 'mrr',
+                options: frame.options
             };
         },
-        async query() {
-            return await statsService.api.getMRRHistory();
+        async query(frame) {
+            return await statsService.api.getMRRHistory({
+                dateFrom: frame?.options?.date_from
+            });
         }
     },
     subscriptions: {

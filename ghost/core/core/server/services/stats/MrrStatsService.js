@@ -34,18 +34,21 @@ class MrrStatsService {
 
     /**
      * Get the MRR deltas for all days (from old to new), grouped by currency (ascending alphabetically)
+     * @param {string} [dateFrom] - Start date to fetch deltas from
      * @returns {Promise<MrrDelta[]>} The deltas sorted from new to old
      */
-    async fetchAllDeltas() {
+    async fetchAllDeltas(dateFrom) {
         const knex = this.knex;
-        const ninetyDaysAgo = moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const startDate = dateFrom
+            ? moment.utc(dateFrom).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss')
+            : moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
         const rows = await knex('members_paid_subscription_events')
             .select('currency')
             // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
             // That is why we need the cast here (to have some consistency)
             .select(knex.raw('CAST(DATE(created_at) as CHAR) as date'))
             .select(knex.raw(`SUM(mrr_delta) as delta`))
-            .where('created_at', '>=', ninetyDaysAgo)
+            .where('created_at', '>=', startDate)
             .groupByRaw('CAST(DATE(created_at) as CHAR), currency');
         return rows;
     }
@@ -53,13 +56,15 @@ class MrrStatsService {
     /**
      * Returns a list of the MRR history for each day and currency, including the current MRR per currency as meta data.
      * The respons is in ascending date order, and currencies for the same date are always in ascending order.
+     * @param {Object} [options]
+     * @param {string} [options.dateFrom] - Start date to fetch history from
      * @returns {Promise<MrrHistory>}
      */
-    async getHistory() {
+    async getHistory(options = {}) {
         // Fetch current total amounts and start counting from there
         const totals = await this.getCurrentMrr();
 
-        const rows = await this.fetchAllDeltas();
+        const rows = await this.fetchAllDeltas(options.dateFrom);
 
         rows.sort((rowA, rowB) => {
             const dateA = new Date(rowA.date);
