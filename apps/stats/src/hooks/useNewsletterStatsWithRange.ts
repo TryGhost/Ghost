@@ -1,7 +1,7 @@
+import {type NewsletterStatsResponseType, useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useMemo} from 'react';
-import {useNewsletterBasicStats, useNewsletterClickStats, useNewsletterStats, useSubscriberCount} from '@tryghost/admin-x-framework/api/stats';
 
 /**
  * Represents the possible fields to order top newsletters by.
@@ -205,7 +205,14 @@ export const useNewsletterClickStatsWithRange = (newsletterId?: string, postIds:
  * @param newsletterId - Optional ID of the specific newsletter to get stats for
  * @param shouldFetch - Whether to actually fetch data. If false, returns loading state without making API calls.
  */
-export const useNewsletterStatsWithRangeSplit = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true) => {
+export const useNewsletterStatsWithRangeSplit = (range?: number, order?: TopNewslettersOrder, newsletterId?: string, shouldFetch = true): {
+    data: NewsletterStatsResponseType | undefined;
+    isLoading: boolean;
+    isClicksLoading: boolean;
+    error: unknown;
+    isError: boolean;
+    refetch: () => void;
+} => {
     // Get basic stats first (fast)
     const basicStatsResult = useNewsletterBasicStatsWithRange(range, order, newsletterId, shouldFetch);
     
