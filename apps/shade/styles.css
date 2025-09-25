@@ -265,7 +265,7 @@
 
     /* Border radius */
     --radius-sm: calc(var(--radius) - 4px);
-    --radius: 0.4rem;
+    --radius: 9px;
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: 1.2rem;
