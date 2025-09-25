@@ -23,8 +23,8 @@ class StatsService {
         this.content = deps.content;
     }
 
-    async getMRRHistory() {
-        return this.mrr.getHistory();
+    async getMRRHistory(options = {}) {
+        return this.mrr.getHistory(options);
     }
 
     /**
