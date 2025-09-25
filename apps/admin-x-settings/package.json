@@ -45,7 +45,7 @@
     "validator": "13.12.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.0",
+    "@playwright/test": "1.55.1",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
@@ -56,7 +56,7 @@
     "@types/validator": "13.15.3",
     "@vitejs/plugin-react": "4.7.0",
     "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "0.4.20",
+    "eslint-plugin-react-refresh": "0.4.21",
     "eslint-plugin-tailwindcss": "3.18.2",
     "stylelint": "15.11.0",
     "vite": "5.4.20",

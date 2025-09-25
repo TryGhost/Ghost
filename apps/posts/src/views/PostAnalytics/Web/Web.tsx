@@ -111,10 +111,6 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
 
-    // TEMPORARY: For testing levernews.com direct traffic grouping
-    // Remove this line when done testing
-    const testingSiteUrl = siteUrl || 'https://levernews.com';
-
     // Memoize the processed locations data with percentages
     const processedLocationsData = useMemo<ProcessedLocationData[]>(() => {
         const processed = locationsData?.map(row => ({
@@ -172,7 +168,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                                     data={sourcesData as BaseSourceData[] | null}
                                     range={chartRange}
                                     siteIcon={siteIcon}
-                                    siteUrl={testingSiteUrl}
+                                    siteUrl={siteUrl}
                                     totalVisitors={totalSourcesVisits}
                                 />
                             </div>
