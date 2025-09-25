@@ -18,20 +18,3 @@ afterEach(cleanup);
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 expect.extend(matchers);
-
-// Polyfill ResizeObserver for libraries that rely on it (e.g., input-otp)
-// eslint-disable-next-line no-undef
-if (typeof globalThis.ResizeObserver === 'undefined') {
-    class ResizeObserverPolyfill {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
-    }
-    // eslint-disable-next-line no-undef
-    globalThis.ResizeObserver = ResizeObserverPolyfill;
-}
-
-// Polyfill document.elementFromPoint for input-otp library
-if (typeof document !== 'undefined' && !document.elementFromPoint) {
-    document.elementFromPoint = () => null;
-}
