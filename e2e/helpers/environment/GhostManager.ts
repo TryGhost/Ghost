@@ -48,10 +48,10 @@ export class GhostManager {
         try {
             const network = await this.dockerCompose.getNetwork();
             const tinybirdState = this.tinybird.loadState();
-            
+
             // Use deterministic port based on worker index (or 0 if not in parallel)
             const hostPort = 30000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
-            
+
             const environment = {
                 server__host: '0.0.0.0',
                 server__port: String(GHOST_PORT),
@@ -69,9 +69,10 @@ export class GhostManager {
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
                 tinybird__workspaceId: tinybirdState.workspaceId,
-                tinybird__adminToken: tinybirdState.adminToken
+                tinybird__adminToken: tinybirdState.adminToken,
+                portal__url: 'http://localhost:4175/portal.min.js'
             } as Record<string, string>;
-            
+
             const containerConfig: ContainerCreateOptions = {
                 Image: DEFAULT_GHOST_IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
