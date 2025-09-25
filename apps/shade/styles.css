@@ -1,11 +1,391 @@
 @import './preflight.css' layer(base);
 @import 'tailwindcss';
-@config './tailwind.config.cjs';
+
+@plugin "tailwindcss-animate";
+@config { preflight: false; }
 
 /*
     Note: all custom fonts were removed, since they are not yet used in Shade.
     When migrating the settings app to Shade, they need to be added back.
 */
+
+/* Tailwind v4 tokens */
+@theme {
+  /* Breakpoints */
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 640px;
+  --breakpoint-sidebar: 800px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-sidebarlg: 1240px;
+  --breakpoint-xl: 1320px;
+  --breakpoint-xxl: 1440px;
+  --breakpoint-xxxl: 1600px;
+  --breakpoint-tablet: 860px;
+
+  /* Base colors */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-ghostaccent: var(--accent-color, #ff0095);
+  --color-white: #FFF;
+  --color-black: #15171A;
+
+  /* Gray palette (official) */
+  --color-gray-50: #FAFAFB;
+  --color-gray-75: #F9FAFB;
+  --color-gray-100: #F4F5F6;
+  --color-gray-150: #F1F3F4;
+  --color-gray-200: #EBEEF0;
+  --color-gray-250: #E5E9ED;
+  --color-gray-300: #DDE1E5;
+  --color-gray-400: #CED4D9;
+  --color-gray-500: #AEB7C1;
+  --color-gray-600: #95A1AD;
+  --color-gray-700: #7C8B9A;
+  --color-gray-800: #626D79;
+  --color-gray-900: #394047;
+  --color-gray-925: #2E3338;
+  --color-gray-950: #222427;
+  --color-gray-975: #191B1E;
+  --color-gray-DEFAULT: #ABB4BE;
+
+  /* Legacy grey palette (keep for text-grey-*) */
+  --color-grey-50: #FAFAFB;
+  --color-grey-75: #F9FAFB;
+  --color-grey-100: #F4F5F6;
+  --color-grey-150: #F1F3F4;
+  --color-grey-200: #EBEEF0;
+  --color-grey-250: #E5E9ED;
+  --color-grey-300: #DDE1E5;
+  --color-grey-400: #CED4D9;
+  --color-grey-500: #AEB7C1;
+  --color-grey-600: #95A1AD;
+  --color-grey-700: #7C8B9A;
+  --color-grey-800: #626D79;
+  --color-grey-900: #394047;
+  --color-grey-925: #2E3338;
+  --color-grey-950: #222427;
+  --color-grey-975: #191B1E;
+  --color-grey-DEFAULT: #ABB4BE;
+
+  /* Brand palettes */
+  --color-green-100: #E1F9E4;
+  --color-green-400: #58DA67;
+  --color-green-500: #30CF43;
+  --color-green-600: #2AB23A;
+  --color-green-DEFAULT: #30CF43;
+
+  --color-blue-100: #DBF4FF;
+  --color-blue-400: #42C6FF;
+  --color-blue-500: #14B8FF;
+  --color-blue-600: #00A4EB;
+  --color-blue-700: #3778F1;
+  --color-blue-DEFAULT: #14B8FF;
+
+  --color-purple-100: #EDE0FF;
+  --color-purple-400: #A366FF;
+  --color-purple-500: #8E42FF;
+  --color-purple-600: #7B1FFF;
+  --color-purple-DEFAULT: #8E42FF;
+
+  --color-pink-100: #FFDFEE;
+  --color-pink-400: #FF5CA8;
+  --color-pink-500: #FB2D8D;
+  --color-pink-600: #F70878;
+  --color-pink-DEFAULT: #FB2D8D;
+
+  --color-red-100: #FFE0E0;
+  --color-red-400: #F9394C;
+  --color-red-500: #F50B23;
+  --color-red-600: #DC091E;
+  --color-red-DEFAULT: #F50B23;
+
+  --color-orange-100: #FFEDD5;
+  --color-orange-400: #FB923C;
+  --color-orange-500: #F97316;
+  --color-orange-600: #EA580C;
+  --color-orange-DEFAULT: #F97316;
+
+  --color-yellow-100: #FFF1D6;
+  --color-yellow-400: #FFC247;
+  --color-yellow-500: #FFB41F;
+  --color-yellow-600: #F0A000;
+  --color-yellow-DEFAULT: #FFB41F;
+
+  --color-lime-DEFAULT: #B5FF18;
+
+  /* Semantic color tokens mapped to HSL variables */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-gray: hsl(var(--chart-gray));
+  --color-chart-darkgray: hsl(var(--chart-darkgray));
+  --color-chart-rose: hsl(var(--chart-rose));
+  --color-chart-orange: hsl(var(--chart-orange));
+  --color-chart-amber: hsl(var(--chart-amber));
+  --color-chart-yellow: hsl(var(--chart-yellow));
+  --color-chart-green: hsl(var(--chart-green));
+  --color-chart-teal: hsl(var(--chart-teal));
+  --color-chart-blue: hsl(var(--chart-blue));
+  --color-chart-purple: hsl(var(--chart-purple));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Typography families */
+  --font-cardo: Cardo;
+  --font-manrope: Manrope;
+  --font-merriweather: Merriweather;
+  --font-nunito: Nunito;
+  --font-tenor-sans: "Tenor Sans";
+  --font-old-standard-tt: "Old Standard TT";
+  --font-prata: Prata;
+  --font-roboto: Roboto;
+  --font-rufina: Rufina;
+  --font-inter: Inter;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
+  --font-inherit: inherit;
+  --font-space-grotesk: "Space Grotesk";
+  --font-chakra-petch: "Chakra Petch";
+  --font-noto-sans: "Noto Sans";
+  --font-poppins: Poppins;
+  --font-fira-sans: "Fira Sans";
+  --font-noto-serif: "Noto Serif";
+  --font-lora: Lora;
+  --font-ibm-plex-serif: "IBM Plex Serif";
+  --font-space-mono: "Space Mono";
+  --font-fira-mono: "Fira Mono";
+  --font-jetbrains-mono: "JetBrains Mono";
+
+  /* Letter spacing */
+  --tracking-tightest: -.05em;
+  --tracking-tighter: -.025em;
+  --tracking-tight: -.01em;
+  --tracking-normal: 0;
+  --tracking-wide: .01em;
+  --tracking-wider: .025em;
+  --tracking-widest: .5em;
+
+  /* Font sizes */
+  --font-size-2xs: 1.0rem;
+  --font-size-xs: 1.2rem;
+  --font-size-sm: 1.3rem;
+  --font-size-md: 1.4rem;
+  --font-size-base: 1.4rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 1.7rem;
+  --font-size-2xl: 2.2rem;
+  --font-size-3xl: 2.8rem;
+  --font-size-4xl: 3.2rem;
+  --font-size-5xl: 4.0rem;
+  --font-size-6xl: 5.8rem;
+  --font-size-7xl: 7.0rem;
+  --font-size-8xl: 9.6rem;
+  --font-size-9xl: 12.8rem;
+  --font-size-inherit: inherit;
+
+  /* Matching line-heights for larger sizes */
+  --line-height-5xl: 1.15;
+  --line-height-6xl: 1;
+  --line-height-7xl: 1;
+  --line-height-8xl: 1;
+  --line-height-9xl: 1;
+
+  /* Line heights */
+  --line-height-base: 1.5em;
+  --line-height-tight: 1.35em;
+  --line-height-tighter: 1.25em;
+  --line-height-supertight: 1.1em;
+
+  /* Spacing scale */
+  --spacing-0: 0px;
+  --spacing-1: 0.4rem;
+  --spacing-2: 0.8rem;
+  --spacing-3: 1.2rem;
+  --spacing-4: 1.6rem;
+  --spacing-5: 2rem;
+  --spacing-6: 2.4rem;
+  --spacing-7: 2.8rem;
+  --spacing-8: 3.2rem;
+  --spacing-9: 3.6rem;
+  --spacing-10: 4rem;
+  --spacing-11: 4.4rem;
+  --spacing-12: 4.8rem;
+  --spacing-14: 5.6rem;
+  --spacing-16: 6.4rem;
+  --spacing-18: 7.2rem;
+  --spacing-20: 8rem;
+  --spacing-22: 9.2rem;
+  --spacing-24: 9.6rem;
+  --spacing-28: 11.2rem;
+  --spacing-32: 12.8rem;
+  --spacing-36: 14.4rem;
+  --spacing-40: 16rem;
+  --spacing-44: 17.6rem;
+  --spacing-48: 19.2rem;
+  --spacing-52: 20.8rem;
+  --spacing-56: 22.4rem;
+  --spacing-60: 24rem;
+  --spacing-64: 25.6rem;
+  --spacing-72: 28.8rem;
+  --spacing-80: 32rem;
+  --spacing-96: 38.4rem;
+  --spacing-px: 1px;
+  --spacing-0\.5: 0.2rem;
+  --spacing-1\.5: 0.6rem;
+  --spacing-2\.5: 1rem;
+  --spacing-3\.5: 1.4rem;
+
+  /* Border radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius: 0.4rem;
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: 1.2rem;
+  --radius-2xl: 1.6rem;
+  --radius-3xl: 2.4rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+  --shadow-xs: 0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1);
+  --shadow-sm: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,.1);
+  --shadow-md: 0 0 1px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.03), 0 8px 10px -8px rgba(0,0,0,0.05), 0px 24px 37px -21px rgba(0, 0, 0, 0.05);
+  --shadow-md-heavy: 0 0 1px rgba(0,0,0,0.22), 0 1px 6px rgba(0,0,0,0.15), 0 8px 10px -8px rgba(0,0,0,0.16), 0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+  --shadow-lg: 0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+  --shadow-inner: inset 0 0 4px 0 rgb(0 0 0 / 0.08);
+  --shadow-none: 0 0 #0000;
+
+  /* Max widths */
+  --container-0: 0rem;
+  --container-none: none;
+  --container-xs: 32rem;
+  --container-sm: 38.4rem;
+  --container-md: 44.8rem;
+  --container-lg: 51.2rem;
+  --container-xl: 57.6rem;
+  --container-2xl: 67.2rem;
+  --container-3xl: 76.8rem;
+  --container-4xl: 89.6rem;
+  --container-5xl: 102.4rem;
+  --container-6xl: 115.2rem;
+  --container-7xl: 132rem;
+  --container-8xl: 140rem;
+  --container-9xl: 156rem;
+  --container-full: 100%;
+  --container-min: min-content;
+  --container-max: max-content;
+  --container-fit: fit-content;
+  --container-prose: 65ch;
+  --container-page: 148rem;
+  --container-pageminsidebar: 116rem;
+  
+  /* Animations */
+  --animate-toaster-in: toasterIn 0.8s cubic-bezier(0.445,0.050,0.550,0.950);
+  --animate-toaster-out: toasterOut 0.4s 0s 1 ease forwards;
+  --animate-toaster-top-in: toasterTopIn 0.8s cubic-bezier(0.445,0.050,0.550,0.950);
+  --animate-fade-in: fadeIn 0.15s ease forwards;
+  --animate-fade-out: fadeOut 0.15s ease forwards;
+  --animate-setting-highlight-fade-out: fadeOut 0.2s 1.4s ease forwards;
+  --animate-modal-backdrop-in: fadeIn 0.15s ease forwards;
+  --animate-modal-in: modalIn 0.25s ease forwards;
+  --animate-modal-in-from-right: modalInFromRight 0.25s ease forwards;
+  --animate-modal-in-reverse: modalInReverse 0.25s ease forwards;
+  --animate-spin: spin 1s linear infinite;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Dark mode variant to match v3 behavior */
+@custom-variant dark (&:is(.dark *):not(.light *));
+
+/* Keyframes migrated from v3 config */
+@keyframes toasterIn {
+  0% { transform: translateY(100%); }
+  26.52% { transform: translateY(-3.90px); }
+  63.26% { transform: translateY(1.2px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes toasterTopIn {
+  0% { transform: translateY(-82px); }
+  26.52% { transform: translateY(5.90px); }
+  63.26% { transform: translateY(-1.77px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes toasterOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes modalIn {
+  0% { transform: translateY(32px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes modalInFromRight {
+  0% { transform: translateX(32px); opacity: 0; }
+  100% { transform: translateX(0px); opacity: 1; }
+}
+
+@keyframes modalInReverse {
+  0% { transform: translateY(-32px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
 
 /*
     The default border color has changed to `currentcolor` in Tailwind CSS v4,
