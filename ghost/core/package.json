@@ -264,7 +264,7 @@
     "supertest": "6.3.4",
     "tmp": "0.2.5",
     "toml": "3.0.0",
-    "tsx": "4.20.5",
+    "tsx": "4.20.6",
     "typescript": "5.8.3"
   },
   "resolutions": {
