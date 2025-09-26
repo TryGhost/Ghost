@@ -126,5 +126,8 @@ export default [
 
     // DONATIONS
     setting('donations_suggested_amount', 'donations', 500),
-    setting('donations_currency', 'donations', 'USD')
+    setting('donations_currency', 'donations', 'USD'),
+
+    // COMMENTS
+    setting('comments', 'comments_enabled', 'off')
 ];
