@@ -21,11 +21,16 @@ export default (function viteConfig() {
         },
         preview: {
             host: '0.0.0.0',
-            port: 6174
+            allowedHosts: true, // allows domain-name proxies to the preview server
+            port: 7173,
+            cors: true
+        },
+        server: {
+            port: 5368
         },
         build: {
-            outDir: resolve(__dirname, 'umd'),
             reportCompressedSize: false,
+            outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
             minify: true,
             sourcemap: true,
@@ -48,14 +53,14 @@ export default (function viteConfig() {
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],
                 dynamicRequireRoot: '../../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/signup-form.json`)
+                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/comments.json`)
             }
         },
         test: {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
-            setupFiles: './test/test-setup.js',
-            include: ['./test/unit/*'],
+            setupFiles: './src/setupTests.ts',
+            include: ['src/**/*.test.jsx', 'src/**/*.test.js', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
                 minThreads: 1,
