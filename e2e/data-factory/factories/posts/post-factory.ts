@@ -1,6 +1,6 @@
 import {Factory} from '../factory';
 import type {PersistenceAdapter} from '../../persistence/adapter';
-import {faker} from '@faker-js/faker';
+import {randomTitle, randomParagraphs, randomParagraph, randomBoolean} from '../../../helpers/utils/generators';
 import {generateId, generateUuid, generateSlug} from '../../utils';
 
 export interface Post {
@@ -45,8 +45,8 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
     
     build(options: Partial<Post> = {}): Post {
         const now = new Date();
-        const title = options.title || faker.lorem.sentence();
-        const content = faker.lorem.paragraphs(3);
+        const title = options.title || randomTitle();
+        const content = randomParagraphs(3);
         
         // Generate lexical format (Ghost's current editor)
         const lexical = {
@@ -87,7 +87,7 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             comment_id: generateId(),
             plaintext: content,
             feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
-            featured: faker.datatype.boolean(),
+            featured: randomBoolean(),
             type: 'post',
             status: 'draft',
             locale: null,
@@ -96,7 +96,7 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             created_at: now,
             updated_at: now,
             published_at: null,
-            custom_excerpt: faker.lorem.paragraph(),
+            custom_excerpt: randomParagraph(),
             codeinjection_head: null,
             codeinjection_foot: null,
             custom_template: null,
