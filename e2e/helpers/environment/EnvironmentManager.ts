@@ -8,6 +8,7 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
+import {PortalManager} from './PortalManager';
 import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, STATE_DIR} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
@@ -41,6 +42,7 @@ export class EnvironmentManager {
     private mysql: MySQLManager;
     private tinybird: TinybirdManager;
     private ghost: GhostManager;
+    private portal: PortalManager;
 
     constructor() {
         this.docker = new Docker();
@@ -52,30 +54,43 @@ export class EnvironmentManager {
         this.mysql = new MySQLManager(this.dockerCompose);
         this.tinybird = new TinybirdManager(this.dockerCompose);
         this.ghost = new GhostManager(this.docker, this.dockerCompose, this.tinybird);
+        this.portal = new PortalManager(4175); // Use consistent port
     }
 
     /**
-     * Setup shared global environment for tests (i.e. mysql, tinybird)
+     * Setup shared global environment for tests (i.e. mysql, tinybird, portal)
      * This should be called once before all tests run.
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
      * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
      * 3. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
+     * 4. Start the local Portal development server
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
+
+        // Start docker-compose services
         this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
+
+        // Create MySQL snapshot
         await this.mysql.createSnapshot();
+
+        // Fetch Tinybird tokens
         this.tinybird.fetchTokens();
+
+        // Start local Portal server
+        await this.portal.start();
+
         logging.info('Global environment setup complete');
     }
 
     /**
      * Teardown global environment
      * This should be called once after all tests have finished.
-     * 1. Stop and remove all docker-compose services
-     * 2. Clean up any state files created during the tests
-     3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
+     * 1. Stop the local Portal development server
+     * 2. Stop and remove all docker-compose services
+     * 3. Clean up any state files created during the tests
+     * 4. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
     public async globalTeardown(): Promise<void> {
         if (this.shouldPreserveEnvironment()) {
@@ -83,8 +98,16 @@ export class EnvironmentManager {
             return;
         }
         logging.info('Starting global environment teardown...');
+
+        // Stop local Portal server
+        await this.portal.stop();
+
+        // Stop docker-compose services
         this.dockerCompose.down();
+
+        // Clean up state files
         this.cleanupStateFiles();
+
         logging.info('Global environment teardown complete');
     }
 

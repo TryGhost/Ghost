@@ -55,7 +55,6 @@ services:
       tinybird-local:
         condition: service_healthy
 
-
 volumes:
   shared-config:
 
