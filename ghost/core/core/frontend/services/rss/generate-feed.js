@@ -69,8 +69,14 @@ const generateItem = function generateItem(post) {
  * @param {{title, description, safeVersion, posts}} data
  */
 const generateFeed = function generateFeed(baseUrl, data) {
+    // Add member indicator to title if this is a member-specific feed
+    let feedTitle = data.title;
+    if (data.member) {
+        feedTitle += ' (Member Feed)';
+    }
+
     const feed = new RSS({
-        title: data.title,
+        title: feedTitle,
         description: data.description,
         generator: 'Ghost ' + data.safeVersion,
         feed_url: urlUtils.urlFor({relativeUrl: baseUrl}, true),
