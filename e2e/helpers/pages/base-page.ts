@@ -1,5 +1,5 @@
 import {appConfig} from '../utils/app-config';
-import {PageHttpLogger} from './PageHttpLogger';
+import {PageHttpLogger} from './page-http-logger';
 import {Locator, Page} from '@playwright/test';
 
 export class BasePage {

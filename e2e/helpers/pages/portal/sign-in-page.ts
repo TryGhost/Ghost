@@ -1,5 +1,5 @@
 import {Page, Locator} from '@playwright/test';
-import {PortalPage} from './PortalPage';
+import {PortalPage} from './portal-page';
 
 export class SignInPage extends PortalPage {
     readonly emailInput: Locator;

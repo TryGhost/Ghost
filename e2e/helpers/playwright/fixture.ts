@@ -1,5 +1,5 @@
 import {test as base, TestInfo} from '@playwright/test';
-import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
+import {EnvironmentManager, GhostInstance} from '../environment/environment-manager';
 import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
 import {appConfig, setupUser} from '../utils';
 import baseDebug from '@tryghost/debug';

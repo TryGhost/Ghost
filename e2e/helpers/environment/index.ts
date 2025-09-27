@@ -1,1 +1,1 @@
-export * from './EnvironmentManager';
+export * from './environment-manager';

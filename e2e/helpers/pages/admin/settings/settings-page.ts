@@ -1,5 +1,5 @@
 import {Locator, Page} from '@playwright/test';
-import {BasePage} from '../../BasePage';
+import {BasePage} from '../../base-page';
 
 export class SettingsPage extends BasePage {
     readonly searchInput: Locator;

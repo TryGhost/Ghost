@@ -1,5 +1,5 @@
 import {Page, Locator} from '@playwright/test';
-import {BasePage} from '../BasePage';
+import {BasePage} from '../base-page';
 
 export default class PublicPage extends BasePage{
     private readonly portalFrame: Locator;

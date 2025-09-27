@@ -1,6 +1,6 @@
 import {Page, Locator} from '@playwright/test';
-import {AdminPage} from './AdminPage';
-import {PostPreviewModal} from './PostPreviewModal';
+import {AdminPage} from './admin-page';
+import {PostPreviewModal} from './post-preview-modal';
 
 export class PostEditorPage extends AdminPage {
     readonly titleInput: Locator;
@@ -19,10 +19,5 @@ export class PostEditorPage extends AdminPage {
     async gotoPost(postId: string): Promise<void> {
         await this.page.goto(`/ghost/#/editor/post/${postId}`);
         await this.titleInput.waitFor({state: 'visible'});
-    }
-
-    async openPreview(): Promise<void> {
-        await this.previewButton.click();
-        await this.previewModal.waitForVisible();
     }
 }

@@ -2,9 +2,9 @@ import Docker from 'dockerode';
 import type {Container, ContainerCreateOptions} from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DockerCompose} from './DockerCompose';
-import {TinybirdManager} from './TinybirdManager';
-import type {GhostInstance} from './EnvironmentManager';
+import {DockerCompose} from './docker-compose';
+import {TinybirdManager} from './tinybird-manager';
+import type {GhostInstance} from './environment-manager';
 import {COMPOSE_PROJECT, DEFAULT_GHOST_IMAGE, DEFAULT_WORKDIR, GHOST_PORT, MYSQL, TB} from './constants';
 
 const debug = baseDebug('e2e:GhostManager');

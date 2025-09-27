@@ -1,6 +1,6 @@
 import {Locator, Page} from '@playwright/test';
-import {AdminPage} from '../AdminPage';
-import {BasePage} from '../../BasePage';
+import {AdminPage} from '../admin-page';
+import {BasePage} from '../../base-page';
 
 class LatestPost extends BasePage {
     readonly post: Locator;

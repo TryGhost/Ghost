@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import path from 'path';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
-import {DockerCompose} from './DockerCompose';
+import {DockerCompose} from './docker-compose';
 import {STATE_DIR, TB} from './constants';
 import {ensureDir} from '../utils';
 

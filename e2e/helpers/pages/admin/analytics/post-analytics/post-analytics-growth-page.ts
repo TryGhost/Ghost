@@ -1,5 +1,5 @@
 import {Locator, Page} from '@playwright/test';
-import {AdminPage} from '../../AdminPage';
+import {AdminPage} from '../../admin-page';
 
 export class PostAnalyticsGrowthPage extends AdminPage {
     readonly membersCard: Locator;

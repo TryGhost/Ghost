@@ -1,4 +1,4 @@
-import {AdminPage} from './AdminPage';
+import {AdminPage} from './admin-page';
 import {Locator, Page} from '@playwright/test';
 
 export class LoginPage extends AdminPage {
