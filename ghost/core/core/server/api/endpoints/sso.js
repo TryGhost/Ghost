@@ -29,6 +29,8 @@ const server = configSSO && configSSO.server || '';
 const clientId = configSSO && configSSO.clientId || '';
 const clientSecret = configSSO && configSSO.clientSecret || '';
 
+const localRedirectURI = `${config.get('url')}/ghost/api/admin/sso/redirect`;
+
 const ssoEnabled = !!(type === 'oauth' && server && clientId && clientSecret);
 const ssoConfig = ssoEnabled
     ? client.discovery(new URL(server), clientId, clientSecret)
@@ -53,7 +55,7 @@ const controller = {
             }
 
             const parameters = {
-                redirect_uri: 'http://localhost:2368/ghost/api/admin/sso/redirect',
+                redirect_uri: localRedirectURI,
                 scope: 'openid email',
                 state: client.randomState()
             };
