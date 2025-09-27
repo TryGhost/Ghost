@@ -176,6 +176,7 @@
   "dependencies": {
     "i18n-iso-countries": "7.14.0",
     "lru-cache": "6.0.0",
+    "openid-client": "^6.8.0",
     "path-browserify": "1.0.1",
     "webpack": "5.101.3"
   },

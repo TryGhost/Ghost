@@ -73,6 +73,19 @@
                         @type="submit"
                         @useAccentColor={{true}}
                         data-test-button="sign-in" />
+
+                    {{#if this.ssoEnabled}}
+                        <div class="sso-or">or</div>
+
+                        <GhTaskButton
+                            @buttonText="Sign in using SSO &rarr;"
+                            @task={{this.ssoInitiate}}
+                            @showSuccess={{false}}
+                            @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
+                            @type="submit"
+                            @useAccentColor={{true}}
+                            data-test-button="sign-in" />
+                    {{/if}}
                 </form>
 
                 <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>

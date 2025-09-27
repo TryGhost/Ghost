@@ -11,7 +11,9 @@ function SessionMiddleware({sessionService}) {
 
             const isVerified = await sessionService.isVerifiedSession(req, res);
             if (isVerified) {
-                res.sendStatus(201);
+                if (!req.skipResponse) {
+                    res.sendStatus(201);
+                }
             } else {
                 await sessionService.sendAuthCodeToUser(req, res);
                 throw new errors.NoPermissionError({

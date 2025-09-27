@@ -12,6 +12,14 @@ import {tracked} from '@glimmer/tracking';
 const SUCCESS = true;
 const FAILURE = false;
 
+const getCookieValue = name => (
+    document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
+);
+
+const eraseCookie = name => (
+    document.cookie = name + '=; Max-Age=-99999999;'
+);
+
 /* eslint-disable ghost/ember/alias-model-in-controller */
 export default class SigninController extends Controller.extend(ValidationEngine) {
     @controller application;
@@ -35,6 +43,23 @@ export default class SigninController extends Controller.extend(ValidationEngine
     validationType = 'signin';
 
     authProperties = ['identification', 'password'];
+
+    ssoEnabled = false;
+
+    constructor() {
+        super(...arguments);
+
+        const ssoEndpoint = this.ghostPaths.url.api('sso');
+        this.ajax.request(ssoEndpoint).then((response) => {
+            this.ssoEnabled = response.ssoEnabled;
+        });
+
+        const error = getCookieValue('ghost-admin-sso-error');
+        if (error) {
+            this.flowErrors = decodeURIComponent(error);
+            eraseCookie('ghost-admin-sso-error');
+        }
+    }
 
     get signin() {
         return this.model;
@@ -125,6 +150,12 @@ export default class SigninController extends Controller.extend(ValidationEngine
             this.flowErrors = 'Please fill out the form to sign in.';
             return FAILURE;
         }
+    }
+
+    @task({drop: true})
+    *ssoInitiate() {
+        yield window.location.href = this.ghostPaths.url.api('sso', 'init');
+        return SUCCESS;
     }
 
     @task
