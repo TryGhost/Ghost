@@ -221,7 +221,7 @@ export default class Notification extends React.Component {
             deleteParams.push('stripe');
         }
         clearURLParams(deleteParams);
-        this.context.onAction('refreshMemberData');
+        this.context.doAction('refreshMemberData');
         this.setState({
             active: false
         });

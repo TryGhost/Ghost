@@ -14,7 +14,7 @@ function DisabledEmailNotice({t}) {
 }
 
 function EmailPreferencesAction() {
-    const {onAction, member, t, site} = useContext(AppContext);
+    const {doAction, member, t, site} = useContext(AppContext);
 
     const emailSuppressed = isEmailSuppressed({member});
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
@@ -39,7 +39,7 @@ function EmailPreferencesAction() {
             <button
                 className="gh-portal-btn gh-portal-btn-list"
                 onClick={() => {
-                    onAction('switchPage', {
+                    doAction('switchPage', {
                         page,
                         lastPage: 'accountHome'
                     });

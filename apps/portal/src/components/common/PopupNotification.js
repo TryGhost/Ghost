@@ -71,12 +71,12 @@ export default class PopupNotification extends React.Component {
             if (type === 'stripe:billing-update') {
                 clearURLParams(['stripe']);
             }
-            this.context.onAction('clearPopupNotification');
+            this.context.doAction('clearPopupNotification');
         }
     }
 
     closeNotification() {
-        this.context.onAction('clearPopupNotification');
+        this.context.doAction('clearPopupNotification');
     }
 
     componentDidUpdate() {

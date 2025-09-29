@@ -8,7 +8,7 @@ const AppContext = React.createContext({
     lastPage: '',
     brandColor: '',
     pageData: {},
-    onAction: (action, data) => {
+    doAction: (action, data) => {
         return {action, data};
     },
     t: () => {},

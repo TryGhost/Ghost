@@ -361,7 +361,7 @@ class SignupPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'accountHome'
             });
         }
@@ -406,7 +406,7 @@ class SignupPage extends React.Component {
                 errors: this.getFormErrors(state)
             };
         }, () => {
-            const {site, onAction} = this.context;
+            const {site, doAction} = this.context;
             const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
 
@@ -430,7 +430,7 @@ class SignupPage extends React.Component {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan, token});
+                    doAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -662,7 +662,7 @@ class SignupPage extends React.Component {
     }
 
     renderLoginMessage() {
-        const {brandColor, onAction, t} = this.context;
+        const {brandColor, doAction, t} = this.context;
         return (
             <div>
                 {this.renderFreeTrialMessage()}
@@ -673,7 +673,7 @@ class SignupPage extends React.Component {
                         data-testid='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
-                        onClick={() => onAction('switchPage', {page: 'signin'})}
+                        onClick={() => doAction('switchPage', {page: 'signin'})}
                     >
                         <span>{t('Sign in')}</span>
                     </button>
@@ -884,7 +884,7 @@ class SignupPage extends React.Component {
                                     showNewsletterSelection: false
                                 });
                             } else {
-                                this.context.onAction('closePopup');
+                                this.context.doAction('closePopup');
                             }
                         }}
                     />
