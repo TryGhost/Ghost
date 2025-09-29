@@ -234,7 +234,7 @@
     "@types/jsonwebtoken": "9.0.10",
     "@types/node": "22.18.7",
     "@types/node-jose": "1.1.13",
-    "@types/nodemailer": "6.4.19",
+    "@types/nodemailer": "6.4.20",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "c8": "10.1.3",
