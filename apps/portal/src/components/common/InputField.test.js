@@ -1,14 +1,15 @@
 import {render, fireEvent} from '@testing-library/react';
 import InputField from './InputField';
 
-const setup = () => {
+const setup = (props = {}) => {
     const mockOnChangeFn = jest.fn();
-    const props = {
+    props = {
         name: 'test-input',
         label: 'Test Input',
         value: '',
         placeholder: 'Test placeholder',
-        onChange: mockOnChangeFn
+        onChange: mockOnChangeFn,
+        ...props
     };
     const utils = render(
         <InputField {...props} />
@@ -33,5 +34,15 @@ describe('InputField', () => {
         fireEvent.change(inputEl, {target: {value: 'Test'}});
 
         expect(mockOnChangeFn).toHaveBeenCalled();
+    });
+
+    test('does not include autoComplete attribute value if not provided', () => {
+        const {inputEl} = setup();
+        expect(inputEl).toHaveAttribute('autoComplete', '');
+    });
+
+    test('applies autoComplete prop correctly', () => {
+        const {inputEl} = setup({autoComplete: 'off'});
+        expect(inputEl).toHaveAttribute('autoComplete', 'off');
     });
 });
