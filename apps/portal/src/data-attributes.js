@@ -90,6 +90,8 @@ export async function formSubmitHandler(
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
         if (magicLinkRes.ok) {
+            form.classList.add('success');
+
             let responseBody;
             if (wantsOTC) {
                 try {
@@ -99,7 +101,6 @@ export async function formSubmitHandler(
                 }
             }
 
-            form.classList.add('success');
             const otcRef = responseBody?.otc_ref;
             if (otcRef && typeof doAction === 'function') {
                 try {
