@@ -191,7 +191,7 @@ export default class MagicLinkPage extends React.Component {
                         label={t('Code')}
                         errorMessage={errors.otc || ''}
                         autoFocus={false}
-                        maxlength={6}
+                        maxLength={6}
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                     />
                 </section>

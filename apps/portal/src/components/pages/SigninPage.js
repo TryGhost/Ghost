@@ -85,8 +85,8 @@ export default class SigninPage extends React.Component {
                 label: 'Phone number',
                 name: 'phonenumber',
                 required: false,
-                tabindex: -1,
-                autocomplete: 'off',
+                tabIndex: -1,
+                autoComplete: 'off',
                 hidden: true
             }
         ];

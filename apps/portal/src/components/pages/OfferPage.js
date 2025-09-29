@@ -187,7 +187,7 @@ export default class OfferPage extends React.Component {
                 name: 'email',
                 disabled: !!member,
                 required: true,
-                tabindex: 2,
+                tabIndex: 2,
                 errorMessage: errors.email || ''
             }
         ];
@@ -209,7 +209,7 @@ export default class OfferPage extends React.Component {
                 name: 'name',
                 disabled: !!member,
                 required: true,
-                tabindex: 1,
+                tabIndex: 1,
                 errorMessage: errors.name || ''
             });
         }
@@ -405,7 +405,7 @@ export default class OfferPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         );
