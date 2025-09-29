@@ -1,0 +1,6 @@
+@import "@tryghost/shade/styles.css";
+
+.shade .hidden {
+  display: unset !important;
+  visibility: visible !important;
+}

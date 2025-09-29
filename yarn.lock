@@ -8309,6 +8309,18 @@
     ajv "^6.12.6"
     lodash "^4.17.11"
 
+"@tryghost/admin-x-activitypub@file:apps/admin-x-activitypub":
+  version "1.0.6"
+  dependencies:
+    "@radix-ui/react-form" "0.1.7"
+    "@tryghost/admin-x-framework" "0.0.0"
+    "@tryghost/shade" "0.0.0"
+    clsx "2.1.1"
+    html2canvas-objectfit-fix "1.2.0"
+    react "18.3.1"
+    react-dom "18.3.1"
+    use-debounce "10.0.6"
+
 "@tryghost/api-framework@1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/api-framework/-/api-framework-1.0.2.tgz#ae294e4c8e3182e5e11b108ca2e2eb6fb6e25366"
@@ -32323,6 +32335,11 @@ ts-node@10.9.2:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
+tsconfck@^3.0.3:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/tsconfck/-/tsconfck-3.1.6.tgz#da1f0b10d82237ac23422374b3fce1edb23c3ead"
+  integrity sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==
+
 tsconfig-paths@^4.1.2, tsconfig-paths@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-4.2.0.tgz#ef78e19039133446d244beac0fd6a1632e2d107c"
@@ -33263,6 +33280,15 @@ vite-plugin-svgr@4.5.0:
     "@rollup/pluginutils" "^5.2.0"
     "@svgr/core" "^8.1.0"
     "@svgr/plugin-jsx" "^8.1.0"
+
+vite-tsconfig-paths@5.1.4:
+  version "5.1.4"
+  resolved "https://registry.yarnpkg.com/vite-tsconfig-paths/-/vite-tsconfig-paths-5.1.4.tgz#d9a71106a7ff2c1c840c6f1708042f76a9212ed4"
+  integrity sha512-cYj0LRuLV2c2sMqhqhGpaO3LretdtMn/BVX4cPLanIZuwwrkVl+lK84E/miEXkCHWXuq65rhNN4rXsBcOB3S4w==
+  dependencies:
+    debug "^4.1.1"
+    globrex "^0.1.2"
+    tsconfck "^3.0.3"
 
 vite@5.4.20, vite@^5.0.0:
   version "5.4.20"
