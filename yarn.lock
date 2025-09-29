@@ -9587,10 +9587,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.61.tgz#29f124eddd41c4c74281bd0b455d689109fc2a2d"
   integrity sha512-/aKAdg5c8n468cYLy2eQrcR5k6chlbNwZNGUj3TboyPa2hcO2QAJcfymlqPzMiRj8B6nYKXjzQz36minFE0RwQ==
 
-"@types/nodemailer@6.4.19":
-  version "6.4.19"
-  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.19.tgz#8fd509bf433e6ffc07e022e05be57c2cf44f2d5a"
-  integrity sha512-Fi8DwmuAduTk1/1MpkR9EwS0SsDvYXx5RxivAVII1InDCIxmhj/iQm3W8S3EVb/0arnblr6PK0FK4wYa7bwdLg==
+"@types/nodemailer@6.4.20":
+  version "6.4.20"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.20.tgz#f597b5f3848f498d259353de41af71a39373765d"
+  integrity sha512-uj83z0GqwqMUE6RI4EKptPlav0FYE6vpIlqJAnxzu+/sSezRdbH69rSBCMsdW6DdsCAzoFQZ52c2UIlhRVQYDA==
   dependencies:
     "@aws-sdk/client-ses" "^3.731.1"
     "@types/node" "*"
