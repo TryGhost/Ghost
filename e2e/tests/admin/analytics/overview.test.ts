@@ -1,4 +1,4 @@
-import {test, expect} from '../../../helpers/playwright';
+import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
 import {
     AnalyticsOverviewPage,
     AnalyticsWebTrafficPage,
@@ -12,20 +12,17 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         // Ghost does not send tracking requests if it detects that it is running in a test environment, i.e. playwright
         // We can override this by setting window.__GHOST_SYNTHETIC_MONITORING__ to true
         // This allows us to test page hit tracking in our e2e tests
-        const publicContext = await browser.newContext({
-            baseURL: baseURL
+        await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+            await publicPage.addInitScript(() => {
+                window.__GHOST_SYNTHETIC_MONITORING__ = true;
+            });
+            // Visit the homepage to generate a page hit, then close the context
+            const homePage = new HomePage(publicPage);
+            await homePage.goto();
+            await expect(homePage.title).toBeVisible();
+            await publicPage.waitForLoadState('networkidle');
+            await publicPage.close();
         });
-        const publicPage = await publicContext.newPage();
-        await publicPage.addInitScript(() => {
-            window.__GHOST_SYNTHETIC_MONITORING__ = true;
-        });
-
-        // Visit the homepage to generate a page hit, then close the context
-        const homePage = new HomePage(publicPage);
-        await homePage.goto();
-        await expect(homePage.title).toBeVisible();
-        await publicPage.waitForLoadState('networkidle');
-        await publicContext.close();
 
         // Navigate to the analytics overview page in Ghost Admin
         // Reload to ensure we fetch the latest data from Tinybird
