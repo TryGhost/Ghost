@@ -559,6 +559,10 @@ table.body h2 span {
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is the actual post content...</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            &#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;
+        </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
@@ -727,6 +731,10 @@ Object {
 
 
 
+‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ 
+
+
+
 
 
 
@@ -888,7 +896,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "27977",
+  "content-length": "29646",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1361,6 +1369,10 @@ table.body h2 span {
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is my custom excerpt!</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            &#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;
+        </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
@@ -1531,6 +1543,10 @@ Object {
 exports[`Email Preview API Read can read post email preview with fields 3 1`] = `
 Object {
   "html": "
+
+
+
+‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ 
 
 
 
@@ -1712,7 +1728,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "32445",
+  "content-length": "34114",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2216,6 +2232,10 @@ table.body h2 span {
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            &#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;
+        </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
@@ -2381,6 +2401,10 @@ Object {
 exports[`Email Preview API Read has custom content transformations for email compatibility 3 1`] = `
 Object {
   "html": "
+
+
+
+‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ 
 
 
 
@@ -2552,7 +2576,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "27683",
+  "content-length": "29352",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3385,6 +3409,10 @@ table.body h2 span {
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            &#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;
+        </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
@@ -3557,6 +3585,10 @@ Object {
 exports[`Email Preview API Read uses the newsletter provided through ?newsletter=slug 3 1`] = `
 Object {
   "html": "
+
+
+
+‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ 
 
 
 
@@ -3735,7 +3767,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28560",
+  "content-length": "30229",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4594,6 +4626,10 @@ table.body h2 span {
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">Testing links in email excerpt and apostrophes &#39;</span>
+        <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
+        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+            &#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;&#x200C;&#xA0;
+        </div>
 
         <!-- HEADER WITH FULL-WIDTH BACKGROUND -->
             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"header\\" width=\\"100%\\" style=\\"mso-table-lspace: 0pt; mso-table-rspace: 0pt; line-height: 1.4; background-color: #ffffff; width: 100%; border-spacing: 0; border-collapse: collapse;\\" bgcolor=\\"#ffffff\\">
@@ -4766,6 +4802,10 @@ Object {
 exports[`Email Preview API Read uses the posts newsletter by default 3 1`] = `
 Object {
   "html": "
+
+
+
+‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ 
 
 
 
@@ -4944,7 +4984,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28560",
+  "content-length": "30229",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
