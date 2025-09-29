@@ -13,10 +13,10 @@ E2E testing guidance for AI assistants working with Ghost tests.
 ```bash
 yarn test                                       # Run all tests
 yarn test tests/path/to/test.ts                 # Run specific test
-yarn test --debug                               # See browser during execution
 yarn lint                                       # Required after writing tests
 yarn test:types                                 # Check TypeScript errors
 yarn build                                      # Required after factory changes
+yarn test --debug                               # See browser during execution, for debugging
 PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
 ```
 
@@ -120,18 +120,6 @@ const post = await postFactory.create({userId: user.id});
 - `helpers/pages/` - Page objects
 - `helpers/environment/` - Container management
 - `data-factory/` - Test data factories
-
-## Debug Failed Tests
-```bash
-# Keep environment running after failure
-PRESERVE_ENV=true yarn test
-
-# See browser during test
-yarn test --debug
-
-# Run single test
-yarn test tests/specific-test.ts
-```
 
 ## Validation Checklist
 After writing tests, verify:
