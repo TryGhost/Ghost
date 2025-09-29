@@ -185,7 +185,7 @@ describe('Member Data attributes:', () => {
             const doAction = jest.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
-            window.fetch.mockImplementation((url, options = {}) => {
+            window.fetch.mockImplementation((url) => {
                 if (url.includes('send-magic-link')) {
                     return Promise.resolve({
                         ok: true,
