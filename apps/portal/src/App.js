@@ -108,7 +108,8 @@ export default class App extends React.Component {
                 site: contextState.site,
                 member: contextState.member,
                 labs: contextState.labs,
-                doAction: contextState.doAction
+                doAction: contextState.doAction,
+                captureException: Sentry.captureException
             });
         }
     }

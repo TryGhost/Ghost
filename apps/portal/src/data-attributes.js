@@ -16,7 +16,7 @@ function handleError(error, form, errorEl, t) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction},
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction, captureException},
     t = str => str
 ) {
     form.removeEventListener('submit', submitHandler);
@@ -104,13 +104,14 @@ export async function formSubmitHandler(
             const otcRef = responseBody?.otc_ref;
             if (otcRef && typeof doAction === 'function') {
                 try {
-                    await doAction('startSigninOTCFromCustomForm', {
+                    doAction('startSigninOTCFromCustomForm', {
                         email: (email || '').trim(),
                         otcRef
                     });
                 } catch (actionError) {
                     // eslint-disable-next-line no-console
                     console.error(actionError);
+                    captureException?.(actionError);
                 }
             }
         } else {
@@ -207,7 +208,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction} = {}) {
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction, captureException} = {}) {
     const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
@@ -218,7 +219,7 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doA
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction, captureException}, t);
         }
         form.addEventListener('submit', submitHandler);
     });

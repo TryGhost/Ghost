@@ -215,6 +215,60 @@ describe('Member Data attributes:', () => {
             });
             expect(form.classList.add).toHaveBeenCalledWith('success');
         });
+
+        test('captures exceptions when OTC action fails', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+            form.dataset.membersForm = 'signin';
+            form.dataset.membersOtc = 'true';
+
+            const originalQuerySelector = event.target.querySelector;
+            event.target.querySelector = jest.fn((selector) => {
+                if (selector === 'input[data-members-email]') {
+                    return {value: ' jamie@example.com '};
+                }
+                return originalQuerySelector(selector);
+            });
+
+            const labs = {membersSigninOTC: true};
+            const actionError = new Error('failed to start OTC sign-in');
+            const doAction = jest.fn(() => {
+                throw actionError;
+            });
+            const captureException = jest.fn();
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            const json = async () => ({otc_ref: 'otc_test_ref'});
+            window.fetch.mockImplementation((url) => {
+                if (url.includes('send-magic-link')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json,
+                        clone: () => ({json})
+                    });
+                }
+
+                if (url.includes('integrity-token')) {
+                    return Promise.resolve({
+                        ok: true,
+                        text: async () => 'testtoken'
+                    });
+                }
+
+                return Promise.resolve({ok: true});
+            });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction, captureException});
+
+            expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
+                email: 'jamie@example.com',
+                otcRef: 'otc_test_ref'
+            });
+            expect(captureException).toHaveBeenCalledWith(actionError);
+            expect(consoleSpy).toHaveBeenCalledWith(actionError);
+            expect(form.classList.add).toHaveBeenCalledWith('success');
+
+            consoleSpy.mockRestore();
+        });
     });
 
     describe('data-members-plan', () => {
