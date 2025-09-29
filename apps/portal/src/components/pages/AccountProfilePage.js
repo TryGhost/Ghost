@@ -22,7 +22,7 @@ export default class AccountProfilePage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (!member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'signin'
             });
         }
@@ -30,11 +30,11 @@ export default class AccountProfilePage extends React.Component {
 
     handleSignout(e) {
         e.preventDefault();
-        this.context.onAction('signout');
+        this.context.doAction('signout');
     }
 
     onBack() {
-        this.context.onAction('back');
+        this.context.doAction('back');
     }
 
     onProfileSave(e) {
@@ -47,8 +47,8 @@ export default class AccountProfilePage extends React.Component {
             const {email, name, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('clearPopupNotification');
-                this.context.onAction('updateProfile', {email, name});
+                this.context.doAction('clearPopupNotification');
+                this.context.doAction('updateProfile', {email, name});
             }
         });
     }

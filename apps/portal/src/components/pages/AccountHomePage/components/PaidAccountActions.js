@@ -6,17 +6,17 @@ import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag
 import {useContext} from 'react';
 
 const PaidAccountActions = () => {
-    const {member, site, onAction, t} = useContext(AppContext);
+    const {member, site, doAction, t} = useContext(AppContext);
 
     const onEditBilling = () => {
         const subscription = getMemberSubscription({member});
-        onAction('editBilling', {subscriptionId: subscription.id});
+        doAction('editBilling', {subscriptionId: subscription.id});
     };
 
     const openUpdatePlan = () => {
         const {is_stripe_configured: isStripeConfigured} = site;
         if (isStripeConfigured) {
-            onAction('switchPage', {
+            doAction('switchPage', {
                 page: 'accountPlan',
                 lastPage: 'accountHome'
             });

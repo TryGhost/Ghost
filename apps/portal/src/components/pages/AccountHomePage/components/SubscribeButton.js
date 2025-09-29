@@ -4,7 +4,7 @@ import {isSignupAllowed, hasAvailablePrices} from '../../../../utils/helpers';
 import {useContext} from 'react';
 
 const SubscribeButton = () => {
-    const {site, action, brandColor, onAction, t} = useContext(AppContext);
+    const {site, action, brandColor, doAction, t} = useContext(AppContext);
 
     if (!isSignupAllowed({site}) || !hasAvailablePrices({site})) {
         return null;
@@ -12,7 +12,7 @@ const SubscribeButton = () => {
     const isRunning = ['checkoutPlan:running'].includes(action);
 
     const openPlanPage = () => {
-        onAction('switchPage', {
+        doAction('switchPage', {
             page: 'accountPlan',
             lastPage: 'accountHome'
         });

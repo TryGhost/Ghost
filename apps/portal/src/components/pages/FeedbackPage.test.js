@@ -3,7 +3,7 @@ import {render} from '../../utils/test-utils';
 import FeedbackPage from './FeedbackPage';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <FeedbackPage />,
         {
             overrideContext: {
@@ -12,7 +12,7 @@ const setup = (overrides) => {
         }
     );
     return {
-        mockOnActionFn,
+        mockDoActionFn,
         ...utils
     };
 };
