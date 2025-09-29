@@ -502,7 +502,7 @@ class SignupPage extends React.Component {
                 label: t('Email'),
                 name: 'email',
                 required: true,
-                tabindex: 2,
+                tabIndex: 2,
                 errorMessage: errors.email || ''
             },
             {
@@ -513,8 +513,8 @@ class SignupPage extends React.Component {
                 label: t('Phone number'),
                 name: 'phonenumber',
                 required: false,
-                tabindex: -1,
-                autocomplete: 'off',
+                tabIndex: -1,
+                autoComplete: 'off',
                 hidden: true
             }
         ];
@@ -528,7 +528,7 @@ class SignupPage extends React.Component {
                 label: t('Name'),
                 name: 'name',
                 required: true,
-                tabindex: 1,
+                tabIndex: 1,
                 errorMessage: errors.name || ''
             });
         }
@@ -621,7 +621,7 @@ class SignupPage extends React.Component {
                 brandColor={brandColor}
                 label={label}
                 isRunning={isRunning}
-                tabIndex='3'
+                tabIndex={3}
             />
         );
     }

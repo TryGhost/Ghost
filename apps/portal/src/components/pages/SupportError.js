@@ -52,7 +52,7 @@ const SupportError = ({error}) => {
                 label={buttonLabel}
                 isDestructive={true}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>

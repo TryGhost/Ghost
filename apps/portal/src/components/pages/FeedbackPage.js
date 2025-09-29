@@ -190,7 +190,7 @@ function ErrorPage({error}) {
                 brandColor='#000000'
                 label={t('Close')}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>
@@ -255,7 +255,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                 brandColor={brandColor}
                 label={t('Submit feedback')}
                 isRunning={loading}
-                tabindex="3"
+                tabIndex={3}
             />
             <CloseButton close={() => close(false)} />
         </div>
@@ -297,7 +297,7 @@ const ConfirmFeedback = ({positive}) => {
                 brandColor={brandColor}
                 label={t('Close')}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>
