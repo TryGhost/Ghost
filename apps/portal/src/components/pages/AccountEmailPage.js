@@ -5,7 +5,7 @@ import NewsletterManagement from '../common/NewsletterManagement';
 import Interpolate from '@doist/react-interpolate';
 
 export default function AccountEmailPage() {
-    const {member, onAction, site, t, pageData} = useContext(AppContext);
+    const {member, doAction, site, t, pageData} = useContext(AppContext);
     let newsletterUuid;
     let action;
     if (pageData) {
@@ -19,11 +19,11 @@ export default function AccountEmailPage() {
     // Redirect to signin page if member is not available
     useEffect(() => {
         if (!member) {
-            onAction('switchPage', {
+            doAction('switchPage', {
                 page: 'signin'
             });
         }
-    }, [member, onAction]);
+    }, [member, doAction]);
 
     // this results in an infinite loop, needs to run only once...
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function AccountEmailPage() {
             const remainingNewsletterSubscriptions = member?.newsletters.filter(n => n.uuid !== newsletterUuid);
             setSubscribedNewsletters(remainingNewsletterSubscriptions);
             setHasInteracted(false); // this shows the dialog
-            onAction('updateNewsletterPreference', {newsletters: remainingNewsletterSubscriptions});
+            doAction('updateNewsletterPreference', {newsletters: remainingNewsletterSubscriptions});
         }
     }, []);
 
@@ -56,11 +56,11 @@ export default function AccountEmailPage() {
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
-    
+
         if (!unsubscribedNewsletter) {
             return null;
         }
-    
+
         const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
             <>
@@ -93,18 +93,18 @@ export default function AccountEmailPage() {
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={(updatedNewsletters) => {
                 setSubscribedNewsletters(updatedNewsletters);
-                onAction('updateNewsletterPreference', {newsletters: updatedNewsletters});
-                onAction('showPopupNotification', {
+                doAction('updateNewsletterPreference', {newsletters: updatedNewsletters});
+                doAction('showPopupNotification', {
                     action: 'updated:success',
                     message: t('Email preferences updated.')
                 });
             }}
             updateCommentNotifications={async (enabled) => {
-                onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+                doAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
             }}
             unsubscribeAll={() => {
                 setSubscribedNewsletters([]);
-                onAction('showPopupNotification', {
+                doAction('showPopupNotification', {
                     action: 'updated:success',
                     message: t(`Unsubscribed from all emails.`)
                 });
@@ -112,7 +112,7 @@ export default function AccountEmailPage() {
                 if (commentsEnabled) {
                     data.enableCommentNotifications = false;
                 }
-                onAction('updateNewsletterPreference', data);
+                doAction('updateNewsletterPreference', data);
             }}
             isPaidMember={isPaidMember({member})}
             isCommentsEnabled={commentsEnabled !== 'off'}

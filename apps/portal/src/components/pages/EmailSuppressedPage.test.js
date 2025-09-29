@@ -2,7 +2,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import EmailSuppressedPage from './EmailSuppressedPage';
 
 const setup = () => {
-    const {mockOnActionFn, ...utils} = render(
+    const {mockDoActionFn, ...utils} = render(
         <EmailSuppressedPage />
     );
     const resubscribeBtn = utils.queryByRole('button', {name: 'Re-enable emails'});
@@ -11,7 +11,7 @@ const setup = () => {
     return {
         resubscribeBtn,
         title,
-        mockOnActionFn,
+        mockDoActionFn,
         ...utils
     };
 };
@@ -24,9 +24,9 @@ describe('Email Suppressed Page', () => {
     });
 
     test('can call resubscribe button', () => {
-        const {mockOnActionFn, resubscribeBtn} = setup();
+        const {mockDoActionFn, resubscribeBtn} = setup();
 
         fireEvent.click(resubscribeBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('removeEmailFromSuppressionList');
+        expect(mockDoActionFn).toHaveBeenCalledWith('removeEmailFromSuppressionList');
     });
 });

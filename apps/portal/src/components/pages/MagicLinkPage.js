@@ -65,18 +65,18 @@ export default class MagicLinkPage extends React.Component {
     getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
         const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
         const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
-        
+
         if (normalizedPage === 'signup') {
             return descriptionConfig.signup;
         }
-        
+
         return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
     }
 
     renderFormHeader() {
         const {t, otcRef, pageData, lastPage} = this.context;
         const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
-        
+
         const popupTitle = t(`Now check your email!`);
         const popupDescription = this.getTranslatedDescription({
             lastPage,
@@ -102,7 +102,7 @@ export default class MagicLinkPage extends React.Component {
             <>
                 <div
                     style={{color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer'}}
-                    onClick={() => this.context.onAction('switchPage', {page: 'signin'})}
+                    onClick={() => this.context.doAction('switchPage', {page: 'signin'})}
                 >
                     {t('Back to Log in')}
                 </div>
@@ -111,7 +111,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     handleClose() {
-        this.context.onAction('closePopup');
+        this.context.doAction('closePopup');
     }
 
     renderCloseButton() {
@@ -153,7 +153,7 @@ export default class MagicLinkPage extends React.Component {
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
-                this.context.onAction('verifyOTC', {otc, otcRef, redirect});
+                this.context.doAction('verifyOTC', {otc, otcRef, redirect});
             }
         }
         );

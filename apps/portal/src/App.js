@@ -980,7 +980,7 @@ export default class App extends React.Component {
             scrollbarWidth,
             labs,
             otcRef,
-            onAction: (_action, data) => this.dispatchAction(_action, data)
+            doAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
 

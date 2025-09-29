@@ -2,7 +2,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import AccountProfilePage from './AccountProfilePage';
 
 const setup = () => {
-    const {mockOnActionFn, context, ...utils} = render(
+    const {mockDoActionFn, context, ...utils} = render(
         <AccountProfilePage />
     );
     const emailInputEl = utils.getByLabelText(/email/i);
@@ -12,7 +12,7 @@ const setup = () => {
         emailInputEl,
         nameInputEl,
         saveBtn,
-        mockOnActionFn,
+        mockDoActionFn,
         context,
         ...utils
     };
@@ -28,10 +28,10 @@ describe('Account Profile Page', () => {
     });
 
     test('can call save', () => {
-        const {mockOnActionFn, saveBtn, context} = setup();
+        const {mockDoActionFn, saveBtn, context} = setup();
 
         fireEvent.click(saveBtn);
         const {email, name} = context.member;
-        expect(mockOnActionFn).toHaveBeenCalledWith('updateProfile', {email, name});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {email, name});
     });
 });

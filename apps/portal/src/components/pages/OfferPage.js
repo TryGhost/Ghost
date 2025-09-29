@@ -284,7 +284,7 @@ export default class OfferPage extends React.Component {
                 errors: this.getFormErrors(state)
             };
         }, () => {
-            const {onAction} = this.context;
+            const {doAction} = this.context;
             const {name, email, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
@@ -302,7 +302,7 @@ export default class OfferPage extends React.Component {
                         errors: {}
                     });
                 } else {
-                    onAction('signup', signupData);
+                    doAction('signup', signupData);
                     this.setState({
                         errors: {}
                     });
@@ -416,14 +416,14 @@ export default class OfferPage extends React.Component {
         if (member) {
             return null;
         }
-        const {brandColor, onAction, t} = this.context;
+        const {brandColor, doAction, t} = this.context;
         return (
             <div className='gh-portal-signup-message'>
                 <div>{t('Already a member?')}</div>
                 <button
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => onAction('switchPage', {page: 'signin'})}
+                    onClick={() => doAction('switchPage', {page: 'signin'})}
                 >
                     <span>{t('Sign in')}</span>
                 </button>

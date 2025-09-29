@@ -23,11 +23,11 @@ const shouldShowEmailNewsletterAction = (site) => {
 };
 
 const AccountActions = () => {
-    const {member, onAction, site, t} = useContext(AppContext);
+    const {member, doAction, site, t} = useContext(AppContext);
     const {name, email} = member;
 
     const openEditProfile = () => {
-        onAction('switchPage', {
+        doAction('switchPage', {
             page: 'accountProfile',
             lastPage: 'accountHome'
         });

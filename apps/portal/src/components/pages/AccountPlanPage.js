@@ -313,7 +313,7 @@ export default class AccountPlanPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (!member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'signin'
             });
         }
@@ -349,14 +349,14 @@ export default class AccountPlanPage extends React.Component {
 
     handleSignout(e) {
         e.preventDefault();
-        this.context.onAction('signout');
+        this.context.doAction('signout');
     }
 
     onBack() {
         if (this.state.showConfirmation) {
             this.cancelConfirmPage();
         } else {
-            this.context.onAction('back');
+            this.context.doAction('back');
         }
     }
 
@@ -369,7 +369,7 @@ export default class AccountPlanPage extends React.Component {
     }
 
     onPlanCheckout(e, priceId) {
-        const {onAction, member} = this.context;
+        const {doAction, member} = this.context;
         let {confirmationPlan, selectedPlan} = this.state;
         if (priceId) {
             selectedPlan = priceId;
@@ -380,10 +380,10 @@ export default class AccountPlanPage extends React.Component {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
-                onAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
+                doAction('updateSubscription', {plan: confirmationPlan.name, planId: confirmationPlan.id, subscriptionId, cancelAtPeriodEnd: false});
             }
         } else {
-            onAction('checkoutPlan', {plan: selectedPlan});
+            doAction('checkoutPlan', {plan: selectedPlan});
         }
     }
 
@@ -434,7 +434,7 @@ export default class AccountPlanPage extends React.Component {
         if (!subscription) {
             return null;
         }
-        this.context.onAction('cancelSubscription', {
+        this.context.doAction('cancelSubscription', {
             subscriptionId: subscription.id,
             cancelAtPeriodEnd: true,
             cancellationReason: reason

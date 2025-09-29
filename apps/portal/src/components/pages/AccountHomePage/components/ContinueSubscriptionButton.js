@@ -5,7 +5,7 @@ import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
 const ContinueSubscriptionButton = () => {
-    const {member, onAction, action, brandColor, t} = useContext(AppContext);
+    const {member, doAction, action, brandColor, t} = useContext(AppContext);
     const subscription = getMemberSubscription({member});
     if (!subscription) {
         return null;
@@ -35,7 +35,7 @@ const ContinueSubscriptionButton = () => {
             <CancelNotice />
             <ActionButton
                 onClick={() => {
-                    onAction('continueSubscription', {
+                    doAction('continueSubscription', {
                         subscriptionId: subscription.id
                     });
                 }}

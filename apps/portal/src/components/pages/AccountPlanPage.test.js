@@ -3,7 +3,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import AccountPlanPage from './AccountPlanPage';
 
 const setup = (overrides) => {
-    const {mockOnActionFn, context, ...utils} = render(
+    const {mockDoActionFn, context, ...utils} = render(
         <AccountPlanPage />,
         {
             overrideContext: {
@@ -20,14 +20,14 @@ const setup = (overrides) => {
         yearlyCheckboxEl,
         continueBtn,
         chooseBtns,
-        mockOnActionFn,
+        mockDoActionFn,
         context,
         ...utils
     };
 };
 
 const customSetup = (overrides) => {
-    const {mockOnActionFn, context, ...utils} = render(
+    const {mockDoActionFn, context, ...utils} = render(
         <AccountPlanPage />,
         {
             overrideContext: {
@@ -37,7 +37,7 @@ const customSetup = (overrides) => {
     );
 
     return {
-        mockOnActionFn,
+        mockDoActionFn,
         context,
         ...utils
     };
@@ -56,7 +56,7 @@ describe('Account Plan Page', () => {
         const siteData = getSiteData({
             products: getProductsData({numOfProducts: 1})
         });
-        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, queryAllByRole} = setup({site: siteData});
+        const {mockDoActionFn, monthlyCheckboxEl, yearlyCheckboxEl, queryAllByRole} = setup({site: siteData});
         const continueBtn = queryAllByRole('button', {name: 'Continue'});
 
         fireEvent.click(monthlyCheckboxEl);
@@ -64,7 +64,7 @@ describe('Account Plan Page', () => {
         fireEvent.click(yearlyCheckboxEl);
         expect(yearlyCheckboxEl.className).toEqual('gh-portal-btn active');
         fireEvent.click(continueBtn[0]);
-        expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].yearlyPrice.id});
+        expect(mockDoActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].yearlyPrice.id});
     });
 
     test('can cancel subscription for member on hidden tier', async () => {
