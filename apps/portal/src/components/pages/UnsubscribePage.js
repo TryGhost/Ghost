@@ -170,7 +170,7 @@ export default function UnsubscribePage() {
                     brandColor='#000000'
                     label={t('Close')}
                     isRunning={false}
-                    tabindex='3'
+                    tabIndex={3}
                     classes={'sticky bottom'}
                 />
             </div>

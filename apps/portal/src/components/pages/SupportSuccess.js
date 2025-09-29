@@ -56,7 +56,7 @@ const SupportSuccess = () => {
                 brandColor={brandColor}
                 label={buttonLabel}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
 
