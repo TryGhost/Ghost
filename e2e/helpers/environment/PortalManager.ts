@@ -1,5 +1,4 @@
 import {execSync, spawn} from 'child_process';
-import * as fs from 'fs';
 import * as path from 'path';
 import logging from '@tryghost/logging';
 
@@ -8,63 +7,55 @@ const PORTAL_DIR = path.resolve(__dirname, '..', '..', '..', 'apps', 'portal');
 
 export class PortalManager {
     private readonly port: number;
+    private readonly portalDir: string;
+    private readonly portalUrl: string;
 
-    constructor(port: number = DEFAULT_PORT) {
+    constructor(port: number = DEFAULT_PORT, portalDir: string = PORTAL_DIR) {
         this.port = port;
+        this.portalDir = portalDir;
+        this.portalUrl = `http://localhost:${this.port}/portal.min.js`;
     }
 
     async start(): Promise<void> {
-        if (this.isPortalRunning()) {
-            logging.warn(`Portal already running on port ${this.port}`);
+        if (this.isRunning()) {
             return;
         }
 
-        this.ensurePortalExists();
         this.installDependencies();
-
-        logging.info(`Starting Portal on port ${this.port}...`);
-
-        this.spawnPortalProcess();
+        this.spawnProcess();
         await this.waitUntilReady();
-
-        logging.info('Portal started successfully');
     }
 
     async stop(): Promise<void> {
         logging.info('Stopping Portal...');
-
-        this.killPortalProcess();
-        await this.delay(500);
-
+        await this.killProcess();
         logging.info('Portal stopped');
     }
 
-    getUrl(): string {
-        return `http://localhost:${this.port}`;
-    }
-
-    private isPortalRunning(): boolean {
+    private isRunning(): boolean {
         try {
             execSync(`lsof -ti :${this.port}`, {stdio: 'pipe'});
+            logging.warn(`Portal is running on port ${this.port}`);
             return true;
         } catch {
             return false;
         }
     }
 
-    private ensurePortalExists(): void {
-        if (!fs.existsSync(PORTAL_DIR)) {
-            throw new Error(`Portal not found at: ${PORTAL_DIR}`);
+    private installDependencies(): void {
+        try {
+            execSync('yarn install', {cwd: this.portalDir, stdio: 'pipe'});
+        } catch (error) {
+            logging.error('Failed to execute command:', error);
+            throw error;
         }
     }
 
-    private installDependencies(): void {
-        execSync('yarn install', {cwd: PORTAL_DIR, stdio: 'pipe'});
-    }
+    private spawnProcess(): void {
+        logging.info(`Starting Portal on port ${this.port}...`);
 
-    private spawnPortalProcess(): void {
         const portalProcess = spawn('yarn', ['preview', '--port', this.port.toString(), '--host', '0.0.0.0'], {
-            cwd: PORTAL_DIR,
+            cwd: this.portalDir,
             detached: true,
             stdio: 'ignore',
             env: {...process.env, NODE_ENV: 'development'}
@@ -74,11 +65,11 @@ export class PortalManager {
     }
 
     private async waitUntilReady(timeoutSeconds: number = 60): Promise<void> {
-        const url = `${this.getUrl()}/portal.min.js`;
         const deadline = Date.now() + (timeoutSeconds * 1000);
 
         while (Date.now() < deadline) {
-            if (await this.isPortalResponding(url)) {
+            if (await this.isResponding()) {
+                logging.info('Portal started successfully');
                 return;
             }
             await this.delay(1000);
@@ -87,9 +78,9 @@ export class PortalManager {
         throw new Error(`Portal failed to start within ${timeoutSeconds} seconds`);
     }
 
-    private async isPortalResponding(url: string): Promise<boolean> {
+    private async isResponding(): Promise<boolean> {
         try {
-            const response = await fetch(url, {
+            const response = await fetch(this.portalUrl, {
                 method: 'HEAD',
                 signal: AbortSignal.timeout(2000)
             });
@@ -99,7 +90,7 @@ export class PortalManager {
         }
     }
 
-    private killPortalProcess(): void {
+    private async killProcess(): Promise<void> {
         try {
             const pids = execSync(`lsof -ti :${this.port}`, {encoding: 'utf8'}).trim().split('\n');
             for (const pid of pids) {
@@ -108,9 +99,11 @@ export class PortalManager {
                     logging.info(`Killed process ${pid} on port ${this.port}`);
                 }
             }
-        } catch {
+        } catch (error) {
             // No processes found on port
         }
+
+        await this.delay(500);
     }
 
     private async delay(ms: number): Promise<void> {
