@@ -108,7 +108,7 @@ export default class App extends React.Component {
                 site: contextState.site,
                 member: contextState.member,
                 labs: contextState.labs,
-                onAction: contextState.onAction
+                doAction: contextState.doAction
             });
         }
     }

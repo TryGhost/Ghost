@@ -182,7 +182,7 @@ describe('Member Data attributes:', () => {
             });
 
             const labs = {membersSigninOTC: true};
-            const onAction = jest.fn(() => Promise.resolve());
+            const doAction = jest.fn(() => Promise.resolve());
 
             const json = async () => ({otc_ref: 'otc_test_ref'});
             window.fetch.mockImplementation((url, options = {}) => {
@@ -204,12 +204,12 @@ describe('Member Data attributes:', () => {
                 return Promise.resolve({ok: true});
             });
 
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, onAction});
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, labs, doAction});
 
             const magicLinkCall = window.fetch.mock.calls.find(([fetchUrl]) => fetchUrl.includes('send-magic-link'));
             const requestBody = JSON.parse(magicLinkCall[1].body);
             expect(requestBody.includeOTC).toBe(true);
-            expect(onAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
+            expect(doAction).toHaveBeenCalledWith('startSigninOTCFromCustomForm', {
                 email: 'jamie@example.com',
                 otcRef: 'otc_test_ref'
             });

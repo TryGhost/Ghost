@@ -16,7 +16,7 @@ function handleError(error, form, errorEl, t) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, labs = {}, onAction},
+    {event, form, errorEl, siteUrl, submitHandler, labs = {}, doAction},
     t = str => str
 ) {
     form.removeEventListener('submit', submitHandler);
@@ -101,9 +101,9 @@ export async function formSubmitHandler(
 
             form.classList.add('success');
             const otcRef = responseBody?.otc_ref;
-            if (otcRef && typeof onAction === 'function') {
+            if (otcRef && typeof doAction === 'function') {
                 try {
-                    await onAction('startSigninOTCFromCustomForm', {
+                    await doAction('startSigninOTCFromCustomForm', {
                         email: (email || '').trim(),
                         otcRef
                     });
@@ -206,7 +206,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
     });
 }
 
-export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, onAction} = {}) {
+export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, doAction} = {}) {
     const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
@@ -217,7 +217,7 @@ export function handleDataAttributes({siteUrl, site = {}, member, labs = {}, onA
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, onAction}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, labs, doAction}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
