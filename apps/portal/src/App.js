@@ -106,7 +106,10 @@ export default class App extends React.Component {
             handleDataAttributes({
                 siteUrl,
                 site: contextState.site,
-                member: contextState.member
+                member: contextState.member,
+                labs: contextState.labs,
+                doAction: contextState.doAction,
+                captureException: Sentry.captureException
             });
         }
     }
