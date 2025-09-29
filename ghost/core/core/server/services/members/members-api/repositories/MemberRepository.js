@@ -43,6 +43,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
+     * @param {any} deps.Comment
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
      * @param {any} deps.productRepository
@@ -62,6 +63,7 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         OfferRedemption,
+        Comment,
         stripeAPIService,
         labsService,
         productRepository,
@@ -77,6 +79,7 @@ module.exports = class MemberRepository {
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
+        this._Comment = Comment;
         this._OfferRedemption = OfferRedemption;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
@@ -736,9 +739,24 @@ module.exports = class MemberRepository {
             }
         }
 
+        // Handle comment deletion
+        if (options.deleteComments) {
+            await this._deleteMemberComments(member.id, options);
+        }
+
         return this._Member.destroy({
             id: data.id
         }, options);
+    }
+
+    async _deleteMemberComments(memberId, options) {
+        const comments = await this._Comment.findAll({
+            filter: `member_id:${memberId}+status:-deleted` // Delete all comments except already deleted ones
+        }, options);
+
+        for (const comment of comments.models) {
+            await comment.save({status: 'deleted'}, options);
+        }
     }
 
     async bulkDestroy(options) {
