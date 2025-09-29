@@ -28,7 +28,8 @@
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn build",
+    "postinstall": "patch-package"
   },
   "eslintConfig": {
     "env": {
@@ -92,6 +93,7 @@
     "eslint-plugin-i18next": "6.1.3",
     "input-otp": "1.4.2",
     "jsdom": "24.1.3",
+    "patch-package": "8.0.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "5.4.20",
