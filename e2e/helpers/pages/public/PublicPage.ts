@@ -33,6 +33,12 @@ export default class PublicPage extends BasePage{
         });
     }
 
+    async waitForPageHitRequest(): Promise<void> {
+        await this.page.waitForResponse((response) => {
+            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+        }, {timeout: 10000});
+    }
+
     async waitForPortalScript(): Promise<void> {
         await this.portalScript.waitFor({
             state: 'attached',
