@@ -1,6 +1,12 @@
 import {Page, Locator} from '@playwright/test';
 import {BasePage} from '../BasePage';
 
+declare global {
+    interface Window {
+        __GHOST_SYNTHETIC_MONITORING__?: boolean;
+    }
+}
+
 export default class PublicPage extends BasePage{
     private readonly portalFrame: Locator;
     private readonly portalIframe: Locator;
@@ -10,12 +16,21 @@ export default class PublicPage extends BasePage{
 
     constructor(page: Page) {
         super(page, '/');
+        this.enableAnalyticsRequests();
 
         this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
         this.portalIframe = page.locator('iframe[title="portal-popup"]');
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
+    }
+
+    async enableAnalyticsRequests(): Promise<void> {
+        await this.page.addInitScript(() => {
+            // Ghost does not send tracking events if it detects it is running in a test environment, e.g. playwright
+            // Setting this value to true bypasses that check
+            window.__GHOST_SYNTHETIC_MONITORING__ = true;
+        });
     }
 
     async waitForPortalScript(): Promise<void> {
