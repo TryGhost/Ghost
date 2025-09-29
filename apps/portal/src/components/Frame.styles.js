@@ -10,6 +10,7 @@ import {SwitchStyles} from './common/Switch';
 import AccountHomePageStyles from './pages/AccountHomePage/AccountHomePage.css?inline';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
+import {InputOTCStyles} from './common/InputOTC.styles';
 import {SignupPageStyles} from './pages/SignupPage';
 import {ProductsSectionStyles} from './common/ProductsSection';
 import {AvatarStyles} from './common/MemberGravatar';
@@ -1268,6 +1269,7 @@ export function getFrameStyles({site}) {
         AccountHomePageStyles +
         AccountPlanPageStyles +
         InputFieldStyles +
+        InputOTCStyles +
         ProductsSectionStyles({site}) +
         SwitchStyles +
         ActionButtonStyles +
