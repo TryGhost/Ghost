@@ -16,6 +16,12 @@ type ContainerStatusItem = {
     Service: string;
 }
 
+interface ExecError extends Error {
+    stdout?: Buffer | string;
+    stderr?: Buffer | string;
+    status?: number;
+}
+
 export class DockerCompose {
     private readonly composeFilePath: string;
     private readonly projectName: string;
@@ -31,10 +37,43 @@ export class DockerCompose {
     up(): void {
         try {
             logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
+            const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`;
+            debug('Running command:', command);
+
+            // Capture output to log on error
+            const output = execSync(command, {encoding: 'utf-8'});
+
+            if (output) {
+                debug('Docker compose up output:', output);
+            }
+
             logging.info('Docker compose services are up');
         } catch (error) {
-            logging.error('Failed to start docker compose services:', error);
+            logging.error('Failed to start docker compose services');
+
+            // Log the actual error details
+            if (error && typeof error === 'object') {
+                const execError = error as ExecError;
+                if (execError.stdout) {
+                    logging.error('Docker compose stdout:', execError.stdout.toString());
+                }
+                if (execError.stderr) {
+                    logging.error('Docker compose stderr:', execError.stderr.toString());
+                }
+                if (execError.status) {
+                    logging.error('Docker compose exit code:', execError.status);
+                }
+            }
+
+            // Try to get container status for debugging
+            try {
+                const statusCommand = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps`;
+                const status = execSync(statusCommand, {encoding: 'utf-8'});
+                logging.error('Current container status:\n', status);
+            } catch (statusError) {
+                debug('Could not get container status:', statusError);
+            }
+
             throw error;
         }
     }
