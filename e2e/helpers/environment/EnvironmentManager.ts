@@ -67,7 +67,7 @@ export class EnvironmentManager {
             }
             const hostPort = portMapping[0].HostPort;
             const portalUrl = `http://localhost:${hostPort}/portal.min.js`;
-            logging.info(`Portal is available at: ${portalUrl}`);
+            debug(`Portal is available at: ${portalUrl}`);
             return portalUrl;
         } catch (error) {
             logging.error('Failed to get Portal URL:', error);
