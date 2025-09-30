@@ -45,12 +45,14 @@ const disableNetwork = () => {
     nock.disableNetConnect();
 
     // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
+    // @ts-ignore - property added by sinon when stubbed
     if (!dnsPromises.lookup.restore) {
         sinon.stub(dnsPromises, 'lookup').callsFake(() => {
             return Promise.resolve({address: '123.123.123.123', family: 4});
         });
     }
 
+    // @ts-ignore - property added by sinon when stubbed
     if (!dns.resolveMx.restore) {
         // without this, Node will try and resolve the domain name but local DNS
         // resolvers can take a while to timeout, which causes the tests to timeout
@@ -195,6 +197,60 @@ const sentEmail = (matchers) => {
     });
 
     return spyCall.args[0];
+};
+
+/**
+ * Returns an array of all sent email payloads captured by the spy
+ * Non-breaking: does not affect emailCount or existing assertion flow
+ */
+const getAllSentEmails = () => {
+    if (!mocks.mail) {
+        throw new errors.IncorrectUsageError({
+            message: 'Cannot read mail when mail has not been mocked'
+        });
+    }
+    const calls = [];
+    for (let i = 0; i < mocks.mail.callCount; i++) {
+        const call = mocks.mail.getCall(i);
+        if (call && call.args && call.args[0]) {
+            calls.push(call.args[0]);
+        }
+    }
+    return calls;
+};
+
+/**
+ * Finds the most recent email that matches the provided matchers
+ * Supported matchers: keys on the email payload (e.g. subject, to) with string or RegExp values
+ * Returns the matched email object or null
+ */
+const findSentEmail = (matchers = {}) => {
+    const emails = getAllSentEmails();
+    for (let i = emails.length - 1; i >= 0; i--) {
+        const email = emails[i];
+        let matches = true;
+        for (const key of Object.keys(matchers)) {
+            const expected = matchers[key];
+            const actual = email[key];
+            if (actual === undefined) {
+                matches = false;
+                break;
+            }
+            if (expected instanceof RegExp) {
+                if (!expected.test(actual)) {
+                    matches = false;
+                    break;
+                }
+            } else if (actual !== expected) {
+                matches = false;
+                break;
+            }
+        }
+        if (matches) {
+            return email;
+        }
+    }
+    return null;
 };
 
 /**
@@ -393,5 +449,7 @@ module.exports = {
         sentEmail,
         emittedEvent
     },
+    getAllSentEmails,
+    findSentEmail,
     getMailgunCreateMessageStub: () => mailgunCreateMessageStub
 };
