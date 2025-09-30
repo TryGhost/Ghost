@@ -30,16 +30,13 @@ PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps cont
 ### AAA Pattern
 ```typescript
 test('action performed - expected result', async ({page}) => {
-    // ARRANGE - Setup
     const analyticsPage = new AnalyticsGrowthPage(page);
     const postFactory = createPostFactory(page);
     const post = await postFactory.create({status: 'published'});
-
-    // ACT - Perform action
+    
     await analyticsPage.goto();
     await analyticsPage.topContent.postsButton.click();
-
-    // ASSERT - Verify
+    
     await expect(analyticsPage.topContent.contentCard).toContainText('No conversions');
 });
 ```
