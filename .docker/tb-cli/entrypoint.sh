@@ -42,17 +42,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Available tokens:"
-echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | "\(.name): \(.token | .[0:10])..."' || echo "Failed to parse tokens response"
-
 # Find admin token by looking for ADMIN scope (more robust than name matching)
 ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.scopes[]? | .type == "ADMIN") | .token' | head -n1)
 
 # Check if admin token is valid
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
     echo "Error: Failed to get admin token from Tinybird API. Please ensure Tinybird is properly configured." >&2
-    echo "Debug: Full tokens response:" >&2
-    echo "$TOKENS_RESPONSE" | jq '.' >&2 || echo "$TOKENS_RESPONSE" >&2
     exit 1
 fi
 
@@ -64,7 +59,6 @@ TRACKER_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.name == "tr
 # Check if tracker token is valid
 if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then
     echo "Error: Failed to get tracker token from Tinybird API. Please ensure Tinybird is properly configured." >&2
-    echo "Debug: Looking for 'tracker' token in response" >&2
     exit 1
 fi
 
