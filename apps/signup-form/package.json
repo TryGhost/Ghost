@@ -49,7 +49,7 @@
     "@storybook/testing-library": "0.2.2",
     "@tailwindcss/line-clamp": "0.4.4",
     "@tryghost/i18n": "0.0.0",
-    "@types/react": "18.3.24",
+    "@types/react": "18.3.25",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "10.4.21",
