@@ -194,4 +194,53 @@ describe('Integration: Component: gh-nav-menu/footer-banner', function () {
 
         expect(find('.gh-whatsnew-toast'), 'what\'s new banner is hidden').to.not.exist;
     });
+
+    it('uses shouldShowFeaturedBanner from whatsNew service', async function () {
+        this.owner.register('service:whatsNew', Service.extend({
+            hasNew: true,
+            hasNewFeatured: true,
+            shouldShowFeaturedBanner: false, // Override to false
+            entries: [{
+                title: 'Test Feature',
+                url: 'https://ghost.org/changelog/test',
+                custom_excerpt: 'Test description',
+                published_at: '2024-12-01T00:00:00.000Z',
+                featured: true
+            }],
+            seen() {}
+        }));
+
+        this.owner.register('service:session', Service.extend({
+            user: {
+                isAdmin: false
+            }
+        }));
+
+        this.owner.register('service:dashboardStats', Service.extend({
+            currentMRR: 0,
+            loadMrrStats() {
+                return Promise.resolve();
+            }
+        }));
+
+        this.owner.register('service:feature', Service.extend({
+            accessibility: {
+                referralInviteDismissed: false
+            }
+        }));
+
+        this.owner.register('service:membersUtils', Service.extend({
+            isStripeEnabled: false
+        }));
+
+        this.owner.register('service:modals', Service.extend({}));
+        this.owner.register('service:settings', Service.extend({
+            stripeConnectLivemode: false
+        }));
+
+        await render(hbs`<GhNavMenu::FooterBanner />`);
+
+        // Should NOT show banner because shouldShowFeaturedBanner=false
+        expect(find('.gh-whatsnew-toast'), 'what\'s new banner respects shouldShowFeaturedBanner').to.not.exist;
+    });
 });

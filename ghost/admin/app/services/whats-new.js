@@ -50,6 +50,10 @@ export default Service.extend({
         return latestEntry.featured;
     }),
 
+    shouldShowFeaturedBanner: computed('hasNewFeatured', function () {
+        return this.hasNewFeatured;
+    }),
+
     seen: action(function () {
         this.updateLastSeen.perform();
     }),
