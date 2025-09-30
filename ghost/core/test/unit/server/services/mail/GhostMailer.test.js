@@ -351,7 +351,9 @@ describe('Mail: Ghostmailer', function () {
 
             const sentMessage = sendMailSpy.firstCall.args[0];
             sentMessage['o:tag'].should.be.an.Array();
+            sentMessage['o:tag'].should.containEql('transactional-email');
             sentMessage['o:tag'].should.containEql('blog-123123');
+            sentMessage['o:tracking-opens'].should.equal(true);
         });
 
         it('should append to existing string tag when using Mailgun', async function () {
@@ -374,7 +376,9 @@ describe('Mail: Ghostmailer', function () {
             const sentMessage = sendMailSpy.firstCall.args[0];
             sentMessage['o:tag'].should.be.an.Array();
             sentMessage['o:tag'].should.containEql('existing-tag');
+            sentMessage['o:tag'].should.containEql('transactional-email');
             sentMessage['o:tag'].should.containEql('blog-456456');
+            sentMessage['o:tracking-opens'].should.equal(true);
         });
 
         it('should append to existing array of tags when using Mailgun', async function () {
@@ -398,10 +402,12 @@ describe('Mail: Ghostmailer', function () {
             sentMessage['o:tag'].should.be.an.Array();
             sentMessage['o:tag'].should.containEql('tag1');
             sentMessage['o:tag'].should.containEql('tag2');
+            sentMessage['o:tag'].should.containEql('transactional-email');
             sentMessage['o:tag'].should.containEql('blog-789789');
+            sentMessage['o:tracking-opens'].should.equal(true);
         });
 
-        it('should not add tag when email tracking is disabled', async function () {
+        it('should add tags but not enable open tracking when email tracking is disabled', async function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}
             });
@@ -418,7 +424,10 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            should.not.exist(sentMessage['o:tag']);
+            sentMessage['o:tag'].should.be.an.Array();
+            sentMessage['o:tag'].should.containEql('transactional-email');
+            sentMessage['o:tag'].should.containEql('blog-123123');
+            should.not.exist(sentMessage['o:tracking-opens']);
         });
 
         it('should not add tag when site ID is missing', async function () {
