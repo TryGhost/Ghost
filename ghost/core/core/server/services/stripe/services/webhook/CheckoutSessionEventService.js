@@ -23,6 +23,7 @@ module.exports = class CheckoutSessionEventService {
      * @param {object} deps.memberRepository
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
+     * @param {function} deps.getTokenDataFromMagicLinkToken
      * @param {function} deps.sendSignupEmail
      */
     constructor(deps) {
@@ -176,7 +177,28 @@ module.exports = class CheckoutSessionEventService {
 
         if (!member) {
             const metadataName = _.get(session, 'metadata.name');
-            const metadataNewsletters = _.get(session, 'metadata.newsletters');
+
+            // Get newsletter data from the magic link token in success_url
+            let newsletters = [];
+
+            try {
+                const successUrl = session.success_url;
+                if (successUrl && this.deps.getTokenDataFromMagicLinkToken) {
+                    const url = new URL(successUrl);
+                    const token = url.searchParams.get('token');
+
+                    if (token) {
+                        const tokenData = await this.deps.getTokenDataFromMagicLinkToken(token);
+
+                        if (tokenData && tokenData.newsletters) {
+                            newsletters = tokenData.newsletters;
+                        }
+                    }
+                }
+            } catch (e) {
+                logging.warn(`Could not retrieve newsletter data from token: ${e.message}`);
+            }
+
             const attribution = {
                 id: session.metadata?.attribution_id ?? null,
                 url: session.metadata?.attribution_url ?? null,
@@ -190,12 +212,8 @@ module.exports = class CheckoutSessionEventService {
             const name = metadataName || payerName || null;
 
             const memberData = {email: customer.email, name, attribution};
-            if (metadataNewsletters) {
-                try {
-                    memberData.newsletters = JSON.parse(metadataNewsletters);
-                } catch (e) {
-                    logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
-                }
+            if (newsletters && newsletters.length > 0) {
+                memberData.newsletters = newsletters;
             }
 
             const offerId = session.metadata?.offer;
@@ -204,6 +222,7 @@ module.exports = class CheckoutSessionEventService {
                 stripeCustomer: customer,
                 offerId
             };
+
             member = await memberRepository.create(memberDataWithStripeCustomer);
         } else {
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');

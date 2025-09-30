@@ -342,6 +342,7 @@ module.exports = class RouterController {
      * @param {object} [options.member] Currently authenticated member OR member associated with the email address
      * @param {boolean} options.isAuthenticated
      * @param {object} options.metadata Metadata to be passed to Stripe
+     * @param {Array} [options.newsletters] Validated newsletter data for new signups
      * @returns
      */
     async _createSubscriptionCheckoutSession(options) {
@@ -375,15 +376,23 @@ module.exports = class RouterController {
 
         if (!member && options.email) {
             // Create a signup link if there is no member with this email address
+            const tokenData = {
+                email: options.email,
+                attribution: {
+                    id: options.metadata.attribution_id ?? null,
+                    type: options.metadata.attribution_type ?? null,
+                    url: options.metadata.attribution_url ?? null
+                }
+            };
+
+            // Include newsletter data in the token instead of Stripe metadata
+            // to avoid hitting Stripe's 500 character metadata limit
+            if (options.newsletters) {
+                tokenData.newsletters = options.newsletters;
+            }
+
             options.successUrl = await this._magicLinkService.getMagicLink({
-                tokenData: {
-                    email: options.email,
-                    attribution: {
-                        id: options.metadata.attribution_id ?? null,
-                        type: options.metadata.attribution_type ?? null,
-                        url: options.metadata.attribution_url ?? null
-                    }
-                },
+                tokenData,
                 type: 'signup',
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
@@ -532,8 +541,13 @@ module.exports = class RouterController {
         // Store attribution data in the metadata
         await this._setAttributionMetadata(metadata);
 
-        if (metadata.newsletters) {
-            metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
+        // Newsletters are passed through magic link tokens instead of Stripe metadata to avoid Stripe's 500 character limit
+        let validatedNewsletters = null;
+        const newsletterData = metadata.newsletters;
+        delete metadata.newsletters;
+
+        if (newsletterData) {
+            validatedNewsletters = await this._validateNewsletters(JSON.parse(newsletterData));
         }
 
         // Build options
@@ -543,7 +557,8 @@ module.exports = class RouterController {
             email: req.body.customerEmail,
             member,
             metadata,
-            isAuthenticated
+            isAuthenticated,
+            newsletters: validatedNewsletters
         };
 
         let response;

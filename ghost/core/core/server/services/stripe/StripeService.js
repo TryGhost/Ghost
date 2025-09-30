@@ -99,6 +99,9 @@ module.exports = class StripeService {
             get staffServiceEmails(){
                 return staffService.api.emails;
             },
+            getTokenDataFromMagicLinkToken(token){
+                return membersService.api.getTokenDataFromMagicLinkToken(token);
+            },
             sendSignupEmail(email){
                 return membersService.api.sendEmailWithMagicLink({
                     email,
