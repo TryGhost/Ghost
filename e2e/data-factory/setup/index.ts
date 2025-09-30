@@ -1,4 +1,5 @@
 import {PostFactory} from '../factories/posts/post-factory';
+import {TagFactory} from '../factories/tags/tag-factory';
 import {GhostAdminApiAdapter} from '../persistence/adapters/ghost-api';
 import {Page} from '@playwright/test';
 
@@ -17,4 +18,12 @@ export function createPostFactory(page: Page): PostFactory {
         {formats: 'mobiledoc,lexical,html'}
     );
     return new PostFactory(adapter);
+}
+
+export function createTagFactory(page: Page): TagFactory {
+    const adapter = new GhostAdminApiAdapter(
+        page.request,
+        'tags'
+    );
+    return new TagFactory(adapter);
 }
