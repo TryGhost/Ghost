@@ -36,44 +36,17 @@ export class DockerCompose {
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
 
-            // Get container status and logs for debugging
+            // Output all container logs for debugging
             try {
-                const containers = execSync(
-                    `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps --format json`,
-                    {encoding: 'utf-8'}
-                ).trim();
-
-                if (containers) {
-                    const containerList = containers.split('\n')
-                        .filter(line => line.trim())
-                        .map(line => JSON.parse(line));
-
-                    logging.error('Container statuses after failure:');
-                    containerList.forEach((c: ContainerStatusItem) => {
-                        logging.error(`  ${c.Service}: ${c.State} (exit: ${c.ExitCode})`);
-                    });
-
-                    // Get logs from any exited containers with non-zero exit codes
-                    const failedContainers = containerList.filter((c: ContainerStatusItem) =>
-                        c.State === 'exited' && c.ExitCode !== 0
-                    );
-
-                    for (const failed of failedContainers) {
-                        logging.error(`\n=== Logs for failed container: ${failed.Service} (exit code: ${failed.ExitCode}) ===`);
-                        try {
-                            const logs = execSync(
-                                `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs --tail=100 ${failed.Service}`,
-                                {encoding: 'utf-8'}
-                            );
-                            logging.error(logs);
-                        } catch (logError) {
-                            logging.error(`Could not get logs for ${failed.Service}`);
-                        }
-                        logging.error(`=== End logs for ${failed.Service} ===\n`);
-                    }
-                }
-            } catch (debugError) {
-                debug('Could not get debug information:', debugError);
+                logging.error('\n=== Docker compose logs ===');
+                const logs = execSync(
+                    `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs`,
+                    {encoding: 'utf-8', maxBuffer: 1024 * 1024 * 10} // 10MB buffer for logs
+                );
+                logging.error(logs);
+                logging.error('=== End docker compose logs ===\n');
+            } catch (logError) {
+                debug('Could not get docker compose logs:', logError);
             }
 
             throw error;
