@@ -320,7 +320,7 @@ jobs:
       - name: Pull images
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker compose -f e2e/compose.e2e.yml pull
+        run: docker compose -f e2e/compose.yml pull
 
       - uses: actions/setup-node@v4
         with:
