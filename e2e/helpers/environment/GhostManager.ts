@@ -14,6 +14,7 @@ export interface GhostStartConfig {
     siteUuid: string;
     workingDir?: string;
     command?: string[];
+    portalUrl?: string;
 }
 
 export class GhostManager {
@@ -28,8 +29,8 @@ export class GhostManager {
     }
 
     /** High-level: create, wait, and return a GhostInstance description. */
-    async startInstance(instanceId: string, siteUuid: string): Promise<GhostInstance> {
-        const container = await this.createAndStart({instanceId, siteUuid});
+    async startInstance(instanceId: string, siteUuid: string, portalUrl?: string): Promise<GhostInstance> {
+        const container = await this.createAndStart({instanceId, siteUuid, portalUrl});
         const containerInfo = await container.inspect();
         const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
         await this.waitReady(hostPort, 30000);
@@ -70,7 +71,7 @@ export class GhostManager {
                 tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
                 tinybird__workspaceId: tinybirdState.workspaceId,
                 tinybird__adminToken: tinybirdState.adminToken,
-                portal__url: 'http://localhost:4175/portal.min.js'
+                portal__url: config.portalUrl || 'http://localhost:4175/portal.min.js'
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {

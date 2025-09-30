@@ -55,6 +55,20 @@ services:
       tinybird-local:
         condition: service_healthy
 
+  portal:
+    image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
+    pull_policy: never
+    working_dir: /home/ghost/apps/portal
+    command: ["yarn", "preview", "--port", "4175", "--host", "0.0.0.0"]
+    ports:
+      - "4175"  # Dynamic host port assignment
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4175/portal.min.js"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
 volumes:
   shared-config:
 
