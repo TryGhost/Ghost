@@ -353,4 +353,4 @@ jobs:
       - name: Output command to view report
         if: failure()
         run: |
-          echo "::notice::To view the Playwright report locally, run: gh run download ${{ github.run_id }} -n playwright-report && npx playwright show-report playwright-report"
+          echo "::notice::To view the Playwright report locally, run: gh run download ${{ github.run_id }} -n playwright-report -D /tmp/playwright-\$\$ && npx playwright show-report /tmp/playwright-\$\$/playwright-report"
