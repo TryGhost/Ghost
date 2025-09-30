@@ -425,7 +425,7 @@ describe('sendMagicLink', function () {
                         .expectStatus(201)
                         .expect(({body}) => {
                             Object.keys(body).should.eql(['otc_ref']);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
                         });
                 });
 
@@ -444,7 +444,7 @@ describe('sendMagicLink', function () {
                         .expectStatus(201)
                         .expect(({body}) => {
                             should.exist(body.otc_ref);
-                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9-]{36}$/);
                         });
                 });
             });
