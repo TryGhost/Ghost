@@ -25130,10 +25130,10 @@ mocha-slow-test-reporter@0.1.2:
     text-table "^0.2.0"
     wordwrap "^1.0.0"
 
-mocha@11.7.2:
-  version "11.7.2"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-11.7.2.tgz#3c0079fe5cc2f8ea86d99124debcc42bb1ab22b5"
-  integrity sha512-lkqVJPmqqG/w5jmmFtiRvtA2jkDyNVUcefFJKb2uyX4dekk8Okgqop3cgbFiaIvj8uCRJVTP5x9dfxGyXm2jvQ==
+mocha@11.7.3:
+  version "11.7.3"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-11.7.3.tgz#68ce010241557414a63137a32ca952613e1731a7"
+  integrity sha512-iorDKDzBKgVk/npVkW2S+b57ekA9+xKWijVvNpgPMl1odxeB4HavgiydLN54Lhyn/jpcM+Z/BohCzIvHmfaPCw==
   dependencies:
     browser-stdout "^1.3.1"
     chokidar "^4.0.1"
