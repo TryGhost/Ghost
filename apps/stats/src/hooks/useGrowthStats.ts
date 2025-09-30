@@ -204,7 +204,11 @@ export const useGrowthStats = (range: number) => {
         }
     });
 
-    const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory();
+    const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory({
+        searchParams: {
+            date_from: memberDataStartDate
+        }
+    });
 
     // Fetch subscription stats for real subscription events
     const {data: subscriptionStatsResponse, isLoading: isSubscriptionLoading} = useSubscriptionStats();
