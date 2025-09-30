@@ -129,17 +129,30 @@ export class MailhogClient {
     extractMagicLink(message: MailhogMessage): string | null {
         // Get the decoded plain text content
         const body = this.getPlainTextContent(message);
-        
+
         // Look for magic link pattern in the email body
         // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
         const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
         const matches = body.match(magicLinkRegex);
-        
+
         if (matches && matches.length > 0) {
-            debug(`Found magic link: ${matches[0]}`);
-            return matches[0];
+            const magicLink = matches[0];
+            debug(`Found magic link: ${magicLink}`);
+
+            // Validate that the link has required parameters
+            if (!magicLink.includes('token=')) {
+                debug('Magic link missing token parameter');
+                return null;
+            }
+
+            if (!magicLink.includes('action=signup')) {
+                debug('Magic link missing action=signup parameter');
+                return null;
+            }
+
+            return magicLink;
         }
-        
+
         debug('No magic link found in email');
         debug('Email body searched:', body.substring(0, 500));
         return null;

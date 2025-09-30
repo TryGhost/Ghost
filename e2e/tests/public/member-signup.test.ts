@@ -33,7 +33,5 @@ test.describe('Member Signup with Email Verification', () => {
 
         const magicLink = mailhog.extractMagicLink(message);
         expect(magicLink).toBeTruthy();
-        expect(magicLink).toContain('token=');
-        expect(magicLink).toContain('action=signup');
     });
 });
