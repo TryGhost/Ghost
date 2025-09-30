@@ -16,12 +16,6 @@ type ContainerStatusItem = {
     Service: string;
 }
 
-interface ExecError extends Error {
-    stdout?: Buffer | string;
-    stderr?: Buffer | string;
-    status?: number;
-}
-
 export class DockerCompose {
     private readonly composeFilePath: string;
     private readonly projectName: string;
@@ -37,41 +31,49 @@ export class DockerCompose {
     up(): void {
         try {
             logging.info('Starting docker compose services...');
-            const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`;
-            debug('Running command:', command);
-
-            // Capture output to log on error
-            const output = execSync(command, {encoding: 'utf-8'});
-
-            if (output) {
-                debug('Docker compose up output:', output);
-            }
-
+            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
             logging.info('Docker compose services are up');
         } catch (error) {
-            logging.error('Failed to start docker compose services');
+            logging.error('Failed to start docker compose services:', error);
 
-            // Log the actual error details
-            if (error && typeof error === 'object') {
-                const execError = error as ExecError;
-                if (execError.stdout) {
-                    logging.error('Docker compose stdout:', execError.stdout.toString());
-                }
-                if (execError.stderr) {
-                    logging.error('Docker compose stderr:', execError.stderr.toString());
-                }
-                if (execError.status) {
-                    logging.error('Docker compose exit code:', execError.status);
-                }
-            }
-
-            // Try to get container status for debugging
+            // Get container status and logs for debugging
             try {
-                const statusCommand = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps`;
-                const status = execSync(statusCommand, {encoding: 'utf-8'});
-                logging.error('Current container status:\n', status);
-            } catch (statusError) {
-                debug('Could not get container status:', statusError);
+                const containers = execSync(
+                    `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps --format json`,
+                    {encoding: 'utf-8'}
+                ).trim();
+
+                if (containers) {
+                    const containerList = containers.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => JSON.parse(line));
+
+                    logging.error('Container statuses after failure:');
+                    containerList.forEach((c: ContainerStatusItem) => {
+                        logging.error(`  ${c.Service}: ${c.State} (exit: ${c.ExitCode})`);
+                    });
+
+                    // Get logs from any exited containers with non-zero exit codes
+                    const failedContainers = containerList.filter((c: ContainerStatusItem) =>
+                        c.State === 'exited' && c.ExitCode !== 0
+                    );
+
+                    for (const failed of failedContainers) {
+                        logging.error(`\n=== Logs for failed container: ${failed.Service} (exit code: ${failed.ExitCode}) ===`);
+                        try {
+                            const logs = execSync(
+                                `docker compose -f ${this.composeFilePath} -p ${this.projectName} logs --tail=100 ${failed.Service}`,
+                                {encoding: 'utf-8'}
+                            );
+                            logging.error(logs);
+                        } catch (logError) {
+                            logging.error(`Could not get logs for ${failed.Service}`);
+                        }
+                        logging.error(`=== End logs for ${failed.Service} ===\n`);
+                    }
+                }
+            } catch (debugError) {
+                debug('Could not get debug information:', debugError);
             }
 
             throw error;
