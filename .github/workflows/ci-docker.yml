@@ -349,3 +349,8 @@ jobs:
             e2e/playwright-report/
             e2e/test-results/
           retention-days: 7
+
+      - name: Output command to view report
+        if: failure()
+        run: |
+          echo "::notice::To view the Playwright report locally, run: gh run download ${{ github.run_id }} -n playwright-report && npx playwright show-report playwright-report"
