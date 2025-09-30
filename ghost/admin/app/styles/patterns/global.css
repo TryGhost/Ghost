@@ -629,11 +629,18 @@ input[type="image"] {
     position: relative;
 }
 
+
 .show {
+    display: block;
+}
+.ember-application .show {
     display: block !important;
 }
 
 .hidden {
+    display: none;
+}
+.ember-application .hidden {
     visibility: hidden !important;
     display: none !important;
 }
