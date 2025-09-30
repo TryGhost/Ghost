@@ -6,6 +6,16 @@ import {execSync} from 'child_process';
 
 const debug = baseDebug('e2e:DockerCompose');
 
+type ContainerStatusItem = {
+    Name: string;
+    Command: string;
+    CreatedAt: string;
+    ExitCode: number;
+    Health: string;
+    State: string;
+    Service: string;
+}
+
 export class DockerCompose {
     private readonly composeFilePath: string;
     private readonly projectName: string;
@@ -30,6 +40,66 @@ export class DockerCompose {
     }
 
     /**
+     * Get the status of all containers in the compose project.
+     * Returns null if no containers are found.
+     */
+    async getContainersStatus(): Promise<ContainerStatusItem[] | null> {
+        const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps --format json`;
+        const output = execSync(command, {encoding: 'utf-8'}).trim();
+        if (!output) {
+            return null;
+        }
+        const containers = output.split('\n')
+            .filter(line => line.trim())
+            .map(line => JSON.parse(line));
+
+        if (containers.length === 0) {
+            return null;
+        }
+        return containers;
+    }
+
+    /**
+     * Check if a container is ready based on its status.
+     * A container is considered ready if:
+     * - It has a healthcheck and is healthy
+     * - It has exited with code 0 (no healthcheck)
+     *
+     * @param container Container status item
+     * @returns true if the container is ready, false otherwise
+     * @throws Error if the container has exited with a non-zero code
+     */
+    isContainerReady(container: ContainerStatusItem): boolean {
+        // If container has healthcheck, wait for healthy status
+        if (container.Health) {
+            return container.Health === 'healthy';
+        }
+
+        // If container exited, check exit code
+        if (container.State === 'exited') {
+            if (container.ExitCode !== 0) {
+                throw new Error(`${container.Name || container.Service} exited with code ${container.ExitCode}`);
+            }
+            return true;
+        }
+
+        // Running container without healthcheck is not considered ready
+        return false;
+    }
+
+    /**
+     * Check if all containers are ready.
+     * @param containers Array of container status items
+     * @returns true if all containers are ready, false otherwise
+     */
+    areAllContainersReady(containers: ContainerStatusItem[] | null): boolean {
+        if (!containers || containers.length === 0) {
+            return false;
+        }
+        return containers.every(container => this.isContainerReady(container));
+    }
+
+    /**
      * Wait until all services from the compose file are ready.
      * A service is considered ready if:
      * - It has a healthcheck and is healthy (i.e. mysql)
@@ -44,58 +114,18 @@ export class DockerCompose {
      *
     */
     async waitForAll(timeoutMs = 60000, intervalMs = 500): Promise<void> {
+        const sleep = (ms: number) => new Promise<void>((resolve) => {
+            setTimeout(resolve, ms);
+        });
+
         const deadline = Date.now() + timeoutMs;
-
         while (Date.now() < deadline) {
-            // Get the status of all containers in the project in JSON format
-            const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
-            const output = execSync(command, {encoding: 'utf-8'}).trim();
-
-            if (!output) {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, intervalMs);
-                });
-                continue;
-            }
-
-            // Parse docker compose ps output (newline-delimited JSON)
-            const containers = output.split('\n')
-                .filter(line => line.trim())
-                .map(line => JSON.parse(line));
-
-            if (containers.length === 0) {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, intervalMs);
-                });
-                continue;
-            }
-
-            // Check if all containers are ready
-            const allReady = containers.every((container) => {
-                // If container has healthcheck, wait for healthy status
-                if (container.Health) {
-                    return container.Health === 'healthy';
-                }
-
-                // If container exited, check exit code
-                if (container.State === 'exited') {
-                    if (container.ExitCode !== 0) {
-                        throw new Error(`${container.Name || container.Service} exited with code ${container.ExitCode}`);
-                    }
-                    return true;
-                }
-
-                // Running container without healthcheck is not considered ready
-                return false;
-            });
-
-            if (allReady) {
+            const containers = await this.getContainersStatus();
+            const allContainersReady = this.areAllContainersReady(containers);
+            if (allContainersReady) {
                 return;
             }
-
-            await new Promise((resolve) => {
-                setTimeout(resolve, intervalMs);
-            });
+            await sleep(intervalMs);
         }
 
         throw new Error('Timeout waiting for services to be ready');
