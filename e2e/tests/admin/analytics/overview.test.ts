@@ -16,13 +16,10 @@ test.describe('Ghost Admin - Analytics Overview', () => {
             await publicPage.close();
         });
 
-        // Navigate to the analytics overview page in Ghost Admin
-        // Reload to ensure we fetch the latest data from Tinybird
+        // Navigate to Admin > Analytics Overview and check for 1 unique visitor
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
-        await page.reload();
-        await expect(analyticsOverviewPage.header).toBeVisible();
-        await page.waitForLoadState('networkidle');
+        await analyticsOverviewPage.refreshData();
 
         expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
     });

@@ -89,6 +89,10 @@ export class AnalyticsOverviewPage extends AdminPage {
         this.topPosts = new TopPosts(page);
     }
 
+    async refreshData() {
+        await this.page.reload();
+    }
+
     async viewMoreUniqueVisitorDetails() {
         return await this.uniqueVisitors.viewMoreButton.click();
     }
