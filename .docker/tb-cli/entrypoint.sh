@@ -45,7 +45,8 @@ fi
 echo "Available tokens:"
 echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | "\(.name): \(.token | .[0:10])..."' || echo "Failed to parse tokens response"
 
-ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.name == "admin token") | .token')
+# Find admin token by looking for ADMIN scope (more robust than name matching)
+ADMIN_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.scopes[]? | .type == "ADMIN") | .token' | head -n1)
 
 # Check if admin token is valid
 if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
@@ -54,6 +55,8 @@ if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
     echo "$TOKENS_RESPONSE" | jq '.' >&2 || echo "$TOKENS_RESPONSE" >&2
     exit 1
 fi
+
+echo "Successfully found admin token with ADMIN scope"
 
 # Get the tracker token from the same response
 TRACKER_TOKEN=$(echo "$TOKENS_RESPONSE" | jq -r '.tokens[] | select(.name == "tracker") | .token')
