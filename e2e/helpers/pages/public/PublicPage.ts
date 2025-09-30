@@ -16,7 +16,6 @@ export default class PublicPage extends BasePage{
 
     constructor(page: Page) {
         super(page, '/');
-        this.enableAnalyticsRequests();
 
         this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
         this.portalIframe = page.locator('iframe[title="portal-popup"]');
@@ -25,12 +24,22 @@ export default class PublicPage extends BasePage{
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
 
+    /**
+     * Enables analytics requests by setting a variable on the window object.
+     * This is necessary because Ghost blocks analytics requests when in Playwright by default.
+    */
     async enableAnalyticsRequests(): Promise<void> {
         await this.page.addInitScript(() => {
-            // Ghost does not send tracking events if it detects it is running in a test environment, e.g. playwright
-            // Setting this value to true bypasses that check
             window.__GHOST_SYNTHETIC_MONITORING__ = true;
         });
+    }
+
+    /**
+     * Overrides the goto method to enable analytics requests before navigating to the page.
+    */
+    async goto(): Promise<void> {
+        await this.enableAnalyticsRequests();
+        await super.goto();
     }
 
     async waitForPageHitRequest(): Promise<void> {
