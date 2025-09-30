@@ -1,8 +1,8 @@
 import {Page} from '@playwright/test';
+import {faker} from '@faker-js/faker';
 import {HomePage} from '../pages/public';
 import {SignUpPage} from '../pages/portal/SignUpPage';
 import {SignUpSuccessPage} from '../pages/portal/SignUpSuccessPage';
-import {randomEmail, randomName} from '../utils/generators';
 
 export async function signupViaPortal(page: Page): Promise<{email: string; name: string}> {
     const homePage = new HomePage(page);
@@ -10,8 +10,8 @@ export async function signupViaPortal(page: Page): Promise<{email: string; name:
     await homePage.openPortalViaSubscribeButton();
 
     const signUpPage = new SignUpPage(page);
-    const email = randomEmail();
-    const name = randomName();
+    const email = faker.internet.email();
+    const name = faker.person.fullName();
     await signUpPage.fillAndSubmit(email, name);
 
     const successPage = new SignUpSuccessPage(page);
