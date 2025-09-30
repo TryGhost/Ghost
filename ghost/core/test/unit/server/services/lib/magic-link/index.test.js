@@ -32,7 +32,7 @@ describe('MagicLink', function () {
     beforeEach(function () {
         mockSingleUseTokenProvider = {
             create: sandbox.stub().resolves('mock-token'),
-            getIdByToken: sandbox.stub().resolves('test-token-id-123'),
+            getRefByToken: sandbox.stub().resolves('test-token-ref-123'),
             deriveOTC: sandbox.stub().returns('654321')
         };
     });
@@ -131,7 +131,7 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
         });
 
         it('should not return otcRef when labsService flag is disabled', async function () {
@@ -152,7 +152,7 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
         });
 
         it('should not return otcRef when labsService is not provided', async function () {
@@ -170,12 +170,12 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
         });
 
-        it('should work when tokenProvider does not have getIdByToken method', async function () {
-            // No getIdByToken method
-            delete mockSingleUseTokenProvider.getIdByToken;
+        it('should work when tokenProvider does not have getRefByToken method', async function () {
+            // No getRefByToken method
+            delete mockSingleUseTokenProvider.getRefByToken;
 
             const labsService = {
                 isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
@@ -198,8 +198,8 @@ describe('MagicLink', function () {
             assert(options.transporter.sendMail.calledOnce);
         });
 
-        it('should return otcRef as null when getIdByToken resolves to null', async function () {
-            mockSingleUseTokenProvider.getIdByToken.resolves(null);
+        it('should return otcRef as null when getRefByToken resolves to null', async function () {
+            mockSingleUseTokenProvider.getRefByToken.resolves(null);
 
             const labsService = {
                 isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
@@ -218,9 +218,9 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            // deriveOTC is only possible with a token so it's skipped if getIdByToken returns null
+            // deriveOTC is only possible with a token so it's skipped if getRefByToken returns null
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
         });
 
         it('should include OTC when includeOTC is true and labs flag is enabled', async function () {
@@ -241,10 +241,10 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert(mockSingleUseTokenProvider.getIdByToken.calledTwice);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledTwice);
             assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-id-123', 'mock-token'));
-            assert.equal(result.otcRef, 'test-token-id-123');
+            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-ref-123', 'mock-token'));
+            assert.equal(result.otcRef, 'test-token-ref-123');
 
             // Verify OTC is passed to email content functions
             assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
@@ -270,7 +270,7 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
             assert.equal(result.otcRef, null);
 
@@ -297,7 +297,7 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
             assert.equal(result.otcRef, null);
         });
@@ -361,20 +361,20 @@ describe('MagicLink', function () {
         });
     });
 
-    describe('#getIdFromToken', function () {
-        it('should return token ID when tokenProvider has getIdByToken method', async function () {
+    describe('#getRefFromToken', function () {
+        it('should return token ref when tokenProvider has getRefByToken method', async function () {
             const service = new MagicLink(buildOptions());
-            const tokenId = await service.getIdFromToken('mock-token');
+            const tokenId = await service.getRefFromToken('mock-token');
 
-            assert.equal(tokenId, 'test-token-id-123');
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
-            assert(mockSingleUseTokenProvider.getIdByToken.calledWith('mock-token'));
+            assert.equal(tokenId, 'test-token-ref-123');
+            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledWith('mock-token'));
         });
 
-        it('should return null when tokenProvider lacks getIdByToken method', async function () {
-            delete mockSingleUseTokenProvider.getIdByToken;
+        it('should return null when tokenProvider lacks getRefByToken method', async function () {
+            delete mockSingleUseTokenProvider.getRefByToken;
             const service = new MagicLink(buildOptions());
-            const tokenId = await service.getIdFromToken('mock-token');
+            const tokenId = await service.getRefFromToken('mock-token');
 
             assert.equal(tokenId, null);
         });
@@ -386,13 +386,13 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, '654321');
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
             assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-id-123', 'mock-token'));
+            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-ref-123', 'mock-token'));
         });
 
-        it('should return null when tokenProvider lacks getIdByToken method', async function () {
-            delete mockSingleUseTokenProvider.getIdByToken;
+        it('should return null when tokenProvider lacks getRefByToken method', async function () {
+            delete mockSingleUseTokenProvider.getRefByToken;
             const service = new MagicLink(buildOptions());
             const otc = await service.getOTCFromToken('mock-token');
 
@@ -406,16 +406,16 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, null);
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
         });
 
-        it('should return null when getIdByToken returns null', async function () {
-            mockSingleUseTokenProvider.getIdByToken.resolves(null);
+        it('should return null when getRefByToken returns null', async function () {
+            mockSingleUseTokenProvider.getRefByToken.resolves(null);
             const service = new MagicLink(buildOptions());
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, null);
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
         });
     });
