@@ -67,7 +67,8 @@ export class GhostManager {
                 TB_LOCAL_HOST: TB.LOCAL_HOST,
                 tinybird__stats__endpoint: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
-                tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
+                tinybird__tracker__endpoint: 'http://localhost:8080/.ghost/analytics/api/v1/page_hit',
+                tinybird__tracker__datasource: 'analytics_events',
                 tinybird__workspaceId: tinybirdState.workspaceId,
                 tinybird__adminToken: tinybirdState.adminToken,
                 // Email configuration to use Mailhog
