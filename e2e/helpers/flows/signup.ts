@@ -4,9 +4,6 @@ import {SignUpPage} from '../pages/portal/SignUpPage';
 import {SignUpSuccessPage} from '../pages/portal/SignUpSuccessPage';
 import {randomEmail, randomName} from '../utils/generators';
 
-/**
- * Complete the portal signup flow and return the test email used
- */
 export async function signupViaPortal(page: Page): Promise<{email: string; name: string}> {
     const homePage = new HomePage(page);
     await homePage.goto();

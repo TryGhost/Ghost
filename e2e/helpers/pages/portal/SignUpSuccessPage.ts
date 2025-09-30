@@ -16,9 +16,6 @@ export class SignUpSuccessPage extends PortalPage {
         this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
     }
 
-    /**
-     * Wait for the signup success message to appear
-     */
     async waitForSignUpSuccess(): Promise<void> {
         await this.successMessage.waitFor({state: 'visible'});
     }
