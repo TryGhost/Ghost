@@ -1,5 +1,4 @@
 import baseDebug from '@tryghost/debug';
-import type {Page} from '@playwright/test';
 
 const debug = baseDebug('e2e:MailhogClient');
 
@@ -223,18 +222,5 @@ export class MailhogClient {
         }
 
         return magicLink;
-    }
-
-    /**
-     * Complete signup verification by navigating to magic link
-     */
-    async completeSignupVerification(page: Page, email: string, timeoutMs: number = 10000): Promise<void> {
-        const magicLink = await this.waitForMagicLink(email, timeoutMs);
-
-        // Navigate to the magic link to complete signup
-        await page.goto(magicLink);
-        await page.waitForLoadState('networkidle');
-
-        debug(`Completed signup verification for ${email}`);
     }
 }

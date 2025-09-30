@@ -12,11 +12,14 @@ test.describe('Member Signup with Email Verification', () => {
 
     test('completes full signup flow with magic link', async ({page}) => {
         const {email} = await signupViaPortal(page);
-        await mailhog.completeSignupVerification(page, email);
+
+        const magicLink = await mailhog.waitForMagicLink(email);
+        await page.goto(magicLink);
+        await page.waitForLoadState('networkidle');
 
         const homePage = new HomePage(page);
         await homePage.waitForSignedIn();
-        await expect(homePage.accountButton).toBeVisible(); 
+        await expect(homePage.accountButton).toBeVisible();
     });
 
     test('receives welcome email with correct content', async ({page}) => {
