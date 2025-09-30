@@ -48,8 +48,8 @@ export class DockerCompose {
 
         while (Date.now() < deadline) {
             // Get the status of all containers in the project in JSON format
-            const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
-            const output = execSync(cmd, {encoding: 'utf-8'}).trim();
+            const command = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
+            const output = execSync(command, {encoding: 'utf-8'}).trim();
 
             if (!output) {
                 await new Promise((resolve) => {
