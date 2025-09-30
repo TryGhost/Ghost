@@ -192,6 +192,9 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost at 127.0.0.1\\" <noreply@example.com>",
   "generateTextFromHTML": false,
+  "headers": Object {
+    "Sender": "\\"Ghost at 127.0.0.1\\" <noreply@example.com>",
+  },
   "replyTo": null,
   "subject": "Verify email address",
   "to": "support@example.com",
