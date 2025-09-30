@@ -535,6 +535,11 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         source: {
             type: 'string', maxlength: 50, nullable: false, validations: {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
@@ -715,6 +720,11 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offer_redemptions: {
@@ -756,6 +766,11 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
+        utm_source: {type: 'string', maxlength: 191, nullable: true},
+        utm_medium: {type: 'string', maxlength: 191, nullable: true},
+        utm_campaign: {type: 'string', maxlength: 191, nullable: true},
+        utm_term: {type: 'string', maxlength: 191, nullable: true},
+        utm_content: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         donation_message: {type: 'string', maxlength: 255, nullable: true} // https://docs.stripe.com/payments/checkout/custom-fields
     },
