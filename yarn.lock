@@ -9693,10 +9693,10 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@18.3.24":
-  version "18.3.24"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.3.24.tgz#f6a5a4c613242dfe3af0dcee2b4ec47b92d9b6bd"
-  integrity sha512-0dLEBsA1kI3OezMBF8nSsb7Nk19ZnsyE1LLhB8r27KbgU5H4pvuqZLdtE+aUkJVoXgTVuA+iLIwmZ0TuK4tx6A==
+"@types/react@*", "@types/react@18.3.25":
+  version "18.3.25"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.3.25.tgz#b37e3b05b6762b49f3944760f3bce3d5b6afa19b"
+  integrity sha512-oSVZmGtDPmRZtVDqvdKUi/qgCsWp5IDY29wp8na8Bj4B3cc99hfNzvNhlMkVVxctkAOGUA3Km7MMpBHAnWfcIA==
   dependencies:
     "@types/prop-types" "*"
     csstype "^3.0.2"
