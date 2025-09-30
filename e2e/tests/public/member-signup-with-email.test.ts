@@ -16,6 +16,7 @@ test.describe('Member Signup with Email Verification', () => {
 
         const homePage = new HomePage(page);
         await homePage.waitForSignedIn();
+        await expect(homePage.accountButton).toBeVisible(); 
     });
 
     test('receives welcome email with correct content', async ({page}) => {
