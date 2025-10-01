@@ -5,6 +5,7 @@ export class TagsPage extends AdminPage {
     readonly pageContent: Locator;
     readonly tagList: Locator;
     readonly tagListRow: Locator;
+    readonly tagNames: Locator;
 
     readonly tabs: Locator;
     readonly activeTab: Locator;
@@ -22,6 +23,7 @@ export class TagsPage extends AdminPage {
         this.pageContent = page.getByTestId('tags-page');
         this.tagList = page.getByTestId('tags-list');
         this.tagListRow = this.tagList.getByTestId('tag-list-row');
+        this.tagNames = page.locator('[data-test-tag-name]');
 
         this.tabs = page.getByTestId('tags-header-tabs');
         this.activeTab = this.tabs.locator('[data-state="active"]');
@@ -40,5 +42,9 @@ export class TagsPage extends AdminPage {
 
     getRowByTitle(title: string) {
         return this.tagListRow.filter({has: this.page.getByRole('link', {name: title, exact: true})});
+    }
+
+    getTagByName(name: string): Locator {
+        return this.tagNames.filter({hasText: name});
     }
 }

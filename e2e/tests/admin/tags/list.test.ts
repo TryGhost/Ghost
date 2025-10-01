@@ -125,7 +125,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('loads tags on scroll with pagination', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        
+
         // Mock first page of tags
         await mockTagsResponse(page, async (request) => {
             const url = new URL(request.url());
@@ -166,11 +166,11 @@ test.describe('Ghost Admin - Tags', () => {
 
         // Verify first page loads
         await expect(tagsPage.getRowByTitle('Tag 1')).toBeVisible();
-        
+
         // Verify that only a limited number of tags are rendered
         expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
         expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
-        
+
         // Scroll to bottom to trigger pagination
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
 
@@ -186,10 +186,10 @@ test.describe('Ghost Admin - Tags', () => {
 
         // Wait for third page to load
         await expect(tagsPage.getRowByTitle('Tag 41')).toBeVisible();
-        
+
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
         await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
-        
+
         // Verify last tag is visible
         await expect(tagsPage.getRowByTitle('Tag 50')).toBeVisible();
     });
