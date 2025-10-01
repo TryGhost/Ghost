@@ -261,87 +261,54 @@ describe('Create Stripe Checkout Session', function () {
     });
 
     /**
-     * When a checkout session is created with an urlHistory, we should convert it to an
-     * attribution and check if that is set in the metadata of the stripe session
+     * Token-based data handling tests
+     * Attribution and newsletter data is passed through magic link tokens instead of Stripe metadata
+     * to avoid Stripe's metadata limitations (50 keys, 500 char values)
      */
-    describe('Member attribution', function () {
-        it('Does pass url attribution source to session metadata', async function () {
+    describe('Token-based data handling', function () {
+        it('Includes attribution and newsletters in token, not Stripe metadata', async function () {
+            const post = await getPost(fixtureManager.get('posts', 0).id);
+            const url = urlService.getUrlByResourceId(post.id, {absolute: false});
             const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
-
             const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            let stripeSessionMetadata;
+            let stripeSuccessUrl;
 
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
                 .reply(createStripeGetHandler());
 
-            const scope = nock('https://api.stripe.com')
-                .persist()
-                .post(/v1\/.*/)
-                .reply(createStripePostHandler({
-                    priceId: 'price_4',
-                    onCheckoutSession: function (body) {
-                        const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).eql('/test');
-                        should(parsed.get('metadata[attribution_type]')).eql('url');
-                        should(parsed.get('metadata[attribution_id]')).be.null();
-
-                        return [200, {id: 'cs_123', url: 'https://site.com'}];
-                    }
-                }));
-
-            await membersAgent.post('/api/create-stripe-checkout-session/')
-                .body({
-                    customerEmail: 'attribution@test.com',
-                    tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {
-                        urlHistory: [
-                            {
-                                path: '/test',
-                                time: Date.now()
-                            }
-                        ]
-                    }
-                })
-                .expectStatus(200)
-                .matchBodySnapshot()
-                .matchHeaderSnapshot();
-
-            should(scope.isDone()).eql(true);
-        });
-
-        it('Does pass post attribution source to session metadata', async function () {
-            const post = await getPost(fixtureManager.get('posts', 0).id);
-            const url = urlService.getUrlByResourceId(post.id, {absolute: false});
-
-            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
-
-            const paidTier = tiers.find(tier => tier.type === 'paid');
-
             nock('https://api.stripe.com')
                 .persist()
-                .get(/v1\/.*/)
-                .reply(createStripeGetHandler({priceAmount: 50}));
-
-            const scope = nock('https://api.stripe.com')
-                .persist()
                 .post(/v1\/.*/)
                 .reply(createStripePostHandler({
-                    priceId: 'price_5',
+                    priceId: 'price_combined',
+                    checkoutSessionId: 'cs_combined',
+                    checkoutSessionUrl: 'https://checkout.stripe.com/session/cs_combined',
                     onCheckoutSession: function (body) {
-                        const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).eql(url);
-                        should(parsed.get('metadata[attribution_type]')).eql('post');
-                        should(parsed.get('metadata[attribution_id]')).eql(post.id);
+                        // Capture the metadata and success URL sent to Stripe
+                        const params = new URLSearchParams(body);
+                        stripeSessionMetadata = {};
+                        for (const [key, value] of params.entries()) {
+                            if (key.startsWith('metadata[')) {
+                                const metaKey = key.match(/metadata\[([^\]]+)\]/)[1];
+                                stripeSessionMetadata[metaKey] = value;
+                            }
+                        }
+                        stripeSuccessUrl = params.get('success_url');
 
-                        return [200, {id: 'cs_123', url: 'https://site.com'}];
+                        return [200, {
+                            id: 'cs_combined',
+                            url: 'https://checkout.stripe.com/session/cs_combined'
+                        }];
                     }
                 }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
-                    customerEmail: 'attribution-post@test.com',
+                    customerEmail: 'full-data@test.com',
                     tierId: paidTier.id,
                     cadence: 'month',
                     metadata: {
@@ -350,120 +317,28 @@ describe('Create Stripe Checkout Session', function () {
                                 path: url,
                                 time: Date.now()
                             }
-                        ]
-                    }
-                })
-                .expectStatus(200)
-                .matchBodySnapshot()
-                .matchHeaderSnapshot();
-
-            should(scope.isDone()).eql(true);
-        });
-
-        it('Ignores attribution_* values in metadata', async function () {
-            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
-
-            const paidTier = tiers.find(tier => tier.type === 'paid');
-
-            nock('https://api.stripe.com')
-                .persist()
-                .get(/v1\/.*/)
-                .reply(createStripeGetHandler());
-
-            const scope = nock('https://api.stripe.com')
-                .persist()
-                .post(/v1\/.*/)
-                .reply(createStripePostHandler({
-                    priceId: 'price_6',
-                    onCheckoutSession: function (body) {
-                        const parsed = new URLSearchParams(body);
-                        should(parsed.get('metadata[attribution_url]')).be.null();
-                        should(parsed.get('metadata[attribution_type]')).be.null();
-                        should(parsed.get('metadata[attribution_id]')).be.null();
-
-                        return [200, {id: 'cs_123', url: 'https://site.com'}];
-                    }
-                }));
-
-            await membersAgent.post('/api/create-stripe-checkout-session/')
-                .body({
-                    customerEmail: 'attribution-2@test.com',
-                    tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {
-                        attribution_type: 'url',
-                        attribution_url: '/',
-                        attribution_id: null
-                    }
-                })
-                .expectStatus(200)
-                .matchBodySnapshot()
-                .matchHeaderSnapshot();
-
-            should(scope.isDone()).eql(true);
-        });
-    });
-
-    /**
-     * Newsletter preference tests
-     */
-    describe('Newsletter preferences', function () {
-        it('Should not pass newsletter data to Stripe metadata but include in success URL token', async function () {
-            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
-            const paidTier = tiers.find(tier => tier.type === 'paid');
-
-            let stripeSessionMetadata;
-
-            nock('https://api.stripe.com')
-                .persist()
-                .get(/v1\/.*/)
-                .reply(createStripeGetHandler());
-
-            nock('https://api.stripe.com')
-                .persist()
-                .post(/v1\/.*/)
-                .reply(createStripePostHandler({
-                    priceId: 'price_newsletter',
-                    checkoutSessionId: 'cs_123',
-                    checkoutSessionUrl: 'https://checkout.stripe.com/session/cs_123',
-                    onCheckoutSession: function (body) {
-                        // Capture the metadata sent to Stripe
-                        const params = new URLSearchParams(body);
-                        stripeSessionMetadata = {};
-                        for (const [key, value] of params.entries()) {
-                            if (key.startsWith('metadata[')) {
-                                const metaKey = key.match(/metadata\[([^\]]+)\]/)[1];
-                                stripeSessionMetadata[metaKey] = value;
-                            }
-                        }
-
-                        return [200, {
-                            id: 'cs_123',
-                            url: 'https://checkout.stripe.com/session/cs_123'
-                        }];
-                    }
-                }));
-
-            await membersAgent.post('/api/create-stripe-checkout-session/')
-                .body({
-                    customerEmail: 'newsletter-test@test.com',
-                    tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {
-                        newsletters: JSON.stringify([])
+                        ],
+                        newsletters: JSON.stringify([{id: 'newsletter-1'}])
                     }
                 })
                 .expectStatus(200);
 
-            // Verify that newsletters were NOT sent to Stripe metadata
+            // Verify that neither attribution nor newsletters were sent to Stripe metadata
             should(stripeSessionMetadata).not.have.property('newsletters');
+            should(stripeSessionMetadata).not.have.property('attribution_url');
+            should(stripeSessionMetadata).not.have.property('attribution_type');
+            should(stripeSessionMetadata).not.have.property('attribution_id');
+            should(stripeSessionMetadata).not.have.property('referrer_source');
+            should(stripeSessionMetadata).not.have.property('referrer_medium');
+            should(stripeSessionMetadata).not.have.property('referrer_url');
+
+            // Verify that success URL contains a token (for magic link with data)
+            should(stripeSuccessUrl).match(/token=[A-Za-z0-9_-]+/);
         });
 
-        it('Should handle empty newsletter array without sending to Stripe', async function () {
+        it('Handles missing token data gracefully', async function () {
             const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
             const paidTier = tiers.find(tier => tier.type === 'paid');
-
-            let stripeSessionMetadata;
 
             nock('https://api.stripe.com')
                 .persist()
@@ -474,40 +349,19 @@ describe('Create Stripe Checkout Session', function () {
                 .persist()
                 .post(/v1\/.*/)
                 .reply(createStripePostHandler({
-                    priceId: 'price_empty_newsletter',
-                    checkoutSessionId: 'cs_456',
-                    checkoutSessionUrl: 'https://checkout.stripe.com/session/cs_456',
-                    onCheckoutSession: function (body) {
-                        // Capture the metadata sent to Stripe
-                        const params = new URLSearchParams(body);
-                        stripeSessionMetadata = {};
-                        for (const [key, value] of params.entries()) {
-                            if (key.startsWith('metadata[')) {
-                                const metaKey = key.match(/metadata\[([^\]]+)\]/)[1];
-                                stripeSessionMetadata[metaKey] = value;
-                            }
-                        }
-
-                        return [200, {
-                            id: 'cs_456',
-                            url: 'https://checkout.stripe.com/session/cs_456'
-                        }];
-                    }
+                    priceId: 'price_no_meta'
                 }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
-                    customerEmail: 'no-newsletter@test.com',
+                    customerEmail: 'no-metadata@test.com',
                     tierId: paidTier.id,
-                    cadence: 'month',
-                    metadata: {
-                        newsletters: JSON.stringify([])
-                    }
+                    cadence: 'month'
+                    // No metadata provided at all
                 })
-                .expectStatus(200);
-
-            // Verify that newsletters were NOT sent to Stripe metadata
-            should(stripeSessionMetadata).not.have.property('newsletters');
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot();
         });
     });
 });
