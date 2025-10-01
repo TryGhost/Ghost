@@ -9,7 +9,7 @@ test.describe('Post Factory API Integration', () => {
         postFactory = createPostFactory(page);
     });
 
-    test('should create a post and view it on the frontend', async ({page}) => {
+    test('create a post and view it on the frontend', async ({page}) => {
         const post = await postFactory.create({
             title: 'Test Post from Factory',
             status: 'published'
@@ -24,7 +24,7 @@ test.describe('Post Factory API Integration', () => {
         await expect(page.locator('h1.gh-article-title')).toContainText('Test Post from Factory');
     });
 
-    test('should create a post visible in Ghost Admin', async ({page}) => {
+    test('create a post visible in Ghost Admin', async ({page}) => {
         const uniqueTitle = `Admin Test Post ${Date.now()}`;
         const post = await postFactory.create({
             title: uniqueTitle,
@@ -36,7 +36,7 @@ test.describe('Post Factory API Integration', () => {
         await expect(page.locator(`text="${post.title}"`).first()).toBeVisible();
     });
 
-    test('should create draft post that is not accessible on frontend', async ({page}) => {
+    test('create draft post that is not accessible on frontend', async ({page}) => {
         const draftPost = await postFactory.create({
             title: 'Draft Post from Factory',
             status: 'draft'

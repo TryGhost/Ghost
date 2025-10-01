@@ -4,7 +4,6 @@ const debug = baseDebug('e2e:MailhogClient');
 
 // Email address structure used in From and To fields
 export interface EmailAddress {
-    Relays: string[] | null;
     Mailbox: string;
     Domain: string;
     Params: string;
@@ -29,7 +28,7 @@ export interface MimeStructure {
     };
 }
 
-export interface MailhogMessage {
+export interface EmailMessage {
     ID: string;
     From: EmailAddress;
     To: EmailAddress[];
@@ -50,190 +49,96 @@ export interface MailhogMessage {
     };
 }
 
-export interface MailhogSearchResult {
+export interface EmailMessageSearchResult {
     total: number;
     count: number;
     start: number;
-    items: MailhogMessage[];
+    items: EmailMessage[];
 }
 
-export class MailhogClient {
-    private readonly baseUrl: string;
+export interface EmailClient {
+    getMessages(limit: number): Promise<EmailMessage[]>;
+    searchByRecipient(recipient: string): Promise<EmailMessage[]>;
+    getLatestMessageFor(recipient: string): Promise<EmailMessage | null>;
+    waitForEmail(email: string): Promise<EmailMessage>;
+    deleteAllMessages(): Promise<void>;
+}
+
+export class MailhogClient implements EmailClient{
+    private readonly apiUrl: string;
 
     constructor(baseUrl: string = 'http://localhost:8026') {
-        this.baseUrl = baseUrl;
+        this.apiUrl = `${baseUrl}/api/v2`;
     }
 
-    /**
-     * Get all messages from Mailhog
-     */
-    async getMessages(limit: number = 50): Promise<MailhogMessage[]> {
-        debug('Getting messages from Mailhog');
-        const response = await fetch(`${this.baseUrl}/api/v2/messages?limit=${limit}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch messages: ${response.statusText}`);
-        }
-        const data = await response.json() as MailhogSearchResult;
-        debug(`Found ${data.items.length} messages`);
-        return data.items;
+    async getMessages(limit: number = 50): Promise<EmailMessage[]> {
+        const response = await this.executeApiCall(
+            `messages?limit=${limit}`,
+            'fetch messages'
+        );
+
+        return this.parseMessagesFromResponse(response);
     }
 
-    /**
-     * Search for messages by recipient email
-     */
-    async searchByRecipient(email: string, limit: number = 50): Promise<MailhogMessage[]> {
-        debug(`Searching for messages to ${email}`);
-        const response = await fetch(`${this.baseUrl}/api/v2/search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`);
-        if (!response.ok) {
-            throw new Error(`Failed to search messages: ${response.statusText}`);
-        }
-        const data = await response.json() as MailhogSearchResult;
-        debug(`Found ${data.items.length} messages for ${email}`);
-        return data.items;
+    async searchByRecipient(email: string, limit: number = 50): Promise<EmailMessage[]> {
+        const response = await this.executeApiCall(
+            `search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`,
+            'search messages'
+        );
+
+        return this.parseMessagesFromResponse(response);
     }
 
-    /**
-     * Get the latest message for a recipient
-     */
-    async getLatestMessageFor(email: string): Promise<MailhogMessage | null> {
+    async getLatestMessageFor(email: string): Promise<EmailMessage | null> {
         const messages = await this.searchByRecipient(email, 1);
         return messages.length > 0 ? messages[0] : null;
     }
 
-    /**
-     * Wait for an email to arrive for a specific recipient
-     */
-    async waitForEmail(email: string, timeoutMs: number = 10000): Promise<MailhogMessage> {
+    async deleteAllMessages(): Promise<void> {
+        await this.executeApiCall(
+            `messages`,
+            'delete all messages',
+            'DELETE');
+    }
+
+    async waitForEmail(email: string, timeoutMs: number = 10000): Promise<EmailMessage> {
         debug(`Waiting for email to ${email}`);
         const startTime = Date.now();
-        
+
         while (Date.now() - startTime < timeoutMs) {
             const message = await this.getLatestMessageFor(email);
+
             if (message) {
                 debug(`Email received for ${email}`);
                 return message;
             }
-            
-            // Wait a bit before checking again
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 500);
-            });
+
+            await this.delay(500);
         }
-        
+
         throw new Error(`Timeout waiting for email to ${email}`);
     }
 
-    /**
-     * Extract magic link from a Ghost member signup email
-     */
-    extractMagicLink(message: MailhogMessage): string | null {
-        // Get the decoded plain text content
-        const body = this.getPlainTextContent(message);
-
-        // Look for magic link pattern in the email body
-        // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
-        const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
-        const matches = body.match(magicLinkRegex);
-
-        if (matches && matches.length > 0) {
-            const magicLink = matches[0];
-            debug(`Found magic link: ${magicLink}`);
-
-            // Validate that the link has required parameters
-            if (!magicLink.includes('token=')) {
-                debug('Magic link missing token parameter');
-                return null;
-            }
-
-            if (!magicLink.includes('action=signup')) {
-                debug('Magic link missing action=signup parameter');
-                return null;
-            }
-
-            return magicLink;
-        }
-
-        debug('No magic link found in email');
-        debug('Email body searched:', body.substring(0, 500));
-        return null;
-    }
-
-    /**
-     * Clear all messages from Mailhog
-     */
-    async deleteAllMessages(): Promise<void> {
-        debug('Deleting all messages from Mailhog');
-        const response = await fetch(`${this.baseUrl}/api/v1/messages`, {
-            method: 'DELETE'
-        });
+    private async executeApiCall(endpoint: string, callType: string, method: string = 'GET'): Promise<Response> {
+        debug(`${callType} through ${endpoint}`);
+        const response = await fetch(`${this.apiUrl}/${endpoint}`, {method: method});
         if (!response.ok) {
-            throw new Error(`Failed to delete messages: ${response.statusText}`);
+            throw new Error(`Failed to ${callType}: ${response.statusText}`);
         }
-        debug('All messages deleted');
+
+        debug(`${callType} through ${endpoint} succeeded`);
+        return response;
     }
 
-    /**
-     * Get message content as plain text
-     */
-    getPlainTextContent(message: MailhogMessage): string {
-        // Try to get plain text from MIME parts if available
-        if (message.MIME && message.MIME.Parts) {
-            for (const part of message.MIME.Parts) {
-                if (part.Headers && part.Headers['Content-Type'] && 
-                    part.Headers['Content-Type'][0].includes('text/plain')) {
-                    // Check if content is base64 encoded
-                    if (part.Headers['Content-Transfer-Encoding'] && 
-                        part.Headers['Content-Transfer-Encoding'][0] === 'base64') {
-                        try {
-                            return Buffer.from(part.Body, 'base64').toString('utf-8');
-                        } catch (e) {
-                            debug('Failed to decode base64 content:', e);
-                        }
-                    }
-                    return part.Body;
-                }
-            }
-        }
-        
-        // Fall back to main body
-        return message.Content.Body;
+    private async parseMessagesFromResponse(response: Response): Promise<EmailMessage[]> {
+        const data = await response.json() as EmailMessageSearchResult;
+        debug(`Found ${data.items.length} messages`);
+        return data.items;
     }
 
-    /**
-     * Get message content as HTML
-     */
-    getHtmlContent(message: MailhogMessage): string {
-        // Try to get HTML from MIME parts if available
-        if (message.MIME && message.MIME.Parts) {
-            for (const part of message.MIME.Parts) {
-                if (part.Headers && part.Headers['Content-Type'] &&
-                    part.Headers['Content-Type'][0].includes('text/html')) {
-                    return part.Body;
-                }
-            }
-        }
-
-        // Fall back to main body if it looks like HTML
-        const body = message.Content.Body;
-        if (body.includes('<html') || body.includes('<body')) {
-            return body;
-        }
-
-        return '';
-    }
-
-    /**
-     * Wait for email and extract magic link
-     */
-    async waitForMagicLink(email: string, timeoutMs: number = 10000): Promise<string> {
-        debug(`Waiting for magic link for ${email}`);
-        const message = await this.waitForEmail(email, timeoutMs);
-        const magicLink = this.extractMagicLink(message);
-
-        if (!magicLink) {
-            throw new Error(`No magic link found in email for ${email}`);
-        }
-
-        return magicLink;
+    private async delay(miliSeconds: number) {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, miliSeconds);
+        });
     }
 }

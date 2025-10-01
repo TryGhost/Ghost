@@ -32,9 +32,6 @@ export interface Post {
     show_title_and_feature_image: boolean;
 }
 
-/**
- * Simple factory for creating Ghost posts.
- */
 export class PostFactory extends Factory<Partial<Post>, Post> {
     name = 'post'; // Factory identifier
     entityType = 'posts'; // Entity name (for adapter; currently the database table)
@@ -42,14 +39,53 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
     constructor(adapter?: PersistenceAdapter) {
         super(adapter);
     }
-    
+
     build(options: Partial<Post> = {}): Post {
         const now = new Date();
         const title = options.title || faker.lorem.sentence();
         const content = faker.lorem.paragraphs(3);
-        
-        // Generate lexical format (Ghost's current editor)
-        const lexical = {
+
+        const defaults: Post = {
+            id: generateId(),
+            uuid: generateUuid(),
+            title: title,
+            slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
+            mobiledoc: null,
+            lexical: JSON.stringify(this.lexicalDetails(content)),
+            html: `<p>${content}</p>`,
+            comment_id: generateId(),
+            plaintext: content,
+            feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
+            featured: faker.datatype.boolean(),
+            type: 'post',
+            status: 'draft',
+            locale: null,
+            visibility: 'public',
+            email_recipient_filter: 'none',
+            created_at: now,
+            updated_at: now,
+            published_at: null,
+            custom_excerpt: faker.lorem.paragraph(),
+            codeinjection_head: null,
+            codeinjection_foot: null,
+            custom_template: null,
+            canonical_url: null,
+            newsletter_id: null,
+            show_title_and_feature_image: true
+        };
+
+        // Determine published_at based on status and user options
+        let publishedAt = options.published_at ?? defaults.published_at;
+        if (options.status === 'published' && !options.published_at) {
+            publishedAt = now;
+        }
+
+        return {...defaults, ...options, published_at: publishedAt} as Post;
+    }
+
+    // Generate lexical format (Ghost's current editor)
+    private lexicalDetails(content: string) {
+        return {
             root: {
                 children: [{
                     children: [{
@@ -74,50 +110,5 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
                 version: 1
             }
         };
-        
-        // Create defaults object
-        const defaults: Post = {
-            id: generateId(),
-            uuid: generateUuid(),
-            title: title,
-            slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
-            mobiledoc: null,
-            lexical: JSON.stringify(lexical),
-            html: `<p>${content}</p>`,
-            comment_id: generateId(),
-            plaintext: content,
-            feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
-            featured: faker.datatype.boolean(),
-            type: 'post',
-            status: 'draft',
-            locale: null,
-            visibility: 'public',
-            email_recipient_filter: 'none',
-            created_at: now,
-            updated_at: now,
-            published_at: null,
-            custom_excerpt: faker.lorem.paragraph(),
-            codeinjection_head: null,
-            codeinjection_foot: null,
-            custom_template: null,
-            canonical_url: null,
-            newsletter_id: null,
-            show_title_and_feature_image: true
-        };
-        
-        // Determine published_at based on status and user options
-        let publishedAt = options.published_at ?? defaults.published_at;
-        if (options.status === 'published' && !options.published_at) {
-            publishedAt = now;
-        }
-        
-        // Merge with user options
-        const post: Post = {
-            ...defaults,
-            ...options,
-            published_at: publishedAt
-        } as Post;
-        
-        return post;
     }
 }

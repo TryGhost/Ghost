@@ -7,7 +7,7 @@ declare global {
     }
 }
 
-export default class PublicPage extends BasePage{
+export class PublicPage extends BasePage{
     private readonly portalFrame: Locator;
     private readonly portalIframe: Locator;
     private readonly portalScript: Locator;
@@ -37,9 +37,9 @@ export default class PublicPage extends BasePage{
     /**
      * Overrides the goto method to enable analytics requests before navigating to the page.
     */
-    async goto(): Promise<void> {
+    async goto(url = null): Promise<void> {
         await this.enableAnalyticsRequests();
-        await super.goto();
+        await super.goto(url);
     }
 
     async waitForPageHitRequest(): Promise<void> {

@@ -10,15 +10,8 @@ export abstract class Factory<TOptions extends Record<string, unknown> = Record<
         this.adapter = adapter;
     }
 
-    /**
-     * Build an entity in memory without persisting it
-     * This method should be implemented by subclasses to generate dynamic data
-     */
     abstract build(options?: Partial<TOptions>): TResult;
 
-    /**
-     * Build and persist an entity to the database
-     */
     async create(options?: Partial<TOptions>): Promise<TResult> {
         if (!this.adapter) {
             throw new Error('Cannot create without a persistence adapter. Use build() for in-memory objects.');

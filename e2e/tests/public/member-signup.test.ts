@@ -1,21 +1,28 @@
 import {test, expect} from '../../helpers/playwright';
-import {MailhogClient} from '../../helpers/email/MailhogClient';
-import {signupViaPortal} from '../../helpers/flows/signup';
-import {HomePage} from '../../helpers/pages/public';
+import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
+import {EmailMessageBodyParts} from '../../helpers/email/EmailMessageBodyParts';
+import {signupViaPortal} from '../../helpers/playwright/flows/signup';
+import {HomePage, PublicPage} from '../../helpers/pages/public';
+import {extractMagicLink} from '../../helpers/email/utils';
 
 test.describe('Member Signup with Email Verification', () => {
-    let mailhog: MailhogClient;
+    let emailClient: EmailClient;
 
     test.beforeEach(async () => {
-        mailhog = new MailhogClient();
+        emailClient = new MailhogClient();
     });
 
     test('completes full signup flow with magic link', async ({page}) => {
         const {email} = await signupViaPortal(page);
 
-        const magicLink = await mailhog.waitForMagicLink(email);
-        await page.goto(magicLink);
-        await page.waitForLoadState('networkidle');
+        const message = await emailClient.waitForEmail(email);
+        const emailMessageBodyParts = new EmailMessageBodyParts(message);
+        const emailTextBody = emailMessageBodyParts.getPlainTextContent();
+
+        const magicLink = extractMagicLink(emailTextBody);
+        const publicPage = new PublicPage(page);
+        await publicPage.goto(magicLink);
+        await publicPage.waitForPageToFullyLoad();
 
         const homePage = new HomePage(page);
         await homePage.waitForSignedIn();
@@ -25,13 +32,11 @@ test.describe('Member Signup with Email Verification', () => {
     test('receives welcome email with correct content', async ({page}) => {
         const {email} = await signupViaPortal(page);
 
-        const message = await mailhog.waitForEmail(email);
+        const message = await emailClient.waitForEmail(email);
         expect(message.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
 
-        const emailBody = mailhog.getPlainTextContent(message);
-        expect(emailBody).toContain('complete the signup process');
-
-        const magicLink = mailhog.extractMagicLink(message);
-        expect(magicLink).toBeTruthy();
+        const emailMessageBodyParts = new EmailMessageBodyParts(message);
+        const emailTextBody = emailMessageBodyParts.getPlainTextContent();
+        expect(emailTextBody).toContain('complete the signup process');
     });
 });
