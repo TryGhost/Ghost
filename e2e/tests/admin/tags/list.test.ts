@@ -1,11 +1,12 @@
 import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
-import {overrideFeatureFlags} from '../../../helpers/utils';
+import {createSettingsFactory} from '../../../data-factory';
 import {mockTagsResponse} from './helpers/mock-tags-response';
 
 test.describe('Ghost Admin - Tags', () => {
     test.beforeEach(async ({page}) => {
-        await overrideFeatureFlags(page, {tagsX: true});
+        const settingsFactory = createSettingsFactory(page);
+        await settingsFactory.updateLabs({tagsX: true});
     });
 
     test('shows empty state when no tags exist', async ({page}) => {
