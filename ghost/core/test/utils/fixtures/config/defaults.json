@@ -70,13 +70,13 @@
             "minWait": 600000,
             "maxWait": 43200000,
             "lifetime": 43200,
-            "freeRetries": 15
+            "freeRetries": 8
         },
         "otc_verification": {
             "minWait": 300000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries": 5
+            "freeRetries": 4
         }
     }
 }
