@@ -55,7 +55,7 @@
     "autoprefixer": "10.4.21",
     "concurrently": "8.2.2",
     "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "0.4.22",
+    "eslint-plugin-react-refresh": "0.4.23",
     "eslint-plugin-tailwindcss": "3.18.2",
     "jsdom": "24.1.3",
     "postcss": "8.5.6",
