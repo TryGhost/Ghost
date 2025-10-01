@@ -105,7 +105,7 @@ describe('RouterController', function () {
             })).should.be.true();
         });
 
-        it('parses newsletters from the request body', async function () {
+        it('removes newsletters from metadata and passes them via magic link', async function () {
             const newslettersServiceStub = {
                 getAll: sinon.stub()
             };
@@ -113,6 +113,15 @@ describe('RouterController', function () {
                 {id: 'abc123', name: 'Newsletter 1', status: 'active'},
                 {id: 'def456', name: 'Newsletter 2', status: 'active'}
             ]);
+
+            const magicLinkServiceStub = {
+                getMagicLink: sinon.stub().resolves('https://example.com/success?token=test_token')
+            };
+
+            const memberRepositoryStub = {
+                get: sinon.stub().resolves(null) // No existing member
+            };
+
             const routerController = new RouterController({
                 tiersService,
                 paymentsService,
@@ -120,8 +129,11 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                newslettersService: newslettersServiceStub
+                newslettersService: newslettersServiceStub,
+                magicLinkService: magicLinkServiceStub,
+                memberRepository: memberRepositoryStub
             });
+
             const newsletters = [
                 {id: 'abc123', name: 'Newsletter 1'},
                 {id: 'def456', name: 'Newsletter 2'}
@@ -131,8 +143,10 @@ describe('RouterController', function () {
                 body: {
                     tierId: 'tier_123',
                     cadence: 'month',
+                    customerEmail: 'test@example.com', // Add email to trigger magic link creation
                     metadata: {
-                        newsletters: newslettersString
+                        newsletters: newslettersString,
+                        someOtherField: 'value'
                     }
                 }
             };
@@ -142,15 +156,21 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
-
             getPaymentLinkSpy.calledOnce.should.be.true();
 
-            getPaymentLinkSpy.calledWith(sinon.match({
-                metadata: {
-                    newsletters: expectedNewsletters
-                }
-            })).should.be.true();
+            // Newsletters should NOT be in the metadata passed to Stripe
+            const callArgs = getPaymentLinkSpy.firstCall.args[0];
+            should.not.exist(callArgs.metadata.newsletters);
+            // Other metadata should still be present
+            callArgs.metadata.someOtherField.should.equal('value');
+
+            // Magic link should be called with newsletter data
+            magicLinkServiceStub.getMagicLink.calledOnce.should.be.true();
+            const magicLinkCallArgs = magicLinkServiceStub.getMagicLink.firstCall.args[0];
+            magicLinkCallArgs.tokenData.newsletters.should.eql([
+                {id: 'abc123'},
+                {id: 'def456'}
+            ]);
         });
 
         describe('_getSubscriptionCheckoutData', function () {
