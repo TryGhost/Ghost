@@ -1,5 +1,5 @@
 import {Page, Locator} from '@playwright/test';
-import PublicPage from './PublicPage';
+import {PublicPage} from './PublicPage';
 
 export class HomePage extends PublicPage {
     readonly title: Locator;
