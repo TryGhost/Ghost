@@ -83,7 +83,7 @@
     "Failed to update billing information, please try again": "更新账单信息失败，请重试",
     "Failed to update newsletter settings": "更新新闻信设置失败",
     "Failed to update subscription, please try again": "更新会籍失败，请重试",
-    "Failed to verify code, please try again": "验证码失败，请重试",
+    "Failed to verify code, please try again": "验证码验证失败，请重试",
     "Forever": "永久",
     "Free Trial – Ends {trialEnd}": "免费试用 - {trialEnd}结束",
     "Get help": "获取帮助",

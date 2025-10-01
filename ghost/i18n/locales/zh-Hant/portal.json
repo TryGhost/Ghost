@@ -18,7 +18,7 @@
     "Add a personal note": "添加個人留言",
     "After a free trial ends, you will be charged the regular price for the tier you've chosen. You can always cancel before then.": "免費試用結束後，您將支付所選方案的定價金額。在此之前，您可以隨時取消。",
     "Already a member?": "已經是會員了？",
-    "An email has been sent to your inbox. Use the link inside or enter the code below.": "一封電子郵件已發送至您的收件匣。請點擊郵件內的連結，或輸入以下驗證碼。",
+    "An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.": "一封電子郵件已發送至{submittedEmailOrInbox}。請點擊郵件內的連結，或輸入以下驗證碼。",
     "An error occurred": "錯誤發生",
     "An unexpected error occured. Please try again or <a>contact support</a> if the error persists.": "發生了意外錯誤，請再試一次。如果錯誤持續出現，請<a>聯繫客服</a>。",
     "Back": "返回上一頁",
