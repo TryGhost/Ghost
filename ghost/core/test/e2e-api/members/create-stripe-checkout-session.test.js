@@ -524,4 +524,174 @@ describe('Create Stripe Checkout Session', function () {
             should(scope.isDone()).eql(true);
         });
     });
+
+    /**
+     * Newsletter preference tests
+     */
+    describe('Newsletter preferences', function () {
+        it('Should not pass newsletter data to Stripe metadata but include in success URL token', async function () {
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            let stripeSessionMetadata;
+
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
+                            }];
+                        }
+                    }
+                    return [500];
+                });
+
+            nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        // Capture the metadata sent to Stripe
+                        const params = new URLSearchParams(body);
+                        stripeSessionMetadata = {};
+                        for (const [key, value] of params.entries()) {
+                            if (key.startsWith('metadata[')) {
+                                const metaKey = key.match(/metadata\[([^\]]+)\]/)[1];
+                                stripeSessionMetadata[metaKey] = value;
+                            }
+                        }
+
+                        return [200, {
+                            id: 'cs_123',
+                            url: 'https://checkout.stripe.com/session/cs_123'
+                        }];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_newsletter',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
+                    }
+                    return [500];
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'newsletter-test@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        newsletters: JSON.stringify([])
+                    }
+                })
+                .expectStatus(200);
+
+            // Verify that newsletters were NOT sent to Stripe metadata
+            should(stripeSessionMetadata).not.have.property('newsletters');
+        });
+
+        it('Should handle empty newsletter array without sending to Stripe', async function () {
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            let stripeSessionMetadata;
+
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500,
+                                recurring: {
+                                    interval: 'month'
+                                }
+                            }];
+                        }
+                    }
+                    return [500];
+                });
+
+            nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        // Capture the metadata sent to Stripe
+                        const params = new URLSearchParams(body);
+                        stripeSessionMetadata = {};
+                        for (const [key, value] of params.entries()) {
+                            if (key.startsWith('metadata[')) {
+                                const metaKey = key.match(/metadata\[([^\]]+)\]/)[1];
+                                stripeSessionMetadata[metaKey] = value;
+                            }
+                        }
+
+                        return [200, {
+                            id: 'cs_456',
+                            url: 'https://checkout.stripe.com/session/cs_456'
+                        }];
+                    }
+                    if (uri === '/v1/prices') {
+                        return [200, {
+                            id: 'price_empty_newsletter',
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500,
+                            recurring: {
+                                interval: 'month'
+                            }
+                        }];
+                    }
+
+                    return [500];
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'no-newsletter@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        newsletters: JSON.stringify([])
+                    }
+                })
+                .expectStatus(200);
+
+            // Verify that newsletters were NOT sent to Stripe metadata
+            should(stripeSessionMetadata).not.have.property('newsletters');
+        });
+    });
 });
