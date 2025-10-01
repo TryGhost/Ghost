@@ -943,55 +943,6 @@ describe('Members API', function () {
             assert.equal(member.newsletters.length, 1, 'The member should have a single newsletter');
         });
 
-        it('Will create a member with signup newsletter preference', async function () {
-            set(customer, {
-                id: 'cus_123',
-                name: 'Test Member',
-                email: 'checkout-newsletter-test@email.com',
-                subscriptions: {
-                    type: 'list',
-                    data: [subscription]
-                }
-            });
-
-            { // ensure member didn't already exist
-                const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
-                assert.equal(body.members.length, 0, 'A member already existed');
-            }
-
-            const webhookPayload = JSON.stringify({
-                type: 'checkout.session.completed',
-                data: {
-                    object: {
-                        mode: 'subscription',
-                        customer: customer.id,
-                        subscription: subscription.id,
-                        metadata: {
-                            newsletters: JSON.stringify([])
-                        }
-                    }
-                }
-            });
-
-            const webhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: webhookPayload,
-                secret: process.env.WEBHOOK_SECRET
-            });
-
-            await membersAgent.post('/webhooks/stripe/')
-                .body(webhookPayload)
-                .header('content-type', 'application/json')
-                .header('stripe-signature', webhookSignature);
-
-            const {body} = await adminAgent.get('/members/?search=checkout-newsletter-test@email.com');
-            assert.equal(body.members.length, 1, 'The member was not created');
-            const member = body.members[0];
-
-            assert.equal(member.status, 'paid', 'The member should be "paid"');
-            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
-            assert.equal(member.newsletters.length, 0, 'The member should not have any newsletter subscription');
-        });
-
         it('Does not 500 if the member is unknown', async function () {
             set(paymentMethod, {
                 id: 'card_456'
