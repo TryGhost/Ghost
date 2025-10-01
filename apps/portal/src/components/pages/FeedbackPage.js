@@ -170,7 +170,7 @@ export const FeedbackPageStyles = `
 `;
 
 function ErrorPage({error}) {
-    const {onAction, t} = useContext(AppContext);
+    const {doAction, t} = useContext(AppContext);
 
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
@@ -185,12 +185,12 @@ function ErrorPage({error}) {
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
-                onClick = {() => onAction('closePopup')}
+                onClick = {() => doAction('closePopup')}
                 disabled={false}
                 brandColor='#000000'
                 label={t('Close')}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>
@@ -198,7 +198,7 @@ function ErrorPage({error}) {
 }
 
 const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
-    const {onAction, brandColor, t} = useContext(AppContext);
+    const {doAction, brandColor, t} = useContext(AppContext);
     const [score, setScore] = useState(initialScore);
 
     const stopPropagation = (event) => {
@@ -206,7 +206,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
     };
 
     const close = () => {
-        onAction('closePopup');
+        doAction('closePopup');
     };
 
     const submit = async (event) => {
@@ -255,7 +255,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                 brandColor={brandColor}
                 label={t('Submit feedback')}
                 isRunning={loading}
-                tabindex="3"
+                tabIndex={3}
             />
             <CloseButton close={() => close(false)} />
         </div>
@@ -276,7 +276,7 @@ const LoadingFeedbackView = ({action, score}) => {
 };
 
 const ConfirmFeedback = ({positive}) => {
-    const {onAction, brandColor, t} = useContext(AppContext);
+    const {doAction, brandColor, t} = useContext(AppContext);
 
     const icon = positive ? <ThumbUpIcon /> : <ThumbDownIcon />;
 
@@ -292,12 +292,12 @@ const ConfirmFeedback = ({positive}) => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={false}
-                onClick = {() => onAction('closePopup')}
+                onClick = {() => doAction('closePopup')}
                 disabled={false}
                 brandColor={brandColor}
                 label={t('Close')}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>

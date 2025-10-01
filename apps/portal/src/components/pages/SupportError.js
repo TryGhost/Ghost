@@ -25,7 +25,7 @@ export const TipsAndDonationsErrorStyle = `
 `;
 
 const SupportError = ({error}) => {
-    const {onAction, t} = useContext(AppContext);
+    const {doAction, t} = useContext(AppContext);
     const errorTitle = t('Sorry, that didn’t work.');
     const errorMessage = error || t('There was an error processing your payment. Please try again.');
     const buttonLabel = t('Close');
@@ -46,13 +46,13 @@ const SupportError = ({error}) => {
             <ActionButton
                 style={{width: '100%'}}
                 retry={true}
-                onClick = {() => onAction('closePopup')}
+                onClick = {() => doAction('closePopup')}
                 disabled={false}
                 brandColor='#000000'
                 label={buttonLabel}
                 isDestructive={true}
                 isRunning={false}
-                tabindex='3'
+                tabIndex={3}
                 classes={'sticky bottom'}
             />
         </div>

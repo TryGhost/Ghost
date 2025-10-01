@@ -22,7 +22,7 @@ export default class SigninPage extends React.Component {
     componentDidMount() {
         const {member} = this.context;
         if (member) {
-            this.context.onAction('switchPage', {
+            this.context.doAction('switchPage', {
                 page: 'accountHome'
             });
         }
@@ -43,7 +43,7 @@ export default class SigninPage extends React.Component {
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, phonenumber, redirect, token});
+                this.context.doAction('signin', {email, phonenumber, redirect, token});
             }
         });
     }
@@ -85,8 +85,8 @@ export default class SigninPage extends React.Component {
                 label: 'Phone number',
                 name: 'phonenumber',
                 required: false,
-                tabindex: -1,
-                autocomplete: 'off',
+                tabIndex: -1,
+                autoComplete: 'off',
                 hidden: true
             }
         ];
@@ -126,7 +126,7 @@ export default class SigninPage extends React.Component {
                     data-test-button='signup-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
-                    onClick={() => this.context.onAction('switchPage', {page: 'signup'})}
+                    onClick={() => this.context.doAction('switchPage', {page: 'signup'})}
                 >
                     <span>{t('Sign up')}</span>
                 </button>

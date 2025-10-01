@@ -186,7 +186,7 @@ const openTab = (url) => {
 };
 
 const RecommendationItem = (recommendation) => {
-    const {t, onAction, member, site} = useContext(AppContext);
+    const {t, doAction, member, site} = useContext(AppContext);
     const {title, url, description, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
@@ -217,7 +217,7 @@ const RecommendationItem = (recommendation) => {
         openTab(refUrl);
 
         if (!clicked) {
-            onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+            doAction('trackRecommendationClicked', {recommendationId: recommendation.id});
             setClicked(true);
         }
     }, [refUrl, recommendation.id, clicked]);
@@ -225,11 +225,11 @@ const RecommendationItem = (recommendation) => {
     const oneClickSubscribeHandler = useCallback(async () => {
         try {
             setLoading(true);
-            await onAction('oneClickSubscribe', {
+            await doAction('oneClickSubscribe', {
                 siteUrl: url,
                 throwErrors: true
             });
-            onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
+            doAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
@@ -239,7 +239,7 @@ const RecommendationItem = (recommendation) => {
             openTab(signupUrl);
 
             if (!clicked) {
-                onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+                doAction('trackRecommendationClicked', {recommendationId: recommendation.id});
                 setClicked(true);
             }
         }
@@ -279,7 +279,7 @@ const RecommendationItem = (recommendation) => {
 };
 
 const RecommendationsPage = () => {
-    const {api, site, pageData, t, onAction} = useContext(AppContext);
+    const {api, site, pageData, t, doAction} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const [recommendations, setRecommendations] = useState(null);
@@ -324,12 +324,12 @@ const RecommendationsPage = () => {
 
     const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
 
-    /* Possible cases: 
+    /* Possible cases:
     - no recommendations found - subhead says no recommendations are available.
     - recommendations found - show generic message
     - recommendations found and user just signed up - show specific message
     */
-   
+
     let subheading;
     if (recommendationsEnabled && recommendations && recommendations.length > 0) {
         if (pageData && pageData.signup) {
@@ -363,7 +363,7 @@ const RecommendationsPage = () => {
                         <span>{t('Show all')}</span>
                     </button>}
                     {(pageData && pageData.signup) && <button className='gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later' style={{width: '100%'}} onClick={showAllRecommendations}>
-                        <span onClick={() => onAction('closePopup')}>{t('Maybe later')}</span>
+                        <span onClick={() => doAction('closePopup')}>{t('Maybe later')}</span>
                     </button>}
                 </footer>
             )}

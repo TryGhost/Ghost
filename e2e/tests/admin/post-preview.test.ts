@@ -19,16 +19,14 @@ test.describe('Post Preview Modal', () => {
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
-        await postEditorPage.openPreview();
-        expect(await postEditorPage.previewModal.isVisible()).toBe(true);
+        await postEditorPage.previewButton.click();
+        await expect(postEditorPage.previewModal.modal).toBeVisible();
 
         const postContent = await postEditorPage.previewModal.getPostContent();
-        await postContent.image().click();
+        await postContent.image.click();
 
-        await page.keyboard.press('Escape');
-
-        await postEditorPage.previewModal.waitForHidden();
-        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
+        await postEditorPage.pressKey('Escape');
+        await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
 
     test('closes preview modal with ESC key when modal header has focus', async ({page}) => {
@@ -40,15 +38,13 @@ test.describe('Post Preview Modal', () => {
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
-        await postEditorPage.openPreview();
-        expect(await postEditorPage.previewModal.isVisible()).toBe(true);
+        await postEditorPage.previewButton.click();
+        await expect(postEditorPage.previewModal.modal).toBeVisible();
 
         await postEditorPage.previewModal.header.click();
 
-        await page.keyboard.press('Escape');
-
-        await postEditorPage.previewModal.waitForHidden();
-        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
+        await postEditorPage.pressKey('Escape');
+        await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
 
     test('closes preview modal using close button', async ({page}) => {
@@ -60,11 +56,10 @@ test.describe('Post Preview Modal', () => {
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
-        await postEditorPage.openPreview();
-        expect(await postEditorPage.previewModal.isVisible()).toBe(true);
+        await postEditorPage.previewButton.click();
+        await expect(postEditorPage.previewModal.modal).toBeVisible();
 
         await postEditorPage.previewModal.close();
-
-        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
+        await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
 });

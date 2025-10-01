@@ -97,13 +97,21 @@ async function signin({data, api, state}) {
             return {
                 page: 'magiclink',
                 lastPage: 'signin',
-                otcRef: response.otc_ref
+                otcRef: response.otc_ref,
+                pageData: {
+                    ...(state.pageData || {}),
+                    email: (data?.email || '').trim()
+                }
             };
         }
 
         return {
             page: 'magiclink',
-            lastPage: 'signin'
+            lastPage: 'signin',
+            pageData: {
+                ...(state.pageData || {}),
+                email: (data?.email || '').trim()
+            }
         };
     } catch (e) {
         return {
@@ -114,6 +122,27 @@ async function signin({data, api, state}) {
             })
         };
     }
+}
+
+function startSigninOTCFromCustomForm({data, state}) {
+    const email = (data?.email || '').trim();
+    const otcRef = data?.otcRef;
+
+    if (!otcRef) {
+        return {};
+    }
+
+    return {
+        showPopup: true,
+        page: 'magiclink',
+        lastPage: 'signin',
+        otcRef,
+        pageData: {
+            ...(state.pageData || {}),
+            email
+        },
+        popupNotification: null
+    };
 }
 
 async function verifyOTC({data, api, state}) {
@@ -165,7 +194,11 @@ async function signup({data, state, api}) {
         }
         return {
             page: 'magiclink',
-            lastPage: 'signup'
+            lastPage: 'signup',
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim()
+            }
         };
     } catch (e) {
         const {t} = state;
@@ -608,6 +641,7 @@ const Actions = {
     back,
     signout,
     signin,
+    startSigninOTCFromCustomForm,
     verifyOTC,
     signup,
     updateSubscription,

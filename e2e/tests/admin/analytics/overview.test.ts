@@ -1,11 +1,26 @@
-import {test, expect} from '../../../helpers/playwright';
+import {test, expect, withIsolatedPage} from '../../../helpers/playwright';
 import {
     AnalyticsOverviewPage,
     AnalyticsWebTrafficPage,
     AnalyticsGrowthPage
 } from '../../../helpers/pages/admin';
+import {HomePage} from '../../../helpers/pages/public';
 
 test.describe('Ghost Admin - Analytics Overview', () => {
+    test('records visitor when homepage is visited', async ({page, browser, baseURL}) => {
+        await withIsolatedPage(browser, {baseURL}, async ({page: publicPage}) => {
+            const homePage = new HomePage(publicPage);
+            await homePage.goto();
+            await homePage.waitForPageHitRequest();
+        });
+
+        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+        await analyticsOverviewPage.goto();
+        await analyticsOverviewPage.refreshData();
+
+        expect(await analyticsOverviewPage.uniqueVisitors.count()).toBe(1);
+    });
+
     test('latest post', async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();

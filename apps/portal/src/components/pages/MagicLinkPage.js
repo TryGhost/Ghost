@@ -38,20 +38,51 @@ export default class MagicLinkPage extends React.Component {
         };
     }
 
+    /**
+     * Generates configuration object containing translated description messages for magic link scenarios
+     * @param {string} submittedEmailOrInbox - The email address or fallback text ('your inbox')
+     * @returns {Object} Configuration object with message templates for signin/signup scenarios
+     */
+    getDescriptionConfig(submittedEmailOrInbox) {
+        const {t} = this.context;
+        return {
+            signin: {
+                withOTC: t('An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
+                withoutOTC: t('A login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
+            },
+            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
+        };
+    }
+
+    /**
+     * Gets the appropriate translated description based on page context
+     * @param {Object} params - Configuration object
+     * @param {string} params.lastPage - The previous page ('signin' or 'signup')
+     * @param {boolean} params.otcRef - Whether one-time code is being used
+     * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
+     * @returns {string} The translated description
+     */
+    getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
+        const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
+        const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+
+        if (normalizedPage === 'signup') {
+            return descriptionConfig.signup;
+        }
+
+        return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
+    }
+
     renderFormHeader() {
-        const {t, otcRef} = this.context;
+        const {t, otcRef, pageData, lastPage} = this.context;
+        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
 
-        let popupTitle = t(`Now check your email!`);
-        let popupDescription = t(`A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`);
-
-        if (this.context.lastPage === 'signup') {
-            popupTitle = t(`Now check your email!`);
-            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
-        }
-
-        if (this.context.lastPage === 'signin' && otcRef) {
-            popupDescription = t(`An email has been sent to your inbox. Use the link inside or enter the code below.`);
-        }
+        const popupTitle = t(`Now check your email!`);
+        const popupDescription = this.getTranslatedDescription({
+            lastPage,
+            otcRef,
+            submittedEmailOrInbox
+        });
 
         return (
             <section className='gh-portal-inbox-notification'>
@@ -71,7 +102,7 @@ export default class MagicLinkPage extends React.Component {
             <>
                 <div
                     style={{color: '#1d1d1d', fontWeight: 'bold', cursor: 'pointer'}}
-                    onClick={() => this.context.onAction('switchPage', {page: 'signin'})}
+                    onClick={() => this.context.doAction('switchPage', {page: 'signin'})}
                 >
                     {t('Back to Log in')}
                 </div>
@@ -80,7 +111,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     handleClose() {
-        this.context.onAction('closePopup');
+        this.context.doAction('closePopup');
     }
 
     renderCloseButton() {
@@ -122,7 +153,7 @@ export default class MagicLinkPage extends React.Component {
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
-                this.context.onAction('verifyOTC', {otc, otcRef, redirect});
+                this.context.doAction('verifyOTC', {otc, otcRef, redirect});
             }
         }
         );
@@ -160,7 +191,7 @@ export default class MagicLinkPage extends React.Component {
                         label={t('Code')}
                         errorMessage={errors.otc || ''}
                         autoFocus={false}
-                        maxlength={6}
+                        maxLength={6}
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                     />
                 </section>

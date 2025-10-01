@@ -42,7 +42,7 @@ async function updateMemberNewsletters({api, memberUuid, key, newsletters, enabl
 // NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
 //  we need to update the member data in the context if logged in.
 export default function UnsubscribePage() {
-    const {site, api, pageData, member: loggedInMember, onAction, t} = useContext(AppContext);
+    const {site, api, pageData, member: loggedInMember, doAction, t} = useContext(AppContext);
     // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
     const [member, setMember] = useState();
     const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function UnsubscribePage() {
 
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
-            onAction('updateNewsletterPreference', {newsletters});
+            doAction('updateNewsletterPreference', {newsletters});
         } else {
             await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
@@ -69,20 +69,20 @@ export default function UnsubscribePage() {
             action: `updated:success`,
             message: t('Email preferences updated.')
         };
-        onAction('showPopupNotification', notification);
+        doAction('showPopupNotification', notification);
     };
 
     const updateCommentNotifications = async (enabled) => {
         let updatedData;
         if (loggedInMember) {
             // when we have a member logged in, we need to update the newsletters in the context
-            await onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+            await doAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
             updatedData = {...loggedInMember, enable_comment_notifications: enabled};
         } else {
             updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
-        onAction('showPopupNotification', {
+        doAction('showPopupNotification', {
             action: 'updated:success',
             message: t('Comment preferences updated.')
         });
@@ -91,7 +91,7 @@ export default function UnsubscribePage() {
     const unsubscribeAll = async () => {
         let updatedMember;
         if (loggedInMember) {
-            await onAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
+            await doAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
             updatedMember = {...loggedInMember};
             updatedMember.newsletters = [];
             updatedMember.enable_comment_notifications = false;
@@ -100,7 +100,7 @@ export default function UnsubscribePage() {
         }
         setSubscribedNewsletters([]);
         setMember(updatedMember);
-        onAction('showPopupNotification', {
+        doAction('showPopupNotification', {
             action: 'updated:success',
             message: t(`Unsubscribed from all emails.`)
         });
@@ -165,12 +165,12 @@ export default function UnsubscribePage() {
                 <ActionButton
                     style={{width: '100%'}}
                     retry={false}
-                    onClick = {() => onAction('closePopup')}
+                    onClick = {() => doAction('closePopup')}
                     disabled={false}
                     brandColor='#000000'
                     label={t('Close')}
                     isRunning={false}
-                    tabindex='3'
+                    tabIndex={3}
                     classes={'sticky bottom'}
                 />
             </div>

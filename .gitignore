@@ -195,3 +195,4 @@ yalc.lock
 /e2e/build
 /e2e/playwright
 /e2e/data
+.env.tinybird

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.0.8",
+  "version": "6.1.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -177,7 +177,7 @@
     "i18n-iso-countries": "7.14.0",
     "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.101.3"
+    "webpack": "5.102.0"
   },
   "nx": {
     "targets": {
