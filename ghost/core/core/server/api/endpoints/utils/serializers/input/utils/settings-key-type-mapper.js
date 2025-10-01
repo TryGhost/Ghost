@@ -31,6 +31,7 @@ const keyTypeMapping = {
     members_public_key: 'string',
     members_private_key: 'string',
     members_email_auth_secret: 'string',
+    members_otc_secret: 'string',
     default_content_visibility: 'string',
     stripe_secret_key: 'string',
     stripe_publishable_key: 'string',
