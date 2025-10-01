@@ -1031,7 +1031,7 @@ describe('sendMagicLink', function () {
                 it('Will rate limit OTC verification enumeration (IP-based)', async function () {
                     const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
 
-                    // Make multiple verification attempts with different otcRefs from same IP
+                    // Make multiple verification attempts with *different* otcRefs from same IP
                     for (let i = 0; i < otcVerificationEnumerationLimit; i++) {
                         await membersAgent
                             .post('/api/verify-otc')
@@ -1052,11 +1052,9 @@ describe('sendMagicLink', function () {
                         .expectStatus(429)
                         .matchBodySnapshot({
                             errors: [{
-                                id: anyErrorId
+                                id: anyErrorId,
+                                type: 'TooManyRequestsError'
                             }]
-                        })
-                        .expect((res) => {
-                            assert(res.body.errors[0].message.includes('Too many verification attempts across multiple codes'), 'Error message should indicate enumeration rate limit');
                         });
                 });
 
@@ -1064,13 +1062,13 @@ describe('sendMagicLink', function () {
                     const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
                     const otcRef = 'fake-otc-ref-single';
 
-                    // Make multiple failed attempts with the same otcRef
+                    // Make multiple failed attempts with the *same* otcRef
                     for (let i = 0; i < otcVerificationLimit; i++) {
                         await membersAgent
                             .post('/api/verify-otc')
                             .body({
                                 otcRef,
-                                otc: `00000${i}`
+                                otc: `00000${i + 1}`
                             })
                             .expectStatus(400);
                     }
@@ -1085,61 +1083,10 @@ describe('sendMagicLink', function () {
                         .expectStatus(429)
                         .matchBodySnapshot({
                             errors: [{
-                                id: anyErrorId
+                                id: anyErrorId,
+                                type: 'TooManyRequestsError'
                             }]
-                        })
-                        .expect((res) => {
-                            assert(res.body.errors[0].message.includes('Too many attempts for this verification code'), 'Error message should indicate specific otcRef rate limit');
                         });
-                });
-
-                it('Enumeration rate limit has correct error message', async function () {
-                    const enumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
-                    
-                    for (let i = 0; i < enumerationLimit; i++) {
-                        await membersAgent
-                            .post('/api/verify-otc')
-                            .body({
-                                otcRef: `fake-otc-ref-enum-${i}`,
-                                otc: '000000'
-                            })
-                            .expectStatus(400);
-                    }
-
-                    const enumerationError = await membersAgent
-                        .post('/api/verify-otc')
-                        .body({
-                            otcRef: 'fake-otc-ref-enum-final',
-                            otc: '000000'
-                        })
-                        .expectStatus(429);
-
-                    assert(enumerationError.body.errors[0].message.includes('across multiple codes'), 'Enumeration error should mention multiple codes');
-                });
-
-                it('Specific otcRef rate limit has correct error message', async function () {
-                    const specificLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
-                    const otcRef = 'fake-otc-ref-specific';
-
-                    for (let i = 0; i < specificLimit; i++) {
-                        await membersAgent
-                            .post('/api/verify-otc')
-                            .body({
-                                otcRef,
-                                otc: '000000'
-                            })
-                            .expectStatus(400);
-                    }
-
-                    const specificError = await membersAgent
-                        .post('/api/verify-otc')
-                        .body({
-                            otcRef,
-                            otc: '000000'
-                        })
-                        .expectStatus(429);
-
-                    assert(specificError.body.errors[0].message.includes('for this verification code'), 'Specific error should mention this verification code');
                 });
 
                 it('Different otcRefs are tracked independently', async function () {
