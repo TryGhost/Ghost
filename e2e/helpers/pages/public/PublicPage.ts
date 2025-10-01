@@ -1,7 +1,13 @@
 import {Page, Locator} from '@playwright/test';
 import {BasePage} from '../BasePage';
 
-export default class PublicPage extends BasePage{
+declare global {
+    interface Window {
+        __GHOST_SYNTHETIC_MONITORING__?: boolean;
+    }
+}
+
+export class PublicPage extends BasePage{
     private readonly portalFrame: Locator;
     private readonly portalIframe: Locator;
     private readonly portalScript: Locator;
@@ -16,6 +22,30 @@ export default class PublicPage extends BasePage{
         this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
         this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
         this.signInLink = page.locator('a[href="#/portal/signin"]').first();
+    }
+
+    /**
+     * Enables analytics requests by setting a variable on the window object.
+     * This is necessary because Ghost blocks analytics requests when in Playwright by default.
+    */
+    async enableAnalyticsRequests(): Promise<void> {
+        await this.page.addInitScript(() => {
+            window.__GHOST_SYNTHETIC_MONITORING__ = true;
+        });
+    }
+
+    /**
+     * Overrides the goto method to enable analytics requests before navigating to the page.
+    */
+    async goto(url = null): Promise<void> {
+        await this.enableAnalyticsRequests();
+        await super.goto(url);
+    }
+
+    async waitForPageHitRequest(): Promise<void> {
+        await this.page.waitForResponse((response) => {
+            return response.url().includes('/.ghost/analytics/api/v1/page_hit') && response.request().method() === 'POST';
+        }, {timeout: 10000});
     }
 
     async waitForPortalScript(): Promise<void> {

@@ -30,10 +30,52 @@ services:
       mysql:
         condition: service_healthy
 
+  caddy:
+    image: caddy:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ../.docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
+    environment:
+      - ANALYTICS_PROXY_TARGET=analytics:3000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      analytics:
+        condition: service_healthy
+
+  analytics:
+    image: ghost/traffic-analytics:1
+    platform: linux/amd64
+    command: ["node", "--enable-source-maps", "dist/server.js"]
+    entrypoint: [ "/app/entrypoint.sh" ]
+    expose:
+      - "3000"
+    healthcheck:
+      # Simpler: use Node's global fetch (Node 18+)
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\"" ]
+      interval: 1s
+      retries: 120
+    volumes:
+      - ../.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config:ro
+    environment:
+      - PROXY_TARGET=http://tinybird-local:7181/v0/events
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
   tinybird-local:
     image: tinybirdco/tinybird-local:latest
     platform: linux/amd64
     stop_grace_period: 2s
+    ports:
+      - "7181:7181"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
       interval: 1s
@@ -55,6 +97,16 @@ services:
       tinybird-local:
         condition: service_healthy
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    platform: linux/amd64
+    ports:
+      - "1026:1025" # SMTP server
+      - "8026:8025" # Web interface
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 1s
+      retries: 30
 
 volumes:
   shared-config:
