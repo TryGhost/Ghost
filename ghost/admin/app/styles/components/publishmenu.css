@@ -962,6 +962,13 @@
     padding: 16px 24px 16px 24px;
 }
 
+.modal-post-success .modal-body h2 {
+    overflow: auto ;
+    word-wrap: break-word;
+    word-break: break-word ;
+    max-width: 100% ;
+}
+
 .modal-post-success .modal-body p {
     font-size: 1.6rem;
     line-height: 1.5em;
