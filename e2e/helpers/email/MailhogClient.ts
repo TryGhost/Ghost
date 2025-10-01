@@ -4,7 +4,6 @@ const debug = baseDebug('e2e:MailhogClient');
 
 // Email address structure used in From and To fields
 export interface EmailAddress {
-    Relays: string[] | null;
     Mailbox: string;
     Domain: string;
     Params: string;
@@ -50,7 +49,7 @@ export interface EmailMessage {
     };
 }
 
-export interface MailhogSearchResult {
+export interface EmailMessageSearchResult {
     total: number;
     count: number;
     start: number;
@@ -66,37 +65,40 @@ export interface EmailClient {
 }
 
 export class MailhogClient implements EmailClient{
-    private readonly baseUrl: string;
+    private readonly apiUrl: string;
 
     constructor(baseUrl: string = 'http://localhost:8026') {
-        this.baseUrl = baseUrl;
+        this.apiUrl = `${baseUrl}/api/v2`;
     }
 
     async getMessages(limit: number = 50): Promise<EmailMessage[]> {
-        debug('Getting messages from Mailhog');
-        const response = await fetch(`${this.baseUrl}/api/v2/messages?limit=${limit}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch messages: ${response.statusText}`);
-        }
-        const data = await response.json() as MailhogSearchResult;
-        debug(`Found ${data.items.length} messages`);
-        return data.items;
+        const response = await this.executeApiCall(
+            `messages?limit=${limit}`,
+            'fetch messages'
+        );
+
+        return this.parseMessagesFromResponse(response);
     }
 
     async searchByRecipient(email: string, limit: number = 50): Promise<EmailMessage[]> {
-        debug(`Searching for messages to ${email}`);
-        const response = await fetch(`${this.baseUrl}/api/v2/search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`);
-        if (!response.ok) {
-            throw new Error(`Failed to search messages: ${response.statusText}`);
-        }
-        const data = await response.json() as MailhogSearchResult;
-        debug(`Found ${data.items.length} messages for ${email}`);
-        return data.items;
+        const response = await this.executeApiCall(
+            `search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`,
+            'search messages'
+        );
+
+        return this.parseMessagesFromResponse(response);
     }
 
     async getLatestMessageFor(email: string): Promise<EmailMessage | null> {
         const messages = await this.searchByRecipient(email, 1);
         return messages.length > 0 ? messages[0] : null;
+    }
+
+    async deleteAllMessages(): Promise<void> {
+        await this.executeApiCall(
+            `messages`,
+            'delete all messages',
+            'DELETE');
     }
 
     async waitForEmail(email: string, timeoutMs: number = 10000): Promise<EmailMessage> {
@@ -105,28 +107,38 @@ export class MailhogClient implements EmailClient{
 
         while (Date.now() - startTime < timeoutMs) {
             const message = await this.getLatestMessageFor(email);
+
             if (message) {
                 debug(`Email received for ${email}`);
                 return message;
             }
 
-            // Wait a bit before checking again
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 500);
-            });
+            await this.delay(500);
         }
 
         throw new Error(`Timeout waiting for email to ${email}`);
     }
 
-    async deleteAllMessages(): Promise<void> {
-        debug('Deleting all messages from Mailhog');
-        const response = await fetch(`${this.baseUrl}/api/v1/messages`, {
-            method: 'DELETE'
-        });
+    private async executeApiCall(endpoint: string, callType: string, method: string = 'GET'): Promise<Response> {
+        debug(`${callType} through ${endpoint}`);
+        const response = await fetch(`${this.apiUrl}/${endpoint}`, {method: method});
         if (!response.ok) {
-            throw new Error(`Failed to delete messages: ${response.statusText}`);
+            throw new Error(`Failed to ${callType}: ${response.statusText}`);
         }
-        debug('All messages deleted');
+
+        debug(`${callType} through ${endpoint} succeeded`);
+        return response;
+    }
+
+    private async parseMessagesFromResponse(response: Response): Promise<EmailMessage[]> {
+        const data = await response.json() as EmailMessageSearchResult;
+        debug(`Found ${data.items.length} messages`);
+        return data.items;
+    }
+
+    private async delay(miliSeconds: number) {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, miliSeconds);
+        });
     }
 }
