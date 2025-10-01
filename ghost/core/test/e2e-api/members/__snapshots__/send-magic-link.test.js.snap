@@ -18,6 +18,42 @@ Object {
 }
 `;
 
+exports[`sendMagicLink OTC With membersSigninOTC flag enabled Rate limiting Will rate limit OTC verification enumeration (IP-based) 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Too many verification code attempts.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Too many verification code attempts.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Too many verification attempts across multiple codes, try again in 10 minutes",
+      "property": null,
+      "type": "TooManyRequestsError",
+    },
+  ],
+}
+`;
+
+exports[`sendMagicLink OTC With membersSigninOTC flag enabled Rate limiting Will rate limit OTC verification for specific otcRef 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Too many verification code attempts.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Too many verification code attempts.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Too many attempts for this verification code, try again in 5 minutes",
+      "property": null,
+      "type": "TooManyRequestsError",
+    },
+  ],
+}
+`;
+
 exports[`sendMagicLink Throws an error when logging in to a email that does not exist (invite only) 1: [body] 1`] = `
 Object {
   "errors": Array [
