@@ -12,3 +12,4 @@ export * from './MembersPage';
 export * from './PostEditorPage';
 export * from './TagsPage';
 export * from './settings/SettingsPage';
+export * from './tags/TagsPage';
