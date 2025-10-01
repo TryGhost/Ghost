@@ -60,6 +60,8 @@ that would have resulted in a much larger and riskier change.
     --color-black: #15171A;
 
     /* Gray palette (official) */
+    --color-gray: #ABB4BE;
+    --color-gray-DEFAULT: #ABB4BE;
     --color-gray-50: #FAFAFB;
     --color-gray-75: #F9FAFB;
     --color-gray-100: #F4F5F6;
@@ -76,9 +78,10 @@ that would have resulted in a much larger and riskier change.
     --color-gray-925: #2E3338;
     --color-gray-950: #222427;
     --color-gray-975: #191B1E;
-    --color-gray-DEFAULT: #ABB4BE;
 
     /* Legacy grey palette (keep for text-grey-*) */
+    --color-grey: #ABB4BE;
+    --color-grey-DEFAULT: #ABB4BE;
     --color-grey-50: #FAFAFB;
     --color-grey-75: #F9FAFB;
     --color-grey-100: #F4F5F6;
@@ -95,52 +98,59 @@ that would have resulted in a much larger and riskier change.
     --color-grey-925: #2E3338;
     --color-grey-950: #222427;
     --color-grey-975: #191B1E;
-    --color-grey-DEFAULT: #ABB4BE;
 
     /* Brand palettes */
+    --color-green: #30CF43;
+    --color-green-DEFAULT: #30CF43;
     --color-green-100: #E1F9E4;
     --color-green-400: #58DA67;
     --color-green-500: #30CF43;
     --color-green-600: #2AB23A;
-    --color-green-DEFAULT: #30CF43;
 
+    --color-blue-DEFAULT: #14B8FF;
+    --color-blue: #14B8FF;
     --color-blue-100: #DBF4FF;
     --color-blue-400: #42C6FF;
     --color-blue-500: #14B8FF;
     --color-blue-600: #00A4EB;
     --color-blue-700: #3778F1;
-    --color-blue-DEFAULT: #14B8FF;
 
+    --color-purple: #8E42FF;
+    --color-purple-DEFAULT: #8E42FF;
     --color-purple-100: #EDE0FF;
     --color-purple-400: #A366FF;
     --color-purple-500: #8E42FF;
     --color-purple-600: #7B1FFF;
-    --color-purple-DEFAULT: #8E42FF;
 
+    --color-pink: #FB2D8D;
+    --color-pink-DEFAULT: #FB2D8D;
     --color-pink-100: #FFDFEE;
     --color-pink-400: #FF5CA8;
     --color-pink-500: #FB2D8D;
     --color-pink-600: #F70878;
-    --color-pink-DEFAULT: #FB2D8D;
 
+    --color-red: #F50B23;
+    --color-red-DEFAULT: #F50B23;
     --color-red-100: #FFE0E0;
     --color-red-400: #F9394C;
     --color-red-500: #F50B23;
     --color-red-600: #DC091E;
-    --color-red-DEFAULT: #F50B23;
 
+    --color-orange: #F97316;
+    --color-orange-DEFAULT: #F97316;
     --color-orange-100: #FFEDD5;
     --color-orange-400: #FB923C;
     --color-orange-500: #F97316;
     --color-orange-600: #EA580C;
-    --color-orange-DEFAULT: #F97316;
 
+    --color-yellow: #FFB41F;
+    --color-yellow-DEFAULT: #FFB41F;
     --color-yellow-100: #FFF1D6;
     --color-yellow-400: #FFC247;
     --color-yellow-500: #FFB41F;
     --color-yellow-600: #F0A000;
-    --color-yellow-DEFAULT: #FFB41F;
 
+    --color-lime: #B5FF18;
     --color-lime-DEFAULT: #B5FF18;
 
     /* Semantic color tokens mapped to CSS variables (wrapped in hsl() at :root/.dark) */
@@ -586,11 +596,11 @@ that would have resulted in a much larger and riskier change.
     }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground font-sans antialiased;
-    }
+/* @layer base { */
+* {
+    @apply border-border;
 }
+body {
+    @apply bg-background text-foreground font-sans antialiased;
+}
+/* } */
