@@ -1,5 +1,34 @@
-@import './preflight.css' layer(base);
-@import 'tailwindcss';
+@import './preflight.css';
+
+/*
+Importing everything from Tailwind manually instead of adding it via @import 'tailwindcss'
+
+The reason is because Tailwind uses CSS layers and there are some legacy CSS
+in the Admin (mostly Spirit) with the same classnames as in TailwindCSS which
+don't use any CSS layering. TWCSS v4 layering sets the specificity of classnames
+lower than non-layered classnames so legacy classes would override TWCSS classes
+even if the CSS classname specificity would be higher. For example:
+
+```
+.flex {display: flex};
+```
+
+in the Admin's `globals.css` overrides
+
+```
+@layer utilities { .shade .grid {display: grid}}
+```
+
+If we import tailwindcss files directly we can omit the use of layers. This is
+not ideal but works with the current system.
+
+Note that another option could have been to add layer to legacy classes but
+that would have resulted in a much larger and riskier change.
+*/
+
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/preflight.css';
+@import 'tailwindcss/utilities.css';
 
 /* @plugin "tailwindcss-animate"; */
 @import 'tw-animate-css';
@@ -506,15 +535,6 @@
     --sidebar-ring: hsl(210 13% 55%);
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply font-sans antialiased bg-background text-foreground;
-    }
-}
-
 @layer utilities {
     .shade {
         line-height: 1.5;
@@ -565,11 +585,12 @@
         color: #30cf43;
     }
 }
+
 @layer base {
     * {
         @apply border-border;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground font-sans antialiased;
     }
 }
