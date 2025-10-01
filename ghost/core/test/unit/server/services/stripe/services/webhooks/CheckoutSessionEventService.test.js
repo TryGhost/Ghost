@@ -634,7 +634,6 @@ describe('CheckoutSessionEventService', function () {
             assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
         });
 
-
         it('should handle token retrieval errors gracefully', async function () {
             api.getCustomer.resolves(customer);
             memberRepository.get.resolves(null);
