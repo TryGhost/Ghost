@@ -35,7 +35,7 @@
     "@rollup/plugin-babel": "6.0.4",
     "c8": "10.1.3",
     "jsdom": "24.1.3",
-    "mocha": "11.7.2",
+    "mocha": "11.7.3",
     "rollup": "4.52.3",
     "should": "13.2.3",
     "sinon": "21.0.0"
