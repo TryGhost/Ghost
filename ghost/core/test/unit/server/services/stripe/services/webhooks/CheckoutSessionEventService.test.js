@@ -593,7 +593,7 @@ describe('CheckoutSessionEventService', function () {
             assert(memberRepository.get.calledWith({email: 'customer@example.com'}));
         });
 
-        it('should create new member if not found', async function () {
+        it('extracts attribution and newsletters from token for new members', async function () {
             api.getCustomer.resolves(customer);
             memberRepository.get.resolves(null);
 
@@ -603,8 +603,9 @@ describe('CheckoutSessionEventService', function () {
             const memberData = memberRepository.create.getCall(0).args[0];
 
             assert.equal(memberData.email, 'customer@example.com');
-
             assert.equal(memberData.name, 'Metadata Name'); // falls back to metadata name if payerName doesn't exist
+
+            // Verify token data was extracted
             assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
             assert.deepEqual(memberData.attribution, {
                 id: 'attr_123',
@@ -633,22 +634,6 @@ describe('CheckoutSessionEventService', function () {
             assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
         });
 
-        it('should create new member with selected newsletters when token has newsletters data', async function () {
-            api.getCustomer.resolves(customer);
-            memberRepository.get.resolves(null);
-
-            getTokenDataFromMagicLinkToken.resolves({
-                email: 'test@example.com',
-                newsletters: [{id: 1, name: 'Newsletter'}]
-            });
-
-            await service.handleSubscriptionEvent(session);
-
-            const memberData = memberRepository.create.getCall(0).args[0];
-            assert.equal(memberData.email, 'customer@example.com');
-            assert.equal(memberData.name, 'Metadata Name');
-            assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
-        });
 
         it('should handle token retrieval errors gracefully', async function () {
             api.getCustomer.resolves(customer);
@@ -702,6 +687,68 @@ describe('CheckoutSessionEventService', function () {
             assert(memberRepository.update.calledOnce);
             const memberData = memberRepository.update.getCall(0).args[0];
             assert.equal(memberData.newsletters, undefined);
+        });
+
+        it('handles missing token gracefully', async function () {
+            api.getCustomer.resolves(customer);
+            memberRepository.get.resolves(null);
+
+            // Session without token in success_url
+            session.success_url = 'https://example.com/success';
+
+            await service.handleSubscriptionEvent(session);
+
+            assert(memberRepository.create.calledOnce);
+            const memberData = memberRepository.create.getCall(0).args[0];
+            assert.equal(memberData.attribution, null);
+            assert.equal(memberData.newsletters, null);
+        });
+
+        it('handles invalid token gracefully', async function () {
+            api.getCustomer.resolves(customer);
+            memberRepository.get.resolves(null);
+
+            getTokenDataFromMagicLinkToken.resolves(null); // Returns null for invalid token
+
+            await service.handleSubscriptionEvent(session);
+
+            assert(memberRepository.create.calledOnce);
+            const memberData = memberRepository.create.getCall(0).args[0];
+            assert.equal(memberData.attribution, null);
+            assert.equal(memberData.newsletters, null);
+        });
+
+        it('preserves distinction between undefined newsletters (use defaults) and empty array (opted out)', async function () {
+            api.getCustomer.resolves(customer);
+            memberRepository.get.resolves(null);
+
+            // First test: empty array (opted out)
+            getTokenDataFromMagicLinkToken.resolves({
+                email: 'test@example.com',
+                newsletters: [] // Explicitly opted out
+            });
+
+            await service.handleSubscriptionEvent(session);
+
+            assert(memberRepository.create.calledOnce);
+            let memberData = memberRepository.create.getCall(0).args[0];
+            assert.deepEqual(memberData.newsletters, []); // Should be empty array, not null
+
+            // Reset stubs for second test
+            memberRepository.create.resetHistory();
+
+            // Second test: undefined (use defaults)
+            getTokenDataFromMagicLinkToken.resolves({
+                email: 'test2@example.com'
+                // newsletters field not included - should use defaults
+            });
+
+            await service.handleSubscriptionEvent(session);
+
+            assert(memberRepository.create.calledOnce);
+            memberData = memberRepository.create.getCall(0).args[0];
+            // When newsletters is not in token, it should be null (defaults to system settings)
+            assert.equal(memberData.newsletters, null);
         });
     });
 });
