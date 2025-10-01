@@ -381,7 +381,10 @@ module.exports = class RouterController {
                 attribution: {
                     id: options.metadata.attribution_id ?? null,
                     type: options.metadata.attribution_type ?? null,
-                    url: options.metadata.attribution_url ?? null
+                    url: options.metadata.attribution_url ?? null,
+                    referrerSource: options.metadata.referrer_source ?? null,
+                    referrerMedium: options.metadata.referrer_medium ?? null,
+                    referrerUrl: options.metadata.referrer_url ?? null
                 }
             };
 
@@ -390,6 +393,15 @@ module.exports = class RouterController {
             if (options.newsletters) {
                 tokenData.newsletters = options.newsletters;
             }
+
+            // Remove attribution from metadata that goes to Stripe
+            // since we're passing it through the token instead
+            delete options.metadata.attribution_id;
+            delete options.metadata.attribution_type;
+            delete options.metadata.attribution_url;
+            delete options.metadata.referrer_source;
+            delete options.metadata.referrer_medium;
+            delete options.metadata.referrer_url;
 
             options.successUrl = await this._magicLinkService.getMagicLink({
                 tokenData,

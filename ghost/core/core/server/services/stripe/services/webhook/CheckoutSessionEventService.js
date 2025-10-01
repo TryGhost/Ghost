@@ -167,6 +167,12 @@ module.exports = class CheckoutSessionEventService {
             expand: ['subscriptions.data.default_payment_method']
         });
 
+        if (customer.deleted) {
+            throw new errors.BadRequestError({
+                message: 'Cannot process checkout for deleted customer'
+            });
+        }
+
         const memberRepository = this.deps.memberRepository;
 
         let member = await memberRepository.get({
@@ -178,8 +184,9 @@ module.exports = class CheckoutSessionEventService {
         if (!member) {
             const metadataName = _.get(session, 'metadata.name');
 
-            // Get newsletter data from the magic link token in success_url
+            // Get newsletter and attribution data from the magic link token in success_url
             let newsletters = [];
+            let attribution = null;
 
             try {
                 const successUrl = session.success_url;
@@ -190,31 +197,20 @@ module.exports = class CheckoutSessionEventService {
                     if (token) {
                         const tokenData = await this.deps.getTokenDataFromMagicLinkToken(token);
 
-                        if (tokenData && tokenData.newsletters) {
-                            newsletters = tokenData.newsletters;
+                        if (tokenData) {
+                            newsletters = tokenData.newsletters || [];
+                            attribution = tokenData.attribution || null;
                         }
                     }
                 }
             } catch (e) {
-                logging.warn(`Could not retrieve newsletter data from token: ${e.message}`);
+                logging.warn(`Could not retrieve data from token: ${e.message}`);
             }
-
-            const attribution = {
-                id: session.metadata?.attribution_id ?? null,
-                url: session.metadata?.attribution_url ?? null,
-                type: session.metadata?.attribution_type ?? null,
-                referrerSource: session.metadata?.referrer_source ?? null,
-                referrerMedium: session.metadata?.referrer_medium ?? null,
-                referrerUrl: session.metadata?.referrer_url ?? null
-            };
 
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
             const name = metadataName || payerName || null;
 
-            const memberData = {email: customer.email, name, attribution};
-            if (newsletters && newsletters.length > 0) {
-                memberData.newsletters = newsletters;
-            }
+            const memberData = {email: customer.email, name, attribution, newsletters};
 
             const offerId = session.metadata?.offer;
             const memberDataWithStripeCustomer = {
