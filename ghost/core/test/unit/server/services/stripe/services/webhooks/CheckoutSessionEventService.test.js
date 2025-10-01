@@ -541,7 +541,15 @@ describe('CheckoutSessionEventService', function () {
         beforeEach(function () {
             getTokenDataFromMagicLinkToken = sinon.stub();
             getTokenDataFromMagicLinkToken.resolves({
-                newsletters: [{id: 1, name: 'Newsletter'}]
+                newsletters: [{id: 1, name: 'Newsletter'}],
+                attribution: {
+                    id: 'attr_123',
+                    url: 'https://example.com',
+                    type: 'referral',
+                    referrerSource: 'google',
+                    referrerMedium: 'cpc',
+                    referrerUrl: 'https://referrer.com'
+                }
             });
 
             service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, getTokenDataFromMagicLinkToken});
@@ -550,12 +558,6 @@ describe('CheckoutSessionEventService', function () {
                 success_url: 'https://example.com/success?token=test_token_123',
                 metadata: {
                     name: 'Metadata Name',
-                    attribution_id: 'attr_123',
-                    attribution_url: 'https://example.com',
-                    attribution_type: 'referral',
-                    referrer_source: 'google',
-                    referrer_medium: 'cpc',
-                    referrer_url: 'https://referrer.com',
                     offer: 'offer_123',
                     checkoutType: 'new'
                 }
@@ -631,11 +633,13 @@ describe('CheckoutSessionEventService', function () {
             assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
         });
 
-        it('should create new member without newsletters when token has no newsletter data', async function () {
+        it('should create new member with selected newsletters when token has newsletters data', async function () {
             api.getCustomer.resolves(customer);
             memberRepository.get.resolves(null);
+
             getTokenDataFromMagicLinkToken.resolves({
-                email: 'test@example.com'
+                email: 'test@example.com',
+                newsletters: [{id: 1, name: 'Newsletter'}]
             });
 
             await service.handleSubscriptionEvent(session);
@@ -643,7 +647,7 @@ describe('CheckoutSessionEventService', function () {
             const memberData = memberRepository.create.getCall(0).args[0];
             assert.equal(memberData.email, 'customer@example.com');
             assert.equal(memberData.name, 'Metadata Name');
-            assert.equal(memberData.newsletters, undefined);
+            assert.deepEqual(memberData.newsletters, [{id: 1, name: 'Newsletter'}]);
         });
 
         it('should handle token retrieval errors gracefully', async function () {
@@ -657,7 +661,7 @@ describe('CheckoutSessionEventService', function () {
             const memberData = memberRepository.create.getCall(0).args[0];
             assert.equal(memberData.email, 'customer@example.com');
             assert.equal(memberData.name, 'Metadata Name');
-            assert.equal(memberData.newsletters, undefined);
+            assert.equal(memberData.newsletters, null); // null when token retrieval fails
         });
 
         it('should update member if found', async function () {

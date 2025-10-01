@@ -185,7 +185,7 @@ module.exports = class CheckoutSessionEventService {
             const metadataName = _.get(session, 'metadata.name');
 
             // Get newsletter and attribution data from the magic link token in success_url
-            let newsletters = [];
+            let newsletters = null;
             let attribution = null;
 
             try {
@@ -198,7 +198,10 @@ module.exports = class CheckoutSessionEventService {
                         const tokenData = await this.deps.getTokenDataFromMagicLinkToken(token);
 
                         if (tokenData) {
-                            newsletters = tokenData.newsletters || [];
+                            // Preserve the distinction between undefined (use defaults) and [] (opted out)
+                            if ('newsletters' in tokenData) {
+                                newsletters = tokenData.newsletters;
+                            }
                             attribution = tokenData.attribution || null;
                         }
                     }
