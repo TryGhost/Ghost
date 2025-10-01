@@ -15,7 +15,6 @@ import {HttpClient} from './api';
  */
 export class GhostSettingsApiAdapter extends GhostAdminApiAdapter {
     constructor(httpClient: HttpClient, queryParams?: Record<string, string>) {
-        // Call parent with 'settings' as the resource path
         super(httpClient, 'settings', queryParams);
 
         // Override transform functions to be pass-through
