@@ -26,6 +26,10 @@ export class BasePage {
         await this.page.goto(urlToVisit);
     }
 
+    public async waitForPageToFullyLoad() {
+        await this.page.waitForLoadState('networkidle');
+    }
+
     async pressKey(key: string) {
         await this.page.keyboard.press(key);
     }
