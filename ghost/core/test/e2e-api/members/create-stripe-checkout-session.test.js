@@ -12,6 +12,106 @@ async function getPost(id) {
     return await models['Post'].where('id', id).fetch({require: true});
 }
 
+// ============================================================================
+// Stripe Mock Response Helpers
+// ============================================================================
+
+/**
+ * Parse Stripe API endpoint to extract resource type and ID
+ * @param {string} uri - The URI to parse (e.g., '/v1/products/prod_123')
+ * @returns {{resource: string, id: string} | null} Parsed resource info or null
+ */
+function parseStripeEndpoint(uri) {
+    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+    if (!match) {
+        return null;
+    }
+    return {resource, id};
+}
+
+/**
+ * Create a standard Stripe GET response handler
+ * @param {Object} options - Response options
+ * @param {number} [options.priceAmount=500] - Price amount in cents
+ * @param {string} [options.interval='month'] - Subscription interval
+ * @returns {Function} Nock reply function
+ */
+function createStripeGetHandler(options = {}) {
+    return function (/** @type {string} */ uri) {
+        const parsed = parseStripeEndpoint(uri);
+        if (!parsed) {
+            return [500];
+        }
+
+        const {resource, id} = parsed;
+
+        if (resource === 'products') {
+            return [200, {
+                id: id,
+                active: true
+            }];
+        }
+
+        if (resource === 'prices') {
+            return [200, {
+                id: id,
+                active: true,
+                currency: 'usd',
+                unit_amount: options.priceAmount || 500,
+                recurring: {
+                    interval: options.interval || 'month'
+                }
+            }];
+        }
+
+        return [500];
+    };
+}
+
+/**
+ * Create a standard Stripe POST response handler
+ * @param {Object} options - Response options
+ * @param {string} [options.checkoutSessionId='cs_123'] - Checkout session ID
+ * @param {string} [options.checkoutSessionUrl='https://site.com'] - Checkout session URL
+ * @param {string} [options.priceId] - Price ID for created prices
+ * @param {boolean} [options.includeCoupon=false] - Whether to handle coupon creation
+ * @param {number} [options.priceAmount=500] - Price amount in cents
+ * @param {string} [options.interval='month'] - Subscription interval
+ * @param {Function} [options.onCheckoutSession] - Custom handler for checkout session (receives body, returns response)
+ * @returns {Function} Nock reply function
+ */
+function createStripePostHandler(options = {}) {
+    return function (/** @type {string} */ uri, /** @type {string} */ body) {
+        if (uri === '/v1/checkout/sessions') {
+            if (options.onCheckoutSession) {
+                return options.onCheckoutSession(body);
+            }
+            return [200, {
+                id: options.checkoutSessionId || 'cs_123',
+                url: options.checkoutSessionUrl || 'https://site.com'
+            }];
+        }
+
+        if (uri === '/v1/coupons' && options.includeCoupon) {
+            return [200, {id: 'coupon_123'}];
+        }
+
+        if (uri === '/v1/prices') {
+            return [200, {
+                id: options.priceId || 'price_created',
+                active: true,
+                currency: 'usd',
+                unit_amount: options.priceAmount || 500,
+                recurring: {
+                    interval: options.interval || 'month'
+                }
+            }];
+        }
+
+        return [500];
+    };
+}
+
 describe('Create Stripe Checkout Session', function () {
     before(async function () {
         const agents = await agentProvider.getAgentsForMembers();
@@ -78,57 +178,15 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                if (match) {
-                    if (resource === 'products') {
-                        return [200, {
-                            id: id,
-                            active: true
-                        }];
-                    }
-                    if (resource === 'prices') {
-                        return [200, {
-                            id: id,
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-                }
-
-                return [500];
-            });
+            .reply(createStripeGetHandler());
 
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri) => {
-                if (uri === '/v1/checkout/sessions') {
-                    return [200, {id: 'cs_123', url: 'https://site.com'}];
-                }
-
-                if (uri === '/v1/coupons') {
-                    return [200, {id: 'coupon_123'}];
-                }
-
-                if (uri === '/v1/prices') {
-                    return [200, {
-                        id: 'price_1',
-                        active: true,
-                        currency: 'usd',
-                        unit_amount: 500,
-                        recurring: {
-                            interval: 'month'
-                        }
-                    }];
-                }
-
-                return [500];
-            });
+            .reply(createStripePostHandler({
+                priceId: 'price_1',
+                includeCoupon: true
+            }));
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -148,36 +206,14 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                if (match) {
-                    if (resource === 'products') {
-                        return [200, {
-                            id: id,
-                            active: true
-                        }];
-                    }
-                    if (resource === 'prices') {
-                        return [200, {
-                            id: id,
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-                }
-
-                return [500];
-            });
+            .reply(createStripeGetHandler());
 
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri, body) => {
-                if (uri === '/v1/checkout/sessions') {
+            .reply(createStripePostHandler({
+                priceId: 'price_2',
+                onCheckoutSession: function (body) {
                     const bodyJSON = querystring.parse(body);
                     // TODO: Actually work out what Stripe checks and when/how it errors
                     if (Reflect.has(bodyJSON, 'customerEmail')) {
@@ -185,21 +221,7 @@ describe('Create Stripe Checkout Session', function () {
                     }
                     return [200, {id: 'cs_123', url: 'https://site.com'}];
                 }
-
-                if (uri === '/v1/prices') {
-                    return [200, {
-                        id: 'price_2',
-                        active: true,
-                        currency: 'usd',
-                        unit_amount: 500,
-                        recurring: {
-                            interval: 'month'
-                        }
-                    }];
-                }
-
-                return [500];
-            });
+            }));
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -218,52 +240,14 @@ describe('Create Stripe Checkout Session', function () {
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
-            .reply((uri) => {
-                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                if (match) {
-                    if (resource === 'products') {
-                        return [200, {
-                            id: id,
-                            active: true
-                        }];
-                    }
-                    if (resource === 'prices') {
-                        return [200, {
-                            id: id,
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-                }
-
-                return [500];
-            });
+            .reply(createStripeGetHandler());
 
         nock('https://api.stripe.com')
             .persist()
             .post(/v1\/.*/)
-            .reply((uri) => {
-                if (uri === '/v1/checkout/sessions') {
-                    return [200, {id: 'cs_123', url: 'https://site.com'}];
-                }
-                if (uri === '/v1/prices') {
-                    return [200, {
-                        id: 'price_3',
-                        active: true,
-                        currency: 'usd',
-                        unit_amount: 500,
-                        recurring: {
-                            interval: 'month'
-                        }
-                    }];
-                }
-
-                return [500];
-            });
+            .reply(createStripePostHandler({
+                priceId: 'price_3'
+            }));
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
@@ -289,36 +273,14 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri) => {
-                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                    if (match) {
-                        if (resource === 'products') {
-                            return [200, {
-                                id: id,
-                                active: true
-                            }];
-                        }
-                        if (resource === 'prices') {
-                            return [200, {
-                                id: id,
-                                active: true,
-                                currency: 'usd',
-                                unit_amount: 500,
-                                recurring: {
-                                    interval: 'month'
-                                }
-                            }];
-                        }
-                    }
-
-                    return [500];
-                });
+                .reply(createStripeGetHandler());
 
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
-                .reply((uri, body) => {
-                    if (uri === '/v1/checkout/sessions') {
+                .reply(createStripePostHandler({
+                    priceId: 'price_4',
+                    onCheckoutSession: function (body) {
                         const parsed = new URLSearchParams(body);
                         should(parsed.get('metadata[attribution_url]')).eql('/test');
                         should(parsed.get('metadata[attribution_type]')).eql('url');
@@ -326,20 +288,7 @@ describe('Create Stripe Checkout Session', function () {
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
-                    if (uri === '/v1/prices') {
-                        return [200, {
-                            id: 'price_4',
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-
-                    return [500];
-                });
+                }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
@@ -373,36 +322,14 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri) => {
-                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                    if (match) {
-                        if (resource === 'products') {
-                            return [200, {
-                                id: id,
-                                active: true
-                            }];
-                        }
-                        if (resource === 'prices') {
-                            return [200, {
-                                id: id,
-                                active: true,
-                                currency: 'usd',
-                                unit_amount: 50,
-                                recurring: {
-                                    interval: 'month'
-                                }
-                            }];
-                        }
-                    }
-
-                    return [500];
-                });
+                .reply(createStripeGetHandler({priceAmount: 50}));
 
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
-                .reply((uri, body) => {
-                    if (uri === '/v1/checkout/sessions') {
+                .reply(createStripePostHandler({
+                    priceId: 'price_5',
+                    onCheckoutSession: function (body) {
                         const parsed = new URLSearchParams(body);
                         should(parsed.get('metadata[attribution_url]')).eql(url);
                         should(parsed.get('metadata[attribution_type]')).eql('post');
@@ -410,20 +337,7 @@ describe('Create Stripe Checkout Session', function () {
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
-                    if (uri === '/v1/prices') {
-                        return [200, {
-                            id: 'price_5',
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-
-                    return [500];
-                });
+                }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
@@ -454,36 +368,14 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri) => {
-                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                    if (match) {
-                        if (resource === 'products') {
-                            return [200, {
-                                id: id,
-                                active: true
-                            }];
-                        }
-                        if (resource === 'prices') {
-                            return [200, {
-                                id: id,
-                                active: true,
-                                currency: 'usd',
-                                unit_amount: 500,
-                                recurring: {
-                                    interval: 'month'
-                                }
-                            }];
-                        }
-                    }
-
-                    return [500];
-                });
+                .reply(createStripeGetHandler());
 
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
-                .reply((uri, body) => {
-                    if (uri === '/v1/checkout/sessions') {
+                .reply(createStripePostHandler({
+                    priceId: 'price_6',
+                    onCheckoutSession: function (body) {
                         const parsed = new URLSearchParams(body);
                         should(parsed.get('metadata[attribution_url]')).be.null();
                         should(parsed.get('metadata[attribution_type]')).be.null();
@@ -491,20 +383,7 @@ describe('Create Stripe Checkout Session', function () {
 
                         return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
-                    if (uri === '/v1/prices') {
-                        return [200, {
-                            id: 'price_6',
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-
-                    return [500];
-                });
+                }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
@@ -538,35 +417,16 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri) => {
-                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                    if (match) {
-                        if (resource === 'products') {
-                            return [200, {
-                                id: id,
-                                active: true
-                            }];
-                        }
-                        if (resource === 'prices') {
-                            return [200, {
-                                id: id,
-                                active: true,
-                                currency: 'usd',
-                                unit_amount: 500,
-                                recurring: {
-                                    interval: 'month'
-                                }
-                            }];
-                        }
-                    }
-                    return [500];
-                });
+                .reply(createStripeGetHandler());
 
             nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
-                .reply((uri, body) => {
-                    if (uri === '/v1/checkout/sessions') {
+                .reply(createStripePostHandler({
+                    priceId: 'price_newsletter',
+                    checkoutSessionId: 'cs_123',
+                    checkoutSessionUrl: 'https://checkout.stripe.com/session/cs_123',
+                    onCheckoutSession: function (body) {
                         // Capture the metadata sent to Stripe
                         const params = new URLSearchParams(body);
                         stripeSessionMetadata = {};
@@ -582,19 +442,7 @@ describe('Create Stripe Checkout Session', function () {
                             url: 'https://checkout.stripe.com/session/cs_123'
                         }];
                     }
-                    if (uri === '/v1/prices') {
-                        return [200, {
-                            id: 'price_newsletter',
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-                    return [500];
-                });
+                }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
@@ -620,35 +468,16 @@ describe('Create Stripe Checkout Session', function () {
             nock('https://api.stripe.com')
                 .persist()
                 .get(/v1\/.*/)
-                .reply((uri) => {
-                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
-                    if (match) {
-                        if (resource === 'products') {
-                            return [200, {
-                                id: id,
-                                active: true
-                            }];
-                        }
-                        if (resource === 'prices') {
-                            return [200, {
-                                id: id,
-                                active: true,
-                                currency: 'usd',
-                                unit_amount: 500,
-                                recurring: {
-                                    interval: 'month'
-                                }
-                            }];
-                        }
-                    }
-                    return [500];
-                });
+                .reply(createStripeGetHandler());
 
             nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
-                .reply((uri, body) => {
-                    if (uri === '/v1/checkout/sessions') {
+                .reply(createStripePostHandler({
+                    priceId: 'price_empty_newsletter',
+                    checkoutSessionId: 'cs_456',
+                    checkoutSessionUrl: 'https://checkout.stripe.com/session/cs_456',
+                    onCheckoutSession: function (body) {
                         // Capture the metadata sent to Stripe
                         const params = new URLSearchParams(body);
                         stripeSessionMetadata = {};
@@ -664,20 +493,7 @@ describe('Create Stripe Checkout Session', function () {
                             url: 'https://checkout.stripe.com/session/cs_456'
                         }];
                     }
-                    if (uri === '/v1/prices') {
-                        return [200, {
-                            id: 'price_empty_newsletter',
-                            active: true,
-                            currency: 'usd',
-                            unit_amount: 500,
-                            recurring: {
-                                interval: 'month'
-                            }
-                        }];
-                    }
-
-                    return [500];
-                });
+                }));
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
                 .body({
