@@ -1014,8 +1014,9 @@ describe('sendMagicLink', function () {
             describe('Rate limiting', function () {
                 before(async function () {
                     // Adjust rate limits for faster testing
-                    configUtils.set('spam:otc_verification_enumeration:freeRetries', 2);
+                    // Note: enumeration limit must be higher than specific limit for independence test
                     configUtils.set('spam:otc_verification:freeRetries', 2);
+                    configUtils.set('spam:otc_verification_enumeration:freeRetries', 5);
                     await resetRateLimits();
                 });
 
@@ -1091,6 +1092,10 @@ describe('sendMagicLink', function () {
 
                 it('Different otcRefs are tracked independently', async function () {
                     const otcVerificationLimit = configUtils.config.get('spam').otc_verification.freeRetries + 1;
+                    const otcVerificationEnumerationLimit = configUtils.config.get('spam').otc_verification_enumeration.freeRetries + 1;
+
+                    // Ensure we can test specific limits without hitting enumeration limit
+                    assert(otcVerificationLimit < otcVerificationEnumerationLimit, 'Specific otcRef limit must be lower than enumeration limit for this test');
 
                     // Exhaust attempts for first otcRef
                     for (let i = 0; i < otcVerificationLimit; i++) {
