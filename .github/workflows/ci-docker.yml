@@ -334,7 +334,6 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
