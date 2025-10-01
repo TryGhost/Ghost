@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import {PluginOption, UserConfig, mergeConfig} from 'vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import svgr from 'vite-plugin-svgr';
+import tailwindcss from '@tailwindcss/vite';
 import {defineConfig} from 'vitest/config';
 
 const externalPlugin = ({externals}: { externals: Record<string, string> }): PluginOption => {
@@ -36,6 +37,7 @@ export default function adminXViteConfig({packageName, entry, overrides}: {packa
         plugins: [
             svgr(),
             react(),
+            tailwindcss(),
             externalPlugin({
                 externals: {
                     react: 'React',
