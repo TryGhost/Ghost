@@ -10,6 +10,7 @@ export async function withIsolatedPage<T>(
     try {
         return await run({page, context});
     } finally {
+        await page.close();
         await context.close();
     }
 }
