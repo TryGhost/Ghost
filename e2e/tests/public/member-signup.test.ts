@@ -1,15 +1,16 @@
 import {test, expect} from '../../helpers/playwright';
-import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
+import {EmailAdapter} from '../../helpers/email/adapter';
+import {MailhogAdapter} from '../../helpers/email/adapters/mailhog';
 import {EmailMessageBodyParts} from '../../helpers/email/EmailMessageBodyParts';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {extractMagicLink} from '../../helpers/email/utils';
 
 test.describe('Member Signup with Email Verification', () => {
-    let emailClient: EmailClient;
+    let emailClient: EmailAdapter;
 
     test.beforeEach(async () => {
-        emailClient = new MailhogClient();
+        emailClient = new MailhogAdapter();
     });
 
     test('completes full signup flow with magic link', async ({page}) => {
@@ -33,7 +34,7 @@ test.describe('Member Signup with Email Verification', () => {
         const {email} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(email);
-        expect(message.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
+        expect(message.subject.toLowerCase()).toContain('complete');
 
         const emailMessageBodyParts = new EmailMessageBodyParts(message);
         const emailTextBody = emailMessageBodyParts.getPlainTextContent();
