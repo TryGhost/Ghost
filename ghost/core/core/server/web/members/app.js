@@ -89,6 +89,8 @@ module.exports = function setupMembersApp() {
         '/api/verify-otc',
         bodyParser.json(),
         middleware.verifyIntegrityToken,
+        shared.middleware.brute.otcVerificationEnumeration,
+        shared.middleware.brute.otcVerification,
         // NOTE: this is wrapped in a function to ensure we always go via the getter
         function lazyVerifyOTCMw(req, res, next) {
             return membersService.api.middleware.verifyOTC(req, res, next);
