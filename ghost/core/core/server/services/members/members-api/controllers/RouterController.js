@@ -713,14 +713,6 @@ module.exports = class RouterController {
             });
         }
 
-        if (req.brute && req.brute.reset) {
-            req.brute.reset((err) => {
-                if (err) {
-                    logging.error('Failed to reset brute force protection:', err);
-                }
-            });
-        }
-
         return res.json({redirectUrl});
     }
 

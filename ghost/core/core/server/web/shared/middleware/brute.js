@@ -143,7 +143,7 @@ module.exports = {
             ignoreIP: false,
             key(_req, _res, _next) {
                 if (_req.body.otcRef) {
-                    return _next(`${_req.body.otcRef}verification`);
+                    return _next(`${_req.body.otcRef}otc_verification`);
                 }
                 return _next();
             }

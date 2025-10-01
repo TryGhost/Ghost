@@ -21,7 +21,7 @@ const messages = {
         context: 'Too many login attempts.'
     },
     tooManyAttempts: 'Too many attempts.',
-    tooManyVerificationAttempts: {
+    tooManyOTCVerificationAttempts: {
         context: 'Too many verification code attempts.'
     },
     webmentionsBlock: 'Too many mention attempts',
@@ -269,12 +269,12 @@ const otcVerificationEnumeration = () => {
     if (!otcVerificationEnumerationInstance) {
         otcVerificationEnumerationInstance = new ExpressBrute(store,
             extend({
-                attachResetToRequest: true,
+                attachResetToRequest: false,
                 failCallback(req, res, next, nextValidRequestDate) {
                     return next(new errors.TooManyRequestsError({
                         message: `Too many verification attempts across multiple codes, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                        context: tpl(messages.tooManyVerificationAttempts.context),
-                        help: tpl(messages.tooManyVerificationAttempts.context)
+                        context: tpl(messages.tooManyOTCVerificationAttempts.context),
+                        help: tpl(messages.tooManyOTCVerificationAttempts.context)
                     }));
                 },
                 handleStoreError: handleStoreError
@@ -299,12 +299,12 @@ const otcVerification = () => {
     if (!otcVerificationInstance) {
         otcVerificationInstance = new ExpressBrute(store,
             extend({
-                attachResetToRequest: true,
+                attachResetToRequest: false,
                 failCallback(req, res, next, nextValidRequestDate) {
                     return next(new errors.TooManyRequestsError({
                         message: `Too many attempts for this verification code, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-                        context: tpl(messages.tooManyVerificationAttempts.context),
-                        help: tpl(messages.tooManyVerificationAttempts.context)
+                        context: tpl(messages.tooManyOTCVerificationAttempts.context),
+                        help: tpl(messages.tooManyOTCVerificationAttempts.context)
                     }));
                 },
                 handleStoreError: handleStoreError
