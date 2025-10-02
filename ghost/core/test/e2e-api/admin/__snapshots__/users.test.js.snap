@@ -27,7 +27,7 @@ exports[`User API Can edit user roles by name 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -74,7 +74,7 @@ exports[`User API Can edit user roles by name 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1052",
+  "content-length": "1112",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -87,7 +87,7 @@ exports[`User API Can edit user with empty roles data and does not change the ro
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -134,7 +134,7 @@ exports[`User API Can edit user with empty roles data and does not change the ro
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1115",
+  "content-length": "1175",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -157,7 +157,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -195,7 +195,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -233,7 +233,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -271,7 +271,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -309,7 +309,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -347,7 +347,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -385,7 +385,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -423,7 +423,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -468,7 +468,7 @@ exports[`User API Can include user roles 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8483",
+  "content-length": "8963",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -491,7 +491,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -528,7 +528,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -565,7 +565,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -609,7 +609,7 @@ exports[`User API Can paginate users 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2856",
+  "content-length": "3036",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -692,7 +692,7 @@ Object {
   },
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -729,7 +729,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -766,7 +766,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -803,7 +803,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -840,7 +840,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -877,7 +877,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -914,7 +914,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "You can delete this user to remove all the welcome posts",
       "bluesky": null,
       "comment_notifications": true,
@@ -951,7 +951,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -995,7 +995,7 @@ exports[`User API Can request all users ordered by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7124",
+  "content-length": "7604",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1008,7 +1008,7 @@ exports[`User API Can retrieve a user by email 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1052,7 +1052,7 @@ exports[`User API Can retrieve a user by email 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "881",
+  "content-length": "941",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1065,7 +1065,7 @@ exports[`User API Can retrieve a user by id 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1113,7 +1113,7 @@ exports[`User API Can retrieve a user by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1127",
+  "content-length": "1187",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1126,7 +1126,7 @@ exports[`User API Can retrieve a user by slug 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1170,7 +1170,7 @@ exports[`User API Can retrieve a user by slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "881",
+  "content-length": "941",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1183,7 +1183,7 @@ exports[`User API Can transfer ownership to admin user 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1230,7 +1230,7 @@ Object {
       "youtube": null,
     },
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1315,7 +1315,7 @@ exports[`User API Does not trigger cache invalidation when a private attribute o
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1359,7 +1359,7 @@ exports[`User API Does not trigger cache invalidation when a private attribute o
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "950",
+  "content-length": "1010",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1372,7 +1372,7 @@ exports[`User API Does not trigger cache invalidation when no attribute on a use
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1416,7 +1416,7 @@ exports[`User API Does not trigger cache invalidation when no attribute on a use
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "982",
+  "content-length": "1042",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1429,7 +1429,7 @@ exports[`User API Does trigger cache invalidation when a social link on a user h
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": false,
@@ -1473,7 +1473,7 @@ exports[`User API Does trigger cache invalidation when a social link on a user h
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "982",
+  "content-length": "1042",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1487,7 +1487,7 @@ exports[`User API can edit a user 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1531,7 +1531,7 @@ exports[`User API can edit a user 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "949",
+  "content-length": "1009",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1545,7 +1545,7 @@ exports[`User API can edit a user fetched from the API 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1590,7 +1590,7 @@ exports[`User API can edit a user fetched from the API 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1059",
+  "content-length": "1119",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1603,7 +1603,7 @@ exports[`User API can edit a user fetched from the API 3: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -1648,7 +1648,7 @@ exports[`User API can edit a user fetched from the API 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1052",
+  "content-length": "1112",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

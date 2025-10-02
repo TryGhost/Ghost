@@ -4,7 +4,7 @@ exports[`Authentication API Blog setup complete setup 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": null,
       "bluesky": null,
       "comment_notifications": true,
@@ -48,7 +48,7 @@ exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "853",
+  "content-length": "913",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -293,7 +293,7 @@ exports[`Authentication API Blog setup complete setup with default theme 1: [bod
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": null,
       "bluesky": null,
       "comment_notifications": true,
@@ -337,7 +337,7 @@ exports[`Authentication API Blog setup complete setup with default theme 2: [hea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "853",
+  "content-length": "913",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -597,7 +597,7 @@ exports[`Authentication API Blog setup update setup 1: [body] 1`] = `
 Object {
   "users": Array [
     Object {
-      "accessibility": null,
+      "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
       "bio": "bio",
       "bluesky": null,
       "comment_notifications": true,
@@ -641,7 +641,7 @@ exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "924",
+  "content-length": "984",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
