@@ -4,19 +4,19 @@ import {HomePage} from '../../pages/public';
 import {SignUpPage} from '../../pages/portal/SignUpPage';
 import {SignUpSuccessPage} from '../../pages/portal/SignUpSuccessPage';
 
-export async function signupViaPortal(page: Page): Promise<{email: string; name: string}> {
+export async function signupViaPortal(page: Page): Promise<{emailAddress: string; name: string}> {
     const homePage = new HomePage(page);
     await homePage.goto();
     await homePage.openPortalViaSubscribeButton();
 
     const signUpPage = new SignUpPage(page);
-    const email = faker.internet.email();
+    const emailAddress = faker.internet.email();
     const name = faker.person.fullName();
-    await signUpPage.fillAndSubmit(email, name);
+    await signUpPage.fillAndSubmit(emailAddress, name);
 
     const successPage = new SignUpSuccessPage(page);
     await successPage.waitForSignUpSuccess();
     await successPage.closePortal();
 
-    return {email, name};
+    return {emailAddress, name};
 }

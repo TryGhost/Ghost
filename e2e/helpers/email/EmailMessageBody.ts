@@ -2,15 +2,14 @@ import {EmailMessage} from './MailhogClient';
 import baseDebug from '@tryghost/debug';
 const debug = baseDebug('e2e:email');
 
-export class EmailMessageBodyParts {
+export class EmailMessageBody {
     constructor(private readonly message: EmailMessage) {
         this.message = message;
     }
 
-    getPlainTextContent(): string {
-        // Try to get plain text from MIME parts if available
-        if (this.message.MIME && this.message.MIME.Parts) {
-            for (const part of this.message.MIME.Parts) {
+    getTextContent(): string {
+        if (this.areMimePartsAvailable()) {
+            for (const part of this.getMimeParts()) {
                 if (part.Headers && part.Headers['Content-Type'] &&
                     part.Headers['Content-Type'][0].includes('text/plain')) {
                     // Check if content is base64 encoded
@@ -28,13 +27,12 @@ export class EmailMessageBodyParts {
         }
 
         // Fall back to main body
-        return this.message.Content.Body;
+        return this.getMainBody('plain');
     }
 
     getHtmlContent(): string {
-        // Try to get HTML from MIME parts if available
-        if (this.message.MIME && this.message.MIME.Parts) {
-            for (const part of this.message.MIME.Parts) {
+        if (this.areMimePartsAvailable()) {
+            for (const part of this.getMimeParts()) {
                 if (part.Headers && part.Headers['Content-Type'] &&
                     part.Headers['Content-Type'][0].includes('text/html')) {
                     return part.Body;
@@ -42,12 +40,33 @@ export class EmailMessageBodyParts {
             }
         }
 
-        // Fall back to main body if it looks like HTML
+        // Fall back to main body
+        return this.getMainBody('html');
+    }
+
+    private getMainBody(type: 'html' | 'plain'): string {
         const body = this.message.Content.Body;
+        if (type === 'plain') {
+            return body;
+        }
+
         if (body.includes('<html') || body.includes('<body')) {
             return body;
         }
 
         return '';
+    }
+
+    private getMimeParts() {
+        return this.message.MIME?.Parts ?? [];
+    }
+
+    private areMimePartsAvailable() {
+        const result = this.message.MIME && this.message.MIME.Parts;
+        if (result === null || result === undefined) {
+            return false;
+        }
+
+        return true;
     }
 }

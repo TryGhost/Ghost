@@ -1,19 +1,20 @@
 import {test, expect} from '../../helpers/playwright';
 import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
 import {EmailMessageBody} from '../../helpers/email/EmailMessageBody';
-import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
+import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
+import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {extractMagicLink} from '../../helpers/email/utils';
 
-test.describe('Ghost Public - Member Signup', () => {
+test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;
 
     test.beforeEach(async () => {
         emailClient = new MailhogClient();
     });
 
-    test('signed up with magic link in email', async ({page}) => {
-        const {emailAddress} = await signupViaPortal(page);
+    test('signed up with magic link - direct', async ({page}) => {
+        const {emailAddress, name} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
         const emailMessageBodyParts = new EmailMessageBody(message);
@@ -26,17 +27,14 @@ test.describe('Ghost Public - Member Signup', () => {
 
         const homePage = new HomePage(page);
         await homePage.waitForSignedIn();
-        await expect(homePage.accountButton).toBeVisible();
-    });
 
-    test('received welcome email', async ({page}) => {
-        const {emailAddress} = await signupViaPortal(page);
+        const membersPage = new MembersPage(page);
+        await membersPage.goto();
+        await membersPage.clickMemberByEmail(emailAddress);
 
-        const message = await emailClient.waitForEmail(emailAddress);
-        expect(message.Content.Headers.Subject[0].toLowerCase()).toContain('complete');
+        const membersDetailsPage = new MemberDetailsPage(page);
 
-        const emailMessageBodyParts = new EmailMessageBody(message);
-        const emailTextBody = emailMessageBodyParts.getTextContent();
-        expect(emailTextBody).toContain('complete the signup process');
+        await expect(membersDetailsPage.body).toContainText(/Source.*—.*Direct/);
+        await expect(membersDetailsPage.nameInput).toHaveValue(name);
     });
 });

@@ -4,7 +4,7 @@ import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
 import {SignInPage} from '../../helpers/pages/portal/SignInPage';
 
 test.describe('Portal Loading', () => {
-    test.describe('can open Portal', function () {
+    test.describe('opened Portal', function () {
         test('via Subscribe button', async ({page}) => {
             const homePage = new HomePage(page);
             await homePage.goto();
@@ -28,7 +28,7 @@ test.describe('Portal Loading', () => {
         });
     });
 
-    test('Portal can switch between signup and sign in modes', async ({page}) => {
+    test('switch between signup and sign in modes', async ({page}) => {
         const homePage = new HomePage(page);
         await homePage.goto();
 
