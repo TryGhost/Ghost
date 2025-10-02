@@ -963,7 +963,7 @@
 }
 
 .modal-post-success .modal-body h2 {
-    word-wrap: break-word;
+    overflow-wrap: anywhere ;
     word-break: break-word ;
     max-width: 100% ;
 }
