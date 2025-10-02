@@ -196,7 +196,6 @@ export default class MagicLinkPage extends React.Component {
                             name={OTC_FIELD_NAME}
                             type="text"
                             value={this.state.otc}
-                            placeholder="••••••"
                             inputMode="numeric"
                             pattern="[0-9]*"
                             aria-label={t('Code')}
