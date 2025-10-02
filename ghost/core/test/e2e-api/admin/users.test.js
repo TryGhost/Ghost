@@ -597,4 +597,105 @@ describe('User API', function () {
         assert.equal(originalId, newId, 'Token id should remain the same');
         assert.notEqual(originalSecret, newSecret, 'Token secret should have changed');
     });
+
+    describe('Accessibility initialization', function () {
+        const moment = require('moment-timezone');
+        const expectedDate = moment.utc().startOf('day').toISOString();
+
+        [
+            {
+                description: 'no accessibility',
+                accessibility: undefined,
+                expectedAccessibility: {
+                    whatsNew: {
+                        lastSeenDate: expectedDate
+                    }
+                }
+            },
+            {
+                description: 'empty accessibility object',
+                accessibility: {},
+                expectedAccessibility: {
+                    whatsNew: {
+                        lastSeenDate: expectedDate
+                    }
+                }
+            },
+            {
+                description: 'accessibility with other settings but no whatsNew',
+                accessibility: {
+                    keyboardShortcuts: false
+                },
+                expectedAccessibility: {
+                    keyboardShortcuts: false,
+                    whatsNew: {
+                        lastSeenDate: expectedDate
+                    }
+                }
+            },
+            {
+                description: 'accessibility with empty whatsNew',
+                accessibility: {
+                    whatsNew: {}
+                },
+                expectedAccessibility: {
+                    whatsNew: {
+                        lastSeenDate: expectedDate
+                    }
+                }
+            },
+            {
+                description: 'accessibility with whatsNew containing other properties',
+                accessibility: {
+                    whatsNew: {
+                        dismissed: ['some-feature']
+                    }
+                },
+                expectedAccessibility: {
+                    whatsNew: {
+                        dismissed: ['some-feature'],
+                        lastSeenDate: expectedDate
+                    }
+                }
+            }
+        ].forEach(({description, accessibility, expectedAccessibility}) => {
+            it(`Initializes accessibility.whatsNew.lastSeenDate when ${description}`, async function () {
+                const userData = {
+                    name: `Test User - ${description}`,
+                    email: `test-${description.replace(/\s+/g, '-')}@example.com`,
+                    password: 'SecurePass123!!'
+                };
+
+                if (accessibility !== undefined) {
+                    userData.accessibility = JSON.stringify(accessibility);
+                }
+
+                const newUser = await models.User.add(userData, {context: {internal: true}});
+                const result = JSON.parse(newUser.get('accessibility'));
+
+                assert.deepEqual(result, expectedAccessibility);
+            });
+        });
+
+        it('Does not override existing accessibility.whatsNew.lastSeenDate', async function () {
+            const existingData = {
+                whatsNew: {
+                    lastSeenDate: '2020-01-01 00:00:00',
+                    dismissed: ['some-feature']
+                },
+                keyboardShortcuts: false
+            };
+
+            const newUser = await models.User.add({
+                name: 'Test User With Existing Date',
+                email: 'test-existing-date@example.com',
+                password: 'SecurePass123!!',
+                accessibility: JSON.stringify(existingData)
+            }, {context: {internal: true}});
+
+            const accessibility = JSON.parse(newUser.get('accessibility'));
+
+            assert.deepEqual(accessibility, existingData, 'Existing accessibility data should be preserved exactly');
+        });
+    });
 });

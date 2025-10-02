@@ -16,7 +16,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -78,7 +78,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -188,7 +188,7 @@ Object {
     "previous": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -273,7 +273,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -349,7 +349,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -508,7 +508,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -605,7 +605,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -766,7 +766,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -842,7 +842,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1001,7 +1001,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1077,7 +1077,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1236,7 +1236,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1312,7 +1312,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1472,7 +1472,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1569,7 +1569,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1774,7 +1774,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1871,7 +1871,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2016,7 +2016,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2113,7 +2113,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2273,7 +2273,7 @@ Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2349,7 +2349,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"whatsNew\\":{\\"lastSeenDate\\":\\"2025-10-02T00:00:00.000Z\\"}}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,

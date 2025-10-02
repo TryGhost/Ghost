@@ -1,5 +1,6 @@
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
+const moment = require('moment-timezone');
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
 const limitService = require('../services/limits');
@@ -201,6 +202,19 @@ User = ghostBookshelf.Model.extend({
                     columnKey: 'name'
                 })
             });
+        }
+
+        // Initialize accessibility.whatsNew for new users
+        if (options.method === 'insert' && !options.importing) {
+            const existingValue = this.get('accessibility');
+            const accessibility = existingValue ? JSON.parse(existingValue) : {};
+
+            const today = moment.utc().startOf('day').toISOString();
+
+            accessibility.whatsNew ??= {};
+            accessibility.whatsNew.lastSeenDate ??= today;
+
+            this.set('accessibility', JSON.stringify(accessibility));
         }
 
         // If the user's email is set & has changed & we are not importing
