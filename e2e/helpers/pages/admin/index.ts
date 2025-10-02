@@ -9,6 +9,7 @@ export * from './analytics/post-analytics/PostAnalyticsWebTrafficPage';
 export * from './LoginPage';
 export * from './AdminPage';
 export * from './MembersPage';
+export * from './MemberDetailsPage';
 export * from './PostEditorPage';
 export * from './settings/SettingsPage';
 export * from './tags/TagsPage';
