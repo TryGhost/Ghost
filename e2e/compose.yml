@@ -116,7 +116,7 @@ services:
     ports:
       - "4175"  # Dynamic host port assignment
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4175/portal.min.js"]
+      test: ["CMD", "curl", "-f", "http://localhost:4175/portal.min.js"]
       interval: 1s
       timeout: 3s
       retries: 30
