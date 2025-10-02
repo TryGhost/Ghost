@@ -45,6 +45,6 @@ export class TagsPage extends AdminPage {
     }
 
     getTagByName(name: string): Locator {
-        return this.tagNames.filter({hasText: name});
+        return this.tagNames.getByText(name, {exact: true});
     }
 }
