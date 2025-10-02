@@ -17,6 +17,7 @@ const messages = {
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
 const EmailAddressParser = require('../email-address/EmailAddressParser');
+const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -129,6 +130,15 @@ module.exports = class GhostMailer {
         }
 
         const messageToSend = createMessage(message);
+        if (this.state.usingMailgun) {
+            const tags = this.getTags();
+            if (tags.length > 0) {
+                messageToSend['o:tag'] = tags;
+            }
+            if (settingsCache.get('emailTrackOpens')) {
+                messageToSend['o:tracking-opens'] = true;
+            }
+        }
 
         const response = await this.sendMail(messageToSend);
 
@@ -140,24 +150,6 @@ module.exports = class GhostMailer {
     }
 
     async sendMail(message) {
-        // Add site-based tagging for Mailgun transactional emails
-        if (this.state.usingMailgun) {
-            const siteId = config.get('hostSettings:siteId');
-            if (siteId) {
-                // Add the site-based tag in the format blog-{siteId}
-                if (!message['o:tag']) {
-                    message['o:tag'] = [];
-                } else if (typeof message['o:tag'] === 'string') {
-                    message['o:tag'] = [message['o:tag']];
-                }
-
-                message['o:tag'].push('transactional-email', `blog-${siteId}`);
-                if (settingsCache.get('emailTrackOpens')) {
-                    message['o:tracking-opens'] = true;
-                }
-            }
-        }
-
         const startTime = Date.now();
         try {
             const response = await this.transport.sendMail(message);
@@ -201,5 +193,16 @@ module.exports = class GhostMailer {
         }
 
         return tpl(messages.messageSent);
+    }
+
+    getTags() {
+        const tagList = [...DEFAULT_TAGS];
+
+        const siteId = config.get('hostSettings:siteId');
+        if (siteId) {
+            tagList.push(`blog-${siteId}`);
+        }
+
+        return tagList;
     }
 };

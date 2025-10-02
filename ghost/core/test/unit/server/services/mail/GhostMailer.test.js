@@ -343,7 +343,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
@@ -353,57 +353,6 @@ describe('Mail: Ghostmailer', function () {
             sentMessage['o:tag'].should.be.an.Array();
             sentMessage['o:tag'].should.containEql('transactional-email');
             sentMessage['o:tag'].should.containEql('blog-123123');
-            sentMessage['o:tracking-opens'].should.equal(true);
-        });
-
-        it('should append to existing string tag when using Mailgun', async function () {
-            configUtils.set({
-                hostSettings: {siteId: '456456'}
-            });
-            sandbox.stub(settingsCache, 'get').withArgs('emailTrackOpens').returns(true);
-
-            mailer = new mail.GhostMailer();
-            mailer.state.usingMailgun = true;
-            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
-
-            await mailer.sendMail({
-                to: 'user@example.com',
-                subject: 'test',
-                html: 'content',
-                'o:tag': 'existing-tag'
-            });
-
-            const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
-            sentMessage['o:tag'].should.containEql('existing-tag');
-            sentMessage['o:tag'].should.containEql('transactional-email');
-            sentMessage['o:tag'].should.containEql('blog-456456');
-            sentMessage['o:tracking-opens'].should.equal(true);
-        });
-
-        it('should append to existing array of tags when using Mailgun', async function () {
-            configUtils.set({
-                hostSettings: {siteId: '789789'}
-            });
-            sandbox.stub(settingsCache, 'get').withArgs('emailTrackOpens').returns(true);
-
-            mailer = new mail.GhostMailer();
-            mailer.state.usingMailgun = true;
-            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
-
-            await mailer.sendMail({
-                to: 'user@example.com',
-                subject: 'test',
-                html: 'content',
-                'o:tag': ['tag1', 'tag2']
-            });
-
-            const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
-            sentMessage['o:tag'].should.containEql('tag1');
-            sentMessage['o:tag'].should.containEql('tag2');
-            sentMessage['o:tag'].should.containEql('transactional-email');
-            sentMessage['o:tag'].should.containEql('blog-789789');
             sentMessage['o:tracking-opens'].should.equal(true);
         });
 
@@ -417,7 +366,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
@@ -430,7 +379,7 @@ describe('Mail: Ghostmailer', function () {
             should.not.exist(sentMessage['o:tracking-opens']);
         });
 
-        it('should not add tag when site ID is missing', async function () {
+        it('should not add site ID tag when site ID is missing', async function () {
             configUtils.set({
                 hostSettings: {} // No siteId
             });
@@ -440,14 +389,15 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            should.not.exist(sentMessage['o:tag']);
+            sentMessage['o:tag'].should.containEql('transactional-email');
+            sentMessage['o:tag'].should.not.containEql('blog-123123');
         });
 
         it('should not add tag when not using Mailgun transport', async function () {
@@ -459,7 +409,7 @@ describe('Mail: Ghostmailer', function () {
             // usingMailgun defaults to false when using stub transport
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
