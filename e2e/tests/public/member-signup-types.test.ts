@@ -6,7 +6,7 @@ import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
 import {extractMagicLink} from '../../helpers/email/utils';
 
-test.describe('Member Signup with Email Verification', () => {
+test.describe('Ghost Public - Member Signup - Types', () => {
     let emailClient: EmailClient;
 
     test.beforeEach(async () => {
