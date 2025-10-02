@@ -96,7 +96,7 @@ function dropNullable(tableName, column, transaction = db.knex) {
  * @param {string} column
  * @param {import('knex').Knex.Transaction} [transaction]
  * @param {object} columnSpec
- * @param {'inplace'|'copy'} [columnSpec.algorithm] - MySQL only: 'inplace' (online DDL) or 'copy' (default, legacy DDL)
+ * @param {'inplace'|'copy'|'auto'} [columnSpec.algorithm] - MySQL only: 'inplace' (online DDL) or 'copy' (default, legacy DDL)
  */
 async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
@@ -114,10 +114,13 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
         let sql = sqlQuery.sql;
 
         if (DatabaseInfo.isMySQL(transaction)) {
-            // Allow overriding the algorithm via columnSpec
-            const algorithm = columnSpec?.algorithm || 'copy';
             // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '') + `, algorithm=${algorithm}`;
+            sql = sql.replace(/;\s*$/, '');
+            if (columnSpec?.algorithm !== 'auto') {
+                // default to copy if not specified
+                const algorithm = columnSpec?.algorithm || 'copy';
+                sql += `, algorithm=${algorithm}`;
+            }
         }
 
         await transaction.raw(sql);
@@ -129,6 +132,7 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
  * @param {string} column
  * @param {import('knex').Knex} [transaction]
  * @param {object} [columnSpec]
+ * @param {'inplace'|'copy'|'auto'} [columnSpec.algorithm] - MySQL only: 'inplace' (online DDL) or 'copy' (default, legacy DDL)
  */
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
@@ -151,10 +155,13 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
         let sql = sqlQuery.sql;
 
         if (DatabaseInfo.isMySQL(transaction)) {
-            // Allow overriding the algorithm via columnSpec
-            const algorithm = columnSpec?.algorithm || 'copy';
             // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '') + `, algorithm=${algorithm}`;
+            sql = sql.replace(/;\s*$/, '');
+            if (columnSpec?.algorithm !== 'auto') {
+                // default to copy if not specified
+                const algorithm = columnSpec?.algorithm || 'copy';
+                sql += `, algorithm=${algorithm}`;
+            }
         }
 
         await transaction.raw(sql);
