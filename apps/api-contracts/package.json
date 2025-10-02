@@ -1,0 +1,54 @@
+{
+  "name": "@tryghost/api-contracts",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/apps/api-contracts",
+  "author": "Ghost Foundation",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./tags": {
+      "types": "./dist/tags.d.ts",
+      "import": "./dist/tags.js",
+      "require": "./dist/tags.cjs"
+    },
+    "./common": {
+      "types": "./dist/common.d.ts",
+      "import": "./dist/common.js",
+      "require": "./dist/common.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate": "tsx scripts/generate-schemas.ts",
+    "build": "yarn generate && tsup",
+    "dev": "tsup --watch",
+    "prepare": "yarn build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:types": "tsc --noEmit",
+    "lint": "eslint src --ext .ts --cache"
+  },
+  "dependencies": {
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "json-refs": "3.0.15",
+    "json-schema-to-zod": "2.6.1",
+    "prettier": "3.4.2",
+    "tsup": "8.3.5",
+    "tsx": "4.19.2",
+    "typescript": "5.8.3",
+    "vitest": "2.1.8"
+  }
+}
+
