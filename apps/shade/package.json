@@ -27,7 +27,7 @@
         "tailwind.config.cjs"
     ],
     "devDependencies": {
-        "@codemirror/lang-html": "6.4.10",
+        "@codemirror/lang-html": "6.4.11",
         "@radix-ui/react-tooltip": "1.2.7",
         "@storybook/addon-docs": "9.1.10",
         "@storybook/addon-links": "9.1.10",
