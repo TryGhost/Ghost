@@ -2,11 +2,13 @@ import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
 import {mockTagsResponse} from './helpers/mock-tags-response';
 import {GhostClient} from '../../../helpers/services/ghost-client/GhostClient';
+import {overrideFeatureFlags} from '../../../helpers/utils';
 
 test.describe('Ghost Admin - Tags', () => {
     test.beforeEach(async ({page}) => {
         const client = new GhostClient(page.request);
         await client.updateSettings({tagsX: true});
+        await overrideFeatureFlags(page, {tagsX: true});
     });
 
     test('shows empty state when no tags exist', async ({page}) => {
