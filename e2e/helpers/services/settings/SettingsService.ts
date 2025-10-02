@@ -1,4 +1,4 @@
-import {HttpClient} from '../../../data-factory';
+import type {APIRequestContext} from '@playwright/test';
 
 export interface Setting {
     key: string;
@@ -9,17 +9,17 @@ export interface SettingsResponse {
     settings: Setting[];
 }
 
-export class GhostClient {
-    private readonly httpClient: HttpClient;
+export class SettingsService {
+    private readonly request: APIRequestContext;
     private readonly adminEndpoint: string;
 
-    constructor(httpClient: HttpClient) {
-        this.httpClient = httpClient;
+    constructor(request: APIRequestContext) {
+        this.request = request;
         this.adminEndpoint = '/ghost/api/admin';
     }
 
     async getSettings() {
-        const response = await this.httpClient.get(`${this.adminEndpoint}/settings`);
+        const response = await this.request.get(`${this.adminEndpoint}/settings`);
         return await response.json() as SettingsResponse;
     }
 
@@ -32,8 +32,10 @@ export class GhostClient {
         const updatedLabs = {...currentLabs, ...flags};
         const updatedSettings = [{key: 'labs', value: JSON.stringify(updatedLabs)}];
 
-        const data = {data: {settings: updatedSettings}};
-        await this.httpClient.put(`${this.adminEndpoint}/settings`, data);
-        return await this.getSettings();
+        // Settings API expects the data directly without the extra 'data' wrapper
+        const data = {settings: updatedSettings};
+        const response = await this.request.put(`${this.adminEndpoint}/settings`, {data});
+
+        return await response.json() as SettingsResponse;
     }
 }
