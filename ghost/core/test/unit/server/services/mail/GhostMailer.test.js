@@ -343,7 +343,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
@@ -366,7 +366,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content',
@@ -391,7 +391,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content',
@@ -417,7 +417,7 @@ describe('Mail: Ghostmailer', function () {
             mailer.state.usingMailgun = true;
             const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
 
-            await mailer.sendMail({
+            await mailer.send({
                 to: 'user@example.com',
                 subject: 'test',
                 html: 'content'
