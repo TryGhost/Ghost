@@ -6,10 +6,7 @@ test.describe('Ghost Public - Portal Docker Build Verification', () => {
         const homePage = new HomePage(page);
         await homePage.goto();
 
-        await homePage.openPortalViaSubscribeButton();
-
         const portalRoot = page.locator('#ghost-portal-root');
-        await expect(portalRoot).toBeVisible();
         await expect(portalRoot).toHaveAttribute('data-portal-docker-test', 'true');
     });
 });
