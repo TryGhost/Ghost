@@ -192,7 +192,7 @@ export default class MagicLinkPage extends React.Component {
                     <div className={`gh-portal-otp-field-container ${errors.otc && 'error'}`}>
                         <input
                             id={`input-${OTC_FIELD_NAME}`}
-                            className='gh-portal-input'
+                            className={`gh-portal-input ${errors.otc && 'error'}`}
                             name={OTC_FIELD_NAME}
                             type="text"
                             value={this.state.otc}
