@@ -189,7 +189,6 @@ export default class MagicLinkPage extends React.Component {
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 <section className='gh-portal-section gh-portal-otp'>
-                    {/* @TODO: create different input component with updated design */}
                     <div className={`gh-portal-otp-field-container ${errors.otc && 'error'}`}>
                         <input
                             id={`input-${OTC_FIELD_NAME}`}
@@ -200,13 +199,13 @@ export default class MagicLinkPage extends React.Component {
                             placeholder="••••••"
                             inputMode="numeric"
                             pattern="[0-9]*"
-                            label={t('Code')}
+                            aria-label={t('Code')}
                             autoFocus={false}
                             maxLength={6}
                             onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                         />
                     </div>
-                    {!errors.otc &&
+                    {errors.otc &&
                     <div className="gh-portal-otp-error">
                         {errors.otc}
                     </div>}
