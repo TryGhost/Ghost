@@ -1,6 +1,6 @@
 import {test, expect} from '../../helpers/playwright';
 import {EmailClient, MailhogClient} from '../../helpers/email/MailhogClient';
-import {EmailMessageBodyParts} from '../../helpers/email/EmailMessageBodyParts';
+import {EmailMessageBody} from '../../helpers/email/EmailMessageBody';
 import {HomePage, PublicPage} from '../../helpers/pages/public';
 import {MembersPage, MemberDetailsPage} from '../../helpers/pages/admin';
 import {signupViaPortal} from '../../helpers/playwright/flows/signup';
@@ -13,12 +13,12 @@ test.describe('Member Signup with Email Verification', () => {
         emailClient = new MailhogClient();
     });
 
-    test('signed up up with magic link - direct', async ({page}) => {
+    test('signed up with magic link - direct', async ({page}) => {
         const {emailAddress, name} = await signupViaPortal(page);
 
         const message = await emailClient.waitForEmail(emailAddress);
-        const emailMessageBodyParts = new EmailMessageBodyParts(message);
-        const emailTextBody = emailMessageBodyParts.getPlainTextContent();
+        const emailMessageBodyParts = new EmailMessageBody(message);
+        const emailTextBody = emailMessageBodyParts.getTextContent();
 
         const magicLink = extractMagicLink(emailTextBody);
         const publicPage = new PublicPage(page);

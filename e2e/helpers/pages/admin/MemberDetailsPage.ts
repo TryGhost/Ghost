@@ -26,13 +26,4 @@ export class MemberDetailsPage extends AdminPage {
     async updateEmail(email: string): Promise<void> {
         await this.emailInput.fill(email);
     }
-
-    async save(): Promise<void> {
-        await this.saveButton.click();
-        await this.page.waitForLoadState('networkidle');
-    }
-
-    async deleteMember(): Promise<void> {
-        await this.deleteButton.click();
-    }
 }
