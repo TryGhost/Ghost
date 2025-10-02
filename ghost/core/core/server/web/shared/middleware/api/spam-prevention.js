@@ -22,6 +22,7 @@ const messages = {
     },
     tooManyAttempts: 'Too many attempts.',
     tooManyOTCVerificationAttempts: {
+        error: 'Too many attempts for this verification code.',
         context: 'Too many verification code attempts.'
     },
     webmentionsBlock: 'Too many mention attempts',

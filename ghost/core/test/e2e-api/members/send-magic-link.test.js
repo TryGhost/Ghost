@@ -1022,6 +1022,7 @@ describe('sendMagicLink', function () {
 
                 after(async function () {
                     await configUtils.restore();
+                    await resetRateLimits();
                 });
 
                 beforeEach(async function () {
