@@ -808,6 +808,7 @@ html[dir="rtl"] .gh-portal-list-toggle-wrapper .gh-portal-list-detail {
 
 .gh-portal-otp-field-container.error {
     border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
 }
 
 .gh-portal-otp .gh-portal-input {
