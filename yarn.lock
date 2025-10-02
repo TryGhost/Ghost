@@ -1656,10 +1656,10 @@
     "@lezer/common" "^1.0.2"
     "@lezer/css" "^1.0.0"
 
-"@codemirror/lang-html@6.4.10":
-  version "6.4.10"
-  resolved "https://registry.yarnpkg.com/@codemirror/lang-html/-/lang-html-6.4.10.tgz#e9d222e147b91003cd6b4680d81fc829c9107be5"
-  integrity sha512-h/SceTVsN5r+WE+TVP2g3KDvNoSzbSrtZXCKo4vkKdbfT5t4otuVgngGdFukOO/rwRD2++pCxoh6xD4TEVMkQA==
+"@codemirror/lang-html@6.4.11":
+  version "6.4.11"
+  resolved "https://registry.yarnpkg.com/@codemirror/lang-html/-/lang-html-6.4.11.tgz#c46ba46ae642fd567cf05c4129005d2913ac248d"
+  integrity sha512-9NsXp7Nwp891pQchI7gPdTwBuSuT3K65NGTHWHNJ55HjYcHLllr0rbIZNdOzas9ztc1EUVBlHou85FFZS4BNnw==
   dependencies:
     "@codemirror/autocomplete" "^6.0.0"
     "@codemirror/lang-css" "^6.0.0"
@@ -1669,7 +1669,7 @@
     "@codemirror/view" "^6.17.0"
     "@lezer/common" "^1.0.0"
     "@lezer/css" "^1.1.0"
-    "@lezer/html" "^1.3.0"
+    "@lezer/html" "^1.3.12"
 
 "@codemirror/lang-javascript@^6.0.0":
   version "6.1.9"
@@ -3983,10 +3983,10 @@
     "@lexical/selection" "0.13.1"
     "@lexical/table" "0.13.1"
 
-"@lezer/common@^1.0.0", "@lezer/common@^1.0.2":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@lezer/common/-/common-1.0.3.tgz#1808f70e2b0a7b1fdcbaf5c074723d2d4ed1e4c5"
-  integrity sha512-JH4wAXCgUOcCGNekQPLhVeUtIqjH0yPBs7vvUdSjyQama9618IOKFJwkv2kcqdhF0my8hQEgCTEJU0GIgnahvA==
+"@lezer/common@^1.0.0", "@lezer/common@^1.0.2", "@lezer/common@^1.2.0":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@lezer/common/-/common-1.2.3.tgz#138fcddab157d83da557554851017c6c1e5667fd"
+  integrity sha512-w7ojc8ejBqr2REPsWxJjrMFsA/ysDCFICn8zEOR9mrqzOu2amhITYuLD8ag6XZf0CFXDrhKqw7+tW8cX66NaDA==
 
 "@lezer/css@^1.0.0", "@lezer/css@^1.1.0":
   version "1.1.3"
@@ -4003,12 +4003,12 @@
   dependencies:
     "@lezer/common" "^1.0.0"
 
-"@lezer/html@^1.3.0":
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/@lezer/html/-/html-1.3.6.tgz#26a2a17da4e0f91835e36db9ccd025b2ed8d33f7"
-  integrity sha512-Kk9HJARZTc0bAnMQUqbtuhFVsB4AnteR2BFUWfZV7L/x1H0aAKz6YabrfJ2gk/BEgjh9L3hg5O4y2IDZRBdzuQ==
+"@lezer/html@^1.3.12":
+  version "1.3.12"
+  resolved "https://registry.yarnpkg.com/@lezer/html/-/html-1.3.12.tgz#a438e2d04f4c863d49cad27efe714cde8cf3ff1b"
+  integrity sha512-RJ7eRWdaJe3bsiiLLHjCFT1JMk8m1YP9kaUbvu2rMLEoOnke9mcTVDyfOslsln0LtujdWespjJ39w6zo+RsQYw==
   dependencies:
-    "@lezer/common" "^1.0.0"
+    "@lezer/common" "^1.2.0"
     "@lezer/highlight" "^1.0.0"
     "@lezer/lr" "^1.0.0"
 
@@ -18306,10 +18306,10 @@ eslint-plugin-react-hooks@5.2.0:
   resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-5.2.0.tgz#1be0080901e6ac31ce7971beed3d3ec0a423d9e3"
   integrity sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==
 
-eslint-plugin-react-refresh@0.4.22:
-  version "0.4.22"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react-refresh/-/eslint-plugin-react-refresh-0.4.22.tgz#bc6c7e769d8a8fcfbaa2fd8af3ac63c8af0eae5e"
-  integrity sha512-atkAG6QaJMGoTLc4MDAP+rqZcfwQuTIh2IqHWFLy2TEjxr0MOK+5BSG4RzL2564AAPpZkDRsZXAUz68kjnU6Ug==
+eslint-plugin-react-refresh@0.4.23:
+  version "0.4.23"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react-refresh/-/eslint-plugin-react-refresh-0.4.23.tgz#70f363a0a8f6cce5b01b62d5be8b3d45648733f1"
+  integrity sha512-G4j+rv0NmbIR45kni5xJOrYvCtyD3/7LjpVH8MPPcudXDcNu8gv+4ATTDXTtbRR8rTCM5HxECvCSsRmxKnWDsA==
 
 eslint-plugin-react@7.37.5:
   version "7.37.5"
@@ -22694,7 +22694,7 @@ jest@29.7.0:
     import-local "^3.0.2"
     jest-cli "^29.7.0"
 
-jiti@^1.18.2, jiti@^1.21.6:
+jiti@^1.18.2, jiti@^1.21.7:
   version "1.21.7"
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.21.7.tgz#9dd81043424a3d28458b193d965f0d18a2300ba9"
   integrity sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==
@@ -27300,13 +27300,12 @@ postcss-lab-function@^4.2.1:
     "@csstools/postcss-progressive-custom-properties" "^1.1.0"
     postcss-value-parser "^4.2.0"
 
-postcss-load-config@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/postcss-load-config/-/postcss-load-config-4.0.2.tgz#7159dcf626118d33e299f485d6afe4aff7c4a3e3"
-  integrity sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==
+"postcss-load-config@^4.0.2 || ^5.0 || ^6.0":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-load-config/-/postcss-load-config-6.0.1.tgz#6fd7dcd8ae89badcf1b2d644489cbabf83aa8096"
+  integrity sha512-oPtTM4oerL+UXmx+93ytZVN82RrlY/wPUV8IeDxFrzIjXOLF1pN+EmKPLbubvKHT2HC20xXsCAH2Z+CKV6Oz/g==
   dependencies:
-    lilconfig "^3.0.0"
-    yaml "^2.3.4"
+    lilconfig "^3.1.1"
 
 postcss-load-config@^5.0.0:
   version "5.1.0"
@@ -31649,10 +31648,10 @@ tailwindcss-animate@1.0.7:
   resolved "https://registry.yarnpkg.com/tailwindcss-animate/-/tailwindcss-animate-1.0.7.tgz#318b692c4c42676cc9e67b19b78775742388bef4"
   integrity sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==
 
-tailwindcss@3.4.17:
-  version "3.4.17"
-  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.17.tgz#ae8406c0f96696a631c790768ff319d46d5e5a63"
-  integrity sha512-w33E2aCvSDP0tW9RZuNXadXlkHXqFzSkQew/aIa2i/Sj8fThxwovwlXHSPXTbAHwEIhBFXAedUhP2tueAKP8Og==
+tailwindcss@3.4.18:
+  version "3.4.18"
+  resolved "https://registry.yarnpkg.com/tailwindcss/-/tailwindcss-3.4.18.tgz#9fa9650aace186644b608242f1e57d2d55593301"
+  integrity sha512-6A2rnmW5xZMdw11LYjhcI5846rt9pbLSabY5XPxo+XWdxwZaFEn47Go4NzFiHu9sNNmr/kXivP1vStfvMaK1GQ==
   dependencies:
     "@alloc/quick-lru" "^5.2.0"
     arg "^5.0.2"
@@ -31662,7 +31661,7 @@ tailwindcss@3.4.17:
     fast-glob "^3.3.2"
     glob-parent "^6.0.2"
     is-glob "^4.0.3"
-    jiti "^1.21.6"
+    jiti "^1.21.7"
     lilconfig "^3.1.3"
     micromatch "^4.0.8"
     normalize-path "^3.0.0"
@@ -31671,7 +31670,7 @@ tailwindcss@3.4.17:
     postcss "^8.4.47"
     postcss-import "^15.1.0"
     postcss-js "^4.0.1"
-    postcss-load-config "^4.0.2"
+    postcss-load-config "^4.0.2 || ^5.0 || ^6.0"
     postcss-nested "^6.2.0"
     postcss-selector-parser "^6.1.2"
     resolve "^1.22.8"
@@ -33274,10 +33273,10 @@ vite@5.4.20, vite@^5.0.0:
   optionalDependencies:
     fsevents "~2.3.3"
 
-vite@7.1.7:
-  version "7.1.7"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-7.1.7.tgz#ed3f9f06e21d6574fe1ad425f6b0912d027ffc13"
-  integrity sha512-VbA8ScMvAISJNJVbRDTJdCwqQoAareR/wutevKanhR2/1EkoXVZVkkORaYm/tNVCjP/UDTKtcw3bAkwOUdedmA==
+vite@7.1.8:
+  version "7.1.8"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-7.1.8.tgz#ff208eee01658c5b407b6a1afa9b92b25750832e"
+  integrity sha512-oBXvfSHEOL8jF+R9Am7h59Up07kVVGH1NrFGFoEG6bPDZP3tGpQhvkBpy5x7U6+E6wZCu9OihsWgJqDbQIm8LQ==
   dependencies:
     esbuild "^0.25.0"
     fdir "^6.5.0"
@@ -33966,7 +33965,7 @@ yaml@^1.10.0:
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
 
-yaml@^2.2.2, yaml@^2.3.4, yaml@^2.4.2, yaml@^2.6.0, yaml@^2.7.0:
+yaml@^2.2.2, yaml@^2.4.2, yaml@^2.6.0, yaml@^2.7.0:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.8.1.tgz#1870aa02b631f7e8328b93f8bc574fac5d6c4d79"
   integrity sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==
