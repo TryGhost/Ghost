@@ -9,7 +9,6 @@ const HALF_HOUR_MS = 30 * 60 * 1000;
 
 describe('SingleUseTokenProvider', function () {
     let tokenProvider;
-    let mockMembersConfig;
     let mockModel;
     const testAuthSecret = 'a'.repeat(128);
 
@@ -20,10 +19,6 @@ describe('SingleUseTokenProvider', function () {
     };
 
     beforeEach(function () {
-        mockMembersConfig = {
-            getAuthSecret: sinon.stub().returns(testAuthSecret)
-        };
-
         mockModel = {
             add: sinon.stub(),
             findOne: sinon.stub(),
@@ -36,7 +31,7 @@ describe('SingleUseTokenProvider', function () {
             validityPeriod: DAY_MS,
             validityPeriodAfterUsage: HOUR_MS,
             maxUsageCount: 7,
-            secret: mockMembersConfig.getAuthSecret()
+            secret: testAuthSecret
         });
     });
 
