@@ -11,7 +11,7 @@ const {createNonTransactionalMigration, createTransactionalMigration} = require(
  *
  * @returns {Migration}
  */
-function createAddColumnMigration(table, column, columnDefinition) {
+function createAddColumnMigration(table, column, columnDefinition, options = {}) {
     return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
@@ -20,7 +20,8 @@ function createAddColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.addColumn,
             operationVerb: 'Adding',
-            columnDefinition
+            columnDefinition,
+            options
         }),
         // down
         commands.createColumnMigration({
@@ -29,7 +30,8 @@ function createAddColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.dropColumn,
             operationVerb: 'Removing',
-            columnDefinition
+            columnDefinition,
+            options
         })
     );
 }
@@ -41,7 +43,7 @@ function createAddColumnMigration(table, column, columnDefinition) {
  *
  * @returns {Migration}
  */
-function createDropColumnMigration(table, column, columnDefinition) {
+function createDropColumnMigration(table, column, columnDefinition, options = {}) {
     return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
@@ -49,7 +51,9 @@ function createDropColumnMigration(table, column, columnDefinition) {
             column,
             dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.dropColumn,
-            operationVerb: 'Removing'
+            operationVerb: 'Removing',
+            columnDefinition,
+            options
         }),
         // down
         commands.createColumnMigration({
@@ -58,7 +62,8 @@ function createDropColumnMigration(table, column, columnDefinition) {
             dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.addColumn,
             operationVerb: 'Adding',
-            columnDefinition
+            columnDefinition,
+            options
         })
     );
 }
